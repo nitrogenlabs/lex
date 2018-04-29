@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import * as program from 'commander';
-import {spawnSync} from 'child_process';
-import * as fs from 'fs';
-import {LexConfig, LexConfigType} from './LexConfig';
 import chalk from 'chalk';
+import {spawnSync} from 'child_process';
+import * as program from 'commander';
+import * as fs from 'fs';
 import * as path from 'path';
+import {LexConfig, LexConfigType} from './LexConfig';
 
 const packageConfig = require('../package.json');
 
@@ -55,8 +55,8 @@ if(testAndCompile || program.test) {
   }
 
   spawnSync(jestPath, jestOptions, {
-    stdio: 'inherit',
-    encoding: 'utf-8'
+    encoding: 'utf-8',
+    stdio: 'inherit'
   });
 }
 
@@ -64,7 +64,7 @@ if(testAndCompile || program.compile) {
   console.log(chalk.blue('Lex Compiling...'));
   const webpackDevPath = `${cwd}/node_modules/webpack-dev-server/bin/webpack-dev-server.js`;
   spawnSync(webpackDevPath, ['--config', `${cwd}/webpack.config.ts`, '--open'], {
-    stdio: 'inherit',
-    encoding: 'utf-8'
+    encoding: 'utf-8',
+    stdio: 'inherit'
   });
 }

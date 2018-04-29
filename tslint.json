@@ -94,6 +94,7 @@
     "no-trailing-whitespace": false,
     "no-unsafe-finally": true,
     "no-unused-expression": true,
+    "no-var-requires": false,
     "object-literal-sort-keys": true,
     "one-line": false,
     "only-arrow-functions": true,

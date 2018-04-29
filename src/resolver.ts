@@ -11,9 +11,9 @@ module.exports = (value, options) => {
   const hasBase = value.indexOf('./') >= 0 || value.indexOf('../') >= 0;
 
   if(hasBase) {
-    const ext: string = path.extname(value) || '';
+    const existingExt: string = path.extname(value) || '';
 
-    if(ext !== '') {
+    if(existingExt !== '') {
       return path.resolve(`${basedir}/${value}`);
     } else {
       let fullPath = value;
@@ -32,6 +32,8 @@ module.exports = (value, options) => {
           fullPath = indexFile;
           return true;
         }
+
+        return false;
       });
 
       return fullPath;
