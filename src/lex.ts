@@ -1,70 +1,29 @@
 #!/usr/bin/env node
 
-import chalk from 'chalk';
-import {spawnSync} from 'child_process';
+
 import * as program from 'commander';
-import * as fs from 'fs';
-import * as path from 'path';
-import {LexConfig, LexConfigType} from './LexConfig';
+import {compile, dev, init, test} from './commands';
 
 const packageConfig = require('../package.json');
 
-program.version(packageConfig.version)
-  .option('-c, --compile', 'Compile and pack')
-  .option('-t, --test', 'Test and lint')
-  .option('-o, --config [path]', 'Configuration file', '')
+// Commands
+program.command('compile [lexConfigFile]')
+  .option('-c, --config [path]', 'Webpack configuration file', '')
+  .option('-m, --mode [path]', 'Webpack mode ("production" or "development")', '')
+  .action(compile);
+
+program.command('dev [lexConfigFile]')
+  .option('-c, --config [path]', 'Webpack configuration file', '')
+  .action(dev);
+
+program.command('init <appName> [packageName]')
+  .action(init);
+
+program.command('test [lexConfigFile]')
+  .option('-c, --config [path]', 'Jest configuration file', '')
+  .action(test);
+
+// Initialize
+program
+  .version(packageConfig.version, '-v, --version')
   .parse(process.argv);
-
-
-const cwd: string = './node_modules/@nlabs/lex';
-const configPath: string = program.config || './lex.config.js';
-const testAndCompile: boolean = !program.compile && !program.test;
-
-// Get configuration
-if(fs.existsSync(configPath)) {
-  console.log(chalk.gray('Lex Config:', configPath));
-  const ext: string = path.extname(configPath);
-
-  if(ext === '.json') {
-    const configContent: string = fs.readFileSync(configPath, 'utf8');
-
-    if(configContent) {
-      const configJson: LexConfigType = JSON.parse(configContent);
-      process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(configJson), null, 0);
-    } else {
-      console.error(`Config file malformed, ${configPath}`);
-    }
-  } else if(ext === '.js') {
-    const lexCustomConfig = require(`${process.cwd()}/${configPath}`);
-    process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(lexCustomConfig), null, 0);
-  } else {
-    console.error('Config file must be a JS or JSON file.');
-  }
-} else {
-  process.env.LEX_CONFIG = JSON.stringify(LexConfig.config, null, 0);
-}
-
-if(testAndCompile || program.test) {
-  console.log(chalk.blue('Lex Testing...'));
-  const jestPath = `${cwd}/node_modules/jest/bin/jest.js`;
-  const {jestSetupFile = ''} = LexConfig.config;
-  const jestOptions: string[] = ['--config', `${cwd}/jest.config.js`];
-
-  if(jestSetupFile !== '') {
-    jestOptions.push('--setupTestFrameworkScriptFile', jestSetupFile);
-  }
-
-  spawnSync(jestPath, jestOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
-}
-
-if(testAndCompile || program.compile) {
-  console.log(chalk.blue('Lex Compiling...'));
-  const webpackDevPath = `${cwd}/node_modules/webpack-dev-server/bin/webpack-dev-server.js`;
-  spawnSync(webpackDevPath, ['--config', `${cwd}/webpack.config.ts`, '--open'], {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
-}

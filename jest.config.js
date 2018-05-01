@@ -25,9 +25,9 @@ module.exports = {
     "tsx"
   ],
   "moduleNameMapper": {
-    "\\.(css|jpg|png|svg)$": `${cwd}/node_modules/@nlabs/lex/lib/emptyModule`
+    "\\.(css|jpg|png|svg)$": path.resolve(__dirname, './lib/emptyModule')
   },
-  "resolver": `${cwd}/node_modules/@nlabs/lex/lib/resolver`,
+  "resolver": path.resolve(__dirname, './lib/resolver.js'),
   "rootDir": cwd,
   "testPathIgnorePatterns": [
     "/node_modules/",

@@ -1,16 +1,15 @@
-import {CheckerPlugin} from 'awesome-typescript-loader';
-import * as CleanWebpackPlugin from 'clean-webpack-plugin';
-import * as CopyWebpackPlugin from 'copy-webpack-plugin';
-import * as HtmlWebPackPlugin from 'html-webpack-plugin';
-import * as SVGSpritemapPlugin from 'svg-spritemap-webpack-plugin';
-import * as path from 'path';
-import * as webpack from 'webpack';
-import {LexConfigType} from './lib/LexConfig';
+const {CheckerPlugin} = require('awesome-typescript-loader');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
+const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
 
-const environment: string = process.env.NODE_ENV || 'development';
-const isProduction: boolean = environment === 'production';
-const lexPath: string = path.resolve(__dirname, './node_modules');
-const lexConfig: LexConfigType = JSON.parse(process.env.LEX_CONFIG);
+const environment = process.env.NODE_ENV || 'development';
+const isProduction = environment === 'production';
+const lexPath = path.resolve(__dirname, './node_modules');
+const lexConfig = JSON.parse(process.env.LEX_CONFIG);
 
 const webpackConfig = {
   devServer: {
@@ -107,4 +106,4 @@ const webpackConfig = {
   }
 };
 
-export default webpackConfig;
+module.exports = webpackConfig;
