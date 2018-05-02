@@ -11,8 +11,8 @@ export const test = (lexConfigFile: string, cmd) => {
   LexConfig.parseConfig(configPath);
 
   // Configure jest
-  const jestPath = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
-  const {jestSetupFile = ''} = LexConfig.config;
+  const jestPath: string = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
+  const jestSetupFile: string = cmd.config || '';
   const jestOptions: string[] = ['--config', path.resolve(__dirname, '../../jest.config.js')];
 
   if(jestSetupFile !== '') {

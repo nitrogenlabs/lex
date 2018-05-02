@@ -17,9 +17,10 @@ export const dev = (lexConfigFile: string, cmd) => {
   const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.ts`);
 
   // Compile using webpack
+  const openDev: string = cmd.open ? '--open' : '';
   const webpackDevPath: string = path
     .resolve(__dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js');
-  const webpack = spawnSync(webpackDevPath, ['--config', webpackConfig, '--open'], {
+  const webpack = spawnSync(webpackDevPath, ['--config', webpackConfig, openDev], {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

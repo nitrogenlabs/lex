@@ -14,6 +14,7 @@ program.command('compile [lexConfigFile]')
 
 program.command('dev [lexConfigFile]')
   .option('-c, --config [path]', 'Webpack configuration file', '')
+  .option('-o, --open', 'Automatically open a new browser window', '')
   .action(dev);
 
 program.command('init <appName> [packageName]')

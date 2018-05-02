@@ -3,16 +3,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export interface LexConfigType {
-  entryFile?: string;
-  jestSetupFile: string;
+  entryHTML?: string;
+  entryJS?: string;
+  env: object;
   outputDir?: string;
   sourceDir?: string;
 }
 
 export class LexConfig {
   static config: LexConfigType = {
-    entryFile: 'app.tsx',
-    jestSetupFile: '',
+    entryHTML: 'index.html',
+    entryJS: 'app.tsx',
+    env: null,
     outputDir: './dist',
     sourceDir: './src'
   };

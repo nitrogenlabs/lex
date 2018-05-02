@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -12,9 +12,11 @@
     "nitrogenlabs",
     "webpack"
   ],
-  "authors": [
-    "Giraldo Rosales <giraldo@nitrogenlabs.com> (http://nitrogenlabs.com/)"
-  ],
+  "author": {
+    "name": "Giraldo Rosales",
+    "email": "giraldo@nitrogenlabs.com",
+    "url": "http://nitrogenlabs.com"
+  },
   "repository": {
     "type": "git",
     "url": "nitrogenlabs/lex"

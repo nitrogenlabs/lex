@@ -9,7 +9,12 @@ const webpack = require('webpack');
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
 const lexPath = path.resolve(__dirname, './node_modules');
-const lexConfig = JSON.parse(process.env.LEX_CONFIG);
+const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
+const envVariables = lexConfig.env || {'NODE_ENV': environment};
+const processVariables = Object.keys(envVariables).reduce((list, varName) => {
+  list[`process.env.${varName}`] = JSON.stringify(envVariables[varName]);
+  return list;
+}, {})
 
 const webpackConfig = {
   devServer: {
@@ -18,7 +23,7 @@ const webpackConfig = {
   },
   devtool: !isProduction && 'cheap-module-eval-source-map',
   entry: {
-    index: `${lexConfig.sourceDir}/${lexConfig.entryFile}`
+    index: `${lexConfig.sourceDir}/${lexConfig.entryJS}`
   },
   mode: environment,
   module: {
@@ -73,19 +78,13 @@ const webpackConfig = {
       }
     ]
   },
-  // optimization: {
-  //   runtimeChunk: false,
-  //   splitChunks: {chunks: 'all'}
-  // },
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, lexConfig.outputDir)
   },
   plugins: [
     new CleanWebpackPlugin([lexConfig.outputDir]),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(environment)
-    }),
+    new webpack.DefinePlugin(processVariables),
     new CheckerPlugin(),
     new CopyWebpackPlugin([
       {from: `${lexConfig.sourceDir}/fonts/`, to: './fonts/'},
@@ -98,7 +97,7 @@ const webpackConfig = {
     }),
     new HtmlWebPackPlugin({
       filename: './index.html',
-      template: `${lexConfig.sourceDir}/index.html`
+      template: `${lexConfig.sourceDir}/${lexConfig.entryHTML}`
     })
   ],
   resolve: {
