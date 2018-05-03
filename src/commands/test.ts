@@ -4,7 +4,7 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 
 export const test = (lexConfigFile: string, cmd) => {
-  console.log(chalk.blue('Lex testing...'));
+  console.log(chalk.cyan('Lex testing...'));
 
   // Get custom configuration
   const configPath: string = lexConfigFile || './lex.config.js';

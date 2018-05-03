@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const cwd: string = process.cwd();
+
 export interface LexConfigType {
   entryHTML?: string;
   entryJS?: string;
@@ -15,8 +17,8 @@ export class LexConfig {
     entryHTML: 'index.html',
     entryJS: 'app.tsx',
     env: null,
-    outputDir: './dist',
-    sourceDir: './src'
+    outputDir: path.resolve(cwd, './dist'),
+    sourceDir: path.resolve(cwd, './src')
   };
 
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {

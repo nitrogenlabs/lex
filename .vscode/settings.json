@@ -1,5 +1,40 @@
 {
   "cSpell.words": [
-    "nitrogenlabs"
-  ]
+    "arkham",
+    "nitrogenlabs",
+    "nlabs"
+  ],
+  "editor.autoClosingBrackets": false,
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.rulers": [
+    120
+  ],
+  "editor.tabCompletion": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "off",
+  "editor.wordWrapColumn": 120,
+  "editor.wrappingIndent": "indent",
+  "explorer.confirmDragAndDrop": false,
+  "explorer.decorations.badges": false,
+  "files.trimTrailingWhitespace": true,
+  "html.format.indentInnerHtml": true,
+  "html.format.indentHandlebars": true,
+  "html.format.extraLiners": "",
+  "html.format.enable": false,
+  "html.format.endWithNewline": true,
+  "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+  "javascript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": false,
+  "typescriptHero.imports.multiLineTrailingComma": false,
+  "typescriptHero.imports.multiLineWrapThreshold": 120,
+  "typescriptHero.imports.organizeOnSave": true,
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+  "tslint.enable": true,
+  "tslint.packageManager": "yarn",
+  "tslint.autoFixOnSave": true,
+  "tslint.configFile": "./tslint.json"
 }

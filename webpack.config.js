@@ -29,25 +29,27 @@ const webpackConfig = {
   module: {
     rules: [
       {
-        loader: `${lexPath}/awesome-typescript-loader`,
+        loader: path.resolve(`${lexPath}/awesome-typescript-loader`),
         test: /\.tsx?$/
       },
       {
         enforce: 'pre',
-        loader: `${lexPath}/source-map-loader`,
+        loader: path.resolve(`${lexPath}/source-map-loader`),
         test: /\.js$/
       },
       {
         test: /\.css$/,
         use: [
-          `${lexPath}/style-loader`,
+          path.resolve(`${lexPath}/style-loader`),
           {
-            loader: `${lexPath}/css-loader`, options: {
+            loader: path.resolve(`${lexPath}/css-loader`),
+            options: {
               importLoaders: 1
             }
           },
           {
-            loader: `${lexPath}/postcss-loader`, options: {
+            loader: path.resolve(`${lexPath}/postcss-loader`),
+            options: {
               plugins: [
                 require('postcss-import')({addDependencyTo: webpack}),
                 require('postcss-url'),
@@ -83,7 +85,7 @@ const webpackConfig = {
     path: path.resolve(__dirname, lexConfig.outputDir)
   },
   plugins: [
-    new CleanWebpackPlugin([lexConfig.outputDir]),
+    new CleanWebpackPlugin([lexConfig.outputDir], {allowExternal: true}),
     new webpack.DefinePlugin(processVariables),
     new CheckerPlugin(),
     new CopyWebpackPlugin([

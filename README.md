@@ -54,8 +54,10 @@ $ yarn global add @nlabs/lex
 
 ```bash
 // Install a skeleton app with the ArkhamJS framework
+$ npm install -g yarn @nlabs/lex
 $ lex init myApp
 $ cd myApp
+$ yarn
 
 // Run the dev server
 $ lex dev
@@ -102,7 +104,7 @@ $ lex dev -c ./webpack.config.js
 
 ### `init`
 
-Creates a new app shell. An initial directory structure with files is created based off a node module. By default [arkhamjs-example-react](https://github.com/nitrogenlabs/arkhamjs-example-react) is used. If an existing node module is preferred, it may be used instead. 
+Creates a new app shell. An initial directory structure with files is created based off a node module. By default [@nlabs/arkhamjs-example-react](https://github.com/nitrogenlabs/arkhamjs-example-react) is used. If an existing node module is preferred, it may be used instead.
 
 ```bash
 // Run unit tests
@@ -167,7 +169,7 @@ To add a CSS file to your project, simply import it into the Javascript itself:
 import './app.css';
 ```
 
-The following PostCSS plugins are used with Lex: 
+The following PostCSS plugins are used with Lex:
 
 - [postcss-import](https://github.com/postcss/postcss-import) - Transform @import rules by inlining content.
 - [postcss-url](https://github.com/postcss/postcss-url) - Rebase, inline or copy on url().
@@ -175,7 +177,7 @@ The following PostCSS plugins are used with Lex:
 - [postcss-nested](https://github.com/postcss/postcss-nested) - Nest CSS class rules.
 - [postcss-cssnext](https://github.com/MoOx/postcss-cssnext) - Use tomorrow's CSS syntax, today.
 - [cssnano](http://cssnano.co/) - Minifies and optimizes CSS.
-- [postcss-browser-reporter](https://github.com/postcss/postcss-browser-reporter) - Reports warning messages in the browser. 
+- [postcss-browser-reporter](https://github.com/postcss/postcss-browser-reporter) - Reports warning messages in the browser.
 
 ### Images
 

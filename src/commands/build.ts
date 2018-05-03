@@ -4,13 +4,14 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 
 export const build = (lexConfigFile: string, cmd) => {
-  console.log(chalk.blue('Lex building...'));
+  const cwd: string = process.cwd();
+  console.log(chalk.cyan('Lex building...'));
 
   // Set node environment
   process.env.NODE_ENV = 'production';
 
   // Get custom configuration
-  const configPath: string = lexConfigFile || './lex.config.js';
+  const configPath: string = lexConfigFile || path.resolve(cwd, './lex.config.js');
   LexConfig.parseConfig(configPath);
 
   // Get custom webpack configuration

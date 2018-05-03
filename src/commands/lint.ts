@@ -3,5 +3,5 @@ import chalk from 'chalk';
 // import {LexConfig} from '../LexConfig';
 
 export const lint = (dir: string, cmd) => {
-  console.log(chalk.blue('Lex linting...'));
+  console.log(chalk.cyan('Lex linting...'));
 };

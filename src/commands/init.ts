@@ -4,11 +4,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export const init = (appName: string, packageName: string, cmd) => {
+  const cwd: string = process.cwd();
+
   // Download app into temporary directory
-  console.log(chalk.blue('Lex downloading...'));
+  console.log(chalk.cyan('Lex downloading...'));
   packageName = packageName || '@nlabs/arkhamjs-example-react';
-  const tmpPath: string = './.lexTmp';
-  const appPath: string = `./${appName}`;
+  const tmpPath: string = path.resolve(cwd, './.lexTmp');
+  const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
 
   spawnSync(dnpPath, [packageName, tmpPath], {
@@ -16,7 +18,7 @@ export const init = (appName: string, packageName: string, cmd) => {
     stdio: 'inherit'
   });
 
-  console.log(chalk.blue('Lex initializing...'));
+  console.log(chalk.cyan('Lex initializing...'));
 
   // Move into configured directory
   fs.renameSync(`${tmpPath}/${packageName}`, appPath);

@@ -1,0 +1,22 @@
+{
+  "enabled": [
+    "streetsidesoftware.code-spell-checker",
+    "bierner.markdown-preview-github-styles",
+    "DavidAnson.vscode-markdownlint",
+    "ricard.postcss",
+    "shinnn.stylelint",
+    "eg2.tslint",
+    "rbbit.typescript-hero"
+  ],
+  "recommendations": [
+    "streetsidesoftware.code-spell-checker",
+    "bierner.markdown-preview-github-styles",
+    "DavidAnson.vscode-markdownlint",
+    "ricard.postcss",
+    "shinnn.stylelint",
+    "eg2.tslint",
+    "rbbit.typescript-hero",
+    "Equinusocio.vsc-material-theme",
+    "PKief.material-icon-theme"
+  ]
+}

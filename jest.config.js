@@ -31,7 +31,7 @@ module.exports = {
   "rootDir": cwd,
   "testPathIgnorePatterns": [
     "/node_modules/",
-    `/${lexNodePath}/`
+    `${lexNodePath}/`
   ],
   "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(js|ts|tsx)?$",
   "testURL": "http://localhost",

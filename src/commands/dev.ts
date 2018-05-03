@@ -4,23 +4,29 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 
 export const dev = (lexConfigFile: string, cmd) => {
-  console.log(chalk.blue('Lex development...'));
+  const cwd: string = process.cwd();
+  console.log(chalk.cyan('Lex development...'));
 
   // Set node environment
   process.env.NODE_ENV = 'development';
 
   // Get custom configuration
-  const configPath: string = lexConfigFile || './lex.config.js';
+  const configPath: string = lexConfigFile || path.resolve(cwd, './lex.config.js');
   LexConfig.parseConfig(configPath);
 
   // Get custom webpack configuration file
-  const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.ts`);
+  const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.js`);
 
   // Compile using webpack
-  const openDev: string = cmd.open ? '--open' : '';
+  const webpackOptions: string[] = ['--config', webpackConfig];
+
+  if(cmd.open) {
+    webpackOptions.push('--open');
+  }
+
   const webpackDevPath: string = path
     .resolve(__dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js');
-  const webpack = spawnSync(webpackDevPath, ['--config', webpackConfig, openDev], {
+  const webpack = spawnSync(webpackDevPath, webpackOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
