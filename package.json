@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -26,7 +26,7 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "NODE_ENV=production tsc",
+    "build": "rm -rf lib && NODE_ENV=production tsc",
     "lint": "tslint -c ./tslint.json -p ./tsconfig.json './src/**/*.{ts,tsx}'",
     "prepublishOnly": "yarn lint && yarn build",
     "reset": "rm -rf node_modules yarn.lock && yarn",
