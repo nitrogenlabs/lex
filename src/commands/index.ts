@@ -1,4 +1,4 @@
-export {compile} from './compile';
+export {build} from './build';
 export {dev} from './dev';
 export {init} from './init';
 export {lint} from './lint';

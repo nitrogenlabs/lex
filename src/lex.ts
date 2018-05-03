@@ -2,15 +2,15 @@
 
 
 import * as program from 'commander';
-import {compile, dev, init, test} from './commands';
+import {build, dev, init, test} from './commands';
 
 const packageConfig = require('../package.json');
 
 // Commands
-program.command('compile [lexConfigFile]')
+program.command('build [lexConfigFile]')
   .option('-c, --config [path]', 'Webpack configuration file', '')
   .option('-m, --mode [path]', 'Webpack mode ("production" or "development")', '')
-  .action(compile);
+  .action(build);
 
 program.command('dev [lexConfigFile]')
   .option('-c, --config [path]', 'Webpack configuration file', '')

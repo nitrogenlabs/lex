@@ -65,19 +65,19 @@ $ lex dev
 
 Lex is pre-configured for React but can use custom configuration files.
 
-### `compile`
+### `build`
 
-Compiles all source code using Webpack.
+Compiles all source code and moves all static files to output folder using Webpack.
 
 ```bash
-// Compile
-$ lex compile
+// Build
+$ lex build
 
 // Custom lex config
-$ lex compile ./lex.config.js
+$ lex build ./lex.config.js
 
 // Custom Webpack config
-$ lex compile -c ./webpack.config.js
+$ lex build -c ./webpack.config.js
 ```
 
 ### `dev`
@@ -149,7 +149,7 @@ $ lex test -c ./jest.config.js
 
 Environment variables can be a very important part of your app. They can dynamically set configuration values your JS app can use later during runtime. Custom variables can be set in the lex configuration.
 
-The environment variable, `process.env.NODE_ENV` is usually used to determine what environment the app is running in. When running `lex dev`, `NODE_ENV` will be set to *development*, and `lex compile` will set `NODE_ENV` to *production*.
+The environment variable, `process.env.NODE_ENV` is usually used to determine what environment the app is running in. When running `lex dev`, `NODE_ENV` will be set to *development*, and `lex build` will set `NODE_ENV` to *production*.
 
 ### CSS
 

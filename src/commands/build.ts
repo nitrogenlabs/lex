@@ -3,8 +3,8 @@ import {spawnSync} from 'child_process';
 import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 
-export const compile = (lexConfigFile: string, cmd) => {
-  console.log(chalk.blue('Lex compiling...'));
+export const build = (lexConfigFile: string, cmd) => {
+  console.log(chalk.blue('Lex building...'));
 
   // Set node environment
   process.env.NODE_ENV = 'production';
