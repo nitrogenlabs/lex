@@ -173,6 +173,17 @@ $ lex test -c ./jest.config.js
 $ lex test -u
 ```
 
+### `versions`
+
+List versions of Lex as well as the versions being used for Jest, Typescript and Webpack.
+
+**Examples:**
+
+```bash
+// Get versions
+$ lex versions
+```
+
 ## Configuration
 
 ```javascript

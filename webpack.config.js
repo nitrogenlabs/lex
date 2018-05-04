@@ -30,6 +30,9 @@ const webpackConfig = {
     rules: [
       {
         loader: path.resolve(`${lexPath}/awesome-typescript-loader`),
+        options: {
+          configFileName: path.resolve(__dirname, './tsconfig.json')
+        },
         test: /\.tsx?$/
       },
       {

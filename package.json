@@ -4,7 +4,7 @@
   "description": "Lex",
   "license": "MIT",
   "bin": {
-    "lex": "./lib/lex.js"
+    "lex": "./dist/lex.js"
   },
   "keywords": [
     "arkhamjs",
@@ -26,7 +26,7 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "rm -rf lib && NODE_ENV=production tsc",
+    "build": "rm -rf dist && NODE_ENV=production tsc",
     "lint": "tslint -c ./tslint.json -p ./tsconfig.json './src/**/*.{ts,tsx}'",
     "prepublishOnly": "yarn lint && yarn build",
     "reset": "rm -rf node_modules yarn.lock && yarn",

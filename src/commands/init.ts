@@ -23,6 +23,13 @@ export const init = (appName: string, packageName: string, cmd) => {
   // Move into configured directory
   fs.renameSync(`${tmpPath}/${packageName}`, appPath);
 
+  // If a tsconfig.json exists, remove it so we don't confuse.
+  const tsconfigPath: string = `${appPath}/tsconfig.json`;
+
+  if(fs.existsSync(tsconfigPath)) {
+    fs.unlinkSync(tsconfigPath);
+  }
+
   // Configure package.json
   const packagePath: string = `${appPath}/package.json`;
   const packageData: string = fs.readFileSync(packagePath).toString();
