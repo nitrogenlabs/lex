@@ -107,6 +107,27 @@ $ lex build ./lex.config.js
 $ lex build -c ./webpack.config.js
 ```
 
+### `compile`
+
+Compiles all source code to output folder using Typescript.
+
+**Options:**
+
+- `-c <typescriptConfig>` - Custom Typescript configuration. File path to `tsconfig.json`.
+
+**Examples:**
+
+```bash
+// Compile
+$ lex compile
+
+// Custom lex config
+$ lex compile ./lex.config.js
+
+// Custom Webpack config
+$ lex compile -c ./tsconfig.json
+```
+
 ### `dev`
 
 Spins up a development environment for the app. The development server is located at: [http://localhost:8080](http://localhost:8080) A new browser window will automatically open if using the `-o` flag.
