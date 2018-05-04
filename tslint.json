@@ -79,10 +79,7 @@
     "no-debugger": true,
     "no-duplicate-super": false,
     "no-duplicate-variable": true,
-    "no-empty": [
-      true,
-      "allow-empty-catch"
-    ],
+    "no-empty": false,
     "no-empty-interface": false,
     "no-eval": false,
     "no-implicit-dependencies": false,
@@ -116,10 +113,7 @@
       }
     ],
     "triple-equals": true,
-    "typedef": [
-      true,
-      "call-signature"
-    ],
+    "typedef": false,
     "use-isnan": true,
     "whitespace": [
       true,

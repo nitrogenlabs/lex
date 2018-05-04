@@ -1,4 +1,5 @@
 # lex
+
 Lex is a console line execution module. Works out of the box for any React project, taking care of all your development needs. No need to install unit testing, transpilers, compilers, or even development servers. Install Lex globally and let go of all the dirty work, allowing you focus on coding.
 
 ## About
@@ -12,7 +13,6 @@ Lex eliminates this hassle. With enterprise configurations already setup and mai
 All source code is transpiled using Typescript. While the use of static types is not required, Typescript does a great job on ES-next feature set transpiling. Promises, async/await, and arrow functions to make a few. Giving the codebase the potential to expand along with the project and team.
 
 Using static types within your codebase, will help reduce the amount of minor errors and bugs (typos, standard APIs, etc).
-
 
 ### [Webpack](https://webpack.js.org/)
 
@@ -67,9 +67,34 @@ $ lex dev
 
 Lex is pre-configured for React but can use custom configuration files.
 
+### `add`
+
+Will add helper files to get you up and running quickly. Add settings, stores, and views to your workspace.
+
+**Options:**
+
+- `vscode` - Add [Visual Studio Code](https://code.visualstudio.com/) settings to your workspace.
+
+- `store <storeName>` - Add a directory with a new store and associated test file.
+
+- `view <viewName>` - Add a directory with a new view, stylesheet and associated test file.
+
+**Examples:**
+
+```bash
+// Add a store
+$ lex add store myStore
+```
+
 ### `build`
 
 Compiles all source code and moves all static files to output folder using Webpack.
+
+**Options:**
+
+- `-c <webpackConfig>` - Custom Webpack configuration file path.
+
+**Examples:**
 
 ```bash
 // Build
@@ -87,6 +112,13 @@ $ lex build -c ./webpack.config.js
 Spins up a development environment for the app. The development server is located at: [http://localhost:8080](http://localhost:8080) A new browser window will automatically open if using the `-o` flag.
 
 The server loads the static files as well as dynamically loads all JavaScript. Taking things one step further -- with the use of Hot Module Replacement (HMR) -- the browser automatically refreshes as changes are made. In the case of React, it allows the application to maintain its state without forcing a refresh. While this does not sound all that special, it can make a big difference in practice.
+
+**Options:**
+
+- `-c <webpackConfig>` - Custom Webpack configuration file path.
+- `-o` - Open dev server in default browser after building.
+
+**Examples:**
 
 ```bash
 // Run dev server
@@ -106,6 +138,8 @@ $ lex dev -c ./webpack.config.js
 
 Creates a new app shell. An initial directory structure with files is created based off a node module. By default [@nlabs/arkhamjs-example-react](https://github.com/nitrogenlabs/arkhamjs-example-react) is used. If an existing node module is preferred, it may be used instead.
 
+**Examples:**
+
 ```bash
 // Run unit tests
 $ lex init myApp
@@ -118,6 +152,13 @@ $ lex init myApp custom-base-module
 
 Runs all unit tests with Jest.
 
+**Options:**
+
+- `-c <jestConfig>` - Custom Jest configuration file path.
+- `-u` - Update snapshots. Runs `jest --updateSnapshots`.
+
+**Examples:**
+
 ```bash
 // Run unit tests
 $ lex test
@@ -127,7 +168,11 @@ $ lex test ./lex.config.js
 
 // Custom Jest config
 $ lex test -c ./jest.config.js
+
+// Update snapshots
+$ lex test -u
 ```
+
 ## Configuration
 
 ```javascript

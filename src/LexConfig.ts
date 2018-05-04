@@ -26,7 +26,7 @@ export class LexConfig {
   }
 
   // Get configuration
-  static parseConfig(configPath: string): void {
+  static parseConfig(configPath: string) {
     if(fs.existsSync(configPath)) {
       console.log(chalk.gray('Lex Config:', configPath));
       const ext: string = path.extname(configPath);

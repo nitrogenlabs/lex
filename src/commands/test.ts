@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import {spawnSync} from 'child_process';
 import * as path from 'path';
+
 import {LexConfig} from '../LexConfig';
 
 export const test = (lexConfigFile: string, cmd) => {
@@ -17,6 +18,10 @@ export const test = (lexConfigFile: string, cmd) => {
 
   if(jestSetupFile !== '') {
     jestOptions.push('--setupTestFrameworkScriptFile', jestSetupFile);
+  }
+
+  if(cmd.update) {
+    jestOptions.push('--updateSnapshot');
   }
 
   // Test app using jest

@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-
-
 import * as program from 'commander';
+
 import {add, build, dev, init, test} from './commands';
+
+
 
 const packageConfig = require('../package.json');
 
 // Commands
-program.command('add <type>')
+program.command('add <type> [name]')
   .action(add);
 
 program.command('build [lexConfigFile]')
@@ -25,6 +26,7 @@ program.command('init <appName> [packageName]')
 
 program.command('test [lexConfigFile]')
   .option('-c, --config [path]', 'Jest configuration file', '')
+  .option('-u, --update', 'Update snapshots', '')
   .action(test);
 
 // Initialize
