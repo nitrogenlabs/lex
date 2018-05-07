@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 
-export const compile = (lexConfigFile: string, cmd) => {
+export const compile = (cmd) => {
   console.log(chalk.cyan('Lex compiling...'));
 
   // Get custom configuration

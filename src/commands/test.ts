@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 
-export const test = (lexConfigFile: string, cmd) => {
+export const test = (cmd) => {
   const cwd: string = process.cwd();
   console.log(chalk.cyan('Lex testing...'));
 

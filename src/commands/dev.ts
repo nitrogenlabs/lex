@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 
-export const dev = (lexConfigFile: string, cmd) => {
+export const dev = (cmd) => {
   console.log(chalk.cyan('Lex development...'));
 
   // Set node environment
