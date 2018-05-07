@@ -3,6 +3,8 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "declaration": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
     "jsx": "react",
     "lib": [
       "esnext",
@@ -15,9 +17,10 @@
     "noStrictGenericChecks": true,
     "noUnusedLocals": true,
     "outDir": "./dist",
-    "removeComments": true,
+    "pretty": true,
+    "skipLibCheck": true,
     "sourceMap": true,
-    "target": "es5",
+    "target": "esnext",
     "typeRoots": [
       "node_modules/@types",
       "node_modules/json-d-ts"

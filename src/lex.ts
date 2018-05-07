@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as program from 'commander';
+import program from 'commander';
 
 import {add, build, compile, dev, init, test, version} from './commands';
 
@@ -7,28 +7,43 @@ const packageConfig = require('../package.json');
 
 // Commands
 program.command('add <type> [name]')
+  .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-t, --typescript', 'Add files for Typescript.')
   .action(add);
 
-program.command('build [lexConfigFile]')
-  .option('-c, --config [path]', 'Webpack configuration file path (webpack.config.js)', '')
-  .option('-m, --mode [path]', 'Webpack mode ("production" or "development")', '')
+program.command('build')
+  .option('-b, --babel [path]', 'Babel configuration file path.')
+  .option('-c, --config [path]', 'Webpack configuration file path (webpack.config.js).')
+  .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-m, --mode [path]', 'Webpack mode ("production" or "development").')
+  .option('-t, --typescript', 'Transpile as typescript.')
   .action(build);
 
-program.command('compile [lexConfigFile]')
-  .option('-c, --config [path]', 'Typescript configuration file path (tsconfig.json)', '')
+program.command('compile')
+  .option('-b, --babel [path]', 'Babel configuration file path.')
+  .option('-c, --config [path]', 'Transpiler configuration file path (.flowconfig or tsconfig.json).')
+  .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-t, --typescript', 'Transpile as typescript.')
   .action(compile);
 
-program.command('dev [lexConfigFile]')
-  .option('-c, --config [path]', 'Webpack configuration file path (webpack.config.js)', '')
-  .option('-o, --open', 'Automatically open a new browser window', '')
+program.command('dev')
+  .option('-b, --babel [path]', 'Babel configuration file path.')
+  .option('-c, --config [path]', 'Webpack configuration file path (webpack.config.js).')
+  .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-o, --open', 'Automatically open a new browser window.')
+  .option('-t, --typescript', 'Transpile as typescript.')
   .action(dev);
 
 program.command('init <appName> [packageName]')
+  .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
 
-program.command('test [lexConfigFile]')
-  .option('-c, --config [path]', 'Jest configuration file path (jest.config.js)', '')
-  .option('-u, --update', 'Update snapshots', '')
+program.command('test')
+  .option('-c, --config [path]', 'Jest configuration file path (jest.config.js).')
+  .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-s, --setup [path]', 'Jest setup file path.')
+  .option('-t, --typescript', 'Transpile as typescript.')
+  .option('-u, --update', 'Update snapshots.')
   .action(test);
 
 program.command('versions')

@@ -3,15 +3,27 @@ import {spawnSync} from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {LexConfig} from '../LexConfig';
+
 export const init = (appName: string, packageName: string, cmd) => {
   const cwd: string = process.cwd();
 
-  // Download app into temporary directory
+  // Download app module into temporary directory
   console.log(chalk.cyan('Lex downloading...'));
-  packageName = packageName || '@nlabs/arkhamjs-example-react';
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
+
+  // Get custom configuration
+  LexConfig.parseConfig(cmd);
+  const {useTypescript} = LexConfig.config;
+
+  // Use base app module based on config
+  if(useTypescript) {
+    packageName = '@nlabs/arkhamjs-example-ts-react';
+  } else if(!packageName) {
+    packageName = '@nlabs/arkhamjs-example-flow-react';
+  }
 
   spawnSync(dnpPath, [packageName, tmpPath], {
     encoding: 'utf-8',
@@ -22,13 +34,6 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   // Move into configured directory
   fs.renameSync(`${tmpPath}/${packageName}`, appPath);
-
-  // If a tsconfig.json exists, remove it so we don't confuse.
-  const tsconfigPath: string = `${appPath}/tsconfig.json`;
-
-  if(fs.existsSync(tsconfigPath)) {
-    fs.unlinkSync(tsconfigPath);
-  }
 
   // Configure package.json
   const packagePath: string = `${appPath}/package.json`;

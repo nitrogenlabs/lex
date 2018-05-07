@@ -1,18 +1,17 @@
 import chalk from 'chalk';
 import {spawnSync} from 'child_process';
 import * as path from 'path';
+
 import {LexConfig} from '../LexConfig';
 
 export const dev = (lexConfigFile: string, cmd) => {
-  const cwd: string = process.cwd();
   console.log(chalk.cyan('Lex development...'));
 
   // Set node environment
   process.env.NODE_ENV = 'development';
 
   // Get custom configuration
-  const configPath: string = lexConfigFile || path.resolve(cwd, './lex.config.js');
-  LexConfig.parseConfig(configPath);
+  LexConfig.parseConfig(cmd);
 
   // Get custom webpack configuration file
   const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.js`);

@@ -1,4 +1,3 @@
-const {CheckerPlugin} = require('awesome-typescript-loader');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
@@ -16,6 +15,8 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
   return list;
 }, {})
 
+const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
+
 const webpackConfig = {
   devServer: {
     historyApiFallback: true,
@@ -29,16 +30,15 @@ const webpackConfig = {
   module: {
     rules: [
       {
-        loader: path.resolve(`${lexPath}/awesome-typescript-loader`),
-        options: {
-          configFileName: path.resolve(__dirname, './tsconfig.json')
-        },
-        test: /\.tsx?$/
-      },
-      {
         enforce: 'pre',
         loader: path.resolve(`${lexPath}/source-map-loader`),
-        test: /\.js$/
+        test: /\.(js|ts|tsx)$/
+      },
+      {
+        exclude: /(node_modules)/,
+        loader: path.resolve(`${lexPath}/babel-loader`),
+        options: babelOptions,
+        test: /\.(js|ts|tsx)$/
       },
       {
         test: /\.css$/,
@@ -90,7 +90,6 @@ const webpackConfig = {
   plugins: [
     new CleanWebpackPlugin([lexConfig.outputDir], {allowExternal: true}),
     new webpack.DefinePlugin(processVariables),
-    new CheckerPlugin(),
     new CopyWebpackPlugin([
       {from: `${lexConfig.sourceDir}/fonts/`, to: './fonts/'},
       {from: `${lexConfig.sourceDir}/img/`, to: './img/'}
@@ -106,7 +105,7 @@ const webpackConfig = {
     })
   ],
   resolve: {
-    extensions: ['.js', '.ts', '.tsx', '.jsx']
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
   }
 };
 

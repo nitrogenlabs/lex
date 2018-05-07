@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {LexConfig} from '../LexConfig';
+
 const copyFileSync = (source: string, target: string) => {
   let targetFile: string = target;
 
@@ -49,15 +51,40 @@ const updateName = (filePath: string, replace: string, replaceCaps: string) => {
 
 export const add = (type: string, name: string, cmd) => {
   const cwd: string = process.cwd();
-  if(!name) {
-    console.error(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`));
-    return false;
-  }
 
-  const nameCaps: string = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
+  // Get custom configuration
+  LexConfig.parseConfig(cmd, false);
+  const {useTypescript} = LexConfig.config;
+
+  // Set filename
+  let nameCaps: string;
+
+  if(!name) {
+    if(type !== 'vscode') {
+      console.error(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`));
+      return false;
+    }
+  } else {
+    nameCaps = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
+  }
 
   // Display message
   console.log(chalk.cyan(`Lex adding ${type}...`));
+
+  // Template directory
+  let templatePath: string;
+  let templateExt: string;
+  let templateReact: string;
+
+  if(useTypescript) {
+    templatePath = '../../templates/typescript';
+    templateExt = '.ts';
+    templateReact = '.tsx';
+  } else {
+    templatePath = '../../templates/flow';
+    templateExt = '.js';
+    templateReact = '.js';
+  }
 
   switch(type) {
     case 'store': {
@@ -66,21 +93,21 @@ export const add = (type: string, name: string, cmd) => {
       try {
         if(!fs.existsSync(storePath)) {
           // Copy store files
-          copyFolderRecursiveSync(path.resolve(__dirname, '../../templates/.SampleStore'), cwd);
+          copyFolderRecursiveSync(path.resolve(__dirname, templatePath, './.SampleStore'), cwd);
 
           // Rename directory
           fs.renameSync(`${cwd}/.SampleStore`, storePath);
 
           // Rename test
-          const storeTestPath: string = `${storePath}/${nameCaps}Store.test.ts`;
-          fs.renameSync(`${storePath}/SampleStore.test.ts`, storeTestPath);
+          const storeTestPath: string = `${storePath}/${nameCaps}Store.test${templateExt}`;
+          fs.renameSync(`${storePath}/SampleStore.test${templateExt}`, storeTestPath);
 
           // Search and replace store name
           updateName(storeTestPath, name, nameCaps);
 
           // Rename source file
-          const storeFilePath: string = `${storePath}/${nameCaps}Store.ts`;
-          fs.renameSync(`${storePath}/SampleStore.ts`, storeFilePath);
+          const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
+          fs.renameSync(`${storePath}/SampleStore${templateExt}`, storeFilePath);
 
           // Search and replace store name
           updateName(storeFilePath, name, nameCaps);
@@ -102,7 +129,7 @@ export const add = (type: string, name: string, cmd) => {
       try {
         if(!fs.existsSync(viewPath)) {
           // Copy view files
-          copyFolderRecursiveSync(path.resolve(__dirname, '../../templates/.SampleView'), cwd);
+          copyFolderRecursiveSync(path.resolve(__dirname, templatePath, './.SampleView'), cwd);
 
           // Rename directory
           fs.renameSync(`${cwd}/.SampleView`, viewPath);
@@ -115,15 +142,15 @@ export const add = (type: string, name: string, cmd) => {
           updateName(viewStylePath, name, nameCaps);
 
           // Rename test
-          const viewTestPath: string = `${viewPath}/${nameCaps}View.test.tsx`;
-          fs.renameSync(`${viewPath}/SampleView.test.tsx`, viewTestPath);
+          const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
+          fs.renameSync(`${viewPath}/SampleView.test${templateReact}`, viewTestPath);
 
           // Search and replace view name
           updateName(viewTestPath, name, nameCaps);
 
           // Rename source file
-          const viewFilePath: string = `${viewPath}/${nameCaps}View.tsx`;
-          fs.renameSync(`${viewPath}/SampleView.tsx`, viewFilePath);
+          const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
+          fs.renameSync(`${viewPath}/SampleView${templateReact}`, viewFilePath);
 
           // Search and replace view name
           updateName(viewFilePath, name, nameCaps);

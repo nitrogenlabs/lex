@@ -5,41 +5,82 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 
 export const compile = (lexConfigFile: string, cmd) => {
-  const cwd: string = process.cwd();
   console.log(chalk.cyan('Lex compiling...'));
 
   // Get custom configuration
-  const configPath: string = lexConfigFile || path.resolve(cwd, './lex.config.js');
-  LexConfig.parseConfig(configPath);
+  LexConfig.parseConfig(cmd);
 
-  // Compile using typescript
-  const typescriptPath: string = path.resolve(__dirname, '../../node_modules/typescript/bin/tsc');
-  const typescriptOptions = cmd.config ?
-    ['-p', cmd.config] :
-    [
-      '--allowSyntheticDefaultImports', true,
-      '--baseUrl', LexConfig.config.sourceDir,
-      '--declaration', true,
-      '--jsx', 'react',
-      '--lib', ['esnext', 'dom'],
-      '--module', 'commonjs',
-      '--moduleResolution', 'node',
-      '--noImplicitReturns', true,
-      '--noImplicitThis', true,
-      '--noStrictGenericChecks', true,
-      '--noUnusedLocals', true,
-      '--outDir', LexConfig.config.outputDir,
-      '--removeComments', true,
-      '--rootDir', LexConfig.config.sourceDir,
-      '--sourceMap', true,
-      '--sourceRoot', LexConfig.config.sourceDir,
-      '--target', 'es5',
-      '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
-    ];
-  const typescript = spawnSync(typescriptPath, typescriptOptions, {
+  // Compile type
+  const {useTypescript} = LexConfig.config;
+  const nodePath: string = path.resolve(__dirname, '../../node_modules');
+  const {outputDir, sourceDir} = LexConfig.config;
+
+  if(useTypescript) {
+    LexConfig.checkTypescriptConfig();
+
+    // Check static types with typescript
+    const typescriptPath: string = `${nodePath}/typescript/bin/tsc`;
+    const typescriptOptions: string[] = cmd.config ?
+      ['-p', cmd.config] :
+      [
+        '--allowSyntheticDefaultImports',
+        '--baseUrl', sourceDir,
+        '--declaration',
+        '--emitDeclarationOnly',
+        '--jsx', 'react',
+        '--lib', ['esnext', 'dom'],
+        '--module', 'commonjs',
+        '--moduleResolution', 'node',
+        '--noImplicitReturns',
+        '--noImplicitThis',
+        '--noStrictGenericChecks',
+        '--noUnusedLocals',
+        '--outDir', outputDir,
+        '--removeComments',
+        '--rootDir', sourceDir,
+        '--sourceMap',
+        '--sourceRoot', sourceDir,
+        '--target', 'es5',
+        '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
+      ];
+    spawnSync(typescriptPath, typescriptOptions, {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
+  }
+
+  // Babel options
+  const babelPath: string = `${nodePath}/@babel/cli/bin/babel.js`;
+  const babelPresets: string[] = [
+    `${nodePath}/@babel/preset-env`,
+    useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`,
+    `${nodePath}/@babel/preset-react`,
+    `${nodePath}/@nlabs/preset-stage-0`
+  ];
+  const babelPlugins: string[] = [
+    `${nodePath}/@babel/plugin-proposal-pipeline-operator`
+  ];
+  const babelOptions: string[] = [
+    '--no-babelrc',
+    sourceDir,
+    '--out-dir',
+    outputDir,
+    '--ignore',
+    useTypescript ? '**/*.test.ts*' : '**/*.test.js',
+    '--extensions',
+    useTypescript ? '.ts,.tsx' : '.js',
+    '-s',
+    'inline',
+    '--presets',
+    babelPresets.join(','),
+    '--plugins',
+    babelPlugins.join(',')
+  ];
+
+  const babel = spawnSync(babelPath, babelOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
 
-  process.exit(typescript.status);
+  process.exit(babel.status);
 };

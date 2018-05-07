@@ -1,44 +1,57 @@
 # lex
 
-Lex is a console line execution module. Works out of the box for any React project, taking care of all your development needs. No need to install unit testing, transpilers, compilers, or even development servers. Install Lex globally and let go of all the dirty work, allowing you focus on coding.
+Lex is a console line execution module. Works out of the box for any React project, taking care of all your development needs. No need to install unit testing, transpilers, compilers, or even development servers. Install Lex globally and let go of all the grunt work, allowing you focus on coding your app.
 
 ## About
 
-When starting a new app, a lot of time is taken adding development essentials. Each website, app, or component needs to be tested and compiled. Setting up Typescript, Jest, and Webpack configurations each time a new project is created takes up time. And as the modules are updated, each project needs to be updated and maintained.
+--------
 
-Lex eliminates this hassle. With enterprise configurations already setup and maintained, developers simply run and go. Lex uses the following libraries to assist in development.
+When starting a new app, a lot of time is taken adding development essentials. Each website, app, or component needs to be tested and compiled. Setting up Babel, Jest, Typescript, and Webpack configurations each time a new project is created takes up time. And as the modules are updated, each project needs to be updated and maintained.
 
-### [Typescript](http://www.typescriptlang.org/)
+Lex eliminates this hassle. With the most common enterprise configurations used, developers can simply run and go. Lex uses the following libraries to assist in development.
 
-All source code is transpiled using Typescript. While the use of static types is not required, Typescript does a great job on ES-next feature set transpiling. Promises, async/await, and arrow functions to make a few. Giving the codebase the potential to expand along with the project and team.
+- [Babel](https://babeljs.io/)
+- [Flow](https://flow.org/)
+- [Jest](https://facebook.github.io/jest/)
+- [Typescript](http://www.typescriptlang.org/)
+- [Webpack](https://webpack.js.org/)
 
-Using static types within your codebase, will help reduce the amount of minor errors and bugs (typos, standard APIs, etc).
+### Transpiling
 
-### [Webpack](https://webpack.js.org/)
+All source code is transpiled using Babel. Be able to use all the ES-next features of tomorrow, today. Promises, async/await, and arrow functions to name a few. Giving the codebase the potential to expand along with the project and team.
 
-Bundling your app has never been easier with Webpack 4. Lex uses Webpack with a few plugins to take care of the most common app requirements.
+Lex uses Babel with the following presets and plugins:
 
-Webpack also has the capability to code split dynamically. Segments of code can even be lazy loaded.
+- [@babel/plugin-proposal-pipeline-operator](https://www.npmjs.com/package/@babel/plugin-proposal-pipeline-operator)
+- [@babel/preset-env](https://www.npmjs.com/package/@babel/preset-env)
+- [@babel/preset-flow](https://www.npmjs.com/package/@babel/preset-flow)
+- [@babel/preset-react](https://www.npmjs.com/package/@babel/preset-react)
+- [@babel/preset-stage-0](https://www.npmjs.com/package/@babel/preset-stage-0)
+- [@babel/preset-typescript](https://www.npmjs.com/package/@babel/preset-typescript)
 
-#### Included Webpack plugins:
+### Static types
 
-- **DefinePlugin** - Defines the environment variables.
+Code is type checking at compile time. While the use of static types is not required, it could help your programming immensely. Using static types within your codebase, will help reduce the amount of minor errors and bugs (typos, standard APIs, etc).
 
-- **CheckerPlugin** - Typescript async error reporting.
+By default, all `.js` files will be checked by Flow. Typescript can be used instead if using the `-t` flag or `useTypescript` in a `lex.config.js` file.
 
-- **CleanWebpackPlugin** - Removes all files from the output directory.
+### Webpack
 
-- **CopyWebpackPlugin** - Copies all static files to output directory. This includes images (*./img*) and fonts (*./fonts*) files.
+Bundling your app has never been easier with Webpack 4. With the capability to code split dynamically, segments of code can even be lazy loaded. Lex uses Webpack with a few plugins to take care of the most common app requirements:
 
-- **SVGSpritemapPlugin** - Include all SVG files in the source to be available via the SVG tag.
+- [clean-webpack-plugin](https://www.npmjs.com/package/clean-webpack-plugin) - Removes all files from the output directory.
+- [copy-webpack-plugin](https://www.npmjs.com/package/copy-webpack-plugin) - Copies all static files to output directory. This includes images (*./img*) and fonts (*./fonts*) files.
+- [define-plugin](https://webpack.js.org/plugins/define-plugin) - Defines the environment variables.
+- [html-webpack-plugin](https://www.npmjs.com/package/html-webpack-plugin) - Embed all scripts in *index.html*.
+- [svg-spritemap-webpack-plugin](https://www.npmjs.com/package/svg-spritemap-webpack-plugin) - Include all SVG files in the source to be available via the SVG tag.
 
-- **HtmlWebPackPlugin** - Embed all scripts in *index.html*.
-
-### [Jest](https://facebook.github.io/jest/)
+### Unit Testing
 
 Unit tests are run using Jest. Jest was made to work particularly well with React and comes with some exciting features including snapshots.
 
 ## Installation
+
+--------
 
 Lex is installed globally using either npm or yarn.
 
@@ -51,6 +64,8 @@ $ yarn global add @nlabs/lex
 ```
 
 ## Quick Start
+
+--------
 
 ```bash
 // Install a skeleton app with the ArkhamJS framework
@@ -65,15 +80,21 @@ $ lex dev
 
 ## Usage
 
+--------
+
 Lex is pre-configured for React but can use custom configuration files.
 
 ### `add`
 
-Will add helper files to get you up and running quickly. Add settings, stores, and views to your workspace.
-
 **Options:**
 
-- `vscode` - Add [Visual Studio Code](https://code.visualstudio.com/) settings to your workspace.
+- `-t` - Add Typescript based files.
+
+Will add helper files to get you up and running quickly. Add settings, stores, and views to your workspace.
+
+**Types:**
+
+- `vscode` - Add [Visual Studio Code](https://code.visualstudio.com/) (VSCode) settings to your workspace.
 
 - `store <storeName>` - Add a directory with a new store and associated test file.
 
@@ -88,11 +109,13 @@ $ lex add store myStore
 
 ### `build`
 
-Compiles all source code and moves all static files to output folder using Webpack.
+Compiles all source code, pack into chunked files, and move all static files to output folder using Webpack.
 
 **Options:**
 
 - `-c <webpackConfig>` - Custom Webpack configuration file path.
+- `-l <lexConfigPath>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
+- `-t` - Use Typescript as a transpiler.
 
 **Examples:**
 
@@ -100,8 +123,11 @@ Compiles all source code and moves all static files to output folder using Webpa
 // Build
 $ lex build
 
+// Build using Typescript
+$ lex build -t
+
 // Custom lex config
-$ lex build ./lex.config.js
+$ lex build -l ./lex.config.js
 
 // Custom Webpack config
 $ lex build -c ./webpack.config.js
@@ -109,23 +135,24 @@ $ lex build -c ./webpack.config.js
 
 ### `compile`
 
-Compiles all source code to output folder using Typescript.
+Checks all static types using either Flow or Typescript. Then compiles all source code to output folder.
 
 **Options:**
 
-- `-c <typescriptConfig>` - Custom Typescript configuration. File path to `tsconfig.json`.
+- `-l <lexConfigPath>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
+- `-t` - Use Typescript as a transpiler.
 
 **Examples:**
 
 ```bash
-// Compile
+// Compile from Javascript/Flow files
 $ lex compile
 
-// Custom lex config
-$ lex compile ./lex.config.js
+// Compile from Typescript files
+$ lex compile -t
 
-// Custom Webpack config
-$ lex compile -c ./tsconfig.json
+// Custom lex config
+$ lex compile -l ./lex.config.js
 ```
 
 ### `dev`
@@ -136,8 +163,10 @@ The server loads the static files as well as dynamically loads all JavaScript. T
 
 **Options:**
 
-- `-c <webpackConfig>` - Custom Webpack configuration file path.
+- `-c <webpackConfigPath>` - Custom Webpack configuration file path.
+- `-l <lexConfigPath>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-o` - Open dev server in default browser after building.
+- `-t` - Use Typescript as a transpiler.
 
 **Examples:**
 
@@ -145,11 +174,14 @@ The server loads the static files as well as dynamically loads all JavaScript. T
 // Run dev server
 $ lex dev
 
+// Run dev server using Typescript
+$ lex dev -t
+
 // Run dev server and open in new window
 $ lex dev -o
 
 // Custom lex config
-$ lex dev ./lex.config.js
+$ lex dev -l ./lex.config.js
 
 // Run dev server with custom Webpack config
 $ lex dev -c ./webpack.config.js
@@ -157,13 +189,16 @@ $ lex dev -c ./webpack.config.js
 
 ### `init`
 
-Creates a new app shell. An initial directory structure with files is created based off a node module. By default [@nlabs/arkhamjs-example-react](https://github.com/nitrogenlabs/arkhamjs-example-react) is used. If an existing node module is preferred, it may be used instead.
+Creates a new app shell. An initial directory structure with files is created based off a node module. By default [@nlabs/arkhamjs-example-flow-react](https://github.com/nitrogenlabs/arkhamjs-example-flow-react) is used and [@nlabs/arkhamjs-example-ts-react](https://github.com/nitrogenlabs/arkhamjs-example-ts-react) for Typescript. If an existing node module is preferred, it may be used instead.
 
 **Examples:**
 
 ```bash
-// Run unit tests
+// Create a new base app
 $ lex init myApp
+
+// Create a new Typescript base app
+$ lex init myApp -t
 
 // Custom base app
 $ lex init myApp custom-base-module
@@ -175,7 +210,10 @@ Runs all unit tests with Jest.
 
 **Options:**
 
-- `-c <jestConfig>` - Custom Jest configuration file path.
+- `-c <jestConfigPath>` - Custom Jest configuration file path.
+- `-l <lexConfigPath>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
+- `-s` - Path to setup file.
+- `-t` - Use Typescript as a transpiler.
 - `-u` - Update snapshots. Runs `jest --updateSnapshots`.
 
 **Examples:**
@@ -184,11 +222,17 @@ Runs all unit tests with Jest.
 // Run unit tests
 $ lex test
 
+// Run unit tests with Typescript
+$ lex test -t
+
 // Custom lex config
-$ lex test ./lex.config.js
+$ lex test -l ./lex.config.js
 
 // Custom Jest config
 $ lex test -c ./jest.config.js
+
+// Initial Jest setup
+$ lex test -s ./jest.setup.js
 
 // Update snapshots
 $ lex test -u
@@ -207,12 +251,16 @@ $ lex versions
 
 ## Configuration
 
+--------
+
 ```javascript
 {
   entryHTML: 'index.html',
   entryJS: 'app.tsx',
+  env: {'NODE_ENV': process.env.NODE_ENV},
   outputDir: './dist',
-  sourceDir: './src'
+  sourceDir: './src',
+  useTypescript: false
 }
 ```
 
@@ -221,8 +269,11 @@ $ lex versions
 - **env** - *(object)*  Key/value sets for environment variables. These environment variables will be available to your app. Default: `{'NODE_ENV': process.env.NODE_ENV}`
 - **outputDir** - *(string)* Directory where all transpiled code and static files are exported to. Default: `'./dist'`
 - **sourceDir** - *(string)* Directory that includes all source files. Default: `'./src'`
+- **useTypescript** - *(boolean)* Use Typescript to transpile. Otherwise use Flow. Default: `false`
 
 ## Setup
+
+--------
 
 ### Environment Variables
 
@@ -286,3 +337,9 @@ All SVG icons located in the directory, `./icons`, will be combined and saved as
 ### Fonts
 
 Font files within the `./fonts` directory will be copied to the output directory for inclusion in CSS files.
+
+## Troubleshooting
+
+--------
+
+Nothing yet. Having an issue? Report it and We'll get to it as soon as possible!

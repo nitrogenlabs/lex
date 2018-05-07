@@ -1,0 +1,18 @@
+{
+  "comments": false,
+  "ignore": [
+    "**/*.test.js",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ],
+  "presets": [
+    "@babel/env",
+    "@babel/typescript",
+    [
+      "@babel/stage-0",
+      {
+        "decoratorsLegacy": true
+      }
+    ]
+  ]
+}
