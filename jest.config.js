@@ -4,6 +4,13 @@ const lexConfig = JSON.parse(process.env.LEX_CONFIG);
 const {sourceDir} = lexConfig;
 const lexNodePath = path.resolve(__dirname, './node_modules');
 const sourcePath = path.resolve(`${cwd}/${sourceDir}`);
+const {useTypescript} = lexConfig;
+
+if(useTypescript) {
+  testRegex = '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)?$';
+} else {
+  testRegex = '(/__tests__/.*|(\\.|/)(test|spec))\\.(js)?$';
+}
 
 module.exports = {
   collectCoverage: true,
@@ -26,7 +33,7 @@ module.exports = {
     '/node_modules/',
     `${lexNodePath}/`
   ],
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(js|ts|tsx)?$',
+  testRegex,
   testURL: 'http://localhost',
   transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')},
   verbose: true
