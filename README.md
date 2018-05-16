@@ -37,4 +37,4 @@ $ lex dev
 
 ## Documentation
 
-See Lex [documentation site](https://nitrogenlabs.com/lex) for full details.
+See Lex [documentation site](http://lex.nitrogenlabs.com) for full details.
