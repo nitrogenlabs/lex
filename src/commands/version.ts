@@ -10,7 +10,7 @@ const parseVersion = (packageVersion: string): string => {
 
 export const version = () => {
   console.log(chalk.bgCyan('Versions:'));
-  console.log(chalk.cyan(`  XXXLex: ${packageConfig.version}`));
+  console.log(chalk.cyan(`  Lex: ${packageConfig.version}`));
   console.log(chalk.cyan(`  Typescript: ${parseVersion(packageConfig.dependencies.typescript)}`));
   console.log(chalk.cyan(`  Webpack: ${parseVersion(packageConfig.dependencies.webpack)}`));
   console.log(chalk.cyan(`  Jest: ${parseVersion(packageConfig.dependencies.jest)}`));

@@ -1,0 +1,13 @@
+{
+  "docs": {
+    "Getting Started": [
+      "about",
+      "gettingStarted",
+      "configuration",
+      "setup"
+    ],
+    "API Reference": [
+      "cli"
+    ]
+  }
+}
