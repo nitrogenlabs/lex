@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync} from 'child_process';
+import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
@@ -13,6 +13,13 @@ export const dev = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
+  const {useTypescript} = LexConfig.config;
+
+  if(useTypescript) {
+    // Make sure tsconfig.json exists
+    LexConfig.checkTypescriptConfig();
+  }
+
   // Get custom webpack configuration file
   const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.js`);
 
@@ -25,7 +32,7 @@ export const dev = (cmd) => {
 
   const webpackDevPath: string = path
     .resolve(__dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js');
-  const webpack = spawnSync(webpackDevPath, webpackOptions, {
+  const webpack: SpawnSyncReturns<Buffer> = spawnSync(webpackDevPath, webpackOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

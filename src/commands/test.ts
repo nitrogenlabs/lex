@@ -1,24 +1,20 @@
 import chalk from 'chalk';
-import {spawnSync} from 'child_process';
-import * as fs from 'fs';
+import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 
 export const test = (cmd) => {
-  const cwd: string = process.cwd();
   console.log(chalk.cyan('Lex testing...'));
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  if(LexConfig.config.useTypescript) {
-    // Make sure tsconfig.json exists
-    const tsconfigPath: string = path.resolve(cwd, './tsconfig.json');
+  const {useTypescript} = LexConfig.config;
 
-    if(!fs.existsSync(tsconfigPath)) {
-      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../../tsconfig.json')));
-    }
+  if(useTypescript) {
+    // Make sure tsconfig.json exists
+    LexConfig.checkTypescriptConfig();
   }
 
   // Configure jest
@@ -36,7 +32,7 @@ export const test = (cmd) => {
   }
 
   // Test app using jest
-  const jest = spawnSync(jestPath, jestOptions, {
+  const jest: SpawnSyncReturns<Buffer> = spawnSync(jestPath, jestOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

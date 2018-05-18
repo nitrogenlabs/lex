@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync} from 'child_process';
+import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
@@ -11,11 +11,11 @@ export const compile = (cmd) => {
   LexConfig.parseConfig(cmd);
 
   // Compile type
-  const {useTypescript} = LexConfig.config;
+  const {outputDir, sourceDir, useTypescript} = LexConfig.config;
   const nodePath: string = path.resolve(__dirname, '../../node_modules');
-  const {outputDir, sourceDir} = LexConfig.config;
 
   if(useTypescript) {
+    // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
 
     // Check static types with typescript
@@ -77,7 +77,7 @@ export const compile = (cmd) => {
     babelPlugins.join(',')
   ];
 
-  const babel = spawnSync(babelPath, babelOptions, {
+  const babel: SpawnSyncReturns<Buffer> = spawnSync(babelPath, babelOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

@@ -10,6 +10,11 @@ Lex eliminates this hassle. With the most common enterprise configurations used,
 - [Typescript](http://www.typescriptlang.org/)
 - [Webpack](https://webpack.js.org/)
 
+
+## Documentation
+
+See Lex [documentation site](http://lex.nitrogenlabs.com) for full details.
+
 ## Installation
 
 Lex is installed globally using either npm or yarn.
@@ -17,9 +22,6 @@ Lex is installed globally using either npm or yarn.
 ```shell
 // Using npm
 $ npm install -g @nlabs/lex
-
-// Using Yarn
-$ yarn global add @nlabs/lex
 ```
 
 ## Quick Start
@@ -34,7 +36,3 @@ $ yarn
 // Run the dev server
 $ lex dev
 ```
-
-## Documentation
-
-See Lex [documentation site](http://lex.nitrogenlabs.com) for full details.

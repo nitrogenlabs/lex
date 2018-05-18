@@ -92,7 +92,7 @@ export class LexConfig {
     const tsconfigPath: string = path.resolve(cwd, './tsconfig.json');
 
     if(!fs.existsSync(tsconfigPath)) {
-      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../../tsconfig.json')));
+      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../tsconfig.json')));
     }
   }
 }
