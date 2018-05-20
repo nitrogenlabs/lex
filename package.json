@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -44,9 +44,9 @@
     "@babel/preset-react": "7.0.0-beta.47",
     "@babel/preset-stage-0": "7.0.0-beta.47",
     "@babel/preset-typescript": "^7.0.0-beta.47",
-    "@nlabs/preset-stage-0": "7.0.0-beta.46.2",
+    "@nlabs/preset-stage-0": "7.0.0-beta.47",
     "@types/jest": "^22.2.3",
-    "@types/node": "^10.1.1",
+    "@types/node": "^10.1.2",
     "@types/react": "^16.3.13",
     "@types/webpack": "^4.4.0",
     "babel-core": "7.0.0-bridge.0",
@@ -62,7 +62,6 @@
     "exports-loader": "^0.7.0",
     "file-loader": "^1.1.11",
     "find-file-up": "^2.0.1",
-    "fs": "^0.0.1-security",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "imports-loader": "^0.8.0",
