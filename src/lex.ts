@@ -24,6 +24,7 @@ program.command('compile')
   .option('-c, --config [path]', 'Transpiler configuration file path (.flowconfig or tsconfig.json).')
   .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
   .option('-t, --typescript', 'Transpile as typescript.')
+  .option('-w, --watch', 'Watches for changes and compiles.')
   .action(compile);
 
 program.command('dev')
@@ -44,6 +45,7 @@ program.command('test')
   .option('-s, --setup [path]', 'Jest setup file path.')
   .option('-t, --typescript', 'Transpile as typescript.')
   .option('-u, --update', 'Update snapshots.')
+  .option('-v, --verbose [value]', 'Print the version and exit.')
   .action(test);
 
 program.command('versions')

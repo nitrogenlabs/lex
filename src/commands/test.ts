@@ -31,6 +31,10 @@ export const test = (cmd) => {
     jestOptions.push('--updateSnapshot');
   }
 
+  if(cmd.verbose === undefined || cmd.verbose.toString() === 'true') {
+    jestOptions.push('--verbose');
+  }
+
   // Test app using jest
   const jest: SpawnSyncReturns<Buffer> = spawnSync(jestPath, jestOptions, {
     encoding: 'utf-8',

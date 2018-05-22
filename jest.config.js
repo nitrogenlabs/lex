@@ -28,6 +28,5 @@ module.exports = {
   ],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(js|ts|tsx)?$',
   testURL: 'http://localhost',
-  transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')},
-  verbose: true
+  transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')}
 };

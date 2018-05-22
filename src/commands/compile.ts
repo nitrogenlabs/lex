@@ -43,6 +43,7 @@ export const compile = (cmd) => {
         '--target', 'es5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
+
     spawnSync(typescriptPath, typescriptOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
@@ -76,6 +77,10 @@ export const compile = (cmd) => {
     '--plugins',
     babelPlugins.join(',')
   ];
+
+  if(cmd.watch) {
+    babelOptions.push('--watch');
+  }
 
   const babel: SpawnSyncReturns<Buffer> = spawnSync(babelPath, babelOptions, {
     encoding: 'utf-8',

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {copyFolderRecursiveSync} from './copy';
+import {copyFileSync, copyFolderRecursiveSync} from './copy';
 
 const updateName = (filePath: string, replace: string, replaceCaps: string) => {
   let data: string = fs.readFileSync(filePath, 'utf8');
@@ -21,9 +21,10 @@ export const add = (type: string, name: string, cmd) => {
 
   // Set filename
   let nameCaps: string;
+  const itemNames: string[] = ['stores', 'views'];
 
   if(!name) {
-    if(type !== 'vscode') {
+    if(itemNames.includes(name)) {
       console.error(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`));
       return false;
     }
@@ -85,6 +86,9 @@ export const add = (type: string, name: string, cmd) => {
         return false;
       }
       break;
+    }
+    case 'tsconfig': {
+      copyFileSync(path.resolve(__dirname, '../../tsconfig.json'), cwd);
     }
     case 'view': {
       const viewPath: string = `${cwd}/${nameCaps}View`;
