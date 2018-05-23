@@ -57,7 +57,7 @@
     "babel-jest": "23.0.0-charlie.1",
     "babel-loader": "8.0.0-beta.3",
     "babel-polyfill": "7.0.0-beta.3",
-    "caniuse-lite": "^1.0.30000843",
+    "caniuse-lite": "^1.0.30000844",
     "chalk": "^2.4.1",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
@@ -93,6 +93,6 @@
     "webpack-dev-server": "^3.1.4"
   },
   "devDependencies": {
-    "eslint-config-styleguidejs": "^0.2.0"
+    "eslint-config-styleguidejs": "^0.4.1"
   }
 }

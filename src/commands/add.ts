@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
+import {log} from '../utils';
 import {copyFileSync, copyFolderRecursiveSync} from './copy';
 
 const updateName = (filePath: string, replace: string, replaceCaps: string) => {
@@ -25,7 +26,7 @@ export const add = (type: string, name: string, cmd) => {
 
   if(!name) {
     if(itemNames.includes(name)) {
-      console.error(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`));
+      log(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`), cmd);
       return false;
     }
   } else {
@@ -33,7 +34,7 @@ export const add = (type: string, name: string, cmd) => {
   }
 
   // Display message
-  console.log(chalk.cyan(`Lex adding ${type}...`));
+  log(chalk.cyan(`Lex adding ${type}...`), cmd);
 
   // Template directory
   let templatePath: string;
@@ -76,12 +77,12 @@ export const add = (type: string, name: string, cmd) => {
           // Search and replace store name
           updateName(storeFilePath, name, nameCaps);
         } else {
-          console.error(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${storePath} already exists.`));
+          log(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${storePath} already exists.`), cmd);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        console.error(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message));
+        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), log);
         process.exit(1);
         return false;
       }
@@ -122,12 +123,12 @@ export const add = (type: string, name: string, cmd) => {
           // Search and replace view name
           updateName(viewFilePath, name, nameCaps);
         } else {
-          console.error(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`));
+          log(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`), cmd);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        console.error(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message));
+        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), cmd);
         process.exit(1);
         return false;
       }
@@ -139,7 +140,7 @@ export const add = (type: string, name: string, cmd) => {
       break;
     }
     default: {
-      console.error(chalk.red(`Lex Error: "${type}" does not exist. Please use 'lex -h' for options.`));
+      log(chalk.red(`Lex Error: "${type}" does not exist. Please use 'lex -h' for options.`), cmd);
       process.exit(1);
       return false;
     }

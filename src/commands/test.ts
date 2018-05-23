@@ -3,9 +3,10 @@ import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
+import {log} from '../utils';
 
 export const test = (cmd) => {
-  console.log(chalk.cyan('Lex testing...'));
+  log(chalk.cyan('Lex testing...'), cmd);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);

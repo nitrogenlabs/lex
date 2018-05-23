@@ -3,9 +3,10 @@ import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
+import {log} from '../utils';
 
 export const dev = (cmd) => {
-  console.log(chalk.cyan('Lex development...'));
+  log(chalk.cyan('Lex development...'), cmd);
 
   // Set node environment
   process.env.NODE_ENV = 'development';

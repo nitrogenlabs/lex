@@ -4,12 +4,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
+import {log} from '../utils';
 
 export const init = (appName: string, packageName: string, cmd) => {
   const cwd: string = process.cwd();
 
   // Download app module into temporary directory
-  console.log(chalk.cyan('Lex downloading...'));
+  log(chalk.cyan('Lex downloading...'), cmd);
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
@@ -30,7 +31,7 @@ export const init = (appName: string, packageName: string, cmd) => {
     stdio: 'inherit'
   });
 
-  console.log(chalk.cyan('Lex initializing...'));
+  log(chalk.cyan('Lex initializing...'), cmd);
 
   // Move into configured directory
   fs.renameSync(`${tmpPath}/${packageName}`, appPath);

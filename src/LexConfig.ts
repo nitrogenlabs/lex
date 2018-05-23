@@ -3,6 +3,8 @@ import * as find from 'find-file-up';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {log} from './utils';
+
 const cwd: string = process.cwd();
 
 export interface LexConfigType {
@@ -54,7 +56,7 @@ export class LexConfig {
 
     // If user has a Lex config file, lets use it.
     if(fs.existsSync(configPath)) {
-      console.log(chalk.gray('Lex Config:', configPath));
+      log(chalk.gray('Lex Config:', configPath), cmd);
       const ext: string = path.extname(configPath);
 
       if(ext === '.json') {
@@ -70,13 +72,13 @@ export class LexConfig {
 
           process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(configJson), null, 0);
         } else {
-          console.error(chalk.red(`Config file malformed, ${configPath}`));
+          log(chalk.red(`Config file malformed, ${configPath}`), cmd);
         }
       } else if(ext === '.js') {
         const lexCustomConfig = require(configPath);
         process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(lexCustomConfig), null, 0);
       } else {
-        console.error(chalk.red('Config file must be a JS or JSON file.'));
+        log(chalk.red('Config file must be a JS or JSON file.'), cmd);
       }
     } else {
       // Determine if we're using Typescript or Flow
