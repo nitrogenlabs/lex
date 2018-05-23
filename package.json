@@ -93,6 +93,6 @@
     "webpack-dev-server": "^3.1.4"
   },
   "devDependencies": {
-    "eslint-config-styleguidejs": "^0.4.1"
+    "eslint-config-styleguidejs": "^0.5.1"
   }
 }

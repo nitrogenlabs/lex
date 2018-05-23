@@ -10,7 +10,7 @@ export const init = (appName: string, packageName: string, cmd) => {
   const cwd: string = process.cwd();
 
   // Download app module into temporary directory
-  log(chalk.cyan('Lex downloading...'), cmd);
+  log(chalk.cyan('Lex downloading app module...'), cmd);
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
