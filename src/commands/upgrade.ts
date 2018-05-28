@@ -21,7 +21,7 @@ export const upgrade = (cmd) => {
       const versionDiff: number = compareVersions(latest, current);
 
       if(versionDiff >= 0) {
-        log(chalk.grey(`Currently up-to-date. Version ${current} is the latest.`), cmd);
+        log(chalk.grey(`Currently up-to-date. Version ${latest} is the latest.`), cmd);
         return;
       }
 
