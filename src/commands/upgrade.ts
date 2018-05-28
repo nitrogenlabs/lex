@@ -20,7 +20,7 @@ export const upgrade = (cmd) => {
       const current: string = parseVersion(packageConfig.version);
       const versionDiff: number = compareVersions(latest, current);
 
-      if(versionDiff >= 0) {
+      if(versionDiff === 0) {
         log(chalk.grey(`Currently up-to-date. Version ${latest} is the latest.`), cmd);
         return;
       }
