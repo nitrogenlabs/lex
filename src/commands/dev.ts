@@ -22,7 +22,7 @@ export const dev = (cmd) => {
   }
 
   // Get custom webpack configuration file
-  const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.js`);
+  const webpackConfig: string = cmd.config || path.resolve(__dirname, '../../webpack.config.js');
 
   // Compile using webpack
   const webpackOptions: string[] = ['--config', webpackConfig];

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync} from 'child_process';
+import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -8,6 +8,7 @@ import {log} from '../utils';
 
 export const init = (appName: string, packageName: string, cmd) => {
   const cwd: string = process.cwd();
+  let status: number = 0;
 
   // Download app module into temporary directory
   log(chalk.cyan('Lex downloading app module...'), cmd);
@@ -17,24 +18,33 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
-  const {useTypescript} = LexConfig.config;
+  const {packageManager, useTypescript} = LexConfig.config;
 
   // Use base app module based on config
-  if(useTypescript) {
-    packageName = '@nlabs/arkhamjs-example-ts-react';
-  } else if(!packageName) {
-    packageName = '@nlabs/arkhamjs-example-flow-react';
+  if(!packageName) {
+    if(useTypescript) {
+      packageName = '@nlabs/arkhamjs-example-ts-react';
+    } else {
+      packageName = '@nlabs/arkhamjs-example-flow-react';
+    }
   }
 
-  spawnSync(dnpPath, [packageName, tmpPath], {
+  const download: SpawnSyncReturns<Buffer> = spawnSync(dnpPath, [packageName, tmpPath], {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
 
+  status += download.status;
+
   log(chalk.cyan('Lex initializing...'), cmd);
 
   // Move into configured directory
-  fs.renameSync(`${tmpPath}/${packageName}`, appPath);
+  try {
+    fs.renameSync(`${tmpPath}/${packageName}`, appPath);
+  } catch(error) {
+    log(chalk.cyan('Lex Error:', error.message), cmd);
+    status += 1;
+  }
 
   // Configure package.json
   const packagePath: string = `${appPath}/package.json`;
@@ -50,12 +60,27 @@ export const init = (appName: string, packageName: string, cmd) => {
   delete packageJson.homepage;
   delete packageJson.bugs;
 
-  // Update package.json
-  fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
+  try {
+    // Update package.json
+    fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
 
-  // Update README
-  const readmePath: string = `${appPath}/README.md`;
-  fs.writeFileSync(readmePath, `# ${appName}`);
+    // Update README
+    const readmePath: string = `${appPath}/README.md`;
+    fs.writeFileSync(readmePath, `# ${appName}`);
 
-  process.exit(0);
+  } catch(error) {
+    log(chalk.cyan('Lex Error:', error.message), cmd);
+    status += 1;
+  }
+
+  if(cmd.install) {
+    const install: SpawnSyncReturns<Buffer> = spawnSync(packageManager, ['install'], {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
+
+    status += install.status;
+  }
+
+  process.exit(status);
 };

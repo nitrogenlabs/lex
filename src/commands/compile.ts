@@ -8,6 +8,8 @@ import {log} from '../utils';
 
 export const compile = (cmd) => {
   const cwd: string = process.cwd();
+  let status: number = 0;
+
   log(chalk.cyan('Lex compiling...'), cmd);
 
   // Get custom configuration
@@ -53,10 +55,12 @@ export const compile = (cmd) => {
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
 
-    spawnSync(typescriptPath, typescriptOptions, {
+    const typescript = spawnSync(typescriptPath, typescriptOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
+
+    status += typescript.status;
   }
 
   // Babel options
@@ -96,5 +100,7 @@ export const compile = (cmd) => {
     stdio: 'inherit'
   });
 
-  process.exit(babel.status);
+  status += babel.status;
+
+  process.exit(status);
 };

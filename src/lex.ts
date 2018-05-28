@@ -42,6 +42,7 @@ program.command('dev')
   .action(dev);
 
 program.command('init <appName> [packageName]')
+  .option('-i, --install', 'Install dependencies.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
