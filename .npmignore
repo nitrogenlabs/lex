@@ -1,6 +1,5 @@
 .idea
 .travis.yml
-.vscode
 *.bash_profile
 *.test.ts
 *.test.tsx

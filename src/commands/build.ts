@@ -1,11 +1,13 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
+import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const build = (cmd) => {
+  const cwd: string = process.cwd();
   log(chalk.cyan('Lex building...'), cmd);
 
   // Set node environment
@@ -14,8 +16,14 @@ export const build = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {useTypescript} = LexConfig.config;
+  const {outputDir, useTypescript} = LexConfig.config;
 
+  // Clean output directory before we start adding in new files
+  if(cmd.remove) {
+    rimraf.sync(path.resolve(cwd, outputDir));
+  }
+
+  // Add tsconfig file if none exists
   if(useTypescript) {
     // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();

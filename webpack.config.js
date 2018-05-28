@@ -18,6 +18,8 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 
 const webpackConfig = {
+  bail: true,
+  cache: !isProduction,
   devServer: {
     historyApiFallback: true,
     noInfo: false

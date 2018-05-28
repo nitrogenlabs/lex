@@ -4,4 +4,6 @@ export {compile} from './compile';
 export {dev} from './dev';
 export {init} from './init';
 export {test} from './test';
+export {update} from './update';
+export {upgrade} from './upgrade';
 export {versions} from './versions';

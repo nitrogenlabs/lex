@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
 const packageConfig = require('../../package.json');
-const parseVersion = (packageVersion: string): string => {
+export const parseVersion = (packageVersion: string = ''): string => {
   return packageVersion.replace(/\^/g, '');
 };
 

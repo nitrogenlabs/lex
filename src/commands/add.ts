@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
+import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
@@ -89,6 +90,10 @@ export const add = (type: string, name: string, cmd) => {
       break;
     }
     case 'tsconfig': {
+      // Remove existing file
+      rimraf.sync(path.resolve(cwd, 'tsconfig.json'));
+
+      // Copy new file
       copyFileSync(path.resolve(__dirname, '../../tsconfig.json'), cwd);
     }
     case 'view': {
@@ -135,6 +140,9 @@ export const add = (type: string, name: string, cmd) => {
       break;
     }
     case 'vscode': {
+      // Remove existing directory
+      rimraf.sync(path.resolve(cwd, '.vscode'));
+
       // Copy vscode configuration
       copyFolderRecursiveSync(path.resolve(__dirname, '../../.vscode'), cwd);
       break;

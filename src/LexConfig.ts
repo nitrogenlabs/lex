@@ -10,10 +10,11 @@ const cwd: string = process.cwd();
 export interface LexConfigType {
   entryHTML?: string;
   entryJS?: string;
-  env: object;
+  env?: object;
   outputDir?: string;
+  packageManager?: string;
   sourceDir?: string;
-  useTypescript: boolean;
+  useTypescript?: boolean;
 }
 
 export class LexConfig {
@@ -22,6 +23,7 @@ export class LexConfig {
     entryJS: 'app.js',
     env: null,
     outputDir: path.resolve(cwd, './dist'),
+    packageManager: 'yarn',
     sourceDir: path.resolve(cwd, './src'),
     useTypescript: false
   };
@@ -33,7 +35,8 @@ export class LexConfig {
       LexConfig.useTypescript = useTypescript;
     }
 
-    return {...LexConfig.config, ...updatedConfig};
+    LexConfig.config = {...LexConfig.config, ...updatedConfig};
+    return LexConfig.config;
   }
 
   static set useTypescript(value: boolean) {
@@ -63,7 +66,13 @@ export class LexConfig {
         const configContent: string = fs.readFileSync(configPath, 'utf8');
 
         if(configContent) {
-          const configJson: LexConfigType = JSON.parse(configContent);
+          let configJson: LexConfigType;
+
+          try {
+            configJson = JSON.parse(configContent);
+          } catch(error) {
+            configJson = {};
+          }
 
           // Determine if we're using Typescript or Flow
           if(cmd.typescript !== undefined) {

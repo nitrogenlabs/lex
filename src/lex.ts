@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {add, build, compile, dev, init, test, versions} from './commands';
+import {add, build, compile, dev, init, test, update, upgrade, versions} from './commands';
 
 const packageConfig = require('../package.json');
 
@@ -18,6 +18,7 @@ program.command('build')
   .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
   .option('-m, --mode [type]', 'Webpack mode ("production" or "development").')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('-r, --remove', 'Removes all files from the output directory.')
   .option('-t, --typescript', 'Transpile as typescript.')
   .action(build);
 
@@ -25,6 +26,7 @@ program.command('compile')
   .option('-b, --babel [path]', 'Babel configuration file path.')
   .option('-c, --config [path]', 'Transpiler configuration file path (.flowconfig or tsconfig.json).')
   .option('-l, --lexConfig [path]', 'Lex configuration file path (lex.config.js).')
+  .option('-r, --remove', 'Removes all files from the output directory.')
   .option('-t, --typescript', 'Transpile as typescript.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-w, --watch', 'Watches for changes and compiles.')
@@ -54,6 +56,13 @@ program.command('test')
   .option('-v, --verbose [value]', 'Print the version and exit.')
   .action(test);
 
+program.command('update')
+  .option('-i, --interactive', 'Pick which packages to update.')
+  .action(update);
+
+program.command('upgrade')
+  .action(upgrade);
+
 program.command('versions')
   .option('-j, --json', 'Print the version as a JSON object.')
   .action(versions);
@@ -62,4 +71,3 @@ program.command('versions')
 program
   .version(packageConfig.version)
   .parse(process.argv);
-
