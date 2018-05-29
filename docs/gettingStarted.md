@@ -5,19 +5,16 @@ title: Getting Started
 
 ## Installation
 
-Lex is installed globally using either npm or yarn.
+Lex is installed globally using npm. Installing via yarn globally does not install correctly.
 
 ```shell
 // Using npm
 $ npm install -g @nlabs/lex
-
-// Using yarn
-$ yarn global add @nlabs/lex
 ```
 
 ## Quick Start
 
-Install global dependencies
+Install Yarn and Lex globally,
 
 ```shell
 $ npm install -g yarn @nlabs/lex

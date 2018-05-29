@@ -74,6 +74,10 @@ export const init = (appName: string, packageName: string, cmd) => {
   }
 
   if(cmd.install) {
+    // Change to the app directory
+    process.chdir(appPath);
+
+    // Install dependencies
     const install: SpawnSyncReturns<Buffer> = spawnSync(packageManager, ['install'], {
       encoding: 'utf-8',
       stdio: 'inherit'

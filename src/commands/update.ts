@@ -13,7 +13,7 @@ export const update = (cmd) => {
   const {packageManager} = LexConfig.config;
   const upgradeOptions: string[] = packageManager === 'npm' ?
     ['update'] :
-    ['upgrade-interactive', '--latest'];
+    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
   const yarn: SpawnSyncReturns<Buffer> = spawnSync(packageManager, upgradeOptions, {
     encoding: 'utf-8',

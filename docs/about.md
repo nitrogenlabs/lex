@@ -3,7 +3,7 @@ id: about
 title: About
 ---
 
-When starting a new app, a lot of time is taken adding development essentials. Each website, app, or component needs to be tested and compiled. Setting up Babel, Jest, Typescript, and Webpack configurations each time a new project is created takes up time. And as the modules are updated, each project needs to be updated and maintained.
+When starting a new app, a lot of time is taken adding development essentials. Each website, app, or component needs to be tested and transpiled. Setting up Babel, Jest, Typescript, and Webpack configurations each time a new project is created takes up time, lots of time. And as the modules are updated, each project needs to be updated and maintained.
 
 Lex eliminates this hassle. With the most common enterprise configurations used, developers can simply run and go. Lex uses the following libraries to assist in development.
 

@@ -27,7 +27,10 @@ export const upgrade = (cmd) => {
 
       log(chalk.grey(`Currently out of date. Upgrading from version ${current} to ${latest}...`), cmd);
 
-      const {packageManager} = LexConfig.config;
+      // We will always install @nlabs/lex globally using npm. There is an issue with installing with yarn globally.
+      // const {packageManager} = LexConfig.config;
+      const packageManager: string = 'npm';
+
       const upgradeOptions: string[] = packageManager === 'npm' ?
         ['install', '-g', '@nlabs/lex@latest'] :
         ['global', 'add', '@nlabs/lex@latest'];
