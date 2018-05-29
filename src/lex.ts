@@ -1,6 +1,8 @@
+#!/usr/bin/env node
 import program from 'commander';
 
 import {add, build, clean, compile, dev, init, test, update, upgrade, versions} from './commands';
+
 
 const packageConfig = require('../package.json');
 

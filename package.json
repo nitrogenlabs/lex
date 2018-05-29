@@ -26,13 +26,14 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "NODE_ENV=production yarn clean && yarn typeCheck && yarn compile",
+    "build": "NODE_ENV=production && yarn clean && yarn typeCheck && yarn compile",
     "clean": "rm -rf ./dist",
-    "compile": "babel src --out-dir dist --extensions '.ts,.tsx' -s inline",
-    "lint": "tslint -c ./tslint.json -p ./tsconfig.json './src/**/*.{ts,tsx}'",
+    "compile": "yarn env && babel src --out-dir dist --extensions '.ts,.tsx' -s inline",
+    "env": "LEX_CONFIG='{\"useTypescript\":true}'",
+    "lint": "eslint ./src --ext .ts,.tsx",
     "prepublishOnly": "yarn build",
     "reset": "rm -rf node_modules yarn.lock && yarn",
-    "test": "NODE_ENV=test jest",
+    "test": "yarn lint && NODE_ENV=test && yarn env && jest",
     "typeCheck": "tsc",
     "update": "yarn upgrade-interactive --latest",
     "watch": "NODE_ENV=development yarn clean && yarn typeCheck && yarn compile -w"
@@ -91,11 +92,14 @@
     "svg-spritemap-webpack-plugin": "^2.5.0",
     "tsconfig-paths": "^3.3.1",
     "typescript": "^2.8.3",
-    "webpack": "4.9.2",
+    "webpack": "4.10.1",
     "webpack-cli": "^2.1.4",
     "webpack-dev-server": "^3.1.4"
   },
   "devDependencies": {
-    "eslint-config-styleguidejs": "^0.6.3"
+    "arkhamjs": "^3.4.0",
+    "eslint-config-styleguidejs": "^0.6.3",
+    "react": "^16.4.0",
+    "react-test-renderer": "^16.4.0"
   }
 }

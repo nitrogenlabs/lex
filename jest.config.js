@@ -1,6 +1,6 @@
 const cwd = process.cwd();
 const path = require('path');
-const lexConfig = JSON.parse(process.env.LEX_CONFIG);
+const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {sourceDir} = lexConfig;
 const lexNodePath = path.resolve(__dirname, './node_modules');
 const sourcePath = path.resolve(`${cwd}/${sourceDir}`);
@@ -26,7 +26,7 @@ module.exports = {
     '/node_modules/',
     `${lexNodePath}/`
   ],
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(js|ts|tsx)?$',
+  testRegex: '(/__tests__/.*|\\.(test|spec))\\.(js|ts|tsx)?$',
   testURL: 'http://localhost',
   transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')}
 };

@@ -1,5 +1,5 @@
 const path = require('path');
-const lexConfig = JSON.parse(process.env.LEX_CONFIG);
+const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {useTypescript} = lexConfig;
 const nodePath = path.resolve(__dirname, './node_modules');
 

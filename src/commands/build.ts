@@ -30,7 +30,7 @@ export const build = (cmd) => {
   }
 
   // Get custom webpack configuration
-  const webpackConfig: string = cmd.config || path.resolve(__dirname, `../../webpack.config.js`);
+  const webpackConfig: string = cmd.config || path.resolve(__dirname, '../../webpack.config.js');
   const webpackMode: string = cmd.mode || 'production';
 
   // Compile using webpack
