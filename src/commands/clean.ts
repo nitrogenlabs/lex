@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import path from 'path';
 import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
