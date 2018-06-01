@@ -1,11 +1,13 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as path from 'path';
+import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const dev = (cmd) => {
+  const cwd: string = process.cwd();
   log(chalk.cyan('Lex development...'), cmd);
 
   // Set node environment
@@ -14,11 +16,16 @@ export const dev = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {useTypescript} = LexConfig.config;
+  const {outputDir, useTypescript} = LexConfig.config;
 
   if(useTypescript) {
     // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
+  }
+
+  // Clean output directory before we start adding in new files
+  if(cmd.remove) {
+    rimraf.sync(path.resolve(cwd, outputDir));
   }
 
   // Get custom webpack configuration file

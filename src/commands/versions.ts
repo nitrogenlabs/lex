@@ -1,10 +1,8 @@
 import chalk from 'chalk';
 
 const packageConfig = require('../../package.json');
-export const parseVersion = (packageVersion: string = ''): string => {
-  return packageVersion.replace(/\^/g, '');
-};
 
+export const parseVersion = (packageVersion: string = ''): string => packageVersion.replace(/\^/g, '');
 export const versions = (cmd) => {
   const packages = {
     babel: parseVersion(packageConfig.dependencies['@babel/core']),

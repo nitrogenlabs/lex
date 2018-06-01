@@ -20,12 +20,14 @@ export const init = (appName: string, packageName: string, cmd) => {
   LexConfig.parseConfig(cmd);
   const {packageManager, useTypescript} = LexConfig.config;
 
+  let appModule: string = packageName;
+
   // Use base app module based on config
-  if(!packageName) {
+  if(!appModule) {
     if(useTypescript) {
-      packageName = '@nlabs/arkhamjs-example-ts-react';
+      appModule = '@nlabs/arkhamjs-example-ts-react';
     } else {
-      packageName = '@nlabs/arkhamjs-example-flow-react';
+      appModule = '@nlabs/arkhamjs-example-flow-react';
     }
   }
 
@@ -67,7 +69,6 @@ export const init = (appName: string, packageName: string, cmd) => {
     // Update README
     const readmePath: string = `${appPath}/README.md`;
     fs.writeFileSync(readmePath, `# ${appName}`);
-
   } catch(error) {
     log(chalk.cyan('Lex Error:', error.message), cmd);
     status += 1;

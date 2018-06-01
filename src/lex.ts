@@ -19,11 +19,12 @@ program.command('build')
   .option('-l, --lexConfig <path>', 'Lex configuration file path (lex.config.js).')
   .option('-m, --mode <type>', 'Webpack mode ("production" or "development").')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('-r, --remove', 'Removes all files from the output directory.')
+  .option('-r, --remove', 'Removes all files from the output directory before compiling.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .action(build);
 
 program.command('clean')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
   .action(clean);
 
@@ -31,7 +32,7 @@ program.command('compile')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Transpiler configuration file path (ie. .flowconfig or tsconfig.json).')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
-  .option('-r, --remove', 'Removes all files from the output directory.')
+  .option('-r, --remove', 'Removes all files from the output directory before compiling.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-w, --watch', 'Watches for changes and compiles.')
@@ -43,6 +44,7 @@ program.command('dev')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('-o, --open', 'Automatically open dev server in a new browser window.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('-r, --remove', 'Removes all files from the output directory before compiling.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .action(dev);
 
@@ -64,9 +66,11 @@ program.command('test')
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(update);
 
 program.command('upgrade')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(upgrade);
 
 program.command('versions')

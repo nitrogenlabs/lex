@@ -15,29 +15,29 @@ module.exports = (value, options) => {
 
     if(existingExt !== '') {
       return path.resolve(`${basedir}/${value}`);
-    } else {
-      let fullPath = value;
-
-      extensions.some((ext) => {
-        const filename = path.resolve(`${basedir}/${value}${ext}`);
-
-        if(fs.existsSync(filename)) {
-          fullPath = filename;
-          return true;
-        }
-
-        const indexFile = path.resolve(`${basedir}/${value}/index${ext}`);
-
-        if(fs.existsSync(indexFile)) {
-          fullPath = indexFile;
-          return true;
-        }
-
-        return false;
-      });
-
-      return fullPath;
     }
+
+    let fullPath = value;
+
+    extensions.some((ext) => {
+      const filename = path.resolve(`${basedir}/${value}${ext}`);
+
+      if(fs.existsSync(filename)) {
+        fullPath = filename;
+        return true;
+      }
+
+      const indexFile = path.resolve(`${basedir}/${value}/index${ext}`);
+
+      if(fs.existsSync(indexFile)) {
+        fullPath = indexFile;
+        return true;
+      }
+
+      return false;
+    });
+
+    return fullPath;
   }
 
   try {

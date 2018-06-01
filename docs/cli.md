@@ -43,7 +43,7 @@ Compiles all source code, pack into chunked files, and move all static files to 
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-m <type>`, `--mode <type>` - Webpack mode ("production" or "development").
 - `-q`, `--quiet` - No Lex notifications printed in the console.
-- `-r`, `--remove` - Removes all files from the output directory.
+- `-r`, `--remove` - Removes all files from the output directory before compiling.
 - `-t`, `--typescript` - Transpile as Typescript.
 
 **Examples:**
@@ -68,6 +68,7 @@ Clean lock files, node_modules, and log files. If specified, will even clear out
 
 **Options:**
 
+- `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-s`, `--snapshots` - Remove all "__snapshots__" directories.
 
 **Examples:**
@@ -89,9 +90,9 @@ Checks all static types using either Flow or Typescript. Then compiles all sourc
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Transpiler configuration file path (.flowconfig or tsconfig.json).
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
-- `-r`, `--remove` - Removes all files from the output directory.
-- `-t`, `--typescript` - Transpile as Typescript.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
+- `-r`, `--remove` - Removes all files from the output directory before compiling.
+- `-t`, `--typescript` - Transpile as Typescript.
 - `-w`, `--watch` - Watches for changes and compiles.
 
 **Examples:**
@@ -120,6 +121,7 @@ The server loads the static files as well as dynamically loads all JavaScript. T
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-o`, `--open` - Automatically open dev server in a new browser window.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
+- `-r`, `--remove` - Removes all files from the output directory before compiling.
 - `-t`, `--typescript` - Transpile as Typescript.
 
 **Examples:**
@@ -207,6 +209,7 @@ Update all dependencies in app to the latest versions. Use the interactive mode 
 **Options:**
 
 - `-i`, `--interactive` - Choose which packages to update.
+- `-q`, `--quiet` - No Lex notifications printed in the console.
 
 **Examples:**
 
@@ -218,6 +221,10 @@ $ lex update
 ### `upgrade`
 
 Update Lex to the latest version globally.
+
+**Options:**
+
+- `-q`, `--quiet` - No Lex notifications printed in the console.
 
 **Examples:**
 
