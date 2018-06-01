@@ -8,18 +8,6 @@
 // See https://docusaurus.io/docs/site-config.html for all the possible
 // site configuration options.
 
-/* List of projects/orgs using your project for the users page */
-const users = [
-  {
-    caption: "User1",
-    // You will need to prepend the image path with your baseUrl
-    // if it is not '/', like: '/test-site/img/lex-logo.svg'.
-    image: "/img/lex-logo-bk.svg",
-    infoLink: "https://www.facebook.com",
-    pinned: true
-  }
-];
-
 const siteConfig = {
   title: "Lex" /* title for your website */,
   tagline: "DevOps Tool",
@@ -42,9 +30,6 @@ const siteConfig = {
     { doc: "cli", label: "API" },
     { page: "help", label: "Help" }
   ],
-
-  // If you have users set above, you add it here:
-  users,
 
   /* path to images for header/footer */
   headerIcon: "img/lex-logo-wh.svg",
@@ -85,7 +70,7 @@ const siteConfig = {
 
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
-  chatUrl: 'https://discord.gg/aKAax6B',
+  chatUrl: 'https://discord.gg/Ttgev58',
   npmUrl: 'https://npmjs.com/@nlabs/lex',
   repoUrl: 'https://github.com/nitrogenlabs/lex',
 };
