@@ -27,65 +27,69 @@ export const publish = (cmd) => {
     publishOptions.push('--tag', tag);
   }
 
-  if(bump) {
+  // Get next version number
+  let nextVersion: string;
+  const packagePath: string = `${process.cwd()}/package.json`;
+  let packageJson;
+
+  // If not using yarn, we'll use npm and manually update the version number
+  if(packageManager !== 'yarn') {
+    try {
+      packageJson = getPackageJson(packagePath);
+    } catch(error) {
+      log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
+      console.error(chalk.red(error.message));
+      return process.exit(1);
+    }
+  }
+
+  // Update package.json with the latest version
+  if(version) {
+    // If using a specific version, we don't need to determine the next bump
+    nextVersion = version;
+  } else if(bump) {
+    // Determine next version
     const formatBump: string = bump.toString()
       .trim()
       .toLowerCase();
 
-    const packagePath: string = `${process.cwd()}/package.json`;
-
-    if(formatBump) {
+    if(formatBump && formatBump !== '') {
       const validReleases: string[] = ['major', 'minor', 'patch'];
       const validPreReleases: string[] = ['alpha', 'beta', 'rc'];
 
-      try {
-        // Update package.json with the latest version
-        const packageJson = getPackageJson(packagePath);
+      // Make sure the version in package.json is valid
+      const {version: prevVersion} = packageJson;
+      const packageVersion = semver.coerce(prevVersion);
 
-        // Make sure the version in package.json is valid
-        const {version: prevVersion} = packageJson;
-        const packageVersion = semver.coerce(prevVersion);
-        let nextVersion: string;
+      if(!semver.valid(packageVersion)) {
+        log(chalk.red('Lex Error: Version is invalid in package.json'), cmd);
+        return process.exit(1);
+      }
 
-        if(!semver.valid(packageVersion)) {
-          log(chalk.red('Lex Error: Version is invalid in package.json'), cmd);
-          return process.exit(1);
-        }
-
-        if(validReleases.includes(formatBump)) {
-          nextVersion = semver.inc(packageVersion, formatBump);
-        } else if(validPreReleases.includes(formatBump)) {
-          nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
-        } else {
-          log(chalk.red(`Lex Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`), cmd);
-        }
-
-        // Save updated version
-        setPackageJson({...packageJson, version: nextVersion}, packagePath);
-      } catch(error) {
-        log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
-        console.error(chalk.red(error.message));
+      if(validReleases.includes(formatBump)) {
+        nextVersion = semver.inc(packageVersion, formatBump);
+      } else if(validPreReleases.includes(formatBump)) {
+        nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
+      } else {
+        log(chalk.red(`Lex Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`), cmd);
         return process.exit(1);
       }
     } else {
-      if(packageManager === 'yarn') {
-        if(version) {
-          publishOptions.push('--new-version', version);
-        }
-      } else {
-        if(version) {
-          try {
-            // Get the current version from package.json
-            const packageJson = getPackageJson(packagePath);
+      log(chalk.red('Lex Error: Bump type is missing.'), cmd);
+      return process.exit(1);
+    }
+  }
 
-            // Save updated version
-            setPackageJson({...packageJson, version});
-          } catch(error) {
-            log(chalk.red(`Lex Error: The file, ${packagePath}, was not found.`), cmd);
-            return process.exit(1);
-          }
-        }
-      }
+  if(nextVersion && packageManager === 'yarn') {
+    publishOptions.push('--new-version', nextVersion);
+  } else if(nextVersion && packageJson) {
+    try {
+      // Save updated version
+      setPackageJson({...packageJson, version: nextVersion}, packagePath);
+    } catch(error) {
+      log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
+      console.error(chalk.red(error.message));
+      return process.exit(1);
     }
   }
 
