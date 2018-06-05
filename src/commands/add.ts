@@ -95,6 +95,7 @@ export const add = (type: string, name: string, cmd) => {
 
       // Copy new file
       copyFileSync(path.resolve(__dirname, '../../tsconfig.json'), cwd);
+      break;
     }
     case 'view': {
       const viewPath: string = `${cwd}/${nameCaps}View`;
@@ -155,5 +156,5 @@ export const add = (type: string, name: string, cmd) => {
   }
 
   process.exit(0);
-  return null;
+  return true;
 };
