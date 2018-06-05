@@ -178,6 +178,7 @@ Runs all unit tests with Jest.
 - `-s <path>`, `--setup <path>` - Jest setup file path.
 - `-t`, `--typescript` - Transpile as Typescript.
 - `-u`, `--update` - Update snapshots. Runs `jest --updateSnapshots`
+- `-w`, `--watch` - Watches for changes and tests. Runs `jest --watch`
 - `-v [showDetails]`, `--verbose [showDetails]` - Print the version and exit. `showDetails` is either `true` or `false`. Default: `true`.
 
 **Examples:**

@@ -61,6 +61,7 @@ program.command('test')
   .option('-s, --setup <path>', 'Jest setup file path.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-u, --update', 'Update snapshots. Runs "jest --updateSnapshots"')
+  .option('-w, --watch', 'Watches for changes and tests.')
   .option('-v, --verbose [value]', 'Print the version and exit.')
   .action(test);
 

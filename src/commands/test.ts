@@ -19,21 +19,26 @@ export const test = (cmd) => {
   }
 
   // Configure jest
+  const {config, setup, update, verbose, watch} = cmd;
   const jestPath: string = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
-  const jestConfigFile: string = cmd.config || path.resolve(__dirname, '../../jest.config.js');
-  const jestSetupFile: string = cmd.setup || '';
+  const jestConfigFile: string = config || path.resolve(__dirname, '../../jest.config.js');
+  const jestSetupFile: string = setup || '';
   const jestOptions: string[] = ['--config', jestConfigFile];
 
   if(jestSetupFile !== '') {
     jestOptions.push('--setupTestFrameworkScriptFile', jestSetupFile);
   }
 
-  if(cmd.update) {
+  if(update) {
     jestOptions.push('--updateSnapshot');
   }
 
-  if(cmd.verbose === undefined || cmd.verbose.toString() === 'true') {
+  if(verbose === undefined || verbose.toString() === 'true') {
     jestOptions.push('--verbose');
+  }
+
+  if(watch) {
+    jestOptions.push('--watch');
   }
 
   // Test app using jest
