@@ -60,7 +60,7 @@ program.command('publish')
   .option('-o --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t --tag <tag>', 'Registers the published package with the given tag.')
-  .option('-v, --version <versionNumber>', 'Publish as a specific version.')
+  .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action(publish);
 
 program.command('test')

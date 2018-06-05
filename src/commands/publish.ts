@@ -11,7 +11,7 @@ export const publish = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {bump, private: accessPrivate, otp, tag, version} = cmd;
+  const {bump, private: accessPrivate, otp, tag, newVersion} = cmd;
   const {packageManager} = LexConfig.config;
   const publishOptions: string[] = ['publish'];
 
@@ -31,22 +31,24 @@ export const publish = (cmd) => {
   let nextVersion: string;
   const packagePath: string = `${process.cwd()}/package.json`;
   let packageJson;
+  let packageName: string;
+  let prevVersion: string;
 
   // If not using yarn, we'll use npm and manually update the version number
-  if(packageManager !== 'yarn') {
-    try {
-      packageJson = getPackageJson(packagePath);
-    } catch(error) {
-      log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
-      console.error(chalk.red(error.message));
-      return process.exit(1);
-    }
+  try {
+    packageJson = getPackageJson(packagePath);
+    packageName = packageJson.name;
+    prevVersion = packageJson.version;
+  } catch(error) {
+    log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
+    console.error(chalk.red(error.message));
+    return process.exit(1);
   }
 
   // Update package.json with the latest version
-  if(version) {
+  if(newVersion) {
     // If using a specific version, we don't need to determine the next bump
-    nextVersion = version;
+    nextVersion = newVersion;
   } else if(bump) {
     // Determine next version
     const formatBump: string = bump.toString()
@@ -58,7 +60,6 @@ export const publish = (cmd) => {
       const validPreReleases: string[] = ['alpha', 'beta', 'rc'];
 
       // Make sure the version in package.json is valid
-      const {version: prevVersion} = packageJson;
       const packageVersion = semver.coerce(prevVersion);
 
       if(!semver.valid(packageVersion)) {
@@ -91,6 +92,8 @@ export const publish = (cmd) => {
       console.error(chalk.red(error.message));
       return process.exit(1);
     }
+  } else {
+    nextVersion = prevVersion;
   }
 
   const npmPublish: SpawnSyncReturns<Buffer> = spawnSync(packageManager, publishOptions, {
@@ -98,5 +101,6 @@ export const publish = (cmd) => {
     stdio: 'inherit'
   });
 
+  log(chalk.greenBright(`Successfully published npm package: ${packageName}@${nextVersion}`), cmd);
   return process.exit(npmPublish.status);
 };

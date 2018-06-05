@@ -177,7 +177,7 @@ Publish an npm module.
 - `-o`, `--otp` - Provide a two-factor code.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-t <tag>`, `--tag <tag>` - Registers the published package with the given tag.
-- `-v <versionNumber>`, `--version <versionNumber>` - Publish as a specific version.
+- `-v <versionNumber>`, `--new-version <versionNumber>` - Publish as a specific version.
 
 **Examples:**
 
