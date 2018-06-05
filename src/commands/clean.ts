@@ -34,7 +34,7 @@ export const clean = (cmd) => {
 
     process.exit(0);
   } catch(error) {
-    log(chalk.red('Lex Error:', error.message), cwd);
+    log(chalk.red('Lex Error:', error.message), cmd);
     process.exit(1);
   }
 };

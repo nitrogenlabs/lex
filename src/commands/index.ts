@@ -4,6 +4,7 @@ export {clean} from './clean';
 export {compile} from './compile';
 export {dev} from './dev';
 export {init} from './init';
+export {publish} from './publish';
 export {test} from './test';
 export {update} from './update';
 export {upgrade} from './upgrade';

@@ -83,7 +83,7 @@ export const add = (type: string, name: string, cmd) => {
           return false;
         }
       } catch(error) {
-        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), log);
+        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), cmd);
         process.exit(1);
         return false;
       }

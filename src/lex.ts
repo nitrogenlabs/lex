@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {add, build, clean, compile, dev, init, test, update, upgrade, versions} from './commands';
+import {add, build, clean, compile, dev, init, publish, test, update, upgrade, versions} from './commands';
 
 
 const packageConfig = require('../package.json');
@@ -53,6 +53,15 @@ program.command('init <appName> [packageName]')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
+
+program.command('publish')
+  .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc')
+  .option('-p, --private', 'Publishes the module as restricted.')
+  .option('-o --otp <code>', 'Provide a two-factor code.')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('-t --tag <tag>', 'Registers the published package with the given tag.')
+  .option('-v, --version <versionNumber>', 'Publish as a specific version.')
+  .action(publish);
 
 program.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {getPackageJson, log, setPackageJson} from '../utils';
 
 export const init = (appName: string, packageName: string, cmd) => {
   const cwd: string = process.cwd();
@@ -20,6 +20,7 @@ export const init = (appName: string, packageName: string, cmd) => {
   LexConfig.parseConfig(cmd);
   const {packageManager, useTypescript} = LexConfig.config;
 
+  const {install} = cmd;
   let appModule: string = packageName;
 
   // Use base app module based on config
@@ -50,8 +51,7 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   // Configure package.json
   const packagePath: string = `${appPath}/package.json`;
-  const packageData: string = fs.readFileSync(packagePath).toString();
-  const packageJson = JSON.parse(packageData);
+  const packageJson = getPackageJson(packagePath);
   packageJson.name = appName;
   packageJson.description = 'Lex created app';
   packageJson.version = '0.1.0';
@@ -64,7 +64,7 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   try {
     // Update package.json
-    fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
+    setPackageJson(packageJson, packagePath);
 
     // Update README
     const readmePath: string = `${appPath}/README.md`;
@@ -74,7 +74,7 @@ export const init = (appName: string, packageName: string, cmd) => {
     status += 1;
   }
 
-  if(cmd.install) {
+  if(install) {
     // Change to the app directory
     process.chdir(appPath);
 

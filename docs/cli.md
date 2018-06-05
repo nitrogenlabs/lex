@@ -166,6 +166,32 @@ $ lex init myApp -t
 $ lex init myApp custom-base-module
 ```
 
+### `publish`
+
+Publish an npm module.
+
+**Options:**
+
+- `-b <type>`, `--bump <type>` - Increments the version. Types include: major, minor, patch, beta, alpha, rc.
+- `-p`, `--private` - Publishes the module as restricted.
+- `-o`, `--otp` - Provide a two-factor code.
+- `-q`, `--quiet` - No Lex notifications printed in the console.
+- `-t <tag>`, `--tag <tag>` - Registers the published package with the given tag.
+- `-v <versionNumber>`, `--version <versionNumber>` - Publish as a specific version.
+
+**Examples:**
+
+```shell
+// Publish npm module
+$ lex publish
+
+// Increment version before publishing
+$ lex publish -b patch
+
+// Update to a specific version before publishing
+$ lex publish -v 1.0.0
+```
+
 ### `test`
 
 Runs all unit tests with Jest.
