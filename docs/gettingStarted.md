@@ -20,17 +20,10 @@ Install Yarn and Lex globally,
 $ npm install -g yarn @nlabs/lex
 ```
 
-Download a skeleton app with the [ArkhamJS](https://arkhamjs.io) framework
+Download a skeleton app with the [ArkhamJS](https://arkhamjs.io) framework and install dependencies
 
 ```shell
-$ lex init myApp
-```
-
-Install dependencies
-
-```shell
-$ cd myApp
-$ yarn
+$ lex init myApp -i
 ```
 
 Run the development server

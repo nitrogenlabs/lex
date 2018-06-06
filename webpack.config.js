@@ -9,11 +9,11 @@ const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
 const lexPath = path.resolve(__dirname, './node_modules');
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
-const envVariables = lexConfig.env || {'NODE_ENV': environment};
+const envVariables = lexConfig.env || {NODE_ENV: environment};
 const processVariables = Object.keys(envVariables).reduce((list, varName) => {
   list[`process.env.${varName}`] = JSON.stringify(envVariables[varName]);
   return list;
-}, {})
+}, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 
@@ -43,6 +43,43 @@ const webpackConfig = {
         test: /\.(js|ts|tsx)$/
       },
       {
+        test: /\.scss$/,
+        use: [
+          require.resolve('style-loader'),
+          require.resolve('css-loader'),
+          {
+            loader: require.resolve('postcss-loader'),
+            options: {
+              ident: 'postcss',
+              plugins: () => [
+                require('postcss-custom-properties')({
+                  preserve: true,
+                  strict: false,
+                  warnings: false
+                }),
+                require('postcss-flexbugs-fixes'),
+                require('postcss-cssnext')({
+                  browser: ['last 3 versions'],
+                  features: {
+                    customProperties: {
+                      warnings: false
+                    }
+                  }
+                }),
+                require('cssnano')({autoprefixer: false, safe: true}),
+                require('postcss-browser-reporter')
+              ]
+            }
+          },
+          {
+            loader: require.resolve('sass-loader'),
+            options: {
+              includePaths: ['./node_modules']
+            }
+          }
+        ]
+      },
+      {
         test: /\.css$/,
         use: [
           path.resolve(`${lexPath}/style-loader`),
@@ -56,15 +93,26 @@ const webpackConfig = {
             loader: path.resolve(`${lexPath}/postcss-loader`),
             options: {
               plugins: [
+                require('postcss-custom-properties')({
+                  preserve: true,
+                  strict: false,
+                  warnings: false
+                }),
                 require('postcss-import')({addDependencyTo: webpack}),
                 require('postcss-url'),
                 require('postcss-simple-vars'),
                 require('postcss-nested'),
+                require('postcss-flexbugs-fixes'),
                 require('postcss-cssnext')({
-                  browser: ['last 3 versions']
+                  browser: ['last 3 versions'],
+                  features: {
+                    customProperties: {
+                      warnings: false
+                    }
+                  }
                 }),
                 require('cssnano')({autoprefixer: false}),
-                require('postcss-browser-reporter'),
+                require('postcss-browser-reporter')
               ]
             }
           }
