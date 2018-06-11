@@ -16,6 +16,7 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
+const babelPolyfillPath = path.resolve(__dirname, './node_modules/babel-polyfill/lib/index.js');
 
 const webpackConfig = {
   bail: true,
@@ -26,6 +27,7 @@ const webpackConfig = {
   },
   devtool: !isProduction && 'cheap-module-eval-source-map',
   entry: {
+    babelPolyfill: babelPolyfillPath,
     index: `${lexConfig.sourceDir}/${lexConfig.entryJS}`
   },
   mode: environment,
@@ -93,13 +95,13 @@ const webpackConfig = {
             loader: path.resolve(`${lexPath}/postcss-loader`),
             options: {
               plugins: [
+                require('postcss-import')({addDependencyTo: webpack}),
+                require('postcss-url'),
                 require('postcss-custom-properties')({
-                  preserve: true,
+                  preserve: false,
                   strict: false,
                   warnings: false
                 }),
-                require('postcss-import')({addDependencyTo: webpack}),
-                require('postcss-url'),
                 require('postcss-simple-vars'),
                 require('postcss-nested'),
                 require('postcss-flexbugs-fixes'),
