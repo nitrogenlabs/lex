@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.9.0",
+  "version": "1.9.2",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -78,12 +78,12 @@
     "lodash": "^4.17.10",
     "node-sass": "^4.9.0",
     "postcss-browser-reporter": "^0.5.0",
-    "postcss-cssnext": "^3.1.0",
     "postcss-custom-properties": "^7.0.0",
     "postcss-flexbugs-fixes": "^3.3.1",
     "postcss-import": "^11.1.0",
     "postcss-loader": "^2.1.5",
     "postcss-nesting": "^6.0.0",
+    "postcss-preset-env": "^5.1.0",
     "postcss-simple-vars": "^4.1.0",
     "postcss-url": "^7.3.2",
     "regenerator-runtime": "^0.11.1",

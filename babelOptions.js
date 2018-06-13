@@ -3,8 +3,9 @@ const path = require('path');
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {targetEnvironment, useTypescript} = lexConfig;
 const nodePath = path.resolve(__dirname, './node_modules');
-const babelWebEnv = [presetEnv, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
-const babelNodeEnv = [presetEnv, {targets: {node: 'current'}}];
+const presetEnvPath: string = `${nodePath}/@babel/preset-env`;
+const babelWebEnv = [presetEnvPath, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
+const babelNodeEnv = [presetEnvPath, {targets: {node: 'current'}}];
 
 module.exports = {
   babelrc: false,
@@ -15,7 +16,6 @@ module.exports = {
   ],
   presets: [
     targetEnvironment === 'web' ? babelWebEnv : babelNodeEnv,
-    [`${nodePath}/@babel/preset-env`, {targets: {node: 'current'}}],
     [`${nodePath}/@babel/preset-stage-0`, {decoratorsLegacy: true, loose: false}],
     `${nodePath}/@babel/preset-react`,
     useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`
