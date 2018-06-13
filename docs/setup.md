@@ -27,13 +27,13 @@ import './app.css';
 
 The following PostCSS plugins are used with Lex:
 
-- [postcss-import](https://github.com/postcss/postcss-import) - Transform @import rules by inlining content.
-- [postcss-url](https://github.com/postcss/postcss-url) - Rebase, inline or copy on url().
-- [postcss-simple-vars](https://github.com/postcss/postcss-simple-vars) - Use CSS variables inside style classes.
-- [postcss-nested](https://github.com/postcss/postcss-nested) - Nest CSS class rules.
-- [postcss-cssnext](https://github.com/MoOx/postcss-cssnext) - Use tomorrow's CSS syntax, today.
 - [cssnano](http://cssnano.co/) - Minifies and optimizes CSS.
 - [postcss-browser-reporter](https://github.com/postcss/postcss-browser-reporter) - Reports warning messages in the browser.
+- [postcss-import](https://github.com/postcss/postcss-import) - Transform @import rules by inlining content.
+- [postcss-nested](https://github.com/postcss/postcss-nested) - Nest CSS class rules.
+- [postcss-preset-env](https://github.com/csstools/postcss-preset-env) - Converts modern CSS into something most browsers can understand, determining the polyfills needed based on targeted browsers or runtime environments.
+- [postcss-simple-vars](https://github.com/postcss/postcss-simple-vars) - Use CSS variables inside style classes.
+- [postcss-url](https://github.com/postcss/postcss-url) - Rebase, inline or copy on url().
 
 ## Images
 

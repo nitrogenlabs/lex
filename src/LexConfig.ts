@@ -71,6 +71,8 @@ export class LexConfig {
 
   // Set option updates from the command line
   static addConfigParams(cmd, params: LexConfigType) {
+    const nameProperty: string = '_name';
+
     // Determine if we're using Typescript or Flow
     if(cmd.typescript !== undefined) {
       params.useTypescript = cmd.typescript;
@@ -81,7 +83,9 @@ export class LexConfig {
       params.targetEnvironment = cmd.environment === 'web' ? 'web' : 'node';
     }
 
-    process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(params), null, 0);
+    process.env.LEX_CONFIG = JSON.stringify(
+      {...LexConfig.updateConfig(params), commandName: cmd[nameProperty]}, null, 0
+    );
   }
 
   // Get configuration

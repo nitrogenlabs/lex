@@ -56,13 +56,9 @@ const webpackConfig = {
                   warnings: false
                 }),
                 require('postcss-flexbugs-fixes'),
-                require('postcss-cssnext')({
-                  browser: ['last 5 versions'],
-                  features: {
-                    customProperties: {
-                      warnings: false
-                    }
-                  }
+                require('postcss-preset-env')({
+                  browsers: ['last 5 versions'],
+                  stage: 0
                 }),
                 require('cssnano')({autoprefixer: false, safe: true}),
                 require('postcss-browser-reporter')
@@ -101,13 +97,9 @@ const webpackConfig = {
                 require('postcss-simple-vars'),
                 require('postcss-nesting'),
                 require('postcss-flexbugs-fixes'),
-                require('postcss-cssnext')({
-                  browser: ['last 5 versions'],
-                  features: {
-                    customProperties: {
-                      warnings: false
-                    }
-                  }
+                require('postcss-preset-env')({
+                  browsers: ['last 5 versions'],
+                  stage: 0
                 }),
                 require('cssnano')({autoprefixer: false}),
                 require('postcss-browser-reporter')

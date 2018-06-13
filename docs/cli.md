@@ -205,6 +205,7 @@ Runs all unit tests with Jest.
 - `-e <name>`, `--environment <name>` - Target environment. "node" or "web". Default: `node`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path (ie. lex.config.js). Default: `'./lex.config.js`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
+- `-r`, `--removeCache` - Clear Jest cache.
 - `-s <path>`, `--setup <path>` - Jest setup file path.
 - `-t`, `--typescript` - Transpile as Typescript.
 - `-u`, `--update` - Update snapshots. Runs `jest --updateSnapshots`
