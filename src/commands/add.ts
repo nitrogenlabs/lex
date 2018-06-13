@@ -5,7 +5,7 @@ import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
-import {copyFileSync, copyFolderRecursiveSync} from './copy';
+import {copyFolderRecursiveSync} from './copy';
 
 const updateName = (filePath: string, replace: string, replaceCaps: string) => {
   let data: string = fs.readFileSync(filePath, 'utf8');
@@ -19,7 +19,7 @@ export const add = (type: string, name: string, cmd) => {
 
   // Get custom configuration
   LexConfig.parseConfig(cmd, false);
-  const {useTypescript} = LexConfig.config;
+  const {outputPath, sourcePath, useTypescript} = LexConfig.config;
 
   // Set filename
   let nameCaps: string;
@@ -93,8 +93,17 @@ export const add = (type: string, name: string, cmd) => {
       // Remove existing file
       rimraf.sync(path.resolve(cwd, 'tsconfig.json'));
 
-      // Copy new file
-      copyFileSync(path.resolve(__dirname, '../../tsconfig.json'), cwd);
+      // Get tsconfig template
+      const templatePath: string = path.resolve(__dirname, '../../tsconfig.json');
+      let data: string = fs.readFileSync(templatePath, 'utf8');
+
+      // Update Lex tsconfig template with source and output directories
+      data = data.replace(/.\/src/g, sourcePath);
+      data = data.replace(/.\/dist/g, outputPath);
+
+      // Save new tsconfig to app
+      const destPath: string = path.resolve(cwd, './tsconfig.json');
+      fs.writeFileSync(destPath, data, 'utf8');
       break;
     }
     case 'view': {

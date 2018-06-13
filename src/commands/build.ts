@@ -7,20 +7,19 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const build = (cmd) => {
-  const cwd: string = process.cwd();
   log(chalk.cyan('Lex building...'), cmd);
-
-  // Set node environment
-  process.env.NODE_ENV = 'production';
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {outputDir, useTypescript} = LexConfig.config;
+  const {outputFullPath, useTypescript} = LexConfig.config;
+
+  // Set node environment
+  process.env.NODE_ENV = cmd.environment || 'production';
 
   // Clean output directory before we start adding in new files
   if(cmd.remove) {
-    rimraf.sync(path.resolve(cwd, outputDir));
+    rimraf.sync(outputFullPath);
   }
 
   // Add tsconfig file if none exists

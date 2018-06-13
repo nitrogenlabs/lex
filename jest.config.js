@@ -1,9 +1,8 @@
 const cwd = process.cwd();
 const path = require('path');
-const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
-const {sourceDir} = lexConfig;
+
+const {sourceFullPath} = JSON.parse(process.env.LEX_CONFIG || '{}');
 const lexNodePath = path.resolve(__dirname, './node_modules');
-const sourcePath = path.resolve(`${cwd}/${sourceDir}`);
 
 module.exports = {
   collectCoverage: true,
@@ -13,7 +12,7 @@ module.exports = {
   moduleDirectories: [
     './node_modules',
     lexNodePath,
-    sourcePath
+    sourceFullPath
   ],
   moduleFileExtensions: ['js', 'ts', 'tsx'],
   moduleNameMapper: {

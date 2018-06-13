@@ -17,18 +17,14 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 const babelPolyfillPath = path.resolve(__dirname, './node_modules/babel-polyfill/lib/index.js');
+const {outputFullPath, sourceFullPath} = lexConfig;
 
 const webpackConfig = {
   bail: true,
   cache: !isProduction,
-  devServer: {
-    historyApiFallback: true,
-    noInfo: false
-  },
-  devtool: !isProduction && 'cheap-module-eval-source-map',
   entry: {
     babelPolyfill: babelPolyfillPath,
-    index: `${lexConfig.sourceDir}/${lexConfig.entryJS}`
+    index: `${sourceFullPath}/${lexConfig.entryJS}`
   },
   mode: environment,
   module: {
@@ -61,7 +57,7 @@ const webpackConfig = {
                 }),
                 require('postcss-flexbugs-fixes'),
                 require('postcss-cssnext')({
-                  browser: ['last 3 versions'],
+                  browser: ['last 5 versions'],
                   features: {
                     customProperties: {
                       warnings: false
@@ -103,10 +99,10 @@ const webpackConfig = {
                   warnings: false
                 }),
                 require('postcss-simple-vars'),
-                require('postcss-nested'),
+                require('postcss-nesting'),
                 require('postcss-flexbugs-fixes'),
                 require('postcss-cssnext')({
-                  browser: ['last 3 versions'],
+                  browser: ['last 5 versions'],
                   features: {
                     customProperties: {
                       warnings: false
@@ -137,28 +133,33 @@ const webpackConfig = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, lexConfig.outputDir)
+    path: outputFullPath
   },
   plugins: [
-    new CleanWebpackPlugin([lexConfig.outputDir], {allowExternal: true}),
+    new CleanWebpackPlugin([outputFullPath], {allowExternal: true}),
     new webpack.DefinePlugin(processVariables),
     new CopyWebpackPlugin([
-      {from: `${lexConfig.sourceDir}/fonts/`, to: './fonts/'},
-      {from: `${lexConfig.sourceDir}/img/`, to: './img/'}
+      {from: `${sourceFullPath}/fonts/`, to: './fonts/'},
+      {from: `${sourceFullPath}/img/`, to: './img/'}
     ]),
     new SVGSpritemapPlugin({
       filename: './icons/icons.svg',
       prefix: '',
-      src: `${lexConfig.sourceDir}/**/*.svg`
+      src: `${sourceFullPath}/**/*.svg`
     }),
     new HtmlWebPackPlugin({
       filename: './index.html',
-      template: `${lexConfig.sourceDir}/${lexConfig.entryHTML}`
+      template: `${sourceFullPath}/${lexConfig.entryHTML}`
     })
   ],
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx']
   }
 };
+
+if(!isProduction) {
+  webpackConfig.devServer = {historyApiFallback: true, noInfo: false};
+  webpackConfig.devtool = 'cheap-module-eval-source-map';
+}
 
 module.exports = webpackConfig;

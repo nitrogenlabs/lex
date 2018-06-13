@@ -40,6 +40,7 @@ Compiles all source code, pack into chunked files, and move all static files to 
 
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Custom webpack configuration file path (webpack.config.js).
+- `-e <name>`, `--environment <name>` - Environment name to set as NODE_ENV. Default: `development`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-m <type>`, `--mode <type>` - Webpack mode ("production" or "development").
 - `-q`, `--quiet` - No Lex notifications printed in the console.
@@ -118,6 +119,7 @@ The server loads the static files as well as dynamically loads all JavaScript. T
 
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Custom Webpack configuration file path (ie. webpack.config.js).
+- `-e <name>`, `--environment <name>` - Environment name to set as NODE_ENV. Default: `development`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-o`, `--open` - Automatically open dev server in a new browser window.
 - `-q`, `--quiet` - No Lex notifications printed in the console.

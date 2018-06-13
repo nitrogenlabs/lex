@@ -7,7 +7,6 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const compile = (cmd) => {
-  const cwd: string = process.cwd();
   let status: number = 0;
 
   log(chalk.cyan('Lex compiling...'), cmd);
@@ -16,12 +15,12 @@ export const compile = (cmd) => {
   LexConfig.parseConfig(cmd);
 
   // Compile type
-  const {outputDir, sourceDir, useTypescript} = LexConfig.config;
+  const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
   const nodePath: string = path.resolve(__dirname, '../../node_modules');
 
   // Clean output directory before we start adding in new files
   if(cmd.remove) {
-    rimraf.sync(path.resolve(cwd, outputDir));
+    rimraf.sync(outputFullPath);
   }
 
   // Add tsconfig file if none exists
@@ -35,7 +34,7 @@ export const compile = (cmd) => {
       ['-p', cmd.config] :
       [
         '--allowSyntheticDefaultImports',
-        '--baseUrl', sourceDir,
+        '--baseUrl', sourceFullPath,
         '--declaration',
         '--emitDeclarationOnly',
         '--jsx', 'react',
@@ -46,11 +45,11 @@ export const compile = (cmd) => {
         '--noImplicitThis',
         '--noStrictGenericChecks',
         '--noUnusedLocals',
-        '--outDir', outputDir,
+        '--outDir', outputFullPath,
         '--removeComments',
-        '--rootDir', sourceDir,
+        '--rootDir', sourceFullPath,
         '--sourceMap',
-        '--sourceRoot', sourceDir,
+        '--sourceRoot', sourceFullPath,
         '--target', 'es5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
@@ -65,20 +64,11 @@ export const compile = (cmd) => {
 
   // Babel options
   const babelPath: string = `${nodePath}/@babel/cli/bin/babel.js`;
-  const babelPresets: string[] = [
-    `${nodePath}/@babel/preset-env`,
-    useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`,
-    `${nodePath}/@babel/preset-react`,
-    `${nodePath}/@nlabs/preset-stage-0`
-  ];
-  const babelPlugins: string[] = [
-    `${nodePath}/@babel/plugin-proposal-pipeline-operator`
-  ];
   const babelOptions: string[] = [
     '--no-babelrc',
-    sourceDir,
+    sourceFullPath,
     '--out-dir',
-    outputDir,
+    outputFullPath,
     '--ignore',
     useTypescript ? '**/*.test.ts*' : '**/*.test.js',
     '--extensions',
@@ -86,9 +76,7 @@ export const compile = (cmd) => {
     '-s',
     'inline',
     '--presets',
-    babelPresets.join(','),
-    '--plugins',
-    babelPlugins.join(',')
+    path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js')
   ];
 
   if(cmd.watch) {

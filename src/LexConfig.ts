@@ -11,9 +11,11 @@ export interface LexConfigType {
   entryHTML?: string;
   entryJS?: string;
   env?: object;
-  outputDir?: string;
+  outputFullPath?: string;
+  outputPath?: string;
   packageManager?: string;
-  sourceDir?: string;
+  sourceFullPath?: string;
+  sourcePath?: string;
   useTypescript?: boolean;
 }
 
@@ -22,17 +24,28 @@ export class LexConfig {
     entryHTML: 'index.html',
     entryJS: 'app.js',
     env: null,
-    outputDir: path.resolve(cwd, './dist'),
+    outputFullPath: path.resolve(cwd, './dist'),
+    outputPath: './dist',
     packageManager: 'yarn',
-    sourceDir: path.resolve(cwd, './src'),
+    sourceFullPath: path.resolve(cwd, './src'),
+    sourcePath: './src',
     useTypescript: false
   };
 
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
-    const {useTypescript} = updatedConfig;
+    const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript} = updatedConfig;
+    const cwd: string = process.cwd();
 
     if(useTypescript !== undefined) {
       LexConfig.useTypescript = useTypescript;
+    }
+
+    if(outputPath !== undefined && outputFullPath === undefined) {
+      updatedConfig.outputFullPath = path.resolve(cwd, outputPath);
+    }
+
+    if(sourcePath !== undefined && sourceFullPath === undefined) {
+      updatedConfig.sourceFullPath = path.resolve(cwd, sourcePath);
     }
 
     LexConfig.config = {...LexConfig.config, ...updatedConfig};
