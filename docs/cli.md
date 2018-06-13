@@ -40,12 +40,12 @@ Compiles all source code, pack into chunked files, and move all static files to 
 
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Custom webpack configuration file path (webpack.config.js).
-- `-e <name>`, `--environment <name>` - Environment name to set as NODE_ENV. Default: `development`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-m <type>`, `--mode <type>` - Webpack mode ("production" or "development").
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-r`, `--remove` - Removes all files from the output directory before compiling.
 - `-t`, `--typescript` - Transpile as Typescript.
+- `-v <name>`, `--variables <name>` - Environment variables to set in "process.env". Default `"{NODE_ENV: 'production'}")`.
 
 **Examples:**
 
@@ -90,6 +90,7 @@ Checks all static types using either Flow or Typescript. Then compiles all sourc
 
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Transpiler configuration file path (.flowconfig or tsconfig.json).
+- `-e <name>`, `--environment <name>` - Target environment. "node" or "web". Default: `node`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-r`, `--remove` - Removes all files from the output directory before compiling.
@@ -119,12 +120,12 @@ The server loads the static files as well as dynamically loads all JavaScript. T
 
 - `-b <path>`, `--babel <path>` - Babel configuration file path.
 - `-c <path>`, `--config <path>` - Custom Webpack configuration file path (ie. webpack.config.js).
-- `-e <name>`, `--environment <name>` - Environment name to set as NODE_ENV. Default: `development`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path. Default: `'./lex.config.js`.
 - `-o`, `--open` - Automatically open dev server in a new browser window.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-r`, `--remove` - Removes all files from the output directory before compiling.
 - `-t`, `--typescript` - Transpile as Typescript.
+- `-v <name>`, `--variables <name>` - Environment variables to set in "process.env". Default `"{NODE_ENV: 'development'}")`.
 
 **Examples:**
 
@@ -201,6 +202,7 @@ Runs all unit tests with Jest.
 **Options:**
 
 - `-c <path>`, `--config <path>` - Custom Jest configuration file path (ie. jest.config.js).
+- `-e <name>`, `--environment <name>` - Target environment. "node" or "web". Default: `node`.
 - `-l <path>`, `--lexConfig <path>` - Custom Lex configuration file path (ie. lex.config.js). Default: `'./lex.config.js`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-s <path>`, `--setup <path>` - Jest setup file path.

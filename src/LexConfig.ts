@@ -16,6 +16,7 @@ export interface LexConfigType {
   packageManager?: string;
   sourceFullPath?: string;
   sourcePath?: string;
+  targetEnvironment?: 'node' | 'web';
   useTypescript?: boolean;
 }
 
@@ -29,21 +30,26 @@ export class LexConfig {
     packageManager: 'yarn',
     sourceFullPath: path.resolve(cwd, './src'),
     sourcePath: './src',
+    targetEnvironment: 'node',
     useTypescript: false
   };
 
+  // Set options from a custom configuration file
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
     const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript} = updatedConfig;
     const cwd: string = process.cwd();
 
+    // Use Typescript
     if(useTypescript !== undefined) {
       LexConfig.useTypescript = useTypescript;
     }
 
+    // Destination Path
     if(outputPath !== undefined && outputFullPath === undefined) {
       updatedConfig.outputFullPath = path.resolve(cwd, outputPath);
     }
 
+    // Source code path
     if(sourcePath !== undefined && sourceFullPath === undefined) {
       updatedConfig.sourceFullPath = path.resolve(cwd, sourcePath);
     }
@@ -63,12 +69,28 @@ export class LexConfig {
     }
   }
 
+  // Set option updates from the command line
+  static addConfigParams(cmd, params: LexConfigType) {
+    // Determine if we're using Typescript or Flow
+    if(cmd.typescript !== undefined) {
+      params.useTypescript = cmd.typescript;
+    }
+
+    // Set the target environment
+    if(cmd.environment !== undefined) {
+      params.targetEnvironment = cmd.environment === 'web' ? 'web' : 'node';
+    }
+
+    process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(params), null, 0);
+  }
+
   // Get configuration
   static parseConfig(cmd, isRoot: boolean = true) {
     const defaultConfigPath: string = isRoot ?
       path.resolve(cwd, './lex.config.js') :
       find.sync('lex.config.js', cwd, 5);
     const configPath: string = cmd.lexConfig || defaultConfigPath;
+
 
     // If user has a Lex config file, lets use it.
     if(fs.existsSync(configPath)) {
@@ -87,18 +109,13 @@ export class LexConfig {
             configJson = {};
           }
 
-          // Determine if we're using Typescript or Flow
-          if(cmd.typescript !== undefined) {
-            configJson.useTypescript = cmd.typescript;
-          }
-
-          process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(configJson), null, 0);
+          LexConfig.addConfigParams(cmd, configJson);
         } else {
           log(chalk.red(`Config file malformed, ${configPath}`), cmd);
         }
       } else if(ext === '.js') {
         const lexCustomConfig = require(configPath);
-        process.env.LEX_CONFIG = JSON.stringify(LexConfig.updateConfig(lexCustomConfig), null, 0);
+        LexConfig.addConfigParams(cmd, lexCustomConfig);
       } else {
         log(chalk.red('Config file must be a JS or JSON file.'), cmd);
       }
@@ -107,7 +124,7 @@ export class LexConfig {
       LexConfig.useTypescript = !!cmd.typescript;
 
       // Save config as environment variable for other commands to include
-      process.env.LEX_CONFIG = JSON.stringify(LexConfig.config, null, 0);
+      LexConfig.addConfigParams(cmd, LexConfig.config);
     }
   }
 

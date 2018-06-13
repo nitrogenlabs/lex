@@ -14,8 +14,19 @@ export const dev = (cmd) => {
 
   const {outputFullPath, useTypescript} = LexConfig.config;
 
-  // Set node environment
-  process.env.NODE_ENV = cmd.environment || 'development';
+  // Set node environment variables
+  let variablesObj: object = {NODE_ENV: 'development'};
+
+  if(cmd.variables) {
+    try {
+      variablesObj = JSON.parse(cmd.variables);
+    } catch(error) {
+      log(chalk.red('Lex Error: Environment variables option is not a valid JSON object.'), cmd);
+      return process.exit(1);
+    }
+  }
+
+  process.env = {...process.env, ...variablesObj};
 
   if(useTypescript) {
     // Make sure tsconfig.json exists
@@ -44,5 +55,5 @@ export const dev = (cmd) => {
     stdio: 'inherit'
   });
 
-  process.exit(webpack.status);
+  return process.exit(webpack.status);
 };
