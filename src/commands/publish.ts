@@ -11,8 +11,9 @@ export const publish = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {bump, private: accessPrivate, otp, tag, newVersion} = cmd;
-  const {packageManager} = LexConfig.config;
+  const {bump, newVersion, otp, private: accessPrivate, packageManager: cmdPackageManager, tag} = cmd;
+  const {packageManager: configPackageManager} = LexConfig.config;
+  const packageManager: string = cmdPackageManager || configPackageManager;
   const publishOptions: string[] = ['publish'];
 
   if(accessPrivate) {

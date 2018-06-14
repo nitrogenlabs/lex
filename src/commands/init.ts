@@ -18,9 +18,11 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
-  const {packageManager, useTypescript} = LexConfig.config;
+  const {install, cmdPackageManager, typescript} = cmd;
+  const {packageManager: configPackageManager, useTypescript: configTypescript} = LexConfig.config;
+  const packageManager: string = cmdPackageManager || configPackageManager;
+  const useTypescript: boolean = typescript !== undefined ? typescript : configTypescript;
 
-  const {install} = cmd;
   let appModule: string = packageName;
 
   // Use base app module based on config

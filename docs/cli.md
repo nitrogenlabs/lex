@@ -153,6 +153,7 @@ Creates a new app shell. An initial directory structure with files is created ba
 **Options**
 
 - `-i`, `--install` - Install dependencies.
+- `-m <manager>`, `--package-manager <manager>` - Which package manager to use. Default: `yarn`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 - `-t`, `--typescript` - Use a Typescript based app.
 
@@ -176,6 +177,7 @@ Publish an npm module.
 **Options:**
 
 - `-b <type>`, `--bump <type>` - Increments the version. Types include: major, minor, patch, beta, alpha, rc.
+- `-m <manager>`, `--package-manager <manager>` - Which package manager to use. Default: `yarn`.
 - `-p`, `--private` - Publishes the module as restricted.
 - `-o`, `--otp` - Provide a two-factor code.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
@@ -241,6 +243,7 @@ Update all dependencies in app to the latest versions. Use the interactive mode 
 **Options:**
 
 - `-i`, `--interactive` - Choose which packages to update.
+- `-m <manager>`, `--package-manager <manager>` - Which package manager to use. Default: `yarn`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 
 **Examples:**
@@ -256,6 +259,7 @@ Update Lex to the latest version globally.
 
 **Options:**
 
+- `-m <manager>`, `--package-manager <manager>` - Which package manager to use. Default: `yarn`.
 - `-q`, `--quiet` - No Lex notifications printed in the console.
 
 **Examples:**

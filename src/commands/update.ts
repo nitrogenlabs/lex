@@ -10,15 +10,18 @@ export const update = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {packageManager} = LexConfig.config;
+  const {packageManager: cmdPackageManager} = cmd;
+  const {packageManager: configPackageManager} = LexConfig.config;
+  const packageManager: string = cmdPackageManager || configPackageManager;
+
   const upgradeOptions: string[] = packageManager === 'npm' ?
     ['update'] :
     [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
-  const yarn: SpawnSyncReturns<Buffer> = spawnSync(packageManager, upgradeOptions, {
+  const pm: SpawnSyncReturns<Buffer> = spawnSync(packageManager, upgradeOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
 
-  process.exit(yarn.status);
+  process.exit(pm.status);
 };

@@ -1264,9 +1264,9 @@ argparse@^1.0.7:
   dependencies:
     sprintf-js "~1.0.2"
 
-arkhamjs@^3.5.2:
-  version "3.5.2"
-  resolved "https://registry.npmjs.org/arkhamjs/-/arkhamjs-3.5.2.tgz#74d960b492d983112f7412f9c2974ca676155f21"
+arkhamjs@^3.5.3:
+  version "3.5.3"
+  resolved "https://registry.npmjs.org/arkhamjs/-/arkhamjs-3.5.3.tgz#2c0e458a85dc9f6aacfe0c67b45e5a248502955c"
   dependencies:
     error-stack-parser "^2.0.2"
     lodash "^4.17.5"
@@ -1989,9 +1989,13 @@ caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
   version "1.0.30000853"
   resolved "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000853.tgz#32901a7d6b93a87d59f08aaee47ea8ff6ec90fdf"
 
-caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851, caniuse-lite@^1.0.30000853:
+caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851:
   version "1.0.30000853"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000853.tgz#505249fc78d60e20ad47af3c13706d6f9fd209fd"
+
+caniuse-lite@^1.0.30000855:
+  version "1.0.30000855"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000855.tgz#d5a26a9093b932d6266bf4ed9294b41b84945d14"
 
 capture-exit@^1.2.0:
   version "1.2.0"

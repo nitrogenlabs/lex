@@ -53,16 +53,18 @@ program.command('dev')
 
 program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
 
 program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc')
-  .option('-p, --private', 'Publishes the module as restricted.')
-  .option('-o --otp <code>', 'Provide a two-factor code.')
+  .option('-o, --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('-t --tag <tag>', 'Registers the published package with the given tag.')
+  .option('-p, --private', 'Publishes the module as restricted.')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
+  .option('-t, --tag <tag>', 'Registers the published package with the given tag.')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action(publish);
 
@@ -81,10 +83,12 @@ program.command('test')
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(update);
 
 program.command('upgrade')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(upgrade);
 
