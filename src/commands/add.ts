@@ -66,14 +66,14 @@ export const add = (type: string, name: string, cmd) => {
 
           // Rename test
           const storeTestPath: string = `${storePath}/${nameCaps}Store.test${templateExt}`;
-          fs.renameSync(`${storePath}/SampleStore.test${templateExt}`, storeTestPath);
+          fs.renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
 
           // Search and replace store name
           updateName(storeTestPath, name, nameCaps);
 
           // Rename source file
           const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
-          fs.renameSync(`${storePath}/SampleStore${templateExt}`, storeFilePath);
+          fs.renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
 
           // Search and replace store name
           updateName(storeFilePath, name, nameCaps);
@@ -126,14 +126,14 @@ export const add = (type: string, name: string, cmd) => {
 
           // Rename test
           const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
-          fs.renameSync(`${viewPath}/SampleView.test${templateReact}`, viewTestPath);
+          fs.renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
 
           // Search and replace view name
           updateName(viewTestPath, name, nameCaps);
 
           // Rename source file
           const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
-          fs.renameSync(`${viewPath}/SampleView${templateReact}`, viewFilePath);
+          fs.renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
 
           // Search and replace view name
           updateName(viewFilePath, name, nameCaps);

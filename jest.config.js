@@ -1,10 +1,8 @@
 const cwd = process.cwd();
 const path = require('path');
 
-const {sourceFullPath, targetEnvironment} = JSON.parse(process.env.LEX_CONFIG || '{}');
+const {sourceFullPath} = JSON.parse(process.env.LEX_CONFIG || '{}');
 const lexNodePath = path.resolve(__dirname, './node_modules');
-
-const isNodeEnv = targetEnvironment === 'node';
 
 module.exports = {
   collectCoverage: true,
@@ -23,12 +21,13 @@ module.exports = {
   resolver: path.resolve(__dirname, './dist/resolver.js'),
   rootDir: cwd,
   setupFiles: [`${lexNodePath}/regenerator-runtime/runtime.js`],
-  testEnvironment: isNodeEnv ? 'node' : 'jsdom',
+  testEnvironment: 'jsdom',
   testPathIgnorePatterns: [
     '/node_modules/',
     `${lexNodePath}/`
   ],
   testRegex: '(/__tests__/.*|\\.(test|spec))\\.(js|ts|tsx)?$',
   testURL: 'http://localhost',
-  transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')}
+  transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')},
+  transformIgnorePatterns: ['<rootDir>/(!node_modules)']
 };

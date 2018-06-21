@@ -43,6 +43,8 @@
     "@babel/core": "^7.0.0-beta.51",
     "@babel/helper-plugin-utils": "^7.0.0-beta.51",
     "@babel/plugin-proposal-pipeline-operator": "^7.0.0-beta.51",
+    "@babel/plugin-transform-classes": "^7.0.0-beta.51",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
     "@babel/preset-flow": "7.0.0-beta.51",
     "@babel/preset-react": "7.0.0-beta.51",
@@ -102,7 +104,6 @@
     "webpack-dev-server": "^3.1.4"
   },
   "devDependencies": {
-    "arkhamjs": "^3.5.5",
     "eslint-config-styleguidejs": "^0.7.5",
     "react": "^16.4.1",
     "react-test-renderer": "^16.4.1"
