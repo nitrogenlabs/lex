@@ -1,8 +1,6 @@
 .idea
 .travis.yml
 *.bash_profile
-*.test.ts
-*.test.tsx
 templates/**/__snapshots__
 docs
 node_modules

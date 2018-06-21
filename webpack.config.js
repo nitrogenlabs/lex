@@ -2,6 +2,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
+const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 
@@ -18,6 +19,39 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 const babelPolyfillPath = path.resolve(__dirname, './node_modules/babel-polyfill/lib/index.js');
 const {outputFullPath, sourceFullPath} = lexConfig;
+
+// Only add plugins if they are needed
+const plugins = [
+  new CleanWebpackPlugin([outputFullPath], {allowExternal: true}),
+  new webpack.DefinePlugin(processVariables),
+  new SVGSpritemapPlugin({
+    filename: './icons/icons.svg',
+    prefix: '',
+    src: `${sourceFullPath}/**/*.svg`
+  })
+];
+
+// If there is are static directories, make sure we copy the files over
+const staticPaths = [];
+
+if(fs.existsSync(`${sourceFullPath}/img/`)) {
+  staticPaths.push({from: `${sourceFullPath}/img/`, to: './img/'});
+}
+
+if(fs.existsSync(`${sourceFullPath}/fonts/`)) {
+  staticPaths.push({from: `${sourceFullPath}/fonts/`, to: './fonts/'});
+}
+
+if(staticPaths.length) {
+  plugins.push(new CopyWebpackPlugin(staticPaths));
+}
+
+if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
+  plugins.push(new HtmlWebPackPlugin({
+    filename: './index.html',
+    template: `${sourceFullPath}/${lexConfig.entryHTML}`
+  }));
+}
 
 const webpackConfig = {
   bail: true,
@@ -43,10 +77,10 @@ const webpackConfig = {
       {
         test: /\.scss$/,
         use: [
-          require.resolve('style-loader'),
-          require.resolve('css-loader'),
+          require.resolve(`${lexPath}/style-loader`),
+          require.resolve(`${lexPath}/css-loader`),
           {
-            loader: require.resolve('postcss-loader'),
+            loader: path.resolve(`${lexPath}/postcss-loader`),
             options: {
               ident: 'postcss',
               plugins: () => [
@@ -66,7 +100,7 @@ const webpackConfig = {
             }
           },
           {
-            loader: require.resolve('sass-loader'),
+            loader: require.resolve(`${lexPath}/sass-loader`),
             options: {
               includePaths: ['./node_modules']
             }
@@ -127,23 +161,7 @@ const webpackConfig = {
     filename: '[name].js',
     path: outputFullPath
   },
-  plugins: [
-    new CleanWebpackPlugin([outputFullPath], {allowExternal: true}),
-    new webpack.DefinePlugin(processVariables),
-    new CopyWebpackPlugin([
-      {from: `${sourceFullPath}/fonts/`, to: './fonts/'},
-      {from: `${sourceFullPath}/img/`, to: './img/'}
-    ]),
-    new SVGSpritemapPlugin({
-      filename: './icons/icons.svg',
-      prefix: '',
-      src: `${sourceFullPath}/**/*.svg`
-    }),
-    new HtmlWebPackPlugin({
-      filename: './index.html',
-      template: `${sourceFullPath}/${lexConfig.entryHTML}`
-    })
-  ],
+  plugins,
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx']
   }

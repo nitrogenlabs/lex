@@ -7,7 +7,7 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const dev = (cmd) => {
-  log(chalk.cyan('Lex development...'), cmd);
+  log(chalk.cyan('Lex start development server...'), cmd);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -35,6 +35,7 @@ export const dev = (cmd) => {
 
   // Clean output directory before we start adding in new files
   if(cmd.remove) {
+    log(chalk.grey('Cleaning output directory...'), cmd);
     rimraf.sync(outputFullPath);
   }
 
@@ -48,12 +49,19 @@ export const dev = (cmd) => {
     webpackOptions.push('--open');
   }
 
-  const webpackDevPath: string = path
-    .resolve(__dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js');
+  const webpackDevPath: string = path.resolve(
+    __dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js'
+  );
+
+  log(chalk.grey('Starting development server...'), cmd);
   const webpack: SpawnSyncReturns<Buffer> = spawnSync(webpackDevPath, webpackOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
+
+  if(!webpack.status) {
+    log(chalk.red('Lex Error: There was an error while running Webpack.'), cmd);
+  }
 
   return process.exit(webpack.status);
 };
