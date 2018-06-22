@@ -44,7 +44,7 @@ export const build = (cmd) => {
   const webpackMode: string = cmd.mode || 'production';
 
   // Compile using webpack
-  const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/webpack.js');
+  const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/cli.js');
   const webpack: SpawnSyncReturns<Buffer> = spawnSync(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
     encoding: 'utf-8',
     stdio: 'inherit'
