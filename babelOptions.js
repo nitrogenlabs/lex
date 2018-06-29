@@ -10,10 +10,13 @@ const babelWebEnv = [presetEnvPath, {modules: false, targets: {browsers: ['last 
 
 // Set correct build environment
 let presetEnv;
-let reactHotLoader;
+const plugins = [
+  `${nodePath}/@babel/plugin-proposal-pipeline-operator`,
+  `${nodePath}/@babel/plugin-syntax-dynamic-import`
+];
 
 if(commandName === 'dev') {
-  reactHotLoader = `${nodePath}/react-hot-loader/babel.js`;
+  plugins.push(`${nodePath}/react-hot-loader/babel.js`);
 }
 
 if(commandName === 'test') {
@@ -29,11 +32,7 @@ module.exports = {
   babelrc: false,
   comments: false,
   ignore: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
-  plugins: [
-    `${nodePath}/@babel/plugin-proposal-pipeline-operator`,
-    `${nodePath}/@babel/plugin-syntax-dynamic-import`,
-    reactHotLoader
-  ],
+  plugins,
   presets: [
     presetEnv,
     [`${nodePath}/@babel/preset-stage-0`, {decoratorsLegacy: true, loose: false}],
