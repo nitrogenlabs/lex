@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.9.11",
+  "version": "1.9.12",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -31,6 +31,7 @@
     "compile": "yarn env && babel src --out-dir dist --extensions '.ts,.tsx' -s inline",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
     "lint": "eslint ./src --ext .ts,.tsx",
+    "preinstall": "node ./preinstall.js",
     "prepublishOnly": "yarn build",
     "reset": "rm -rf node_modules yarn.lock && yarn",
     "test": "yarn lint && NODE_ENV=test && yarn env && jest",

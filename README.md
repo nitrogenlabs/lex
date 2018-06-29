@@ -22,6 +22,9 @@ Lex is installed globally using either npm or yarn.
 ```shell
 // Using npm
 $ npm install -g @nlabs/lex
+
+// Using yarn
+yarn global add @nlabs/lex
 ```
 
 ## Quick Start
@@ -29,10 +32,9 @@ $ npm install -g @nlabs/lex
 ```shell
 // Install a skeleton app with the ArkhamJS framework
 $ npm install -g yarn @nlabs/lex
-$ lex init myApp
+$ lex init myApp -i
 $ cd myApp
-$ yarn
 
 // Run the dev server
-$ lex dev
+$ lex dev -o
 ```
