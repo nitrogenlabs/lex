@@ -102,6 +102,6 @@ export const publish = (cmd) => {
     stdio: 'inherit'
   });
 
-  log(chalk.greenBright(`Successfully published npm package: ${packageName}@${nextVersion}`), cmd);
+  log(chalk.greenBright(`Successfully published npm package: ${packageName}`), cmd);
   return process.exit(npmPublish.status);
 };
