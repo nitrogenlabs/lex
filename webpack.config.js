@@ -137,6 +137,7 @@ const webpackConfig = {
 // Add development plugins
 if(!isProduction) {
   webpackConfig.resolve.alias = {
+    'react-hot-loader': `${nodePath}/react-hot-loader`,
     webpack: `${nodePath}/webpack`
   };
   webpackConfig.plugins.push(
