@@ -15,7 +15,7 @@ Lex eliminates this hassle. With the most common enterprise configurations used,
 
 ## Transpiling
 
-All source code is transpiled using Babel. Be able to use all the ES-next features of tomorrow, today. Promises, async/await, and arrow functions to name a few. Giving the codebase the potential to expand along with the project and team.
+All source code is transpiled using Babel. Be able to use all the ESNext features of tomorrow, today. Promises, async/await, and arrow functions to name a few. Giving the codebase the potential to expand along with the project and team.
 
 Lex uses Babel with the following presets and plugins:
 
@@ -32,11 +32,10 @@ Code is type checking at compile time. While the use of static types is not requ
 
 By default, all `.js` files will be checked by Flow. Typescript can be used instead if using the `-t` flag or `useTypescript` in a `lex.config.js` file.
 
-## Webpack
+## Building Web Apps
 
-Bundling your app has never been easier with Webpack 4. With the capability to code split dynamically, segments of code can even be lazy loaded. Lex uses Webpack with a few plugins to take care of the most common app requirements:
+Bundling your web app has never been easier with Webpack 4. With the capability to code split dynamically, segments of code can even be lazy loaded. Lex uses Webpack with a few plugins to take care of the most common app requirements:
 
-- [clean-webpack-plugin](https://www.npmjs.com/package/clean-webpack-plugin) - Removes all files from the output directory.
 - [copy-webpack-plugin](https://www.npmjs.com/package/copy-webpack-plugin) - Copies all static files to output directory. This includes images (*./img*) and fonts (*./fonts*) files.
 - [define-plugin](https://webpack.js.org/plugins/define-plugin) - Defines the environment variables.
 - [html-webpack-plugin](https://www.npmjs.com/package/html-webpack-plugin) - Embed all scripts in *index.html*.

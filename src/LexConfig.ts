@@ -23,7 +23,7 @@ export interface LexConfigType {
 export class LexConfig {
   static config: LexConfigType = {
     entryHTML: 'index.html',
-    entryJS: 'app.js',
+    entryJS: 'index.js',
     env: null,
     outputFullPath: path.resolve(cwd, './dist'),
     outputPath: './dist',
@@ -60,18 +60,27 @@ export class LexConfig {
 
   static set useTypescript(value: boolean) {
     LexConfig.config.useTypescript = value;
+    const {sourceFullPath} = LexConfig.config;
 
     // Make sure we change the default entry file if Typescript is being used.
     const {entryJS} = LexConfig.config;
 
-    if(entryJS === 'app.js' && value) {
-      LexConfig.config.entryJS = 'app.tsx';
+    if(entryJS === 'index.js' && value) {
+      const indexPath: string = path.resolve(cwd, sourceFullPath, 'index.tsx');
+      const hasIndexTsx: boolean = fs.existsSync(indexPath);
+
+      if(hasIndexTsx) {
+        LexConfig.config.entryJS = 'index.tsx';
+      } else {
+        LexConfig.config.entryJS = 'index.ts';
+      }
     }
   }
 
   // Set option updates from the command line
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
+    const {environment} = cmd;
 
     // Determine if we're using Typescript or Flow
     if(cmd.typescript !== undefined) {
@@ -79,8 +88,8 @@ export class LexConfig {
     }
 
     // Set the target environment
-    if(cmd.environment !== undefined) {
-      params.targetEnvironment = cmd.environment === 'web' ? 'web' : 'node';
+    if(environment !== undefined) {
+      params.targetEnvironment = environment === 'web' ? 'web' : 'node';
     }
 
     process.env.LEX_CONFIG = JSON.stringify(

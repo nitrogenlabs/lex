@@ -1,14 +1,15 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
-const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const fs = require('fs');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 
+const {DefinePlugin, HotModuleReplacementPlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
-const lexPath = path.resolve(__dirname, './node_modules');
+const nodePath = path.resolve(__dirname, './node_modules');
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const envVariables = lexConfig.env || {NODE_ENV: environment};
 const processVariables = Object.keys(envVariables).reduce((list, varName) => {
@@ -22,8 +23,7 @@ const {outputFullPath, sourceFullPath} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
-  new CleanWebpackPlugin([outputFullPath], {allowExternal: true}),
-  new webpack.DefinePlugin(processVariables),
+  new DefinePlugin(processVariables),
   new SVGSpritemapPlugin({
     filename: './icons/icons.svg',
     prefix: '',
@@ -65,60 +65,27 @@ const webpackConfig = {
     rules: [
       {
         enforce: 'pre',
-        loader: path.resolve(`${lexPath}/source-map-loader`),
+        loader: path.resolve(`${nodePath}/source-map-loader`),
         test: /\.(js|ts|tsx)$/
       },
       {
         exclude: /(node_modules)/,
-        loader: path.resolve(`${lexPath}/babel-loader`),
+        loader: path.resolve(`${nodePath}/babel-loader`),
         options: babelOptions,
         test: /\.(js|ts|tsx)$/
       },
       {
-        test: /\.scss$/,
-        use: [
-          require.resolve(`${lexPath}/style-loader`),
-          require.resolve(`${lexPath}/css-loader`),
-          {
-            loader: path.resolve(`${lexPath}/postcss-loader`),
-            options: {
-              ident: 'postcss',
-              plugins: () => [
-                require('postcss-custom-properties')({
-                  preserve: true,
-                  strict: false,
-                  warnings: false
-                }),
-                require('postcss-flexbugs-fixes'),
-                require('postcss-preset-env')({
-                  browsers: ['last 5 versions'],
-                  stage: 0
-                }),
-                require('cssnano')({autoprefixer: false, safe: true}),
-                require('postcss-browser-reporter')
-              ]
-            }
-          },
-          {
-            loader: require.resolve(`${lexPath}/sass-loader`),
-            options: {
-              includePaths: ['./node_modules']
-            }
-          }
-        ]
-      },
-      {
         test: /\.css$/,
         use: [
-          path.resolve(`${lexPath}/style-loader`),
+          path.resolve(`${nodePath}/style-loader`),
           {
-            loader: path.resolve(`${lexPath}/css-loader`),
+            loader: path.resolve(`${nodePath}/css-loader`),
             options: {
               importLoaders: 1
             }
           },
           {
-            loader: path.resolve(`${lexPath}/postcss-loader`),
+            loader: path.resolve(`${nodePath}/postcss-loader`),
             options: {
               plugins: [
                 require('postcss-import')({addDependencyTo: webpack}),
@@ -146,13 +113,13 @@ const webpackConfig = {
         test: /\.html$/,
         use: [
           {
-            loader: `${lexPath}/html-loader`,
+            loader: `${nodePath}/html-loader`,
             options: {minimize: isProduction}
           }
         ]
       },
       {
-        loader: `${lexPath}/file-loader`,
+        loader: `${nodePath}/file-loader`,
         test: /\.(png|svg|jpg|gif)$/
       }
     ]
@@ -167,9 +134,22 @@ const webpackConfig = {
   }
 };
 
+// Add development plugins
 if(!isProduction) {
-  webpackConfig.devServer = {historyApiFallback: true, noInfo: false};
-  webpackConfig.devtool = 'cheap-module-eval-source-map';
+  webpackConfig.resolve.alias = {
+    webpack: `${nodePath}/webpack`
+  };
+  webpackConfig.plugins.push(
+    new HotModuleReplacementPlugin(),
+    new BundleAnalyzerPlugin({openAnalyzer: false}),
+  );
+  webpackConfig.devServer = {
+    historyApiFallback: true,
+    hotOnly: true,
+    noInfo: false,
+    port: 9000
+  };
+  webpackConfig.devtool = 'inline-source-map';
 }
 
 module.exports = webpackConfig;

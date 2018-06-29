@@ -2,9 +2,13 @@
 .travis.yml
 *.bash_profile
 templates/**/__snapshots__
+coverage
 docs
 node_modules
-package-lock.json
-yarn.lock
 src
 website
+.babelrc
+.eslint
+package-lock.json
+yarn-error.log
+yarn.lock

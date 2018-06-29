@@ -34,21 +34,22 @@ export const init = (appName: string, packageName: string, cmd) => {
     }
   }
 
-  const download: SpawnSyncReturns<Buffer> = spawnSync(dnpPath, [packageName, tmpPath], {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  log(chalk.grey('Initializing...'), cmd);
 
-  status += download.status;
-
-  log(chalk.cyan('Lex initializing...'), cmd);
+  try {
+    const download: SpawnSyncReturns<Buffer> = spawnSync(dnpPath, [appModule, tmpPath], {});
+    status += download.status;
+  } catch(error) {
+    log(chalk.red(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`), cmd);
+    return process.exit(1);
+  }
 
   // Move into configured directory
   try {
-    fs.renameSync(`${tmpPath}/${packageName}`, appPath);
+    fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
-    log(chalk.cyan('Lex Error:', error.message), cmd);
-    status += 1;
+    log(chalk.red(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`), cmd);
+    return process.exit(1);
   }
 
   // Configure package.json
@@ -73,10 +74,12 @@ export const init = (appName: string, packageName: string, cmd) => {
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(chalk.cyan('Lex Error:', error.message), cmd);
-    status += 1;
+    return process.exit(1);
   }
 
   if(install) {
+    log(chalk.grey('Installing dependencies...'), cmd);
+
     // Change to the app directory
     process.chdir(appPath);
 
@@ -89,5 +92,5 @@ export const init = (appName: string, packageName: string, cmd) => {
     status += install.status;
   }
 
-  process.exit(status);
+  return process.exit(status);
 };
