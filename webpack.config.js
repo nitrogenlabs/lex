@@ -18,7 +18,6 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const babelPolyfillPath = path.resolve(__dirname, './node_modules/babel-polyfill/lib/index.js');
 const {outputFullPath, sourceFullPath} = lexConfig;
 
 // Only add plugins if they are needed
@@ -57,7 +56,6 @@ const webpackConfig = {
   bail: true,
   cache: !isProduction,
   entry: {
-    babelPolyfill: babelPolyfillPath,
     index: `${sourceFullPath}/${lexConfig.entryJS}`
   },
   mode: environment,
