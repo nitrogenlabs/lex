@@ -10,7 +10,7 @@ import presetStage0 from '@babel/preset-stage-0';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {targetEnvironment} = lexConfig;
 const babelWebEnv = [presetEnv, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
-const babelNodeEnv = [presetES2015, {modules: false}];
+const babelNodeEnv = [presetES2015, {modules: 'commonjs'}];
 
 export default declare((api) => {
   api.assertVersion(7);
