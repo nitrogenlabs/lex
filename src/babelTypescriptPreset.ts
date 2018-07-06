@@ -22,7 +22,7 @@ export default declare((api) => {
         polyfill: false,
         regenerator: true
       }],
-      pluginPipeline,
+      [pluginPipeline, {proposal: 'minimal'}],
       pluginDynamicImport
     ],
     presets: [

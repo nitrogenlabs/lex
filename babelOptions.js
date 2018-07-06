@@ -20,7 +20,7 @@ if(commandName === 'test') {
 }
 
 const plugins = [
-  `${nodePath}/@babel/plugin-proposal-pipeline-operator`,
+  [`${nodePath}/@babel/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
   `${nodePath}/@babel/plugin-syntax-dynamic-import`
 ];
 const presets = [
