@@ -17,9 +17,8 @@ Lex eliminates this hassle. With the most common enterprise configurations used,
 
 All source code is transpiled using Babel. Be able to use all the ESNext features of tomorrow, today. Promises, async/await, and arrow functions to name a few. Giving the codebase the potential to expand along with the project and team.
 
-Lex uses Babel with the following presets and plugins:
+Lex uses Babel with the following presets:
 
-- [@babel/plugin-proposal-pipeline-operator](https://www.npmjs.com/package/@babel/plugin-proposal-pipeline-operator)
 - [@babel/preset-env](https://www.npmjs.com/package/@babel/preset-env)
 - [@babel/preset-flow](https://www.npmjs.com/package/@babel/preset-flow)
 - [@babel/preset-react](https://www.npmjs.com/package/@babel/preset-react)

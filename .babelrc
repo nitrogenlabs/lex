@@ -11,7 +11,8 @@
     [
       "@babel/stage-0",
       {
-        "decoratorsLegacy": true
+        "decoratorsLegacy": true,
+        "pipelineProposal": "minimal"
       }
     ]
   ]

@@ -20,12 +20,11 @@ if(commandName === 'test') {
 }
 
 const plugins = [
-  [`${nodePath}/@babel/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
   `${nodePath}/@babel/plugin-syntax-dynamic-import`
 ];
 const presets = [
   presetEnv,
-  [`${nodePath}/@babel/preset-stage-0`, {decoratorsLegacy: true, loose: false}],
+  [`${nodePath}/@babel/preset-stage-0`, {decoratorsLegacy: true, loose: false, pipelineProposal: 'minimal'}],
   `${nodePath}/@babel/preset-react`,
   useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`
 ];

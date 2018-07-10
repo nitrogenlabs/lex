@@ -1,5 +1,4 @@
 import {declare} from '@babel/helper-plugin-utils';
-import pluginPipeline from '@babel/plugin-proposal-pipeline-operator';
 import pluginDynamicImport from '@babel/plugin-syntax-dynamic-import';
 import pluginTransform from '@babel/plugin-transform-runtime';
 import presetEnv from '@babel/preset-env';
@@ -22,12 +21,11 @@ export default declare((api) => {
         polyfill: false,
         regenerator: true
       }],
-      [pluginPipeline, {proposal: 'minimal'}],
       pluginDynamicImport
     ],
     presets: [
       targetEnvironment === 'web' ? babelWebEnv : babelNodeEnv,
-      [presetStage0, {decoratorsLegacy: true, loose: false}],
+      [presetStage0, {decoratorsLegacy: true, loose: false, pipelineProposal: 'minimal'}],
       presetReact,
       presetTypescript
     ]

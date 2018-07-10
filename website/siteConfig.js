@@ -45,7 +45,7 @@ const siteConfig = {
   tagline: 'DevOps Tool',
   title: 'Lex',
   twitterImage: 'img/docusaurus.png',
-  url: 'https://nitrogenlabs.com/lex'
+  url: 'http://lex.nitrogenlabs.com'
 };
 
 module.exports = siteConfig;
