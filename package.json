@@ -55,20 +55,20 @@
     "@babel/preset-react": "7.0.0-beta.52",
     "@babel/preset-stage-0": "7.0.0-beta.52",
     "@babel/preset-typescript": "^7.0.0-beta.52",
-    "@types/jest": "^23.1.4",
+    "@types/jest": "^23.1.5",
     "@types/node": "^10.5.2",
     "@types/react": "^16.4.6",
     "@types/webpack": "^4.4.5",
     "babel-core": "7.0.0-bridge.0",
     "babel-jest": "22.4.3",
     "babel-loader": "8.0.0-beta.3",
-    "caniuse-lite": "^1.0.30000862",
+    "caniuse-lite": "^1.0.30000865",
     "chalk": "^2.4.1",
     "commander": "^2.16.0",
     "compare-versions": "^3.3.0",
     "copy-webpack-plugin": "^4.5.2",
     "core-js": "^2.5.7",
-    "css-loader": "^0.28.11",
+    "css-loader": "^1.0.0",
     "cssnano": "4.0.0",
     "download-npm-package": "^3.1.12",
     "exports-loader": "^0.7.0",
@@ -107,7 +107,7 @@
     "webpack-dev-server": "^3.1.4"
   },
   "devDependencies": {
-    "eslint": "^5.0.1",
+    "eslint": "^5.1.0",
     "eslint-config-styleguidejs": "^0.7.5"
   }
 }
