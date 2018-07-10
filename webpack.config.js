@@ -41,6 +41,10 @@ if(fs.existsSync(`${sourceFullPath}/fonts/`)) {
   staticPaths.push({from: `${sourceFullPath}/fonts/`, to: './fonts/'});
 }
 
+if(fs.existsSync(`${sourceFullPath}/docs/`)) {
+  staticPaths.push({from: `${sourceFullPath}/docs/`, to: './docs/'});
+}
+
 if(staticPaths.length) {
   plugins.push(new CopyWebpackPlugin(staticPaths));
 }
