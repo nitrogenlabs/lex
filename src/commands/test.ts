@@ -27,14 +27,7 @@ export const test = (cmd) => {
 
   // Clear cache
   if(removeCache) {
-    const jestClear: SpawnSyncReturns<Buffer> = spawnSync(jestPath, ['--clearCache'], {
-      encoding: 'utf-8',
-      stdio: 'inherit'
-    });
-
-    if(jestClear.status) {
-      return process.exit(jestClear.status);
-    }
+    jestOptions.push('--no-cache');
   }
 
   if(jestSetupFile !== '') {

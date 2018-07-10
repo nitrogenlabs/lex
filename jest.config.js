@@ -12,7 +12,7 @@ module.exports = {
   moduleDirectories: [
     'node_modules'
   ],
-  moduleFileExtensions: ['js', 'ts', 'tsx'],
+  moduleFileExtensions: ['js', 'ts', 'tsx', 'json'],
   moduleNameMapper: {
     '\\.(css|jpg|png|svg|txt)$': path.resolve(__dirname, './dist/emptyModule')
   },
@@ -31,7 +31,7 @@ module.exports = {
   ],
   testRegex: '(/__tests__/.*|\\.(test|spec))\\.(js|ts|tsx)?$',
   testURL: 'http://localhost',
-  transform: {'.(js|jsx|ts|tsx)': path.resolve(__dirname, './jest.preprocessor.js')},
+  transform: {'\\.(js|ts|tsx)$': path.resolve(__dirname, './jest.preprocessor.js')},
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'
   ]

@@ -13,7 +13,7 @@ module.exports = (value, options) => {
   if(hasBase) {
     const existingExt: string = path.extname(value) || '';
 
-    if(existingExt !== '') {
+    if(existingExt !== '' && extensions.includes(existingExt)) {
       return path.resolve(`${basedir}/${value}`);
     }
 
@@ -41,8 +41,12 @@ module.exports = (value, options) => {
   }
 
   try {
-    return resolve.sync(value, {basedir: __dirname});
+    return resolve.sync(value, {basedir: `${__dirname}/../`, extensions});
   } catch(error) {
-    return resolve.sync(value, {basedir: process.cwd()});
+    try {
+      return resolve.sync(value, {basedir: process.cwd(), extensions});
+    } catch(error) {
+      return null;
+    }
   }
 };
