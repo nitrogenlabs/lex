@@ -93,7 +93,11 @@ export class LexConfig {
     }
 
     process.env.LEX_CONFIG = JSON.stringify(
-      {...LexConfig.updateConfig(params), commandName: cmd[nameProperty]}, null, 0
+      {
+        ...LexConfig.updateConfig(params),
+        commandName: cmd[nameProperty],
+        isStatic: cmd.static
+      }, null, 0
     );
   }
 

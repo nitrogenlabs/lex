@@ -3,7 +3,6 @@ import program from 'commander';
 
 import {add, build, clean, compile, dev, init, publish, test, update, upgrade, versions} from './commands';
 
-
 const packageConfig = require('../package.json');
 
 // Commands
@@ -17,9 +16,10 @@ program.command('build')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
   .option('-l, --lexConfig <path>', 'Lex configuration file path (lex.config.js).')
-  .option('-m, --mode <type>', 'Webpack mode ("production" or "development").')
+  .option('-m, --mode <type>', 'Webpack mode ("production" or "development"). Default: "development".', /^(development|production)$/i, 'development')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-r, --remove', 'Removes all files from the output directory before compiling.')
+  .option('-s, --static', 'Creates static HTML files when building app.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .action(build);
@@ -53,17 +53,17 @@ program.command('dev')
 
 program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
 
 program.command('publish')
-  .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc')
+  .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
   .option('-o, --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-p, --private', 'Publishes the module as restricted.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-t, --tag <tag>', 'Registers the published package with the given tag.')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action(publish);
@@ -83,12 +83,12 @@ program.command('test')
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(update);
 
 program.command('upgrade')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(upgrade);
 

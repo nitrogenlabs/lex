@@ -31,7 +31,8 @@ export const test = (cmd) => {
   }
 
   if(jestSetupFile !== '') {
-    jestOptions.push('--setupTestFrameworkScriptFile', jestSetupFile);
+    const cwd: string = process.cwd();
+    jestOptions.push(`--setupTestFrameworkScriptFile=${path.resolve(cwd, jestSetupFile)}`);
   }
 
   if(update) {

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
 import compareVersions from 'compare-versions';
 import latestVersion from 'latest-version';
+import ora from 'ora';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
@@ -10,7 +11,14 @@ import {parseVersion} from './versions';
 const packageConfig = require('../../package.json');
 
 export const upgrade = (cmd) => {
+  // Spinner
+  const spinner = ora({color: 'yellow'});
+
+  // Display status
   log(chalk.cyan('Upgrading Lex...'), cmd);
+
+  // Start loader
+  spinner.start('Updating...\n');
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -40,10 +48,20 @@ export const upgrade = (cmd) => {
         stdio: 'inherit'
       });
 
+      // Stop loader
+      spinner.succeed('Successfully updated Lex!');
+
+      // Stop process
       process.exit(yarn.status);
     })
     .catch((error) => {
+      // Display error message
       log(chalk.red(`Lex Error: ${error.message}.`), cmd);
+
+      // Stop loader
+      spinner.fail('Failed to updated packages.');
+
+      // Kill process
       process.exit(1);
     });
 };

@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
+import ora from 'ora';
 import * as path from 'path';
 import rimraf from 'rimraf';
 
@@ -7,9 +8,13 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const compile = (cmd) => {
-  let status: number = 0;
+  // Spinner
+  const spinner = ora({color: 'yellow'});
 
+  // Display status
   log(chalk.cyan('Lex compiling...'), cmd);
+
+  let status: number = 0;
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -54,10 +59,21 @@ export const compile = (cmd) => {
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
 
+    // Start type checking spinner
+    spinner.start('Static type checking with Typescript...\n');
+
+    // Type checking
     const typescript = spawnSync(typescriptPath, typescriptOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
+
+    // Stop spinner
+    if(!typescript.status) {
+      spinner.succeed('Successfully completed type checking!');
+    } else {
+      spinner.fail('Type checking failed.');
+    }
 
     status += typescript.status;
   }
@@ -83,12 +99,24 @@ export const compile = (cmd) => {
     babelOptions.push('--watch');
   }
 
+  // Start type checking spinner
+  spinner.start('Transpiling with Babel...\n');
+
   const babel: SpawnSyncReturns<Buffer> = spawnSync(babelPath, babelOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
 
+  // Stop spinner
+  if(!babel.status) {
+    spinner.succeed('Successfully transpiled code!');
+  } else {
+    spinner.fail('Code transpiling failed.');
+  }
+
+  // Update process status
   status += babel.status;
 
+  // Stop process
   process.exit(status);
 };

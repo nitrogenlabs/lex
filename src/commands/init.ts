@@ -1,17 +1,20 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
 import * as fs from 'fs';
+import ora from 'ora';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 import {getPackageJson, log, setPackageJson} from '../utils';
 
 export const init = (appName: string, packageName: string, cmd) => {
+  const spinner = ora({color: 'yellow'});
   const cwd: string = process.cwd();
   let status: number = 0;
 
   // Download app module into temporary directory
   log(chalk.cyan('Lex downloading app module...'), cmd);
+  spinner.start('Downloading app...\n');
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
@@ -38,9 +41,15 @@ export const init = (appName: string, packageName: string, cmd) => {
 
   try {
     const download: SpawnSyncReturns<Buffer> = spawnSync(dnpPath, [appModule, tmpPath], {});
+
+    // Stop spinner and update status
     status += download.status;
+    spinner.succeed('Successfully downloaded app');
   } catch(error) {
     log(chalk.red(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`), cmd);
+
+    // Stop spinner and kill process
+    spinner.fail('Downloaded of app failed.');
     return process.exit(1);
   }
 
@@ -78,7 +87,7 @@ export const init = (appName: string, packageName: string, cmd) => {
   }
 
   if(install) {
-    log(chalk.grey('Installing dependencies...'), cmd);
+    spinner.start('Installing dependencies...\n');
 
     // Change to the app directory
     process.chdir(appPath);
@@ -88,6 +97,12 @@ export const init = (appName: string, packageName: string, cmd) => {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
+
+    if(!install.status) {
+      spinner.succeed('Successfully installed dependencies!');
+    } else {
+      spinner.fail('Failed to install dependencies.');
+    }
 
     status += install.status;
   }

@@ -3,6 +3,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const fs = require('fs');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 
@@ -18,7 +19,7 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const {outputFullPath, sourceFullPath} = lexConfig;
+const {isStatic, outputFullPath, sourceFullPath} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
@@ -153,6 +154,8 @@ if(!isProduction) {
     port: 9000
   };
   webpackConfig.devtool = 'inline-source-map';
+} else if(isStatic) {
+  webpackConfig.plugins.push(new StaticSiteGeneratorPlugin({crawl: true}));
 }
 
 module.exports = webpackConfig;

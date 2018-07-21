@@ -1,11 +1,19 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
+import ora from 'ora';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const update = (cmd) => {
+  // Spinner
+  const spinner = ora({color: 'yellow'});
+
+  // Display status
   log(chalk.cyan('Lex updating packages...'), cmd);
+
+  // Start loader
+  spinner.start('Updating...\n');
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -22,6 +30,13 @@ export const update = (cmd) => {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
+
+  // Stop loader
+  if(!pm.status) {
+    spinner.succeed('Successfully updated packages!');
+  } else {
+    spinner.fail('Failed to updated packages.');
+  }
 
   process.exit(pm.status);
 };

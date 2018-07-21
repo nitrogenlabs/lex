@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
+import ora from 'ora';
 import * as path from 'path';
 import rimraf from 'rimraf';
 
@@ -7,6 +8,10 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const build = (cmd) => {
+  // Spinner
+  const spinner = ora({color: 'yellow'});
+
+  // Display status
   log(chalk.cyan('Lex building...'), cmd);
 
   // Get custom configuration
@@ -28,6 +33,9 @@ export const build = (cmd) => {
 
   process.env = {...process.env, ...variablesObj};
 
+  // Start build spinner
+  spinner.start('Building with Webpack...\n');
+
   // Clean output directory before we start adding in new files
   if(cmd.remove) {
     rimraf.sync(outputFullPath);
@@ -37,6 +45,10 @@ export const build = (cmd) => {
   if(useTypescript) {
     // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
+  }
+
+  if(cmd.static) {
+
   }
 
   // Get custom webpack configuration
@@ -50,5 +62,9 @@ export const build = (cmd) => {
     stdio: 'inherit'
   });
 
+  // Stop spinner
+  spinner.succeed('Build completed successfully!');
+
+  // Stop process
   return process.exit(webpack.status);
 };
