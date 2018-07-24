@@ -19,7 +19,7 @@ export const test = async (cmd) => {
   }
 
   // Configure jest
-  const {config, removeCache, setup, update, verbose, watch} = cmd;
+  const {config, detectOpenHandles, removeCache, setup, update, watch} = cmd;
   const jestPath: string = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
   const jestConfigFile: string = config || path.resolve(__dirname, '../../jest.config.js');
   const jestSetupFile: string = setup || '';
@@ -35,12 +35,14 @@ export const test = async (cmd) => {
     jestOptions.push(`--setupTestFrameworkScriptFile=${path.resolve(cwd, jestSetupFile)}`);
   }
 
-  if(update) {
-    jestOptions.push('--updateSnapshot');
+  // Detect open handles
+  if(detectOpenHandles) {
+    jestOptions.push('--detectOpenHandles');
   }
 
-  if(verbose === undefined || verbose.toString() === 'true') {
-    jestOptions.push('--verbose');
+  // Update snapshots
+  if(update) {
+    jestOptions.push('--updateSnapshot');
   }
 
   if(watch) {

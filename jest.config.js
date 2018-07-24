@@ -34,5 +34,6 @@ module.exports = {
   transform: {'\\.(js|ts|tsx)$': path.resolve(__dirname, './jest.preprocessor.js')},
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'
-  ]
+  ],
+  verbose: true
 };

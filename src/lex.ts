@@ -70,6 +70,7 @@ program.command('publish')
 
 program.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
+  .option('-d, --detectOpenHandles', 'Attempt to collect and print open handles preventing Jest from exiting cleanly')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
@@ -78,7 +79,6 @@ program.command('test')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-u, --update', 'Update snapshots. Runs "jest --updateSnapshots"')
   .option('-w, --watch', 'Watches for changes and tests.')
-  .option('-v, --verbose [value]', 'Print the version and exit.')
   .action(test);
 
 program.command('update')
