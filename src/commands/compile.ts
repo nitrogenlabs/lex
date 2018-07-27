@@ -15,10 +15,10 @@ const copyFiles = async (files: string[], outputDir: string, typeName: string, s
 
   try {
     let total: number = 0;
-    spinner.start(`Copying ${typeName} files...\n`);
+    spinner.start(`Copying ${typeName} files...`);
     await cpy(copyFrom, `${outputFullPath}/${outputDir}`).on('progress', (progress) => {
       total = progress.totalFiles;
-      spinner.text = `Copying ${typeName} files (${progress.completedFiles} of ${progress.totalFiles})...\n`;
+      spinner.text = `Copying ${typeName} files (${progress.completedFiles} of ${progress.totalFiles})...`;
     });
     spinner.succeed(`Successfully copied ${total} ${typeName} files!`);
   } catch(error) {
@@ -77,7 +77,7 @@ export const compile = async (cmd) => {
       ];
 
     // Start type checking spinner
-    spinner.start('Static type checking with Typescript...\n');
+    spinner.start('Static type checking with Typescript...');
 
     // Type checking
     const typescript = await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
@@ -113,7 +113,7 @@ export const compile = async (cmd) => {
   }
 
   // Start type checking spinner
-  spinner.start('Compiling with Babel...\n');
+  spinner.start('Compiling with Babel...');
 
   const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
 

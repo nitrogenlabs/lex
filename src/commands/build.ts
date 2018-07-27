@@ -47,10 +47,6 @@ export const build = (cmd) => {
     LexConfig.checkTypescriptConfig();
   }
 
-  if(cmd.static) {
-
-  }
-
   // Get custom webpack configuration
   const webpackConfig: string = cmd.config || path.resolve(__dirname, '../../webpack.config.js');
   const webpackMode: string = cmd.mode || 'production';
@@ -63,7 +59,11 @@ export const build = (cmd) => {
   });
 
   // Stop spinner
-  spinner.succeed('Build completed successfully!');
+  if(!webpack.status) {
+    spinner.succeed('Build completed successfully!');
+  } else {
+    spinner.fail('Build failed.');
+  }
 
   // Stop process
   return process.exit(webpack.status);

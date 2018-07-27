@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.9.24",
+  "version": "1.9.25",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -56,10 +56,6 @@
     "@babel/preset-stage-0": "7.0.0-beta.54",
     "@babel/preset-typescript": "^7.0.0-beta.54",
     "@babel/runtime": "^7.0.0-beta.54",
-    "@types/jest": "^23.3.1",
-    "@types/node": "^10.5.3",
-    "@types/react": "^16.4.7",
-    "@types/webpack": "^4.4.8",
     "babel-core": "7.0.0-bridge.0",
     "babel-loader": "8.0.0-beta.3",
     "babel-plugin-istanbul": "^4.1.6",
@@ -107,12 +103,17 @@
     "svg-spritemap-webpack-plugin": "^2.7.0",
     "tsconfig-paths": "^3.4.2",
     "typescript": "^2.9.2",
-    "webpack": "4.16.2",
+    "webpack": "4.16.3",
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.0",
+    "@types/node": "^10.5.3",
+    "@types/ora": "^1.3.4",
+    "@types/react": "^16.4.7",
+    "@types/webpack": "^4.4.8",
     "eslint": "^5.2.0",
     "eslint-config-styleguidejs": "^0.7.6"
   }

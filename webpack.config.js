@@ -1,11 +1,11 @@
-const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const fs = require('fs');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
-const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
+const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 const {DefinePlugin, HotModuleReplacementPlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
@@ -155,7 +155,7 @@ if(!isProduction) {
   };
   webpackConfig.devtool = 'inline-source-map';
 } else if(isStatic) {
-  webpackConfig.plugins.push(new StaticSiteGeneratorPlugin({crawl: true}));
+  webpackConfig.plugins.push(new StaticSitePlugin());
 }
 
 module.exports = webpackConfig;

@@ -968,6 +968,16 @@
   version "1.4.0"
   resolved "https://registry.npmjs.org/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
 
+"@nlabs/webpack-plugin-static-site@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.npmjs.org/@nlabs/webpack-plugin-static-site/-/webpack-plugin-static-site-0.1.0.tgz#23c4d5b045bca3bdacfca98bb4b7787a22af03ee"
+  dependencies:
+    cheerio "^1.0.0-rc.2"
+    eval "^0.1.0"
+    lodash "^4.17.10"
+    url "^0.11.0"
+    webpack-sources "^1.1.0"
+
 "@sindresorhus/is@^0.7.0":
   version "0.7.0"
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
@@ -980,9 +990,15 @@
   version "10.5.1"
   resolved "https://registry.npmjs.org/@types/node/-/node-10.5.1.tgz#d578446f4abff5c0b49ade9b4e5274f6badaadfc"
 
-"@types/node@^10.5.2":
-  version "10.5.2"
-  resolved "https://registry.npmjs.org/@types/node/-/node-10.5.2.tgz#f19f05314d5421fe37e74153254201a7bf00a707"
+"@types/node@^10.5.3":
+  version "10.5.3"
+  resolved "https://registry.npmjs.org/@types/node/-/node-10.5.3.tgz#5bcfaf088ad17894232012877669634c06b20cc5"
+
+"@types/ora@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.npmjs.org/@types/ora/-/ora-1.3.4.tgz#b7fbbea8dac9851eb1918a761e2f4fae4cec03f5"
+  dependencies:
+    "@types/node" "*"
 
 "@types/react@^16.4.7":
   version "16.4.7"
@@ -2001,6 +2017,17 @@ cheerio@^0.22.0:
     lodash.reject "^4.4.0"
     lodash.some "^4.4.0"
 
+cheerio@^1.0.0-rc.2:
+  version "1.0.0-rc.2"
+  resolved "https://registry.npmjs.org/cheerio/-/cheerio-1.0.0-rc.2.tgz#4b9f53a81b27e4d5dac31c0ffd0cfa03cc6830db"
+  dependencies:
+    css-select "~1.2.0"
+    dom-serializer "~0.1.0"
+    entities "~1.1.1"
+    htmlparser2 "^3.9.1"
+    lodash "^4.15.0"
+    parse5 "^3.0.1"
+
 chokidar@^2.0.0, chokidar@^2.0.2, chokidar@^2.0.3:
   version "2.0.4"
   resolved "https://registry.npmjs.org/chokidar/-/chokidar-2.0.4.tgz#356ff4e2b0e8e43e322d18a372460bbcf3accd26"
@@ -2537,9 +2564,9 @@ cssnano-util-same-parent@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/cssnano-util-same-parent/-/cssnano-util-same-parent-4.0.0.tgz#d2a3de1039aa98bc4ec25001fa050330c2a16dac"
 
-cssnano@4.0.3:
-  version "4.0.3"
-  resolved "https://registry.npmjs.org/cssnano/-/cssnano-4.0.3.tgz#b694d626906bf1844f573465ecc166b2240b8699"
+cssnano@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.npmjs.org/cssnano/-/cssnano-4.0.4.tgz#8a397b5e307e06fd7e361bf11344b1cff8749a86"
   dependencies:
     cosmiconfig "^5.0.0"
     cssnano-preset-default "^4.0.0"
@@ -5450,7 +5477,7 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.npmjs.org/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
-lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.3.0:
+lodash@^4.13.1, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.3.0:
   version "4.17.10"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
@@ -6329,6 +6356,12 @@ parse5@4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/parse5/-/parse5-4.0.0.tgz#6d78656e3da8d78b4ec0b906f7c08ef1dfe3f608"
 
+parse5@^3.0.1:
+  version "3.0.3"
+  resolved "https://registry.npmjs.org/parse5/-/parse5-3.0.3.tgz#042f792ffdd36851551cf4e9e066b3874ab45b5c"
+  dependencies:
+    "@types/node" "*"
+
 parseurl@~1.3.2:
   version "1.3.2"
   resolved "https://registry.npmjs.org/parseurl/-/parseurl-1.3.2.tgz#fc289d4ed8993119460c156253262cdc8de65bf3"
@@ -6653,12 +6686,12 @@ postcss-initial@^2.0.0:
     lodash.template "^4.2.4"
     postcss "^6.0.1"
 
-postcss-lab-function@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/postcss-lab-function/-/postcss-lab-function-1.0.1.tgz#f493a93edcd8379de716bc3aab156626c317ce3c"
+postcss-lab-function@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/postcss-lab-function/-/postcss-lab-function-1.1.0.tgz#1965cd4cfb380601129f29c59797a0df13463f48"
   dependencies:
     "@csstools/convert-colors" "^1.4.0"
-    postcss "^6.0.22"
+    postcss "^6.0.23"
     postcss-values-parser "^1.5.0"
 
 postcss-load-config@^2.0.0:
@@ -6878,9 +6911,9 @@ postcss-place@^3.0.1:
     postcss "^6.0.22"
     postcss-values-parser "^1.5.0"
 
-postcss-preset-env@^5.2.3:
-  version "5.2.3"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-5.2.3.tgz#7eed45419a786cb4b23fb44b80bbffe35b43f670"
+postcss-preset-env@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-5.3.0.tgz#568939a1c03e950ced2bdfe32822c316ac7d0b7f"
   dependencies:
     autoprefixer "^8.6.5"
     browserslist "^3.2.8"
@@ -6904,7 +6937,7 @@ postcss-preset-env@^5.2.3:
     postcss-gap-properties "^1.0.0"
     postcss-image-set-function "^2.0.0"
     postcss-initial "^2.0.0"
-    postcss-lab-function "^1.0.1"
+    postcss-lab-function "^1.1.0"
     postcss-logical "^1.1.1"
     postcss-media-minmax "^3.0.0"
     postcss-nesting "^6.0.0"
@@ -7271,9 +7304,9 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-hot-loader@^4.3.3:
-  version "4.3.3"
-  resolved "https://registry.npmjs.org/react-hot-loader/-/react-hot-loader-4.3.3.tgz#37409a3341c7787563d0972007ba02521f82f5d5"
+react-hot-loader@^4.3.4:
+  version "4.3.4"
+  resolved "https://registry.npmjs.org/react-hot-loader/-/react-hot-loader-4.3.4.tgz#4f9bdd55bb20d77a6ae8931fa1c187e5f0ce6279"
   dependencies:
     fast-levenshtein "^2.0.6"
     global "^4.3.0"
