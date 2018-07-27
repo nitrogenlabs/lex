@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import * as fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
@@ -7,7 +7,7 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {getPackageJson, log, setPackageJson} from '../utils';
 
-export const init = (appName: string, packageName: string, cmd) => {
+export const init = async (appName: string, packageName: string, cmd) => {
   const spinner = ora({color: 'yellow'});
   const cwd: string = process.cwd();
   let status: number = 0;
@@ -40,7 +40,7 @@ export const init = (appName: string, packageName: string, cmd) => {
   log(chalk.grey('Initializing...'), cmd);
 
   try {
-    const download: SpawnSyncReturns<Buffer> = spawnSync(dnpPath, [appModule, tmpPath], {});
+    const download = await execa(dnpPath, [appModule, tmpPath], {});
 
     // Stop spinner and update status
     status += download.status;
@@ -93,7 +93,7 @@ export const init = (appName: string, packageName: string, cmd) => {
     process.chdir(appPath);
 
     // Install dependencies
-    const install: SpawnSyncReturns<Buffer> = spawnSync(packageManager, ['install'], {
+    const install = await execa(packageManager, ['install'], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });

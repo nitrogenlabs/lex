@@ -5,6 +5,16 @@
     "**/*.test.ts",
     "**/*.test.tsx"
   ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "helpers": false,
+        "polyfill": false,
+        "regenerator": true
+      }
+    ]
+  ],
   "presets": [
     "@babel/env",
     "@babel/typescript",

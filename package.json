@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.9.23",
+  "version": "1.9.23-1",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -55,10 +55,11 @@
     "@babel/preset-react": "7.0.0-beta.54",
     "@babel/preset-stage-0": "7.0.0-beta.54",
     "@babel/preset-typescript": "^7.0.0-beta.54",
-    "@types/jest": "^23.3.0",
-    "@types/node": "^10.5.2",
-    "@types/react": "^16.4.6",
-    "@types/webpack": "^4.4.7",
+    "@babel/runtime": "^7.0.0-beta.54",
+    "@types/jest": "^23.3.1",
+    "@types/node": "^10.5.3",
+    "@types/react": "^16.4.7",
+    "@types/webpack": "^4.4.8",
     "babel-core": "7.0.0-bridge.0",
     "babel-loader": "8.0.0-beta.3",
     "babel-plugin-istanbul": "^4.1.6",
@@ -69,9 +70,11 @@
     "compare-versions": "^3.3.0",
     "copy-webpack-plugin": "^4.5.2",
     "core-js": "^2.5.7",
+    "cpy": "^7.0.1",
     "css-loader": "^1.0.0",
-    "cssnano": "4.0.3",
+    "cssnano": "4.0.4",
     "download-npm-package": "^3.1.12",
+    "execa": "^0.10.0",
     "exports-loader": "^0.7.0",
     "file-loader": "^1.1.11",
     "find-file-up": "^2.0.1",
@@ -89,11 +92,11 @@
     "postcss-import": "^11.1.0",
     "postcss-loader": "^2.1.6",
     "postcss-nesting": "^6.0.0",
-    "postcss-preset-env": "^5.2.2",
+    "postcss-preset-env": "^5.3.0",
     "postcss-simple-vars": "^4.1.0",
     "postcss-url": "^7.3.2",
     "react": "^16.4.1",
-    "react-hot-loader": "^4.3.3",
+    "react-hot-loader": "^4.3.4",
     "resolve": "^1.8.1",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
@@ -104,13 +107,13 @@
     "svg-spritemap-webpack-plugin": "^2.7.0",
     "tsconfig-paths": "^3.4.2",
     "typescript": "^2.9.2",
-    "webpack": "4.16.1",
+    "webpack": "4.16.2",
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.4"
+    "webpack-dev-server": "^3.1.5"
   },
   "devDependencies": {
-    "eslint": "^5.1.0",
-    "eslint-config-styleguidejs": "^0.7.5"
+    "eslint": "^5.2.0",
+    "eslint-config-styleguidejs": "^0.7.6"
   }
 }

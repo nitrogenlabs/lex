@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
 import compareVersions from 'compare-versions';
+import execa from 'execa';
 import latestVersion from 'latest-version';
 import ora from 'ora';
 
@@ -24,7 +24,7 @@ export const upgrade = (cmd) => {
   LexConfig.parseConfig(cmd);
 
   latestVersion('@nlabs/lex')
-    .then((latest: string) => {
+    .then(async (latest: string) => {
       const current: string = parseVersion(packageConfig.version);
       const versionDiff: number = compareVersions(latest, current);
 
@@ -43,7 +43,7 @@ export const upgrade = (cmd) => {
         ['install', '-g', '@nlabs/lex@latest'] :
         ['global', 'add', '@nlabs/lex@latest'];
 
-      const yarn: SpawnSyncReturns<Buffer> = spawnSync(packageManager, upgradeOptions, {
+      const yarn = await execa(packageManager, upgradeOptions, {
         encoding: 'utf-8',
         stdio: 'inherit'
       });

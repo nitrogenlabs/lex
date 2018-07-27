@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import ora from 'ora';
 import * as path from 'path';
 import rimraf from 'rimraf';
@@ -7,7 +7,7 @@ import rimraf from 'rimraf';
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
-export const dev = (cmd) => {
+export const dev = async (cmd) => {
   // Spinner
   const spinner = ora({color: 'yellow'});
 
@@ -41,7 +41,7 @@ export const dev = (cmd) => {
   // Clean output directory before we start adding in new files
   if(cmd.remove) {
     // Start cleaning spinner
-    spinner.start('Cleaning output directory...\n');
+    spinner.start('Cleaning output directory...');
 
     // Clean
     rimraf.sync(outputFullPath);
@@ -65,16 +65,16 @@ export const dev = (cmd) => {
   );
 
   // Start development spinner
-  spinner.start('Starting Webpack development server...\n');
+  // spinner.start('Starting Webpack development server...');
 
-  const webpack: SpawnSyncReturns<Buffer> = spawnSync(webpackDevPath, webpackOptions, {
+  const webpack = await execa(webpackDevPath, webpackOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
 
   if(!webpack.status) {
     // Stop spinner
-    spinner.succeed('Development server successfully started!');
+    spinner.succeed('Development server stopped');
   } else {
     // Stop spinner
     spinner.fail('There was an error while running Webpack.');

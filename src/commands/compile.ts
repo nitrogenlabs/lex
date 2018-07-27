@@ -1,5 +1,7 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import cpy from 'cpy';
+import execa from 'execa';
+import fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
 import rimraf from 'rimraf';
@@ -7,14 +9,29 @@ import rimraf from 'rimraf';
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
-export const compile = (cmd) => {
+const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
+  const {outputFullPath, sourceFullPath} = LexConfig.config;
+  const copyFrom: string[] = files.map((fileName: string) => `${sourceFullPath}/${fileName}`);
+
+  try {
+    let total: number = 0;
+    spinner.start(`Copying ${typeName} files...\n`);
+    await cpy(copyFrom, `${outputFullPath}/${outputDir}`).on('progress', (progress) => {
+      total = progress.totalFiles;
+      spinner.text = `Copying ${typeName} files (${progress.completedFiles} of ${progress.totalFiles})...\n`;
+    });
+    spinner.succeed(`Successfully copied ${total} ${typeName} files!`);
+  } catch(error) {
+    spinner.fail(`Copying of ${typeName} files failed.`);
+  }
+};
+
+export const compile = async (cmd) => {
   // Spinner
   const spinner = ora({color: 'yellow'});
 
   // Display status
   log(chalk.cyan('Lex compiling...'), cmd);
-
-  let status: number = 0;
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -63,19 +80,15 @@ export const compile = (cmd) => {
     spinner.start('Static type checking with Typescript...\n');
 
     // Type checking
-    const typescript = spawnSync(typescriptPath, typescriptOptions, {
-      encoding: 'utf-8',
-      stdio: 'inherit'
-    });
+    const typescript = await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
 
     // Stop spinner
     if(!typescript.status) {
       spinner.succeed('Successfully completed type checking!');
     } else {
       spinner.fail('Type checking failed.');
+      return process.exit(1);
     }
-
-    status += typescript.status;
   }
 
   // Babel options
@@ -100,23 +113,45 @@ export const compile = (cmd) => {
   }
 
   // Start type checking spinner
-  spinner.start('Transpiling with Babel...\n');
+  spinner.start('Compiling with Babel...\n');
 
-  const babel: SpawnSyncReturns<Buffer> = spawnSync(babelPath, babelOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
 
   // Stop spinner
   if(!babel.status) {
-    spinner.succeed('Successfully transpiled code!');
+    spinner.succeed(babel.stdout);
   } else {
-    spinner.fail('Code transpiling failed.');
+    spinner.fail('Code compiling failed.');
+    return process.exit(1);
   }
 
-  // Update process status
-  status += babel.status;
+  if(fs.existsSync(`${sourceFullPath}/styles`)) {
+    await copyFiles(['styles/**/*.css'], 'styles', 'css', spinner);
+  }
+
+  if(fs.existsSync(`${sourceFullPath}/img`)) {
+    await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
+  }
+
+  if(fs.existsSync(`${sourceFullPath}/fonts`)) {
+    await copyFiles(
+      [
+        'fonts/**/*.ttf',
+        'fonts/**/*.otf',
+        'fonts/**/*.woff',
+        'fonts/**/*.svg',
+        'fonts/**/*.woff2'
+      ],
+      'fonts',
+      'font',
+      spinner
+    );
+  }
+
+  if(fs.existsSync(`${sourceFullPath}/docs`)) {
+    await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
+  }
 
   // Stop process
-  process.exit(status);
+  return process.exit(0);
 };

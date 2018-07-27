@@ -1,11 +1,11 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
-export const test = (cmd) => {
+export const test = async (cmd) => {
   log(chalk.cyan('Lex testing...'), cmd);
 
   // Get custom configuration
@@ -48,7 +48,7 @@ export const test = (cmd) => {
   }
 
   // Test app using jest
-  const jest: SpawnSyncReturns<Buffer> = spawnSync(jestPath, jestOptions, {
+  const jest = await execa(jestPath, jestOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

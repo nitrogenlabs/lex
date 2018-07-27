@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import ora from 'ora';
 import * as path from 'path';
 import rimraf from 'rimraf';
@@ -57,7 +57,7 @@ export const build = (cmd) => {
 
   // Compile using webpack
   const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/cli.js');
-  const webpack: SpawnSyncReturns<Buffer> = spawnSync(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
+  const webpack = execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

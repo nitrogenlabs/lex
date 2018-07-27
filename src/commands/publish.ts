@@ -1,11 +1,11 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import semver from 'semver';
 
 import {LexConfig} from '../LexConfig';
 import {getPackageJson, log, setPackageJson} from '../utils';
 
-export const publish = (cmd) => {
+export const publish = async (cmd) => {
   log(chalk.cyan('Lex publishing npm module...'), cmd);
 
   // Get custom configuration
@@ -97,7 +97,7 @@ export const publish = (cmd) => {
     nextVersion = prevVersion;
   }
 
-  const npmPublish: SpawnSyncReturns<Buffer> = spawnSync(packageManager, publishOptions, {
+  const npmPublish = await execa(packageManager, publishOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });

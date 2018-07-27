@@ -1,11 +1,11 @@
 import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import ora from 'ora';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
-export const update = (cmd) => {
+export const update = async (cmd) => {
   // Spinner
   const spinner = ora({color: 'yellow'});
 
@@ -26,7 +26,7 @@ export const update = (cmd) => {
     ['update'] :
     [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
-  const pm: SpawnSyncReturns<Buffer> = spawnSync(packageManager, upgradeOptions, {
+  const pm = await execa(packageManager, upgradeOptions, {
     encoding: 'utf-8',
     stdio: 'inherit'
   });
