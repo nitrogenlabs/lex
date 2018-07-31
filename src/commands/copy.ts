@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -43,11 +42,13 @@ export const copyFolderRecursiveSync = (source: string, target: string): void =>
 };
 
 export const copy = (from: string, to: string, cmd) => {
+  const {quiet} = cmd;
+
   // Display message
-  log(chalk.cyan(`Lex copying "${to}"...`), cmd);
+  log(`Lex copying "${to}"...`, 'info', quiet);
 
   if(!fs.existsSync(from)) {
-    log(chalk.red(`Lex Error: Path not found, "${from}"...`), cmd);
+    log(`Lex Error: Path not found, "${from}"...`, 'error', quiet);
     process.exit(1);
     return false;
   }
@@ -57,7 +58,7 @@ export const copy = (from: string, to: string, cmd) => {
       // Copy directory
       copyFolderRecursiveSync(from, to);
     } catch(error) {
-      log(chalk.red(`Lex Error: Cannot copy "${from}".`, error.message), cmd);
+      log(`Lex Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
       process.exit(1);
       return false;
     }
@@ -66,7 +67,7 @@ export const copy = (from: string, to: string, cmd) => {
       // Copy file
       copyFileSync(from, to);
     } catch(error) {
-      log(chalk.red(`Lex Error: Cannot copy "${from}"`, error.message), cmd);
+      log(`Lex Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
       process.exit(1);
       return false;
     }

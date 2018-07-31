@@ -1,24 +1,20 @@
-import chalk from 'chalk';
 import execa from 'execa';
-import ora from 'ora';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
 
 export const update = async (cmd) => {
-  // Spinner
-  const spinner = ora({color: 'yellow'});
+  const {packageManager: cmdPackageManager, quiet} = cmd;
 
   // Display status
-  log(chalk.cyan('Lex updating packages...'), cmd);
+  log('Lex updating packages...', 'info', quiet);
 
-  // Start loader
-  spinner.start('Updating...\n');
+  // Spinner
+  const spinner = createSpinner(quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {packageManager: cmdPackageManager} = cmd;
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;
 
@@ -26,17 +22,29 @@ export const update = async (cmd) => {
     ['update'] :
     [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
-  const pm = await execa(packageManager, upgradeOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  try {
+    const pm = await execa(packageManager, upgradeOptions, {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-  // Stop loader
-  if(!pm.status) {
-    spinner.succeed('Successfully updated packages!');
-  } else {
+    // Stop loader
+    if(!pm.status) {
+      spinner.succeed('Successfully updated packages!');
+    } else {
+      spinner.fail('Failed to updated packages.');
+    }
+
+    // Kill process
+    return process.exit(pm.status);
+  } catch(error) {
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
+
+    // Stop spinner
     spinner.fail('Failed to updated packages.');
-  }
 
-  process.exit(pm.status);
+    // Kill process
+    return process.exit(1);
+  }
 };

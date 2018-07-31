@@ -1,12 +1,15 @@
-import chalk from 'chalk';
 import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
 
 export const test = async (cmd) => {
-  log(chalk.cyan('Lex testing...'), cmd);
+  const {config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
+  log('Lex testing...', 'info', quiet);
+
+  // Spinner
+  const spinner = createSpinner(quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -19,7 +22,6 @@ export const test = async (cmd) => {
   }
 
   // Configure jest
-  const {config, detectOpenHandles, removeCache, setup, update, watch} = cmd;
   const jestPath: string = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
   const jestConfigFile: string = config || path.resolve(__dirname, '../../jest.config.js');
   const jestSetupFile: string = setup || '';
@@ -50,10 +52,28 @@ export const test = async (cmd) => {
   }
 
   // Test app using jest
-  const jest = await execa(jestPath, jestOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  try {
+    const jest = await execa(jestPath, jestOptions, {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-  return process.exit(jest.status);
+    if(jest.status) {
+      spinner.succeed('Testing completed!');
+    } else {
+      spinner.fail('Testing failed!');
+    }
+
+    // Kill process
+    return process.exit(jest.status);
+  } catch(error) {
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
+
+    // Stop spinner
+    spinner.fail('Testing failed!');
+
+    // Kill process
+    return process.exit(1);
+  }
 };

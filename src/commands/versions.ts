@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import {log} from '../utils';
 
 const packageConfig = require('../../package.json');
 
@@ -18,12 +18,12 @@ export const versions = (cmd) => {
       return list;
     }, {})));
   } else {
-    console.log(chalk.bgCyan('Versions:'));
-    console.log(chalk.cyan(`  Lex: ${packages.lex}`));
-    console.log(chalk.grey('  ----------'));
-    console.log(chalk.cyan(`  Babel: ${packages.babel}`));
-    console.log(chalk.cyan(`  Jest: ${packages.jest}`));
-    console.log(chalk.cyan(`  Typescript: ${packages.typescript}`));
-    console.log(chalk.cyan(`  Webpack: ${packages.webpack}`));
+    log('Versions:', 'info', false);
+    log(`  Lex: ${packages.lex}`, 'info', false);
+    log('  ----------', 'note', false);
+    log(`  Babel: ${packages.babel}`, 'info', false);
+    log(`  Jest: ${packages.jest}`, 'info', false);
+    log(`  Typescript: ${packages.typescript}`, 'info', false);
+    log(`  Webpack: ${packages.webpack}`, 'info', false);
   }
 };

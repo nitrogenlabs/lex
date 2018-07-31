@@ -1,18 +1,18 @@
-import chalk from 'chalk';
 import execa from 'execa';
-import ora from 'ora';
 import * as path from 'path';
-import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
+import {removeFiles} from './clean';
 
-export const build = (cmd) => {
+export const build = async (cmd) => {
+  const {config, mode, quiet = false, remove, variables} = cmd;
+
   // Spinner
-  const spinner = ora({color: 'yellow'});
+  const spinner = createSpinner(quiet);
 
   // Display status
-  log(chalk.cyan('Lex building...'), cmd);
+  log('Lex building...', 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -22,11 +22,13 @@ export const build = (cmd) => {
   // Set node environment variables
   let variablesObj: object = {NODE_ENV: 'production'};
 
-  if(cmd.variables) {
+  if(variables) {
     try {
-      variablesObj = JSON.parse(cmd.variables);
+      variablesObj = JSON.parse(variables);
     } catch(error) {
-      log(chalk.red('Lex Error: Environment variables option is not a valid JSON object.'), cmd);
+      log('Lex Error: Environment variables option is not a valid JSON object.', 'error', quiet);
+
+      // Kill process
       return process.exit(1);
     }
   }
@@ -34,11 +36,11 @@ export const build = (cmd) => {
   process.env = {...process.env, ...variablesObj};
 
   // Start build spinner
-  spinner.start('Building with Webpack...\n');
+  spinner.start('Building with Webpack...');
 
   // Clean output directory before we start adding in new files
-  if(cmd.remove) {
-    rimraf.sync(outputFullPath);
+  if(remove) {
+    await removeFiles(outputFullPath);
   }
 
   // Add tsconfig file if none exists
@@ -48,23 +50,34 @@ export const build = (cmd) => {
   }
 
   // Get custom webpack configuration
-  const webpackConfig: string = cmd.config || path.resolve(__dirname, '../../webpack.config.js');
-  const webpackMode: string = cmd.mode || 'production';
+  const webpackConfig: string = config || path.resolve(__dirname, '../../webpack.config.js');
+  const webpackMode: string = mode || 'production';
 
   // Compile using webpack
-  const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/cli.js');
-  const webpack = execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  try {
+    const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/cli.js');
+    const webpack = execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-  // Stop spinner
-  if(!webpack.status) {
-    spinner.succeed('Build completed successfully!');
-  } else {
+    // Stop spinner
+    if(!webpack.status) {
+      spinner.succeed('Build completed successfully!');
+    } else {
+      spinner.fail('Build failed.');
+    }
+
+    // Stop process
+    return process.exit(webpack.status);
+  } catch(error) {
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
+
+    // Stop spinner
     spinner.fail('Build failed.');
-  }
 
-  // Stop process
-  return process.exit(webpack.status);
+    // Kill process
+    return process.exit(1);
+  }
 };

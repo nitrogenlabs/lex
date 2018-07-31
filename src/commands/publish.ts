@@ -3,15 +3,18 @@ import execa from 'execa';
 import semver from 'semver';
 
 import {LexConfig} from '../LexConfig';
-import {getPackageJson, log, setPackageJson} from '../utils';
+import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
 export const publish = async (cmd) => {
-  log(chalk.cyan('Lex publishing npm module...'), cmd);
+  const {bump, newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
+  log('Lex publishing npm module...', 'info', quiet);
+
+  // Spinner
+  const spinner = createSpinner(quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  const {bump, newVersion, otp, private: accessPrivate, packageManager: cmdPackageManager, tag} = cmd;
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;
   const publishOptions: string[] = ['publish'];
@@ -41,7 +44,7 @@ export const publish = async (cmd) => {
     packageName = packageJson.name;
     prevVersion = packageJson.version;
   } catch(error) {
-    log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
+    log(`Lex Error: The file, ${packagePath}, was not found or is malformed.`, 'error', quiet);
     console.error(chalk.red(error.message));
     return process.exit(1);
   }
@@ -64,7 +67,7 @@ export const publish = async (cmd) => {
       const packageVersion = semver.coerce(prevVersion);
 
       if(!semver.valid(packageVersion)) {
-        log(chalk.red('Lex Error: Version is invalid in package.json'), cmd);
+        log('Lex Error: Version is invalid in package.json', 'error', quiet);
         return process.exit(1);
       }
 
@@ -73,11 +76,11 @@ export const publish = async (cmd) => {
       } else if(validPreReleases.includes(formatBump)) {
         nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
       } else {
-        log(chalk.red(`Lex Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`), cmd);
+        log(`Lex Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
         return process.exit(1);
       }
     } else {
-      log(chalk.red('Lex Error: Bump type is missing.'), cmd);
+      log('Lex Error: Bump type is missing.', 'error', quiet);
       return process.exit(1);
     }
   }
@@ -89,19 +92,35 @@ export const publish = async (cmd) => {
       // Save updated version
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
-      log(chalk.red(`Lex Error: The file, ${packagePath}, was not found or is malformed.`), cmd);
-      console.error(chalk.red(error.message));
+      log(`Lex Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
       return process.exit(1);
     }
   } else {
     nextVersion = prevVersion;
   }
 
-  const npmPublish = await execa(packageManager, publishOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  try {
+    const npmPublish = await execa(packageManager, publishOptions, {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-  log(chalk.greenBright(`Successfully published npm package: ${packageName}`), cmd);
-  return process.exit(npmPublish.status);
+    if(!npmPublish.status) {
+      spinner.succeed(`Successfully published npm package: ${packageName}!`);
+    } else {
+      spinner.fail('Publishing to npm has failed.');
+    }
+
+    // Kill process
+    return process.exit(npmPublish.status);
+  } catch(error) {
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
+
+    // Stop spinner
+    spinner.fail('Publishing to npm has failed.');
+
+    // Kill process
+    return process.exit(1);
+  }
 };

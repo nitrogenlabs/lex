@@ -93,6 +93,12 @@ const webpackConfig = {
               plugins: [
                 require('postcss-import')({addDependencyTo: webpack}),
                 require('postcss-url'),
+                require('postcss-for'),
+                require('postcss-percentage')({
+                  floor: true,
+                  precision: 9,
+                  trimTrailingZero: true
+                }),
                 require('postcss-custom-properties')({
                   preserve: false,
                   strict: false,

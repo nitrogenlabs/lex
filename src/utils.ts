@@ -1,9 +1,43 @@
+import chalk from 'chalk';
 import * as fs from 'fs';
+import ora from 'ora';
 
-export const log = (message: string, cmd = {quiet: false}) => {
-  if(!cmd.quiet) {
-    console.log(message);
+export const log = (message: string, type: string = 'info', quiet = false) => {
+  if(!quiet) {
+    let color;
+
+    switch(type) {
+      case 'error':
+        color = chalk.red;
+        break;
+      case 'note':
+        color = chalk.grey;
+        break;
+      case 'success':
+        color = chalk.greenBright;
+        break;
+      case 'warn':
+        color = chalk.yellow;
+        break;
+      default:
+        color = chalk.cyan;
+        break;
+    }
+
+    console.log(color(message));
   }
+};
+
+export const createSpinner = (quiet = false): any => {
+  if(quiet) {
+    return {
+      fail: () => {},
+      start: () => {},
+      succeed: () => {}
+    };
+  }
+
+  return ora({color: 'yellow'});
 };
 
 export const getPackageJson = (packagePath?: string) => {

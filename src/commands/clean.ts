@@ -1,57 +1,70 @@
-import chalk from 'chalk';
-import ora from 'ora';
 import path from 'path';
 import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
 
-export const clean = (cmd) => {
+const cwd: string = process.cwd();
+export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
+  const filePath: string = isRelative ? path.resolve(cwd, fileName) : fileName;
+
+  rimraf(filePath, (error) => {
+    if(error) {
+      return reject(error);
+    }
+
+    return resolve();
+  });
+});
+
+export const clean = async (cmd) => {
+  const {quiet, snapshots} = cmd;
+
   // Spinner
-  const spinner = ora({color: 'yellow'});
+  const spinner = createSpinner(quiet);
 
   // Display status
-  const cwd: string = process.cwd();
-  log(chalk.cyan('Lex cleaning directory...'), cmd);
+  log('Lex cleaning directory...', 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
   // Start cleaning spinner
-  spinner.start('Cleaning files...\n');
+  spinner.start('Cleaning files...');
 
   try {
     // Remove node_modules
-    rimraf.sync(path.resolve(cwd, './node_modules'));
+    await removeFiles('./node_modules', true);
 
     // Remove test coverage reports
-    rimraf.sync(path.resolve(cwd, './coverage'));
+    await removeFiles('./coverage', true);
 
     // Remove yarn files
-    rimraf.sync(path.resolve(cwd, './yarn.lock'));
-    rimraf.sync(path.resolve(cwd, './yarn-error.log'));
-    rimraf.sync(path.resolve(cwd, './yarn-debug.log'));
+    await removeFiles('./yarn.lock', true);
+    await removeFiles('./yarn-error.log', true);
+    await removeFiles('./yarn-debug.log', true);
 
     // Remove npm files
-    rimraf.sync(path.resolve(cwd, './package-lock.json'));
-    rimraf.sync(path.resolve(cwd, './npm-debug.log'));
+    await removeFiles('./package-lock.json', true);
+    await removeFiles('./npm-debug.log', true);
 
-    if(cmd.snapshots) {
-      rimraf.sync(path.resolve(cwd, './**/__snapshots__'));
+    if(snapshots) {
+      await removeFiles('./**/__snapshots__', true);
     }
 
     // Stop spinner
     spinner.succeed('Successfully cleaned!');
 
     // Stop process
-    process.exit(0);
+    return process.exit(0);
   } catch(error) {
-    log(chalk.red('Lex Error:', error.message), cmd);
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed to clean project.');
 
     // Kill process
-    process.exit(1);
+    return process.exit(1);
   }
 };

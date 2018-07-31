@@ -1,10 +1,9 @@
-import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
+import {removeFiles} from './clean';
 import {copyFolderRecursiveSync} from './copy';
 
 const updateName = (filePath: string, replace: string, replaceCaps: string) => {
@@ -14,7 +13,8 @@ const updateName = (filePath: string, replace: string, replaceCaps: string) => {
   fs.writeFileSync(filePath, data, 'utf8');
 };
 
-export const add = (type: string, name: string, cmd) => {
+export const add = async (type: string, name: string, cmd) => {
+  const {quiet} = cmd;
   const cwd: string = process.cwd();
 
   // Get custom configuration
@@ -27,7 +27,7 @@ export const add = (type: string, name: string, cmd) => {
 
   if(!name) {
     if(itemNames.includes(name)) {
-      log(chalk.red(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`), cmd);
+      log(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
       return false;
     }
   } else {
@@ -35,7 +35,7 @@ export const add = (type: string, name: string, cmd) => {
   }
 
   // Display message
-  log(chalk.cyan(`Lex adding ${type}...`), cmd);
+  log(`Lex adding ${type}...`, 'info', quiet);
 
   // Template directory
   let templatePath: string;
@@ -78,12 +78,12 @@ export const add = (type: string, name: string, cmd) => {
           // Search and replace store name
           updateName(storeFilePath, name, nameCaps);
         } else {
-          log(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${storePath} already exists.`), cmd);
+          log(`Lex Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), cmd);
+        log(`Lex Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         process.exit(1);
         return false;
       }
@@ -91,7 +91,7 @@ export const add = (type: string, name: string, cmd) => {
     }
     case 'tsconfig': {
       // Remove existing file
-      rimraf.sync(path.resolve(cwd, 'tsconfig.json'));
+      await removeFiles('tsconfig.json', true);
 
       // Get tsconfig template
       const templatePath: string = path.resolve(__dirname, '../../tsconfig.json');
@@ -138,12 +138,12 @@ export const add = (type: string, name: string, cmd) => {
           // Search and replace view name
           updateName(viewFilePath, name, nameCaps);
         } else {
-          log(chalk.red(`Lex Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`), cmd);
+          log(`Lex Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        log(chalk.red(`Lex Error: Cannot create new ${type}.`, error.message), cmd);
+        log(`Lex Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         process.exit(1);
         return false;
       }
@@ -151,14 +151,14 @@ export const add = (type: string, name: string, cmd) => {
     }
     case 'vscode': {
       // Remove existing directory
-      rimraf.sync(path.resolve(cwd, '.vscode'));
+      await removeFiles('.vscode', true);
 
       // Copy vscode configuration
       copyFolderRecursiveSync(path.resolve(__dirname, '../../.vscode'), cwd);
       break;
     }
     default: {
-      log(chalk.red(`Lex Error: "${type}" does not exist. Please use 'lex -h' for options.`), cmd);
+      log(`Lex Error: "${type}" does not exist. Please use 'lex -h' for options.`, 'error', quiet);
       process.exit(1);
       return false;
     }

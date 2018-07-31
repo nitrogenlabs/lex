@@ -1,24 +1,21 @@
-import chalk from 'chalk';
 import compareVersions from 'compare-versions';
 import execa from 'execa';
 import latestVersion from 'latest-version';
-import ora from 'ora';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
 import {parseVersion} from './versions';
 
 const packageConfig = require('../../package.json');
 
 export const upgrade = (cmd) => {
-  // Spinner
-  const spinner = ora({color: 'yellow'});
+  const {quiet} = cmd;
 
   // Display status
-  log(chalk.cyan('Upgrading Lex...'), cmd);
+  log('Upgrading Lex...', 'info', quiet);
 
-  // Start loader
-  spinner.start('Updating...\n');
+  // Spinner
+  const spinner = createSpinner(quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -29,11 +26,11 @@ export const upgrade = (cmd) => {
       const versionDiff: number = compareVersions(latest, current);
 
       if(versionDiff === 0) {
-        log(chalk.grey(`Currently up-to-date. Version ${latest} is the latest.`), cmd);
+        log(`Currently up-to-date. Version ${latest} is the latest.`, 'note', quiet);
         return;
       }
 
-      log(chalk.grey(`Currently out of date. Upgrading from version ${current} to ${latest}...`), cmd);
+      log(`Currently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
 
       // We will always install @nlabs/lex globally using npm. There is an issue with installing with yarn globally.
       // const {packageManager} = LexConfig.config;
@@ -49,16 +46,20 @@ export const upgrade = (cmd) => {
       });
 
       // Stop loader
-      spinner.succeed('Successfully updated Lex!');
+      if(!yarn.status) {
+        spinner.succeed('Successfully updated Lex!');
+      } else {
+        spinner.fail('Failed to updated packages.');
+      }
 
       // Stop process
       process.exit(yarn.status);
     })
     .catch((error) => {
       // Display error message
-      log(chalk.red(`Lex Error: ${error.message}.`), cmd);
+      log(`Lex Error: ${error.message}`, 'error', quiet);
 
-      // Stop loader
+      // Stop spinner
       spinner.fail('Failed to updated packages.');
 
       // Kill process

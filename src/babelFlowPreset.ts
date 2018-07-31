@@ -1,10 +1,10 @@
 import {declare} from '@babel/helper-plugin-utils';
-import pluginDynamicImport from '@babel/plugin-syntax-dynamic-import';
 import pluginTransform from '@babel/plugin-transform-runtime';
 import presetEnv from '@babel/preset-env';
 import presetFlow from '@babel/preset-flow';
 import presetReact from '@babel/preset-react';
-import presetStage0 from '@babel/preset-stage-0';
+
+import {plugins} from './babelPlugins';
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {targetEnvironment} = lexConfig;
@@ -16,16 +16,15 @@ export default declare((api) => {
 
   return {
     plugins: [
+      ...plugins,
       [pluginTransform, {
         helpers: false,
         polyfill: false,
         regenerator: true
-      }],
-      pluginDynamicImport
+      }]
     ],
     presets: [
       targetEnvironment === 'web' ? babelWebEnv : babelNodeEnv,
-      [presetStage0, {decoratorsLegacy: true, loose: false, pipelineProposal: 'minimal'}],
       presetReact,
       presetFlow
     ]

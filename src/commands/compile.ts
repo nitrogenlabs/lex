@@ -1,13 +1,11 @@
-import chalk from 'chalk';
 import cpy from 'cpy';
 import execa from 'execa';
 import fs from 'fs';
-import ora from 'ora';
 import * as path from 'path';
-import rimraf from 'rimraf';
 
 import {LexConfig} from '../LexConfig';
-import {log} from '../utils';
+import {createSpinner, log} from '../utils';
+import {removeFiles} from './clean';
 
 const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
   const {outputFullPath, sourceFullPath} = LexConfig.config;
@@ -22,16 +20,19 @@ const copyFiles = async (files: string[], outputDir: string, typeName: string, s
     });
     spinner.succeed(`Successfully copied ${total} ${typeName} files!`);
   } catch(error) {
+    // Stop spinner
     spinner.fail(`Copying of ${typeName} files failed.`);
   }
 };
 
 export const compile = async (cmd) => {
+  const {config, quiet, remove, watch} = cmd;
+
   // Spinner
-  const spinner = ora({color: 'yellow'});
+  const spinner = createSpinner(quiet);
 
   // Display status
-  log(chalk.cyan('Lex compiling...'), cmd);
+  log('Lex compiling...', 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -41,8 +42,8 @@ export const compile = async (cmd) => {
   const nodePath: string = path.resolve(__dirname, '../../node_modules');
 
   // Clean output directory before we start adding in new files
-  if(cmd.remove) {
-    rimraf.sync(outputFullPath);
+  if(remove) {
+    await removeFiles(outputFullPath);
   }
 
   // Add tsconfig file if none exists
@@ -52,8 +53,8 @@ export const compile = async (cmd) => {
 
     // Check static types with typescript
     const typescriptPath: string = `${nodePath}/typescript/bin/tsc`;
-    const typescriptOptions: string[] = cmd.config ?
-      ['-p', cmd.config] :
+    const typescriptOptions: string[] = config ?
+      ['-p', config] :
       [
         '--allowSyntheticDefaultImports',
         '--baseUrl', sourceFullPath,
@@ -80,13 +81,26 @@ export const compile = async (cmd) => {
     spinner.start('Static type checking with Typescript...');
 
     // Type checking
-    const typescript = await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
+    try {
+      const typescript = await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
 
-    // Stop spinner
-    if(!typescript.status) {
-      spinner.succeed('Successfully completed type checking!');
-    } else {
+      // Stop spinner
+      if(!typescript.status) {
+        spinner.succeed('Successfully completed type checking!');
+      } else {
+        spinner.fail('Type checking failed.');
+
+        // Kill Process
+        return process.exit(1);
+      }
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
       spinner.fail('Type checking failed.');
+
+      // Kill Process
       return process.exit(1);
     }
   }
@@ -99,7 +113,7 @@ export const compile = async (cmd) => {
     '--out-dir',
     outputFullPath,
     '--ignore',
-    useTypescript ? '**/*.test.ts*' : '**/*.test.js',
+    useTypescript ? '**/*.test.ts,**/*.test.tsx' : '**/*.test.js',
     '--extensions',
     useTypescript ? '.ts,.tsx' : '.js',
     '-s',
@@ -108,48 +122,115 @@ export const compile = async (cmd) => {
     path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js')
   ];
 
-  if(cmd.watch) {
+  if(watch) {
     babelOptions.push('--watch');
   }
 
   // Start type checking spinner
   spinner.start('Compiling with Babel...');
 
-  const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
+  try {
+    const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
 
-  // Stop spinner
-  if(!babel.status) {
-    spinner.succeed(babel.stdout);
-  } else {
+    // Stop spinner
+    if(!babel.status) {
+      spinner.succeed((babel.stdout || '').replace('.', '!'));
+    } else {
+      spinner.fail('Code compiling failed.');
+
+      // Kill Process
+      return process.exit(1);
+    }
+  } catch(error) {
+    // Display error message
+    log(`Lex Error: ${error.message}`, 'error', quiet);
+
+    // Stop spinner
     spinner.fail('Code compiling failed.');
+
+    // Kill Process
     return process.exit(1);
   }
 
   if(fs.existsSync(`${sourceFullPath}/styles`)) {
-    await copyFiles(['styles/**/*.css'], 'styles', 'css', spinner);
+    const postcssPath: string = `${nodePath}/postcss-cli/bin/postcss`;
+    const postcssOptions: string[] = [
+      `${sourceFullPath}/styles/**/*.css`,
+      '-d',
+      `${outputFullPath}/styles`,
+      '--config',
+      path.resolve(__dirname, '../../.postcssrc.js')
+    ];
+
+    try {
+      await execa(postcssPath, postcssOptions, {encoding: 'utf-8'});
+      spinner.succeed('Successfully formatted css!');
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
+      spinner.fail('Failed formatting css.');
+
+      // Kill Process
+      return process.exit(1);
+    }
   }
 
   if(fs.existsSync(`${sourceFullPath}/img`)) {
-    await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
+    try {
+      await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
+      spinner.fail('Failed to move images to output directory.');
+
+      // Kill Process
+      return process.exit(1);
+    }
   }
 
   if(fs.existsSync(`${sourceFullPath}/fonts`)) {
-    await copyFiles(
-      [
-        'fonts/**/*.ttf',
-        'fonts/**/*.otf',
-        'fonts/**/*.woff',
-        'fonts/**/*.svg',
-        'fonts/**/*.woff2'
-      ],
-      'fonts',
-      'font',
-      spinner
-    );
+    try {
+      await copyFiles(
+        [
+          'fonts/**/*.ttf',
+          'fonts/**/*.otf',
+          'fonts/**/*.woff',
+          'fonts/**/*.svg',
+          'fonts/**/*.woff2'
+        ],
+        'fonts',
+        'font',
+        spinner
+      );
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
+      spinner.fail('Failed to move fonts to output directory.');
+
+      // Kill Process
+      return process.exit(1);
+    }
   }
 
   if(fs.existsSync(`${sourceFullPath}/docs`)) {
-    await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
+    try {
+      await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
+      spinner.fail('Failed to move docs to output directory.');
+
+      // Kill Process
+      return process.exit(1);
+    }
   }
 
   // Stop process

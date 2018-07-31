@@ -1,27 +1,27 @@
-import chalk from 'chalk';
 import execa from 'execa';
 import * as fs from 'fs';
-import ora from 'ora';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {getPackageJson, log, setPackageJson} from '../utils';
+import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
 export const init = async (appName: string, packageName: string, cmd) => {
-  const spinner = ora({color: 'yellow'});
+  const {install, packageManager: cmdPackageManager, quiet, typescript} = cmd;
   const cwd: string = process.cwd();
   let status: number = 0;
 
+  // Spinner
+  const spinner = createSpinner(quiet);
+
   // Download app module into temporary directory
-  log(chalk.cyan('Lex downloading app module...'), cmd);
-  spinner.start('Downloading app...\n');
+  log('Lex downloading app module...', 'info', quiet);
+  spinner.start('Downloading app...');
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
   const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
-  const {install, cmdPackageManager, typescript} = cmd;
   const {packageManager: configPackageManager, useTypescript: configTypescript} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;
   const useTypescript: boolean = typescript !== undefined ? typescript : configTypescript;
@@ -37,19 +37,21 @@ export const init = async (appName: string, packageName: string, cmd) => {
     }
   }
 
-  log(chalk.grey('Initializing...'), cmd);
+  log('Initializing...', 'note', quiet);
 
   try {
     const download = await execa(dnpPath, [appModule, tmpPath], {});
 
     // Stop spinner and update status
     status += download.status;
-    spinner.succeed('Successfully downloaded app');
+    spinner.succeed('Successfully downloaded app!');
   } catch(error) {
-    log(chalk.red(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`), cmd);
+    log(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
 
     // Stop spinner and kill process
     spinner.fail('Downloaded of app failed.');
+
+    // Kill process
     return process.exit(1);
   }
 
@@ -57,7 +59,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
   try {
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
-    log(chalk.red(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`), cmd);
+    log(`Lex Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
     return process.exit(1);
   }
 
@@ -82,30 +84,43 @@ export const init = async (appName: string, packageName: string, cmd) => {
     const readmePath: string = `${appPath}/README.md`;
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
-    log(chalk.cyan('Lex Error:', error.message), cmd);
+    log(`Lex Error: ${error.message}`, 'error', quiet);
     return process.exit(1);
   }
 
   if(install) {
-    spinner.start('Installing dependencies...\n');
+    spinner.start('Installing dependencies...');
 
     // Change to the app directory
     process.chdir(appPath);
 
     // Install dependencies
-    const install = await execa(packageManager, ['install'], {
-      encoding: 'utf-8',
-      stdio: 'inherit'
-    });
+    try {
+      const install = await execa(packageManager, ['install'], {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      });
 
-    if(!install.status) {
-      spinner.succeed('Successfully installed dependencies!');
-    } else {
+      // Stop spinner
+      if(!install.status) {
+        spinner.succeed('Successfully installed dependencies!');
+      } else {
+        spinner.fail('Failed to install dependencies.');
+      }
+
+      status += install.status;
+    } catch(error) {
+      // Display error message
+      log(`Lex Error: ${error.message}`, 'error', quiet);
+
+      // Stop spinner
       spinner.fail('Failed to install dependencies.');
-    }
 
-    status += install.status;
+      // Kill process
+      return process.exit(1);
+    }
   }
 
+  // Kill process
   return process.exit(status);
 };
