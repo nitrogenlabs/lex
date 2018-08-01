@@ -1,7 +1,7 @@
 const path = require('path');
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
-const {commandName, targetEnvironment, useTypescript} = lexConfig;
+const {babelPlugins = [], babelPresets = [], commandName, targetEnvironment, useTypescript} = lexConfig;
 const nodePath = path.resolve(__dirname, './node_modules');
 const presetEnvPath = `${nodePath}/@babel/preset-env`;
 const babelNodeEnv = [presetEnvPath];
@@ -42,13 +42,23 @@ const plugins = [
   `${nodePath}/@babel/plugin-syntax-dynamic-import`,
   `${nodePath}/@babel/plugin-syntax-import-meta`,
   [`${nodePath}/@babel/plugin-proposal-class-properties`, {loose: false}],
-  `${nodePath}/@babel/plugin-proposal-json-strings`
+  `${nodePath}/@babel/plugin-proposal-json-strings`,
+
+  // User provided plugins
+  ...babelPlugins
 ];
 
 const presets = [
   presetEnv,
+
+  // React
   `${nodePath}/@babel/preset-react`,
-  useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`
+
+  // Transpilers
+  useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`,
+
+  // User provided presets
+  ...babelPresets
 ];
 
 if(commandName === 'dev') {

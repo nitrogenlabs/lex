@@ -22,6 +22,8 @@ program.command('build')
   .option('-s, --static', 'Creates static HTML files when building app.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
+  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
+  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .action(build);
 
 program.command('clean')
@@ -38,6 +40,8 @@ program.command('compile')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-w, --watch', 'Watches for changes and compiles.')
+  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
+  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .action(compile);
 
 program.command('dev')
@@ -49,6 +53,8 @@ program.command('dev')
   .option('-r, --remove', 'Removes all files from the output directory before compiling.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
+  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
+  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .action(dev);
 
 program.command('init <appName> [packageName]')

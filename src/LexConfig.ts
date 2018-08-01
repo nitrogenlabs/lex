@@ -7,6 +7,8 @@ import {log} from './utils';
 const cwd: string = process.cwd();
 
 export interface LexConfigType {
+  babelPlugins?: string[];
+  babelPresets?: string[];
   entryHTML?: string;
   entryJS?: string;
   env?: object;
@@ -21,6 +23,8 @@ export interface LexConfigType {
 
 export class LexConfig {
   static config: LexConfigType = {
+    babelPlugins: [],
+    babelPresets: [],
     entryHTML: 'index.html',
     entryJS: 'index.js',
     env: null,
@@ -79,11 +83,23 @@ export class LexConfig {
   // Set option updates from the command line
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
-    const {environment} = cmd;
+    const {babelPlugins, babelPresets, environment, typescript} = cmd;
 
     // Determine if we're using Typescript or Flow
-    if(cmd.typescript !== undefined) {
-      params.useTypescript = cmd.typescript;
+    if(typescript !== undefined) {
+      params.useTypescript = typescript;
+    }
+
+    // Add Babel plugins
+    if(babelPlugins !== undefined) {
+      const plugins: string[] = babelPlugins.split(',');
+      params.babelPlugins = plugins.map((plugin: string) => `${path.resolve(cwd, './node_modules')}/${plugin}}`);
+    }
+
+    // Add Babel presets
+    if(babelPresets !== undefined) {
+      const presets: string[] = babelPresets.split(',');
+      params.babelPresets = presets.map((preset: string) => `${path.resolve(cwd, './node_modules')}/${preset}}`);
     }
 
     // Set the target environment
@@ -111,7 +127,7 @@ export class LexConfig {
 
     // If user has a Lex config file, lets use it.
     if(fs.existsSync(configPath)) {
-      log(`Lex configuration file: ${configPath}`, 'note', quiet);
+      log(`Using Lex configuration file: ${configPath}`, 'note', quiet);
       const ext: string = path.extname(configPath);
 
       if(ext === '.json') {

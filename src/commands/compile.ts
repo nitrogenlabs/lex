@@ -107,6 +107,8 @@ export const compile = async (cmd) => {
 
   // Babel options
   const babelPath: string = `${nodePath}/@babel/cli/bin/babel.js`;
+  const transpilerPreset: string = path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js');
+  const userPreset: string = path.resolve(__dirname, '../babelPresets.js');
   const babelOptions: string[] = [
     '--no-babelrc',
     sourceFullPath,
@@ -119,7 +121,7 @@ export const compile = async (cmd) => {
     '-s',
     'inline',
     '--presets',
-    path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js')
+    `${transpilerPreset},${userPreset}`
   ];
 
   if(watch) {
