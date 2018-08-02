@@ -19,7 +19,7 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const {isStatic, outputFullPath, sourceFullPath} = lexConfig;
+const {isStatic, outputFullPath, sourceFullPath, outputFilename, libraryName, libraryTarget} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
@@ -134,7 +134,9 @@ const webpackConfig = {
     ]
   },
   output: {
-    filename: '[name].js',
+    filename: outputFilename || '[name].js',
+    library: libraryName,
+    libraryTarget,
     path: outputFullPath
   },
   plugins,

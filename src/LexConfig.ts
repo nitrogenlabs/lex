@@ -19,6 +19,9 @@ export interface LexConfigType {
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
   useTypescript?: boolean;
+  outputFilename?: string;
+  libraryName?: string;
+  libraryTarget?: string;
 }
 
 export class LexConfig {

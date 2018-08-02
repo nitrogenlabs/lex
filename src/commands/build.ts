@@ -50,13 +50,22 @@ export const build = async (cmd) => {
   }
 
   // Get custom webpack configuration
-  const webpackConfig: string = config || path.resolve(__dirname, '../../webpack.config.js');
+  let webpackConfig: string;
+
+  if(config) {
+    const isRelativeConfig: boolean = config.substr(0, 2) === './';
+    const fullConfigPath: string = isRelativeConfig ? path.resolve(process.cwd(), config) : config;
+    webpackConfig = fullConfigPath;
+  } else {
+    webpackConfig = path.resolve(__dirname, '../../webpack.config.js');
+  }
+
   const webpackMode: string = mode || 'production';
 
   // Compile using webpack
   try {
     const webpackPath: string = path.resolve(__dirname, '../../node_modules/webpack-cli/bin/cli.js');
-    const webpack = execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
+    const webpack = await execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
