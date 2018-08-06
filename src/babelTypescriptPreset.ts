@@ -19,7 +19,6 @@ export default declare((api) => {
       ...plugins,
       [pluginTransform, {
         helpers: false,
-        polyfill: false,
         regenerator: true
       }]
     ],
