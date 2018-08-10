@@ -27,6 +27,8 @@ $ npm install -g @nlabs/lex
 yarn global add @nlabs/lex
 ```
 
+lex compile -c ./webpack.config.js
+
 ## Quick Start
 
 ```shell

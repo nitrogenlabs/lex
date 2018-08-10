@@ -12,6 +12,9 @@ export interface LexConfigType {
   entryHTML?: string;
   entryJS?: string;
   env?: object;
+  libraryName?: string;
+  libraryTarget?: string;
+  outputFilename?: string;
   outputFullPath?: string;
   outputPath?: string;
   packageManager?: string;
@@ -19,9 +22,6 @@ export interface LexConfigType {
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
   useTypescript?: boolean;
-  outputFilename?: string;
-  libraryName?: string;
-  libraryTarget?: string;
 }
 
 export class LexConfig {
