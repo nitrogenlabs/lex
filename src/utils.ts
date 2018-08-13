@@ -1,6 +1,9 @@
+import boxen from 'boxen';
 import chalk from 'chalk';
-import * as fs from 'fs';
+import fs from 'fs';
+import glob from 'glob';
 import ora from 'ora';
+import path from 'path';
 
 export const log = (message: string, type: string = 'info', quiet = false) => {
   if(!quiet) {
@@ -41,10 +44,10 @@ export const createSpinner = (quiet = false): any => {
 };
 
 export const getPackageJson = (packagePath?: string) => {
-  const path: string = packagePath || `${process.cwd()}/package.json`;
+  const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
   // Configure package.json
-  const packageData: string = fs.readFileSync(path).toString();
+  const packageData: string = fs.readFileSync(formatPath).toString();
   return JSON.parse(packageData);
 };
 
@@ -53,8 +56,60 @@ export const setPackageJson = (json, packagePath?: string) => {
     return;
   }
 
-  const path: string = packagePath || `${process.cwd()}/package.json`;
+  const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
   // Update package.json
-  fs.writeFileSync(path, JSON.stringify(json, null, 2));
+  fs.writeFileSync(formatPath, JSON.stringify(json, null, 2));
+};
+
+export interface LinkedModuleType {
+  readonly name: string;
+  readonly path: string;
+}
+
+export const linkedModules = (startPath?: string): LinkedModuleType[] => {
+  const workingPath: string = startPath || process.cwd();
+  let modulePath: string;
+  let prefix: string = '';
+
+  // if we have a scope we should check if the modules inside the folder is linked
+  if(workingPath.includes('@')) {
+    prefix = `@${workingPath.split('@').pop()}`;
+    modulePath = workingPath;
+  } else {
+    modulePath = path.join(workingPath, 'node_modules');
+  }
+
+  const foundPaths: string[] = glob.sync(`${modulePath}/*`);
+  return foundPaths.reduce((list: LinkedModuleType[], foundPath: string) => {
+    try {
+      const stats = fs.lstatSync(foundPath);
+
+      if(stats.isDirectory()) {
+        const deepList: LinkedModuleType[] = linkedModules(foundPath);
+        list.push(...deepList);
+      } else if(stats.isSymbolicLink()) {
+        list.push({name: `${prefix}/${path.basename(foundPath)}`, path: foundPath});
+      }
+
+      return list;
+    } catch(fsError) {
+      throw fsError;
+    }
+  }, []);
+};
+
+// Check for linked modules
+export const checkLinkedModules = () => {
+  const linked = linkedModules();
+
+  if(linked.length) {
+    const msgModule: string = linked.length > 1 ? 'Modules' : 'Module';
+    const linkedMsg: string = linked.reduce(
+      (msg: string, linkedModule: LinkedModuleType) =>
+        `${msg}\n * ${linkedModule.name}`,
+      `Linked ${msgModule} Warning:`
+    );
+    log(boxen(linkedMsg, {borderStyle: 'round', dimBorder: true, padding: 1}), 'warn');
+  }
 };

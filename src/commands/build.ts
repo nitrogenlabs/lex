@@ -2,7 +2,7 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {checkLinkedModules, createSpinner, log} from '../utils';
 import {removeFiles} from './clean';
 
 export const build = async (cmd) => {
@@ -18,6 +18,9 @@ export const build = async (cmd) => {
   LexConfig.parseConfig(cmd);
 
   const {outputFullPath, useTypescript} = LexConfig.config;
+
+  // Check for linked modules
+  checkLinkedModules();
 
   // Set node environment variables
   let variablesObj: object = {NODE_ENV: 'production'};

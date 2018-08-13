@@ -1,10 +1,10 @@
 import cpy from 'cpy';
 import execa from 'execa';
 import fs from 'fs';
-import * as path from 'path';
+import path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {checkLinkedModules, createSpinner, log} from '../utils';
 import {removeFiles} from './clean';
 
 const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
@@ -40,6 +40,9 @@ export const compile = async (cmd) => {
   // Compile type
   const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
   const nodePath: string = path.resolve(__dirname, '../../node_modules');
+
+  // Check for linked modules
+  checkLinkedModules();
 
   // Clean output directory before we start adding in new files
   if(remove) {
