@@ -37,7 +37,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     }
   }
 
-  log('Initializing...', 'note', quiet);
+  log('\nInitializing...', 'note', quiet);
 
   try {
     const download = await execa(dnpPath, [appModule, tmpPath], {});
@@ -46,7 +46,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     status += download.status;
     spinner.succeed('Successfully downloaded app!');
   } catch(error) {
-    log(`${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
+    log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
 
     // Stop spinner and kill process
     spinner.fail('Downloaded of app failed.');
@@ -59,7 +59,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
   try {
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
-    log(`${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
+    log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
     return process.exit(1);
   }
 
@@ -84,7 +84,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     const readmePath: string = `${appPath}/README.md`;
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
-    log(`${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     return process.exit(1);
   }
 
@@ -111,7 +111,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
       status += install.status;
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to install dependencies.');

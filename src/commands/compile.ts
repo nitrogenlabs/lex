@@ -98,7 +98,7 @@ export const compile = async (cmd) => {
       }
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Type checking failed.');
@@ -150,7 +150,7 @@ export const compile = async (cmd) => {
     }
   } catch(error) {
     // Display error message
-    log(`${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Code compiling failed.');
@@ -174,7 +174,7 @@ export const compile = async (cmd) => {
       spinner.succeed('Successfully formatted css!');
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed formatting css.');
@@ -189,7 +189,7 @@ export const compile = async (cmd) => {
       await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move images to output directory.');
@@ -215,7 +215,7 @@ export const compile = async (cmd) => {
       );
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move fonts to output directory.');
@@ -230,7 +230,7 @@ export const compile = async (cmd) => {
       await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
     } catch(error) {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move docs to output directory.');

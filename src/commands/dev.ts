@@ -26,7 +26,7 @@ export const dev = async (cmd) => {
     try {
       variablesObj = JSON.parse(variables);
     } catch(error) {
-      log(`${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
+      log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       return process.exit(1);
     }
   }
@@ -81,7 +81,7 @@ export const dev = async (cmd) => {
     return process.exit(webpack.status);
   } catch(error) {
     // Display error message
-    log(`${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('There was an error while running Webpack.');

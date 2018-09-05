@@ -39,7 +39,7 @@ export const update = async (cmd) => {
     return process.exit(pm.status);
   } catch(error) {
     // Display error message
-    log(`${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed to updated packages.');

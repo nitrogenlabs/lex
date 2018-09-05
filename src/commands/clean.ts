@@ -59,7 +59,7 @@ export const clean = async (cmd) => {
     return process.exit(0);
   } catch(error) {
     // Display error message
-    log(`${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed to clean project.');

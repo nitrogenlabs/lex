@@ -42,13 +42,13 @@ export const copyFolderRecursiveSync = (source: string, target: string): void =>
 };
 
 export const copy = (from: string, to: string, cmd) => {
-  const {quiet} = cmd;
+  const {cliName = 'Lex', quiet} = cmd;
 
   // Display message
-  log(`Lex copying "${to}"...`, 'info', quiet);
+  log(`${cliName} copying "${to}"...`, 'info', quiet);
 
   if(!fs.existsSync(from)) {
-    log(`Lex Error: Path not found, "${from}"...`, 'error', quiet);
+    log(`\n${cliName} Error: Path not found, "${from}"...`, 'error', quiet);
     process.exit(1);
     return false;
   }
@@ -58,7 +58,7 @@ export const copy = (from: string, to: string, cmd) => {
       // Copy directory
       copyFolderRecursiveSync(from, to);
     } catch(error) {
-      log(`Lex Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
       process.exit(1);
       return false;
     }
@@ -67,7 +67,7 @@ export const copy = (from: string, to: string, cmd) => {
       // Copy file
       copyFileSync(from, to);
     } catch(error) {
-      log(`Lex Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
       process.exit(1);
       return false;
     }

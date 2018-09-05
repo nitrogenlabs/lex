@@ -7,7 +7,7 @@ import path from 'path';
 
 import {createSpinner, log} from '../utils';
 
-export const createChangelog = async ({config, output = 'changelog.tmp.md', quiet}) => {
+export const createChangelog = async ({cliName = 'Lex', config, output = 'changelog.tmp.md', quiet}) => {
   // Spinner
   const spinner = createSpinner(quiet);
 
@@ -131,7 +131,7 @@ export const createChangelog = async ({config, output = 'changelog.tmp.md', quie
     return process.exit(git.status);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed2 generating change.log!');

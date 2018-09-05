@@ -3,8 +3,8 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const create = (type: string, cmd) => {
-  const {output, quiet} = cmd;
-  log(`Lex create ${type}...`, 'info', quiet);
+  const {cliName = 'Lex', output, quiet} = cmd;
+  log(`${cliName} create ${type}...`, 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);

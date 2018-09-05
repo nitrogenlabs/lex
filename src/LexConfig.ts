@@ -134,7 +134,7 @@ export class LexConfig {
 
   // Get configuration
   static parseConfig(cmd, isRoot: boolean = true): void {
-    const {lexConfig, quiet, typescript} = cmd;
+    const {cliName = 'Lex', lexConfig, quiet, typescript} = cmd;
     const defaultConfigPath: string = isRoot ?
       path.resolve(cwd, './lex.config.js') :
       find.sync('lex.config.js', cwd, 5);
@@ -143,7 +143,7 @@ export class LexConfig {
 
     // If user has a Lex config file, lets use it.
     if(configExists) {
-      log(`Using Lex configuration file: ${configPath}`, 'note', quiet);
+      log(`Using ${cliName} configuration file: ${configPath}`, 'note', quiet);
       const ext: string = path.extname(configPath);
 
       if(ext === '.json') {
@@ -160,13 +160,13 @@ export class LexConfig {
 
           LexConfig.addConfigParams(cmd, configJson);
         } else {
-          log(`Config file malformed, ${configPath}`, 'error', quiet);
+          log(`\n${cliName} Error: Config file malformed, ${configPath}`, 'error', quiet);
         }
       } else if(ext === '.js') {
         const lexCustomConfig = require(configPath);
         LexConfig.addConfigParams(cmd, lexCustomConfig);
       } else {
-        log('Config file must be a JS or JSON file.', 'error', quiet);
+        log(`\n${cliName} Error: Config file must be a JS or JSON file.`, 'error', quiet);
       }
     } else {
       // Determine if we're using Typescript or Flow

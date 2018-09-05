@@ -26,11 +26,11 @@ export const upgrade = (cmd) => {
       const versionDiff: number = compareVersions(latest, current);
 
       if(versionDiff === 0) {
-        log(`Currently up-to-date. Version ${latest} is the latest.`, 'note', quiet);
+        log(`\nCurrently up-to-date. Version ${latest} is the latest.`, 'note', quiet);
         return;
       }
 
-      log(`Currently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
+      log(`\nCurrently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
 
       // We will always install @nlabs/lex globally using npm. There is an issue with installing with yarn globally.
       // const {packageManager} = LexConfig.config;
@@ -57,7 +57,7 @@ export const upgrade = (cmd) => {
     })
     .catch((error) => {
       // Display error message
-      log(`${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to updated packages.');
