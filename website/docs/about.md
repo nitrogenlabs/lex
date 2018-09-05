@@ -1,7 +1,4 @@
----
-id: about
-title: About
----
+# About
 
 When starting a new app, a lot of time is taken adding development essentials. Each website, app, or component needs to be tested and transpiled. Setting up Babel, Jest, Typescript, and Webpack configurations each time a new project is created takes up time, lots of time. And as the modules are updated, each project needs to be updated and maintained.
 

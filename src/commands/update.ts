@@ -4,10 +4,10 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log} from '../utils';
 
 export const update = async (cmd) => {
-  const {packageManager: cmdPackageManager, quiet} = cmd;
+  const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;
 
   // Display status
-  log('Lex updating packages...', 'info', quiet);
+  log(`${cliName} updating packages...`, 'info', quiet);
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -39,7 +39,7 @@ export const update = async (cmd) => {
     return process.exit(pm.status);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed to updated packages.');

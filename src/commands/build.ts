@@ -6,13 +6,13 @@ import {checkLinkedModules, createSpinner, log} from '../utils';
 import {removeFiles} from './clean';
 
 export const build = async (cmd) => {
-  const {config, mode, quiet = false, remove, variables} = cmd;
+  const {cliName = 'Lex', config, mode, quiet = false, remove, variables} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
 
   // Display status
-  log('Lex building...', 'info', quiet);
+  log(`${cliName} building...`, 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -29,7 +29,7 @@ export const build = async (cmd) => {
     try {
       variablesObj = JSON.parse(variables);
     } catch(error) {
-      log('Lex Error: Environment variables option is not a valid JSON object.', 'error', quiet);
+      log(`${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
 
       // Kill process
       return process.exit(1);
@@ -84,7 +84,7 @@ export const build = async (cmd) => {
     return process.exit(webpack.status);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Build failed.');

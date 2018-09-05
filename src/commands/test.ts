@@ -5,8 +5,8 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log} from '../utils';
 
 export const test = async (cmd) => {
-  const {config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
-  log('Lex testing...', 'info', quiet);
+  const {cliName = 'Lex', config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
+  log(`${cliName} testing...`, 'info', quiet);
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -58,7 +58,7 @@ export const test = async (cmd) => {
       stdio: 'inherit'
     });
 
-    if(jest.status) {
+    if(!jest.status) {
       spinner.succeed('Testing completed!');
     } else {
       spinner.fail('Testing failed!');
@@ -68,7 +68,7 @@ export const test = async (cmd) => {
     return process.exit(jest.status);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Testing failed!');

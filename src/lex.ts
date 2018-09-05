@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {add, build, clean, compile, dev, init, publish, test, update, upgrade, versions} from './commands';
+import {add, build, clean, compile, create, dev, init, publish, test, update, upgrade, versions} from './commands';
 
 const packageConfig = require('../package.json');
 
@@ -24,6 +24,8 @@ program.command('build')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
+  .option('--sourcePath <path>', 'Source path')
+  .option('--outputPath <path>', 'Output path')
   .action(build);
 
 program.command('clean')
@@ -42,7 +44,14 @@ program.command('compile')
   .option('-w, --watch', 'Watches for changes and compiles.')
   .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
+  .option('--sourcePath <path>', 'Source path')
+  .option('--outputPath <path>', 'Output path')
   .action(compile);
+
+program.command('create <type>')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('--outputFile', 'Output file')
+  .action(create);
 
 program.command('dev')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
@@ -55,6 +64,8 @@ program.command('dev')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
   .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
+  .option('--sourcePath <path>', 'Source path')
+  .option('--outputPath <path>', 'Output path')
   .action(dev);
 
 program.command('init <appName> [packageName]')

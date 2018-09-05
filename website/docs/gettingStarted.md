@@ -1,7 +1,4 @@
----
-id: gettingStarted
-title: Getting Started
----
+# Getting Started
 
 ## Installation
 

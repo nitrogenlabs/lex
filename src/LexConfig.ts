@@ -12,9 +12,10 @@ export interface LexConfigType {
   entryHTML?: string;
   entryJS?: string;
   env?: object;
+  gitUrl?: string;
   libraryName?: string;
   libraryTarget?: string;
-  outputFilename?: string;
+  outputFile?: string;
   outputFullPath?: string;
   outputPath?: string;
   packageManager?: string;
@@ -86,7 +87,19 @@ export class LexConfig {
   // Set option updates from the command line
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
-    const {babelPlugins, babelPresets, environment, typescript} = cmd;
+    const {babelPlugins, babelPresets, environment, outputPath, sourcePath, typescript} = cmd;
+
+    // Custom output dir
+    if(outputPath !== undefined) {
+      params.outputPath = outputPath;
+      params.outputFullPath = path.resolve(cwd, outputPath);
+    }
+
+    // Custom source dir
+    if(sourcePath !== undefined) {
+      params.sourcePath = sourcePath;
+      params.sourceFullPath = path.resolve(cwd, sourcePath);
+    }
 
     // Determine if we're using Typescript or Flow
     if(typescript !== undefined) {
@@ -120,16 +133,16 @@ export class LexConfig {
   }
 
   // Get configuration
-  static parseConfig(cmd, isRoot: boolean = true) {
+  static parseConfig(cmd, isRoot: boolean = true): void {
     const {lexConfig, quiet, typescript} = cmd;
     const defaultConfigPath: string = isRoot ?
       path.resolve(cwd, './lex.config.js') :
       find.sync('lex.config.js', cwd, 5);
     const configPath: string = lexConfig || defaultConfigPath;
-
+    const configExists: boolean = fs.existsSync(configPath);
 
     // If user has a Lex config file, lets use it.
-    if(fs.existsSync(configPath)) {
+    if(configExists) {
       log(`Using Lex configuration file: ${configPath}`, 'note', quiet);
       const ext: string = path.extname(configPath);
 

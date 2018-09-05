@@ -1,12 +1,9 @@
 {
-  "license": "MIT",
   "scripts": {
-    "start": "lex dev -o -t",
     "build": "lex build -t -r",
-    "publish": "docusaurus-publish"
-  },
-  "devDependencies": {
-    "docusaurus": "^1.0.15"
+    "dev": "lex dev -t",
+    "publish": "lex publish",
+    "start": "lex dev -o -t"
   },
   "dependencies": {
     "@nlabs/gothamjs": "^0.1.0",

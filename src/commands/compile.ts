@@ -26,13 +26,13 @@ const copyFiles = async (files: string[], outputDir: string, typeName: string, s
 };
 
 export const compile = async (cmd) => {
-  const {config, quiet, remove, watch} = cmd;
+  const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
 
   // Display status
-  log('Lex compiling...', 'info', quiet);
+  log(`${cliName} compiling...`, 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -98,7 +98,7 @@ export const compile = async (cmd) => {
       }
     } catch(error) {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Type checking failed.');
@@ -129,10 +129,12 @@ export const compile = async (cmd) => {
 
   if(watch) {
     babelOptions.push('--watch');
+    // Start type checking spinner
+    spinner.start('Watching for changes...');
+  } else {
+    // Start type checking spinner
+    spinner.start('Compiling with Babel...');
   }
-
-  // Start type checking spinner
-  spinner.start('Compiling with Babel...');
 
   try {
     const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
@@ -148,7 +150,7 @@ export const compile = async (cmd) => {
     }
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Code compiling failed.');
@@ -172,7 +174,7 @@ export const compile = async (cmd) => {
       spinner.succeed('Successfully formatted css!');
     } catch(error) {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed formatting css.');
@@ -187,7 +189,7 @@ export const compile = async (cmd) => {
       await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
     } catch(error) {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move images to output directory.');
@@ -213,7 +215,7 @@ export const compile = async (cmd) => {
       );
     } catch(error) {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move fonts to output directory.');
@@ -228,7 +230,7 @@ export const compile = async (cmd) => {
       await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
     } catch(error) {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to move docs to output directory.');

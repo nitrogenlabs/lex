@@ -6,6 +6,7 @@ const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 
 const {DefinePlugin, HotModuleReplacementPlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
@@ -19,7 +20,7 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const {isStatic, outputFullPath, sourceFullPath, outputFilename, libraryName, libraryTarget} = lexConfig;
+const {isStatic, outputFullPath, sourceFullPath, outputFile, libraryName, libraryTarget} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
@@ -48,6 +49,27 @@ if(fs.existsSync(`${sourceFullPath}/docs/`)) {
 
 if(staticPaths.length) {
   plugins.push(new CopyWebpackPlugin(staticPaths));
+}
+
+// Create site ico files
+const siteLogo = `${sourceFullPath}/img/logo.png`;
+
+if(fs.existsSync(siteLogo)) {
+  plugins.push(new FaviconsWebpackPlugin({
+    icons: {
+      android: true,
+      appleIcon: true,
+      appleStartup: false,
+      coast: false,
+      favicons: true,
+      firefox: false,
+      opengraph: true,
+      twitter: true,
+      windows: false,
+      yandex: false
+    },
+    logo: siteLogo
+  }));
 }
 
 if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
@@ -134,10 +156,11 @@ const webpackConfig = {
     ]
   },
   output: {
-    filename: outputFilename || '[name].js',
+    filename: outputFile || '[name].js',
     library: libraryName,
     libraryTarget,
-    path: outputFullPath
+    path: outputFullPath,
+    publicPath: '/'
   },
   plugins,
   resolve: {

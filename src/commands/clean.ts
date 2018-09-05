@@ -18,13 +18,13 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
 });
 
 export const clean = async (cmd) => {
-  const {quiet, snapshots} = cmd;
+  const {cliName = 'Lex', quiet, snapshots} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
 
   // Display status
-  log('Lex cleaning directory...', 'info', quiet);
+  log(`${cliName} cleaning directory...`, 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -59,7 +59,7 @@ export const clean = async (cmd) => {
     return process.exit(0);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Failed to clean project.');

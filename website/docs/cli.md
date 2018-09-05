@@ -1,7 +1,4 @@
----
-id: cli
-title: Lex CLI Options
----
+# Lex CLI Options
 
 Lex is pre-configured for React but can use custom configuration files.
 

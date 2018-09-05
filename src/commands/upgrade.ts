@@ -9,10 +9,10 @@ import {parseVersion} from './versions';
 const packageConfig = require('../../package.json');
 
 export const upgrade = (cmd) => {
-  const {quiet} = cmd;
+  const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
 
   // Display status
-  log('Upgrading Lex...', 'info', quiet);
+  log(`Upgrading ${cliName}...`, 'info', quiet);
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -37,8 +37,8 @@ export const upgrade = (cmd) => {
       const packageManager: string = 'npm';
 
       const upgradeOptions: string[] = packageManager === 'npm' ?
-        ['install', '-g', '@nlabs/lex@latest'] :
-        ['global', 'add', '@nlabs/lex@latest'];
+        ['install', '-g', `${cliPackage}@latest`] :
+        ['global', 'add', `${cliPackage}@latest`];
 
       const yarn = await execa(packageManager, upgradeOptions, {
         encoding: 'utf-8',
@@ -47,7 +47,7 @@ export const upgrade = (cmd) => {
 
       // Stop loader
       if(!yarn.status) {
-        spinner.succeed('Successfully updated Lex!');
+        spinner.succeed(`Successfully updated ${cliName}!`);
       } else {
         spinner.fail('Failed to updated packages.');
       }
@@ -57,7 +57,7 @@ export const upgrade = (cmd) => {
     })
     .catch((error) => {
       // Display error message
-      log(`Lex Error: ${error.message}`, 'error', quiet);
+      log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
       // Stop spinner
       spinner.fail('Failed to updated packages.');

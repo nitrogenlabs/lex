@@ -33,7 +33,7 @@ export const config: GothamConfiguration = {
             ],
             footer: {
               copyright: 'Copyright &copy; 2018 Nitrogen Labs, Inc.',
-              logo: <Svg name="nl-logo-wh" width={30} height={30} />,
+              logo: <Svg name="nl-logo-wh" width={50} height={50} />,
               menu: [
                 {
                   label: 'Documentation',
@@ -101,32 +101,64 @@ export const config: GothamConfiguration = {
           },
           title: 'Welcome',
           view: 'home'
-        },
-        {
-          path: '/login',
-          props: {
-            logo: <Svg name="gotham-logo" width={130} height={130} />
-          },
-          title: 'Login',
-          view: 'login'
-        },
-        {
-          path: '/markdown',
-          props: {
-            external: 'https://raw.githubusercontent.com/nitrogenlabs/arkhamjs/master/README.md'
-          },
-          title: 'Markdown',
-          view: 'markdown'
-        },
-        {
-          path: '/markdownDemo',
-          props: {
-            external: './docs/demo.md'
-          },
-          title: 'Markdown',
-          view: 'markdown'
         }
       ]
+    },
+    {
+      container: 'menu',
+      exact: false,
+      path: '/docs',
+      routes: [
+        {
+          path: '/docs',
+          props: {
+            external: './about.md'
+          },
+          title: 'About Lex',
+          view: 'markdown'
+        },
+        {
+          path: '/docs/cli',
+          props: {
+            external: './cli.md'
+          },
+          title: 'CLI Options',
+          view: 'markdown'
+        },
+        {
+          path: '/docs/configuration',
+          props: {
+            external: './configuration.md'
+          },
+          title: 'Configuration',
+          view: 'markdown'
+        },
+        {
+          path: '/docs/gettingStarted',
+          props: {
+            external: './gettingStarted.md'
+          },
+          title: 'Getting Started',
+          view: 'markdown'
+        },
+        {
+          path: '/docs/setup',
+          props: {
+            external: './setup.md'
+          },
+          title: 'Setup',
+          view: 'markdown'
+        }
+      ],
+      sideBar: {
+        menu: [
+          {label: 'About', url: '/docs'},
+          {label: 'Getting Started', url: '/docs/gettingStarted'},
+          {label: 'Configuration', url: '/docs/configuration'},
+          {label: 'CLI Options', url: '/docs/cli'},
+          {label: 'Setup', url: '/docs/setup'}
+        ]
+      }
     }
   ],
   title: 'Lex'

@@ -1,7 +1,4 @@
----
-id: setup
-title: Setup
----
+# Setup
 
 ## Environment Variables
 

@@ -14,7 +14,7 @@ const updateName = (filePath: string, replace: string, replaceCaps: string) => {
 };
 
 export const add = async (type: string, name: string, cmd) => {
-  const {quiet} = cmd;
+  const {cliName = 'Lex', quiet} = cmd;
   const cwd: string = process.cwd();
 
   // Get custom configuration
@@ -27,7 +27,7 @@ export const add = async (type: string, name: string, cmd) => {
 
   if(!name) {
     if(itemNames.includes(name)) {
-      log(`Lex Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
+      log(`${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
       return false;
     }
   } else {
@@ -35,7 +35,7 @@ export const add = async (type: string, name: string, cmd) => {
   }
 
   // Display message
-  log(`Lex adding ${type}...`, 'info', quiet);
+  log(`${cliName} adding ${type}...`, 'info', quiet);
 
   // Template directory
   let templatePath: string;
@@ -78,12 +78,12 @@ export const add = async (type: string, name: string, cmd) => {
           // Search and replace store name
           updateName(storeFilePath, name, nameCaps);
         } else {
-          log(`Lex Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
+          log(`${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        log(`Lex Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
+        log(`${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         process.exit(1);
         return false;
       }
@@ -138,12 +138,12 @@ export const add = async (type: string, name: string, cmd) => {
           // Search and replace view name
           updateName(viewFilePath, name, nameCaps);
         } else {
-          log(`Lex Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
+          log(`${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
           process.exit(1);
           return false;
         }
       } catch(error) {
-        log(`Lex Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
+        log(`${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         process.exit(1);
         return false;
       }
@@ -158,7 +158,7 @@ export const add = async (type: string, name: string, cmd) => {
       break;
     }
     default: {
-      log(`Lex Error: "${type}" does not exist. Please use 'lex -h' for options.`, 'error', quiet);
+      log(`${cliName} Error: "${type}" does not exist. Please use 'lex -h' for options.`, 'error', quiet);
       process.exit(1);
       return false;
     }

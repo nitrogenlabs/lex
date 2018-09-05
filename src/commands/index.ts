@@ -2,6 +2,7 @@ export {add} from './add';
 export {build} from './build';
 export {clean} from './clean';
 export {compile} from './compile';
+export {create} from './create';
 export {dev} from './dev';
 export {init} from './init';
 export {publish} from './publish';

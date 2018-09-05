@@ -6,8 +6,8 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
 export const publish = async (cmd) => {
-  const {bump, newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
-  log('Lex publishing npm module...', 'info', quiet);
+  const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
+  log(`${cliName} publishing npm module...`, 'info', quiet);
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -44,7 +44,7 @@ export const publish = async (cmd) => {
     packageName = packageJson.name;
     prevVersion = packageJson.version;
   } catch(error) {
-    log(`Lex Error: The file, ${packagePath}, was not found or is malformed.`, 'error', quiet);
+    log(`${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
     console.error(chalk.red(error.message));
     return process.exit(1);
   }
@@ -67,7 +67,7 @@ export const publish = async (cmd) => {
       const packageVersion = semver.coerce(prevVersion);
 
       if(!semver.valid(packageVersion)) {
-        log('Lex Error: Version is invalid in package.json', 'error', quiet);
+        log(`${cliName} Error: Version is invalid in package.json`, 'error', quiet);
         return process.exit(1);
       }
 
@@ -76,11 +76,11 @@ export const publish = async (cmd) => {
       } else if(validPreReleases.includes(formatBump)) {
         nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
       } else {
-        log(`Lex Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
+        log(`${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
         return process.exit(1);
       }
     } else {
-      log('Lex Error: Bump type is missing.', 'error', quiet);
+      log(`${cliName} Error: Bump type is missing.`, 'error', quiet);
       return process.exit(1);
     }
   }
@@ -92,7 +92,7 @@ export const publish = async (cmd) => {
       // Save updated version
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
-      log(`Lex Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
+      log(`${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
       return process.exit(1);
     }
   } else {
@@ -115,7 +115,7 @@ export const publish = async (cmd) => {
     return process.exit(npmPublish.status);
   } catch(error) {
     // Display error message
-    log(`Lex Error: ${error.message}`, 'error', quiet);
+    log(`${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Publishing to npm has failed.');
