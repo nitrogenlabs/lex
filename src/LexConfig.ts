@@ -17,6 +17,7 @@ export interface LexConfigType {
   libraryTarget?: string;
   outputFile?: string;
   outputFullPath?: string;
+  outputHash?: boolean;
   outputPath?: string;
   packageManager?: string;
   sourceFullPath?: string;
@@ -33,6 +34,7 @@ export class LexConfig {
     entryJS: 'index.js',
     env: null,
     outputFullPath: path.resolve(cwd, './dist'),
+    outputHash: false,
     outputPath: './dist',
     packageManager: 'yarn',
     sourceFullPath: path.resolve(cwd, './src'),

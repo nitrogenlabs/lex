@@ -141,7 +141,7 @@ export const compile = async (cmd) => {
 
     // Stop spinner
     if(!babel.status) {
-      spinner.succeed((babel.stdout || '').replace('.', '!'));
+      spinner.succeed((babel.stdout || '').replace('.', '!').trim());
     } else {
       spinner.fail('Code compiling failed.');
 

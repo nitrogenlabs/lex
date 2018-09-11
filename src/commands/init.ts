@@ -14,7 +14,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
   const spinner = createSpinner(quiet);
 
   // Download app module into temporary directory
-  log(`${cliName} downloading app module...`, 'info', quiet);
+  log(`${cliName} is downloading the app module...`, 'info', quiet);
   spinner.start('Downloading app...');
   const tmpPath: string = path.resolve(cwd, './.lexTmp');
   const appPath: string = path.resolve(cwd, `./${appName}`);
@@ -36,8 +36,6 @@ export const init = async (appName: string, packageName: string, cmd) => {
       appModule = '@nlabs/arkhamjs-example-flow-react';
     }
   }
-
-  log('\nInitializing...', 'note', quiet);
 
   try {
     const download = await execa(dnpPath, [appModule, tmpPath], {});

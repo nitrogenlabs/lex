@@ -20,7 +20,7 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const {isStatic, outputFullPath, sourceFullPath, outputFile, libraryName, libraryTarget} = lexConfig;
+const {isStatic, outputFullPath, sourceFullPath, outputFile, outputHash, libraryName, libraryTarget} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
@@ -77,6 +77,16 @@ if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
     filename: './index.html',
     template: `${sourceFullPath}/${lexConfig.entryHTML}`
   }));
+}
+
+let outputFilename = outputFile;
+
+if(outputFile) {
+  outputFilename = outputFile;
+} else if(outputHash) {
+  outputFilename = '[name].[hash].js';
+} else {
+  outputFilename = '[name].js';
 }
 
 const webpackConfig = {
@@ -155,8 +165,20 @@ const webpackConfig = {
       }
     ]
   },
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          chunks: 'all',
+          name: 'vendors',
+          test: /[\\/]node_modules[\\/]/
+        }
+      }
+    }
+  },
   output: {
-    filename: outputFile || '[name].js',
+    filename: outputFilename,
     library: libraryName,
     libraryTarget,
     path: outputFullPath,
@@ -186,7 +208,7 @@ if(!isProduction) {
   };
   webpackConfig.devtool = 'inline-source-map';
 } else if(isStatic) {
-  webpackConfig.plugins.push(new StaticSitePlugin());
+  webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
 }
 
 module.exports = webpackConfig;

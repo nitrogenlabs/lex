@@ -61,7 +61,8 @@ export const dev = async (cmd) => {
   }
 
   const webpackDevPath: string = path.resolve(
-    __dirname, '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js'
+    __dirname,
+    '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js'
   );
 
   // Start development spinner
