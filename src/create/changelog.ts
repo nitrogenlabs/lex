@@ -7,7 +7,7 @@ import path from 'path';
 
 import {createSpinner, log} from '../utils';
 
-export const createChangelog = async ({cliName = 'Lex', config, output = 'changelog.tmp.md', quiet}) => {
+export const createChangelog = async ({cliName, config, outputFile = 'changelog.tmp.md', quiet}) => {
   // Spinner
   const spinner = createSpinner(quiet);
 
@@ -120,7 +120,7 @@ export const createChangelog = async ({cliName = 'Lex', config, output = 'change
         return updatedContent;
       }, '# Changes\n');
 
-      const logFile: string = path.join(process.cwd(), output);
+      const logFile: string = path.join(process.cwd(), outputFile);
       fs.writeFileSync(logFile, formatLog);
       spinner.succeed('Git change log complete!');
     } else {

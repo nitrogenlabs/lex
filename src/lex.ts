@@ -50,7 +50,7 @@ program.command('compile')
 
 program.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('--outputFile', 'Output file')
+  .option('--outputFile', 'Output filename')
   .action(create);
 
 program.command('dev')

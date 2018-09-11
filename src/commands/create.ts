@@ -3,7 +3,7 @@ import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
 export const create = (type: string, cmd) => {
-  const {cliName = 'Lex', output, quiet} = cmd;
+  const {cliName = 'Lex', outputFile, quiet} = cmd;
   log(`${cliName} create ${type}...`, 'info', quiet);
 
   // Get custom configuration
@@ -20,7 +20,7 @@ export const create = (type: string, cmd) => {
 
   switch(type) {
     case 'changelog':
-      return createChangelog({config, output, quiet});
+      return createChangelog({cliName, config, outputFile, quiet});
   }
 
   return process.exit(0);
