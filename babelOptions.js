@@ -6,7 +6,7 @@ const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {babelPlugins = [], babelPresets = [], commandName, targetEnvironment, useTypescript} = lexConfig;
 
 // Babel Plugin/preset paths
-const nodePath = path.resolve(__dirname, '../node_modules');
+const nodePath = path.resolve(__dirname, './node_modules');
 const pluginPath = relativeFilePath('@babel/plugin-proposal-function-bind', nodePath, 1);
 
 // Presets
