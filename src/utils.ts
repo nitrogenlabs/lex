@@ -1,5 +1,6 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
+import findFileUp from 'find-file-up';
 import fs from 'fs';
 import glob from 'glob';
 import ora from 'ora';
@@ -112,4 +113,17 @@ export const checkLinkedModules = () => {
     );
     log(boxen(linkedMsg, {borderStyle: 'round', dimBorder: true, padding: 1}), 'warn');
   }
+};
+
+// Get file paths relative to Lex
+export const relativeFilePath = (filename: string, nodePath: string, backUp: number = 0) => {
+  const nestDepth: number = 10;
+
+  if(backUp) {
+    const filePath: string = findFileUp.sync(filename, nodePath, nestDepth);
+    const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
+    return path.resolve(filePath, previousPath);
+  }
+
+  return findFileUp.sync(filename, nodePath, nestDepth);
 };

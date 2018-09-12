@@ -1,8 +1,13 @@
-const cwd = process.cwd();
 const path = require('path');
 
+const {relativeFilePath} = require('./dist/utils');
+
+const cwd = process.cwd();
 const {sourceFullPath} = JSON.parse(process.env.LEX_CONFIG || '{}');
-const lexNodePath = path.resolve(__dirname, './node_modules');
+
+// Polyfill path
+const nodePath = path.resolve(__dirname, './node_modules');
+const babelPolyfillPath = relativeFilePath('@babel/polyfill/dist/polyfill.js', nodePath);
 
 module.exports = {
   collectCoverage: true,
@@ -18,16 +23,16 @@ module.exports = {
   },
   modulePaths: [
     `${cwd}/node_modules`,
-    lexNodePath,
+    nodePath,
     sourceFullPath
   ],
   resolver: path.resolve(__dirname, './dist/resolver.js'),
   rootDir: cwd,
-  setupFiles: [`${lexNodePath}/@babel/polyfill/dist/polyfill.js`],
+  setupFiles: [babelPolyfillPath],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: [
     '/node_modules/',
-    `${lexNodePath}/`
+    `${nodePath}/`
   ],
   testRegex: '(/__tests__/.*|\\.(test|spec))\\.(js|ts|tsx)?$',
   testURL: 'http://localhost',

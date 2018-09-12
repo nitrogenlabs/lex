@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, createSpinner, log} from '../utils';
+import {checkLinkedModules, createSpinner, log, relativeFilePath} from '../utils';
 import {removeFiles} from './clean';
 
 const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
@@ -55,7 +55,7 @@ export const compile = async (cmd) => {
     LexConfig.checkTypescriptConfig();
 
     // Check static types with typescript
-    const typescriptPath: string = `${nodePath}/typescript/bin/tsc`;
+    const typescriptPath: string = relativeFilePath('typescript/bin/tsc', nodePath);
     const typescriptOptions: string[] = config ?
       ['-p', config] :
       [
@@ -109,7 +109,7 @@ export const compile = async (cmd) => {
   }
 
   // Babel options
-  const babelPath: string = `${nodePath}/@babel/cli/bin/babel.js`;
+  const babelPath: string = relativeFilePath('@babel/cli/bin/babel.js', nodePath);
   const transpilerPreset: string = path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js');
   const userPreset: string = path.resolve(__dirname, '../babelPresets.js');
   const babelOptions: string[] = [
@@ -160,7 +160,7 @@ export const compile = async (cmd) => {
   }
 
   if(fs.existsSync(`${sourceFullPath}/styles`)) {
-    const postcssPath: string = `${nodePath}/postcss-cli/bin/postcss`;
+    const postcssPath: string = relativeFilePath('postcss-cli/bin/postcss', nodePath);
     const postcssOptions: string[] = [
       `${sourceFullPath}/styles/**/*.css`,
       '-d',

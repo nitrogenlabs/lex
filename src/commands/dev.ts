@@ -2,7 +2,7 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {createSpinner, log, relativeFilePath} from '../utils';
 import {removeFiles} from './clean';
 
 export const dev = async (cmd) => {
@@ -60,13 +60,10 @@ export const dev = async (cmd) => {
     webpackOptions.push('--open');
   }
 
-  const webpackDevPath: string = path.resolve(
-    __dirname,
-    '../../node_modules/webpack-dev-server/bin/webpack-dev-server.js'
-  );
-
   // Start development spinner
   try {
+    const nodePath: string = path.resolve(__dirname, '../../node_modules');
+    const webpackDevPath: string = relativeFilePath('webpack-dev-server/bin/webpack-dev-server.js', nodePath);
     const webpack = await execa(webpackDevPath, webpackOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'

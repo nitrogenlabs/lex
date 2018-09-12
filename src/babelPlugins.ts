@@ -1,29 +1,32 @@
 import path from 'path';
 
+import {relativeFilePath} from './utils';
+
 const nodePath = path.resolve(__dirname, '../node_modules');
+const pluginPath: string = relativeFilePath('@babel/plugin-proposal-function-bind', nodePath, 1);
 
 export const plugins = [
   // Stage 0
-  `${nodePath}/@babel/plugin-proposal-function-bind`,
+  `${pluginPath}/plugin-proposal-function-bind`,
 
   // Stage 1
-  `${nodePath}/@babel/plugin-proposal-export-default-from`,
-  `${nodePath}/@babel/plugin-proposal-logical-assignment-operators`,
-  [`${nodePath}/@babel/plugin-proposal-optional-chaining`, {loose: false}],
-  [`${nodePath}/@babel/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
-  [`${nodePath}/@babel/plugin-proposal-nullish-coalescing-operator`, {loose: false}],
-  `${nodePath}/@babel/plugin-proposal-do-expressions`,
+  `${pluginPath}/plugin-proposal-export-default-from`,
+  `${pluginPath}/plugin-proposal-logical-assignment-operators`,
+  [`${pluginPath}/plugin-proposal-optional-chaining`, {loose: false}],
+  [`${pluginPath}/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
+  [`${pluginPath}/plugin-proposal-nullish-coalescing-operator`, {loose: false}],
+  `${pluginPath}/plugin-proposal-do-expressions`,
 
   // Stage 2
-  [`${nodePath}/@babel/plugin-proposal-decorators`, {legacy: true}],
-  `${nodePath}/@babel/plugin-proposal-function-sent`,
-  `${nodePath}/@babel/plugin-proposal-export-namespace-from`,
-  `${nodePath}/@babel/plugin-proposal-numeric-separator`,
-  `${nodePath}/@babel/plugin-proposal-throw-expressions`,
+  [`${pluginPath}/plugin-proposal-decorators`, {legacy: true}],
+  `${pluginPath}/plugin-proposal-function-sent`,
+  `${pluginPath}/plugin-proposal-export-namespace-from`,
+  `${pluginPath}/plugin-proposal-numeric-separator`,
+  `${pluginPath}/plugin-proposal-throw-expressions`,
 
   // Stage 3
-  `${nodePath}/@babel/plugin-syntax-dynamic-import`,
-  `${nodePath}/@babel/plugin-syntax-import-meta`,
-  [`${nodePath}/@babel/plugin-proposal-class-properties`, {loose: false}],
-  `${nodePath}/@babel/plugin-proposal-json-strings`
+  `${pluginPath}/plugin-syntax-dynamic-import`,
+  `${pluginPath}/plugin-syntax-import-meta`,
+  [`${pluginPath}/plugin-proposal-class-properties`, {loose: false}],
+  `${pluginPath}/plugin-proposal-json-strings`
 ];

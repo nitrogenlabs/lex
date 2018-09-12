@@ -1,17 +1,18 @@
 const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+
+const {relativeFilePath} = require('./dist/utils');
 
 const {DefinePlugin, HotModuleReplacementPlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
-const nodePath = path.resolve(__dirname, './node_modules');
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const envVariables = lexConfig.env || {NODE_ENV: environment};
 const processVariables = Object.keys(envVariables).reduce((list, varName) => {
@@ -89,6 +90,18 @@ if(outputFile) {
   outputFilename = '[name].js';
 }
 
+// Loader paths
+const sourceLoaderPath = relativeFilePath('node_modules/source-map-loader', __dirname);
+const babelLoaderPath = relativeFilePath('node_modules/babel-loader', __dirname);
+const styleLoaderPath = relativeFilePath('node_modules/style-loader', __dirname);
+const cssLoaderPath = relativeFilePath('node_modules/css-loader', __dirname);
+const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirname);
+const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
+const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
+const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
+const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
+
+// Webpack config
 const webpackConfig = {
   bail: true,
   cache: !isProduction,
@@ -100,27 +113,27 @@ const webpackConfig = {
     rules: [
       {
         enforce: 'pre',
-        loader: path.resolve(`${nodePath}/source-map-loader`),
+        loader: sourceLoaderPath,
         test: /\.(js|ts|tsx)$/
       },
       {
         exclude: /(node_modules)/,
-        loader: path.resolve(`${nodePath}/babel-loader`),
+        loader: babelLoaderPath,
         options: babelOptions,
         test: /\.(js|ts|tsx)$/
       },
       {
         test: /\.css$/,
         use: [
-          path.resolve(`${nodePath}/style-loader`),
+          styleLoaderPath,
           {
-            loader: path.resolve(`${nodePath}/css-loader`),
+            loader: cssLoaderPath,
             options: {
               importLoaders: 1
             }
           },
           {
-            loader: path.resolve(`${nodePath}/postcss-loader`),
+            loader: postcssLoaderPath,
             options: {
               plugins: [
                 require('postcss-import')({addDependencyTo: webpack}),
@@ -154,13 +167,13 @@ const webpackConfig = {
         test: /\.html$/,
         use: [
           {
-            loader: `${nodePath}/html-loader`,
+            loader: htmlLoaderPath,
             options: {minimize: isProduction}
           }
         ]
       },
       {
-        loader: `${nodePath}/file-loader`,
+        loader: fileLoaderPath,
         test: /\.(png|svg|jpg|gif)$/
       }
     ]
@@ -193,8 +206,8 @@ const webpackConfig = {
 // Add development plugins
 if(!isProduction) {
   webpackConfig.resolve.alias = {
-    'react-hot-loader': `${nodePath}/react-hot-loader`,
-    webpack: `${nodePath}/webpack`
+    'react-hot-loader': reactHotLoaderPath,
+    webpack: webpackPath
   };
   webpackConfig.plugins.push(
     new HotModuleReplacementPlugin(),

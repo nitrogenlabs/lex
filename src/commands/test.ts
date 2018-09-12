@@ -2,10 +2,11 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {createSpinner, log, relativeFilePath} from '../utils';
 
 export const test = async (cmd) => {
   const {cliName = 'Lex', config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
+
   log(`${cliName} testing...`, 'info', quiet);
 
   // Spinner
@@ -22,7 +23,8 @@ export const test = async (cmd) => {
   }
 
   // Configure jest
-  const jestPath: string = path.resolve(__dirname, '../../node_modules/jest/bin/jest.js');
+  const nodePath: string = path.resolve(__dirname, '../../node_modules');
+  const jestPath: string = relativeFilePath('jest/bin/jest.js', nodePath);
   const jestConfigFile: string = config || path.resolve(__dirname, '../../jest.config.js');
   const jestSetupFile: string = setup || '';
   const jestOptions: string[] = ['--config', jestConfigFile];

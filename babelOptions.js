@@ -1,9 +1,16 @@
 const path = require('path');
 
+const {relativeFilePath} = require('./dist/utils');
+
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {babelPlugins = [], babelPresets = [], commandName, targetEnvironment, useTypescript} = lexConfig;
-const nodePath = path.resolve(__dirname, './node_modules');
-const presetEnvPath = `${nodePath}/@babel/preset-env`;
+
+// Babel Plugin/preset paths
+const nodePath = path.resolve(__dirname, '../node_modules');
+const pluginPath = relativeFilePath('@babel/plugin-proposal-function-bind', nodePath, 1);
+
+// Presets
+const presetEnvPath = `${pluginPath}/preset-env`;
 const babelNodeEnv = [presetEnvPath];
 const babelTestEnv = [presetEnvPath];
 const babelWebEnv = [presetEnvPath, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
@@ -21,28 +28,28 @@ if(commandName === 'test') {
 
 const plugins = [
   // Stage 0
-  `${nodePath}/@babel/plugin-proposal-function-bind`,
+  `${pluginPath}/plugin-proposal-function-bind`,
 
   // Stage 1
-  `${nodePath}/@babel/plugin-proposal-export-default-from`,
-  `${nodePath}/@babel/plugin-proposal-logical-assignment-operators`,
-  [`${nodePath}/@babel/plugin-proposal-optional-chaining`, {loose: false}],
-  [`${nodePath}/@babel/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
-  [`${nodePath}/@babel/plugin-proposal-nullish-coalescing-operator`, {loose: false}],
-  `${nodePath}/@babel/plugin-proposal-do-expressions`,
+  `${pluginPath}/plugin-proposal-export-default-from`,
+  `${pluginPath}/plugin-proposal-logical-assignment-operators`,
+  [`${pluginPath}/plugin-proposal-optional-chaining`, {loose: false}],
+  [`${pluginPath}/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
+  [`${pluginPath}/plugin-proposal-nullish-coalescing-operator`, {loose: false}],
+  `${pluginPath}/plugin-proposal-do-expressions`,
 
   // Stage 2
-  [`${nodePath}/@babel/plugin-proposal-decorators`, {legacy: true}],
-  `${nodePath}/@babel/plugin-proposal-function-sent`,
-  `${nodePath}/@babel/plugin-proposal-export-namespace-from`,
-  `${nodePath}/@babel/plugin-proposal-numeric-separator`,
-  `${nodePath}/@babel/plugin-proposal-throw-expressions`,
+  [`${pluginPath}/plugin-proposal-decorators`, {legacy: true}],
+  `${pluginPath}/plugin-proposal-function-sent`,
+  `${pluginPath}/plugin-proposal-export-namespace-from`,
+  `${pluginPath}/plugin-proposal-numeric-separator`,
+  `${pluginPath}/plugin-proposal-throw-expressions`,
 
   // Stage 3
-  `${nodePath}/@babel/plugin-syntax-dynamic-import`,
-  `${nodePath}/@babel/plugin-syntax-import-meta`,
-  [`${nodePath}/@babel/plugin-proposal-class-properties`, {loose: false}],
-  `${nodePath}/@babel/plugin-proposal-json-strings`,
+  `${pluginPath}/plugin-syntax-dynamic-import`,
+  `${pluginPath}/plugin-syntax-import-meta`,
+  [`${pluginPath}/plugin-proposal-class-properties`, {loose: false}],
+  `${pluginPath}/plugin-proposal-json-strings`,
 
   // User provided plugins
   ...babelPlugins
@@ -52,17 +59,17 @@ const presets = [
   presetEnv,
 
   // React
-  `${nodePath}/@babel/preset-react`,
+  `${pluginPath}/preset-react`,
 
   // Transpilers
-  useTypescript ? `${nodePath}/@babel/preset-typescript` : `${nodePath}/@babel/preset-flow`,
+  useTypescript ? `${pluginPath}/preset-typescript` : `${pluginPath}/preset-flow`,
 
   // User provided presets
   ...babelPresets
 ];
 
 if(commandName === 'dev') {
-  plugins.push(`${nodePath}/react-hot-loader/babel.js`);
+  plugins.push(`${pluginPath}/../react-hot-loader/babel.js`);
 }
 
 // Configuration for babel 7
