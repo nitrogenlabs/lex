@@ -1,8 +1,5 @@
 {
   "extends": [
     "styleguidejs/typescript"
-  ],
-  "rules": {
-    "no-useless-escape": 0
-  }
+  ]
 }

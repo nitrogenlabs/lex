@@ -1,0 +1,11 @@
+{
+  "lerna": "3.3.2",
+  "packages": [
+    "packages/lex",
+    "packages/favicons-webpack-plugin",
+    "packages/static-site-webpack-plugin"
+  ],
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "version": "3.11.9"
+}
