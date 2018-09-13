@@ -5,7 +5,7 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
-export const init = async (appName: string, packageName: string, cmd) => {
+export const init = async (appName: string, packageName: string, cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', install, packageManager: cmdPackageManager, quiet, typescript} = cmd;
   const cwd: string = process.cwd();
   let status: number = 0;
@@ -50,7 +50,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     spinner.fail('Downloaded of app failed.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 
   // Move into configured directory
@@ -58,7 +58,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
     log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
-    return process.exit(1);
+    return callback(1);
   }
 
   // Configure package.json
@@ -83,7 +83,7 @@ export const init = async (appName: string, packageName: string, cmd) => {
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-    return process.exit(1);
+    return callback(1);
   }
 
   if(install) {
@@ -115,10 +115,10 @@ export const init = async (appName: string, packageName: string, cmd) => {
       spinner.fail('Failed to install dependencies.');
 
       // Kill process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
   // Kill process
-  return process.exit(status);
+  return callback(status);
 };

@@ -14,7 +14,7 @@ export const jsonVersions = () => JSON.stringify(Object.keys(packages).reduce((l
   list[key] = packages[key];
   return list;
 }, {}));
-export const versions = (cmd) => {
+export const versions = (cmd: any, callback: any = process.exit) => {
   if(cmd.json) {
     console.log(JSON.stringify(Object.keys(packages).reduce((list, key) => {
       list[key] = packages[key];
@@ -29,4 +29,6 @@ export const versions = (cmd) => {
     log(`  Typescript: ${packages.typescript}`, 'info', false);
     log(`  Webpack: ${packages.webpack}`, 'info', false);
   }
+
+  return callback(0);
 };

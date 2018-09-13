@@ -17,7 +17,7 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
   });
 });
 
-export const clean = async (cmd) => {
+export const clean = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;
 
   // Spinner
@@ -56,7 +56,7 @@ export const clean = async (cmd) => {
     spinner.succeed('Successfully cleaned!');
 
     // Stop process
-    return process.exit(0);
+    return callback(0);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -65,6 +65,6 @@ export const clean = async (cmd) => {
     spinner.fail('Failed to clean project.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };

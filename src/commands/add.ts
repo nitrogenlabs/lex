@@ -13,7 +13,7 @@ const updateName = (filePath: string, replace: string, replaceCaps: string) => {
   fs.writeFileSync(filePath, data, 'utf8');
 };
 
-export const add = async (type: string, name: string, cmd) => {
+export const add = async (type: string, name: string, cmd: any, callback: any = process.exit): Promise<any> => {
   const {cliName = 'Lex', quiet} = cmd;
   const cwd: string = process.cwd();
 
@@ -28,7 +28,7 @@ export const add = async (type: string, name: string, cmd) => {
   if(!name) {
     if(itemNames.includes(name)) {
       log(`\n${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
-      return false;
+      return callback(1);
     }
   } else {
     nameCaps = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
@@ -79,13 +79,11 @@ export const add = async (type: string, name: string, cmd) => {
           updateName(storeFilePath, name, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
-          process.exit(1);
-          return false;
+          return callback(1);
         }
       } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-        process.exit(1);
-        return false;
+        return callback(1);
       }
       break;
     }
@@ -139,13 +137,11 @@ export const add = async (type: string, name: string, cmd) => {
           updateName(viewFilePath, name, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
-          process.exit(1);
-          return false;
+          return callback(1);
         }
       } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-        process.exit(1);
-        return false;
+        return callback(1);
       }
       break;
     }
@@ -159,11 +155,9 @@ export const add = async (type: string, name: string, cmd) => {
     }
     default: {
       log(`\n${cliName} Error: "${type}" does not exist. Please use 'lex -h' for options.`, 'error', quiet);
-      process.exit(1);
-      return false;
+      return callback(1);
     }
   }
 
-  process.exit(0);
-  return true;
+  return callback(0);
 };

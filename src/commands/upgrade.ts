@@ -8,7 +8,7 @@ import {parseVersion} from './versions';
 
 const packageConfig = require('../../package.json');
 
-export const upgrade = (cmd) => {
+export const upgrade = (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
 
   // Display status
@@ -20,14 +20,14 @@ export const upgrade = (cmd) => {
   // Get custom configuration
   LexConfig.parseConfig(cmd);
 
-  latestVersion('@nlabs/lex')
+  return latestVersion('@nlabs/lex')
     .then(async (latest: string) => {
       const current: string = parseVersion(packageConfig.version);
       const versionDiff: number = compareVersions(latest, current);
 
       if(versionDiff === 0) {
         log(`\nCurrently up-to-date. Version ${latest} is the latest.`, 'note', quiet);
-        return;
+        return callback(0);
       }
 
       log(`\nCurrently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
@@ -53,7 +53,7 @@ export const upgrade = (cmd) => {
       }
 
       // Stop process
-      process.exit(yarn.status);
+      return callback(yarn.status);
     })
     .catch((error) => {
       // Display error message
@@ -63,6 +63,6 @@ export const upgrade = (cmd) => {
       spinner.fail('Failed to updated packages.');
 
       // Kill process
-      process.exit(1);
+      return callback(1);
     });
 };

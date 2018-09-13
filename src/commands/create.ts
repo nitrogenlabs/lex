@@ -2,7 +2,7 @@ import {createChangelog} from '../create/changelog';
 import {LexConfig} from '../LexConfig';
 import {log} from '../utils';
 
-export const create = (type: string, cmd) => {
+export const create = async (type: string, cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', outputFile, quiet} = cmd;
   log(`${cliName} create ${type}...`, 'info', quiet);
 
@@ -20,8 +20,8 @@ export const create = (type: string, cmd) => {
 
   switch(type) {
     case 'changelog':
-      return createChangelog({cliName, config, outputFile, quiet});
+      return callback(await createChangelog({cliName, config, outputFile, quiet}));
   }
 
-  return process.exit(0);
+  return callback(0);
 };

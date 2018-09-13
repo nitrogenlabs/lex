@@ -41,7 +41,7 @@ export const copyFolderRecursiveSync = (source: string, target: string): void =>
   }
 };
 
-export const copy = (from: string, to: string, cmd) => {
+export const copy = (from: string, to: string, cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display message
@@ -49,8 +49,7 @@ export const copy = (from: string, to: string, cmd) => {
 
   if(!fs.existsSync(from)) {
     log(`\n${cliName} Error: Path not found, "${from}"...`, 'error', quiet);
-    process.exit(1);
-    return false;
+    return callback(1);
   }
 
   if(fs.lstatSync(from).isDirectory()) {
@@ -59,8 +58,7 @@ export const copy = (from: string, to: string, cmd) => {
       copyFolderRecursiveSync(from, to);
     } catch(error) {
       log(`\n${cliName} Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
-      process.exit(1);
-      return false;
+      return callback(1);
     }
   } else {
     try {
@@ -68,11 +66,9 @@ export const copy = (from: string, to: string, cmd) => {
       copyFileSync(from, to);
     } catch(error) {
       log(`\n${cliName} Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
-      process.exit(1);
-      return false;
+      return callback(1);
     }
   }
 
-  process.exit(0);
-  return null;
+  return callback(0);
 };

@@ -25,7 +25,7 @@ const copyFiles = async (files: string[], outputDir: string, typeName: string, s
   }
 };
 
-export const compile = async (cmd) => {
+export const compile = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
 
   // Spinner
@@ -94,7 +94,7 @@ export const compile = async (cmd) => {
         spinner.fail('Type checking failed.');
 
         // Kill Process
-        return process.exit(1);
+        return callback(1);
       }
     } catch(error) {
       // Display error message
@@ -104,7 +104,7 @@ export const compile = async (cmd) => {
       spinner.fail('Type checking failed.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -146,7 +146,7 @@ export const compile = async (cmd) => {
       spinner.fail('Code compiling failed.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   } catch(error) {
     // Display error message
@@ -156,7 +156,7 @@ export const compile = async (cmd) => {
     spinner.fail('Code compiling failed.');
 
     // Kill Process
-    return process.exit(1);
+    return callback(1);
   }
 
   if(fs.existsSync(`${sourceFullPath}/styles`)) {
@@ -180,7 +180,7 @@ export const compile = async (cmd) => {
       spinner.fail('Failed formatting css.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -195,7 +195,7 @@ export const compile = async (cmd) => {
       spinner.fail('Failed to move images to output directory.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -221,7 +221,7 @@ export const compile = async (cmd) => {
       spinner.fail('Failed to move fonts to output directory.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -236,10 +236,10 @@ export const compile = async (cmd) => {
       spinner.fail('Failed to move docs to output directory.');
 
       // Kill Process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
   // Stop process
-  return process.exit(0);
+  return callback(0);
 };

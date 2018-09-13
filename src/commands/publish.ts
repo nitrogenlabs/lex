@@ -5,7 +5,7 @@ import semver from 'semver';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
-export const publish = async (cmd) => {
+export const publish = async (cmd, callback: any = process.exit) => {
   const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
   log(`${cliName} publishing npm module...`, 'info', quiet);
 
@@ -46,7 +46,7 @@ export const publish = async (cmd) => {
   } catch(error) {
     log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
     console.error(chalk.red(error.message));
-    return process.exit(1);
+    return callback(1);
   }
 
   // Update package.json with the latest version
@@ -68,7 +68,7 @@ export const publish = async (cmd) => {
 
       if(!semver.valid(packageVersion)) {
         log(`\n${cliName} Error: Version is invalid in package.json`, 'error', quiet);
-        return process.exit(1);
+        return callback(1);
       }
 
       if(validReleases.includes(formatBump)) {
@@ -77,11 +77,11 @@ export const publish = async (cmd) => {
         nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
       } else {
         log(`\n${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
-        return process.exit(1);
+        return callback(1);
       }
     } else {
       log(`\n${cliName} Error: Bump type is missing.`, 'error', quiet);
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -93,7 +93,7 @@ export const publish = async (cmd) => {
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
       log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
-      return process.exit(1);
+      return callback(1);
     }
   } else {
     nextVersion = prevVersion;
@@ -112,7 +112,7 @@ export const publish = async (cmd) => {
     }
 
     // Kill process
-    return process.exit(npmPublish.status);
+    return callback(npmPublish.status);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -121,6 +121,6 @@ export const publish = async (cmd) => {
     spinner.fail('Publishing to npm has failed.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };

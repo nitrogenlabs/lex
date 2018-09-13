@@ -5,7 +5,7 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath} from '../utils';
 import {removeFiles} from './clean';
 
-export const dev = async (cmd) => {
+export const dev = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, open, quiet, remove, variables} = cmd;
 
   // Spinner
@@ -27,7 +27,7 @@ export const dev = async (cmd) => {
       variablesObj = JSON.parse(variables);
     } catch(error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -76,7 +76,7 @@ export const dev = async (cmd) => {
       spinner.fail('There was an error while running Webpack.');
     }
 
-    return process.exit(webpack.status);
+    return callback(webpack.status);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -85,6 +85,6 @@ export const dev = async (cmd) => {
     spinner.fail('There was an error while running Webpack.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };

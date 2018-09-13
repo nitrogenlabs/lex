@@ -5,7 +5,7 @@ import {LexConfig} from '../LexConfig';
 import {checkLinkedModules, createSpinner, log, relativeFilePath} from '../utils';
 import {removeFiles} from './clean';
 
-export const build = async (cmd) => {
+export const build = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, mode, quiet = false, remove, variables} = cmd;
 
   // Spinner
@@ -32,7 +32,7 @@ export const build = async (cmd) => {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
 
       // Kill process
-      return process.exit(1);
+      return callback(1);
     }
   }
 
@@ -82,7 +82,7 @@ export const build = async (cmd) => {
     }
 
     // Stop process
-    return process.exit(webpack.status);
+    return callback(webpack.status);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -91,6 +91,6 @@ export const build = async (cmd) => {
     spinner.fail('Build failed.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };

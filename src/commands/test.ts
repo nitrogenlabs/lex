@@ -4,7 +4,7 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath} from '../utils';
 
-export const test = async (cmd) => {
+export const test = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
 
   log(`${cliName} testing...`, 'info', quiet);
@@ -67,7 +67,7 @@ export const test = async (cmd) => {
     }
 
     // Kill process
-    return process.exit(jest.status);
+    return callback(jest.status);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -76,6 +76,6 @@ export const test = async (cmd) => {
     spinner.fail('Testing failed!');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };

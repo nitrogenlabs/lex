@@ -3,7 +3,7 @@ import execa from 'execa';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, log} from '../utils';
 
-export const update = async (cmd) => {
+export const update = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;
 
   // Display status
@@ -36,7 +36,7 @@ export const update = async (cmd) => {
     }
 
     // Kill process
-    return process.exit(pm.status);
+    return callback(pm.status);
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -45,6 +45,6 @@ export const update = async (cmd) => {
     spinner.fail('Failed to updated packages.');
 
     // Kill process
-    return process.exit(1);
+    return callback(1);
   }
 };
