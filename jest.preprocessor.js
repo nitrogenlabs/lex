@@ -1,7 +1,12 @@
 const path = require('path');
 
-const {jestPreprocessor} = require('./dist/preprocessor');
+const {relativeFilePath} = require('./dist/utils');
+
+// babel-jest
+const nodePath = path.resolve(__dirname, './node_modules');
+const babelJestPath = relativeFilePath('babel-jest', nodePath);
+const {createTransformer} = require(babelJestPath);
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions'));
 const {ignore, ...updatedOptions} = babelOptions;
-module.exports = jestPreprocessor(updatedOptions);
+module.exports = createTransformer(updatedOptions);

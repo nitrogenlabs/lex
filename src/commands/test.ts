@@ -24,7 +24,7 @@ export const test = async (cmd) => {
 
   // Configure jest
   const nodePath: string = path.resolve(__dirname, '../../node_modules');
-  const jestPath: string = relativeFilePath('jest/bin/jest.js', nodePath);
+  const jestPath: string = relativeFilePath('jest-cli/bin/jest.js', nodePath);
   const jestConfigFile: string = config || path.resolve(__dirname, '../../jest.config.js');
   const jestSetupFile: string = setup || '';
   const jestOptions: string[] = ['--config', jestConfigFile];
