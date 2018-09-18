@@ -31,10 +31,19 @@ export class FaviconsPlugin {
 
   constructor(options: FaviconsPluginOptions) {
     if(isPlainObject(options)) {
-      if(!options.logo) {
+      const {icons: optionIcons = {}, logo} = options;
+
+      if(!logo) {
         throw new Error('FaviconsPlugin Error: "logo" property is required');
       } else {
-        const icons = {...defaultOptions.icons, ...(options.icons || {})};
+        const icons = Object.keys(defaultOptions.icons).reduce(
+          (list, iconName: string) => {
+            list[iconName] = optionIcons[iconName] || false;
+            return list;
+          },
+          {}
+        );
+
         this.options = {...defaultOptions, ...options, icons};
       }
     } else {
@@ -60,8 +69,10 @@ export class FaviconsPlugin {
   }
 
   apply(compiler) {
-    console.log('FaviconsPlugin::apply::1');
-    if(!this.options.title) {
+    const {emitStats, inject, title} = this.options;
+
+    console.log('FaviconsPlugin::apply::1::title', title, FaviconsPlugin.getAppName(compiler.context));
+    if(!title) {
       this.options = {...this.options, title: FaviconsPlugin.getAppName(compiler.context)};
     }
     console.log('FaviconsPlugin::apply::2');
@@ -78,21 +89,19 @@ export class FaviconsPlugin {
         .catch(callback);
     });
 
-    console.log('FaviconsPlugin::apply::3');
-    // Hook into the html-webpack-plugin processing
-    // and add the html
-    if(this.options.inject) {
-      const addFaviconsToHtml = (htmlPluginData, callback) => {
-        if(htmlPluginData.plugin.options.favicons !== false) {
+    console.log('FaviconsPlugin::apply::3::inject', inject);
+    // Hook into the html-webpack-plugin processing and add the html
+    if(inject) {
+      const addFaviconsToHtml = (htmlPluginData, callback): void => {
+        if(htmlPluginData.plugin.options.favicons === true) {
           htmlPluginData.html = htmlPluginData.html
             .replace(/(<\/head>)/i, `${compilationResult.stats.html.join('')}$&`);
         }
+
         callback(null, htmlPluginData);
       };
 
       compiler.hooks.compilation.tap('FaviconsPlugin', (cmpp) => {
-        console.log('cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing', cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing);
-
         console.log('FaviconsPlugin::apply::3a');
         if(cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
           cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('favicons-webpack-plugin', addFaviconsToHtml);
@@ -102,9 +111,9 @@ export class FaviconsPlugin {
       });
     }
 
-    console.log('FaviconsPlugin::apply::4');
+    console.log('FaviconsPlugin::apply::4::emitStats', emitStats);
     // Remove the stats from the output if they are not required (webpack 4 compliant + back compat)
-    if(!this.options.emitStats) {
+    if(!emitStats) {
       console.log('FaviconsPlugin::apply::4a');
       compiler.hooks.emit.tapAsync.bind(compiler.hooks.emit, 'FaviconsPluginEmit')((compilation, callback) => {
         console.log('FaviconsPlugin::apply::4b');

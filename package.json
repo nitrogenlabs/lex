@@ -3,14 +3,19 @@
   "license": "MIT",
   "scripts": {
     "build": "lerna run build",
-    "clean": "lex clean && lerna run clean",
     "lint": "lerna run lint",
+    "clean": "yarn clean:node-modules && yarn clean:logs && yarn clean:dist && yarn clean:yarn && yarn clean:npm",
+    "clean:dist": "find . -name 'dist' -type d -exec rm -rf '{}' +",
+    "clean:logs": "find . -name '*.log' -type f -delete",
+    "clean:node-modules": "find . -name 'node_modules' -type d -exec rm -rf '{}' +",
+    "clean:npm": "find . -name 'package-lock.json' -type f -delete",
+    "clean:yarn": "find . -name 'yarn.lock' -type f -delete",
     "test": "jest --clearCache && jest",
     "update": "lex update -i"
   },
   "devDependencies": {
     "jest-cli": "^23.6.0",
-    "lerna": "^3.3.2",
+    "lerna": "^3.4.0",
     "ts-jest": "^23.1.4",
     "typescript": "^3.0.3"
   },

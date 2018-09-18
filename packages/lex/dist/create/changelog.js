@@ -43,13 +43,14 @@ var execa_1 = __importDefault(require("execa"));
 var fs_1 = __importDefault(require("fs"));
 var capitalize_1 = __importDefault(require("lodash/capitalize"));
 var isEmpty_1 = __importDefault(require("lodash/isEmpty"));
+var merge_1 = __importDefault(require("lodash/merge"));
 var luxon_1 = require("luxon");
 var path_1 = __importDefault(require("path"));
 var utils_1 = require("../utils");
 exports.createChangelog = function (_a) {
     var cliName = _a.cliName, config = _a.config, _b = _a.outputFile, outputFile = _b === void 0 ? 'changelog.tmp.md' : _b, quiet = _a.quiet;
     return __awaiter(_this, void 0, void 0, function () {
-        var spinner, gitOptions, git, stdout, entries, gitJSON, headerPattern_1, commitContent_1, version_1, formatLog, logFile, error_1;
+        var spinner, gitOptions, git, stdout, entries, gitJSON, commitContent_1, version_1, formatLog, logFile, error_1;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -57,7 +58,7 @@ exports.createChangelog = function (_a) {
                     gitOptions = [
                         'log',
                         '-3',
-                        '--pretty=format:{"authorName": "%an", "authorEmail": "%ae", "hashShort": "%h", "hashFull": "%h", "tag": "%D", "date": %ct, "subject": "%s","comments": "%b"}[lex_break]'
+                        '--pretty=format:{"authorName": "%an", "authorEmail": "%ae", "hashShort": "%h", "hashFull": "%H", "tag": "%D", "date": %ct, "subject": "%s","comments": "%b"}[lex_break]'
                     ];
                     _c.label = 1;
                 case 1:
@@ -70,11 +71,11 @@ exports.createChangelog = function (_a) {
                     if (!git.status) {
                         stdout = git.stdout;
                         entries = stdout.split('[lex_break]').filter(function (item) { return !!item; });
-                        gitJSON = JSON.parse("[" + entries.join(',') + "]");
-                        headerPattern_1 = /^(\w*)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$/;
+                        gitJSON = JSON.parse(("[" + entries.join(',') + "]").replace(/"[^"]*(?:""[^"]*)*"/g, function (match) { return match.replace(/\n/g, '[lex_break]'); }));
                         commitContent_1 = {};
                         version_1 = 'Unreleased';
                         gitJSON.forEach(function (item) {
+                            var _a;
                             var comments = item.comments, authorEmail = item.authorEmail, authorName = item.authorName, date = item.date, hashFull = item.hashFull, hashShort = item.hashShort, tag = item.tag;
                             var formatDate = luxon_1.DateTime.fromMillis(date).toFormat('DDD');
                             if (!isEmpty_1.default(tag)) {
@@ -91,13 +92,16 @@ exports.createChangelog = function (_a) {
                                     commitContent_1[version_1] = { date: formatDate, version: updatedVersion };
                                 }
                             }
-                            var subjectLines = comments.split('\n');
                             if (!commitContent_1[version_1]) {
-                                commitContent_1[version_1] = {};
+                                commitContent_1[version_1] = { list: {} };
                             }
-                            commitContent_1[version_1].list = subjectLines.reduce(function (list, nextLine) {
+                            var subjectLines = comments.split('[lex_break]');
+                            var topics = {};
+                            for (var idx = 0, len = subjectLines.length; idx < len; idx++) {
+                                var nextLine = subjectLines[idx];
                                 var formatLine = nextLine.trim();
-                                var matches = formatLine.match(headerPattern_1);
+                                var headerPattern = /^(\w*)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$/;
+                                var matches = formatLine.match(headerPattern);
                                 if (matches) {
                                     var itemType = capitalize_1.default(matches[1]);
                                     var itemScope = matches[2];
@@ -105,38 +109,50 @@ exports.createChangelog = function (_a) {
                                     var details = {
                                         authorEmail: authorEmail,
                                         authorName: authorName,
-                                        details: itemType + " " + itemDetails,
+                                        details: itemDetails,
                                         hashFull: hashFull,
-                                        hashShort: hashShort
+                                        hashShort: hashShort,
+                                        type: itemType
                                     };
-                                    if (!list[itemScope]) {
-                                        list[itemScope] = [];
+                                    if (!topics[itemScope]) {
+                                        topics[itemScope] = (_a = {}, _a[itemType] = [details], _a);
                                     }
-                                    list[itemScope].push(details);
+                                    else {
+                                        topics[itemScope][itemType].push(details);
+                                    }
                                 }
-                                return list;
-                            }, {});
+                            }
+                            commitContent_1[version_1] = merge_1.default(commitContent_1[version_1], { list: topics });
                         });
                         formatLog = Object.keys(commitContent_1).reduce(function (content, versionKey) {
                             var _a = commitContent_1[versionKey], date = _a.date, _b = _a.list, list = _b === void 0 ? {} : _b, version = _a.version;
                             var formatScopes = Object.keys(list);
                             var updatedContent = content;
-                            updatedContent += "\n## " + version + " (" + date + ")\n";
+                            var versionLabel = version ? version : 'Unreleased';
+                            var headerLabels = [versionLabel];
+                            if (date) {
+                                headerLabels.push("(" + date + ")");
+                            }
+                            updatedContent += "\n## " + headerLabels.join(' ') + "\n";
                             formatScopes.forEach(function (scopeName) {
-                                var scopeList = list[scopeName];
                                 updatedContent += "\n### " + scopeName + "\n\n";
-                                scopeList.forEach(function (changes) {
-                                    var authorEmail = changes.authorEmail, authorName = changes.authorName, details = changes.details, hashFull = changes.hashFull, hashShort = changes.hashShort;
-                                    var gitUrl = config.gitUrl;
-                                    var hash = "#" + hashShort;
-                                    if (!isEmpty_1.default(gitUrl)) {
-                                        var commitPath = 'commits';
-                                        if (gitUrl.includes('github.com')) {
-                                            commitPath = 'commit';
+                                var itemList = list[scopeName];
+                                var itemNames = Object.keys(itemList);
+                                itemNames.forEach(function (itemName) {
+                                    updatedContent += "* " + itemName + "\n";
+                                    itemList[itemName].forEach(function (changes) {
+                                        var authorEmail = changes.authorEmail, authorName = changes.authorName, details = changes.details, hashFull = changes.hashFull, hashShort = changes.hashShort;
+                                        var gitUrl = config.gitUrl;
+                                        var hash = "#" + hashShort;
+                                        if (!isEmpty_1.default(gitUrl)) {
+                                            var commitPath = 'commits';
+                                            if (gitUrl.includes('github.com')) {
+                                                commitPath = 'commit';
+                                            }
+                                            hash = "[#" + hashShort + "](" + gitUrl + "/" + commitPath + "/" + hashFull + ")";
                                         }
-                                        hash = "[#" + hashShort + "](" + gitUrl + "/" + commitPath + "/" + hashFull + ")";
-                                    }
-                                    updatedContent += "  * " + details + " ([" + authorName + "](mailto:" + authorEmail + ") in " + hash + ")\n";
+                                        updatedContent += "  * " + details + " ([" + authorName + "](mailto:" + authorEmail + ") in " + hash + ")\n";
+                                    });
                                 });
                             });
                             return updatedContent;
@@ -146,17 +162,17 @@ exports.createChangelog = function (_a) {
                         spinner.succeed('Git change log complete!');
                     }
                     else {
-                        spinner.fail('Failed1 generating change.log!');
+                        spinner.fail('Failed generating change log!');
                     }
                     return [2, git.status];
                 case 3:
                     error_1 = _c.sent();
                     utils_1.log("\n" + cliName + " Error: " + error_1.message, 'error', quiet);
-                    spinner.fail('Failed2 generating change.log!');
+                    spinner.fail('Failed generating change log!');
                     return [2, 1];
                 case 4: return [2];
             }
         });
     });
 };
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2hhbmdlbG9nLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL2NyZWF0ZS9jaGFuZ2Vsb2cudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsaUJBOElBOztBQTlJQSxnREFBMEI7QUFDMUIsMENBQW9CO0FBQ3BCLGlFQUEyQztBQUMzQywyREFBcUM7QUFDckMsK0JBQStCO0FBQy9CLDhDQUF3QjtBQUV4QixrQ0FBNEM7QUFFL0IsUUFBQSxlQUFlLEdBQUcsVUFBTyxFQUF5RDtRQUF4RCxvQkFBTyxFQUFFLGtCQUFNLEVBQUUsa0JBQStCLEVBQS9CLG9EQUErQixFQUFFLGdCQUFLOzs7Ozs7b0JBRXRGLE9BQU8sR0FBRyxxQkFBYSxDQUFDLEtBQUssQ0FBQyxDQUFDO29CQUcvQixVQUFVLEdBQWE7d0JBQzNCLEtBQUs7d0JBQ0wsSUFBSTt3QkFDSix5S0FBeUs7cUJBQzFLLENBQUM7Ozs7b0JBSVksV0FBTSxlQUFLLENBQUMsS0FBSyxFQUFFLFVBQVUsRUFBRTs0QkFDekMsUUFBUSxFQUFFLE9BQU87eUJBQ2xCLENBQUMsRUFBQTs7b0JBRkksR0FBRyxHQUFHLFNBRVY7b0JBRUYsSUFBRyxDQUFDLEdBQUcsQ0FBQyxNQUFNLEVBQUU7d0JBQ1AsTUFBTSxHQUFJLEdBQUcsT0FBUCxDQUFRO3dCQUNmLE9BQU8sR0FBYSxNQUFNLENBQUMsS0FBSyxDQUFDLGFBQWEsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxVQUFDLElBQUksSUFBSyxPQUFBLENBQUMsQ0FBQyxJQUFJLEVBQU4sQ0FBTSxDQUFDLENBQUM7d0JBQ3pFLE9BQU8sR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLE1BQUksT0FBTyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsTUFBRyxDQUFDLENBQUM7d0JBQy9DLGtCQUF3Qix5Q0FBeUMsQ0FBQzt3QkFDbEUsa0JBQWdCLEVBQUUsQ0FBQzt3QkFDckIsWUFB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
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2hhbmdlbG9nLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL2NyZWF0ZS9jaGFuZ2Vsb2cudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsaUJBaUtBOztBQWpLQSxnREFBMEI7QUFDMUIsMENBQW9CO0FBQ3BCLGlFQUEyQztBQUMzQywyREFBcUM7QUFDckMsdURBQWlDO0FBQ2pDLCtCQUErQjtBQUMvQiw4Q0FBd0I7QUFFeEIsa0NBQTRDO0FBRS9CLFFBQUEsZUFBZSxHQUFHLFVBQU8sRUFBeUQ7UUFBeEQsb0JBQU8sRUFBRSxrQkFBTSxFQUFFLGtCQUErQixFQUEvQixvREFBK0IsRUFBRSxnQkFBSzs7Ozs7O29CQUV0RixPQUFPLEdBQUcscUJBQWEsQ0FBQyxLQUFLLENBQUMsQ0FBQztvQkFHL0IsVUFBVSxHQUFhO3dCQUMzQixLQUFLO3dCQUNMLElBQUk7d0JBQ0oseUtBQXlLO3FCQUMxSyxDQUFDOzs7O29CQUlZLFdBQU0sZUFBSyxDQUFDLEtBQUssRUFBRSxVQUFVLEVBQUU7NEJBQ3pDLFFBQVEsRUFBRSxPQUFPO3lCQUNsQixDQUFDLEVBQUE7O29CQUZJLEdBQUcsR0FBRyxTQUVWO29CQUVGLElBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxFQUFFO3dCQUNQLE1BQU0sR0FBSSxHQUFHLE9BQVAsQ0FBUTt3QkFDZixPQUFPLEdBQWEsTUFBTSxDQUFDLEtBQUssQ0FBQyxhQUFhLENBQUMsQ0FBQyxNQUFNLENBQUMsVUFBQyxJQUFJLElBQUssT0FBQSxDQUFDLENBQUMsSUFBSSxFQUFOLENBQU0sQ0FBQyxDQUFDO3dCQUN6RSxPQUFPLEdBQUcsSUFBSSxDQUFDLEtBQUssQ0FDeEIsQ0FBQyxNQUFJLE9BQU8sQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLE1BQUcsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxzQkFBc0IsRUFBRSxVQUFDLEtBQUssSUFBSyxPQUFB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

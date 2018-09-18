@@ -7,12 +7,14 @@ import crypto, {Hash} from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
+import {FaviconsPluginOptions} from '../types/main';
+
 const {version: pluginVersion} = require('../../package.json');
 
 /**
  * Generates a md5 hash for the given options
  */
-const generateHashForOptions = (options) => {
+const generateHashForOptions = (options: FaviconsPluginOptions) => {
   const hash: Hash = crypto.createHash('md5');
   hash.update(JSON.stringify(options));
   return hash.digest('hex');
@@ -39,7 +41,9 @@ export const emitCacheInformationFile = (loader, query, cacheFile, fileHash, ico
  */
 const isCacheValid = (cache, fileHash, query) => {
   const {hash, optionHash, version} = cache;
-
+  console.log('isCacheValid::hash', hash === fileHash);
+  console.log('isCacheValid::optionHash', optionHash === generateHashForOptions(query));
+  console.log('isCacheValid::version', version === pluginVersion);
   // Verify that the source file is the same
   return hash === fileHash &&
     // Verify that the options are the same

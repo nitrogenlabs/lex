@@ -107,6 +107,45 @@ $ lex compile -t
 $ lex compile -l ./lex.config.js
 ```
 
+### `create <type>`
+
+Generates files and logs.
+
+
+**Parameters**
+
+- `type` - Type of file to generate.
+  - **changelog** - Generates a change log based on the git history. Although this file should be used as a reference for a manual change log, it can be used as the actual log. Lists are generated using the following format from commit comments:
+  ```
+  CommitType(Scope): Description
+
+  // Example
+  Feature(UI): Add responsive grid layout
+
+  // Output
+  # Changelog
+
+  ## Unreleased
+
+  ### UI:
+
+  * Feature
+    * Add responsive grid layout
+  ```
+
+
+**Options:**
+
+- `-q`, `--quiet` - No Lex notifications printed in the console.
+- `--outputFile` - Sets the filename for changes and compiles.
+
+**Examples:**
+
+```shell
+// Generate a changelog
+$ lex create changelog
+```
+
 ### `dev`
 
 Spins up a development environment for the app. The development server is located at: [http://localhost:8080](http://localhost:8080) A new browser window will automatically open if using the `-o` flag.
@@ -143,9 +182,14 @@ $ lex dev -l ./lex.config.js
 $ lex dev -c ./webpack.config.js
 ```
 
-### `init`
+### `init <appName> [customModule]`
 
 Creates a new app shell. An initial directory structure with files is created based off a node module. By default [@nlabs/arkhamjs-example-flow-react](https://github.com/nitrogenlabs/arkhamjs-example-flow-react) is used and [@nlabs/arkhamjs-example-ts-react](https://github.com/nitrogenlabs/arkhamjs-example-ts-react) for Typescript. If an existing node module is preferred, it may be used instead.
+
+**Parameters**
+
+- `appName` - Name of the newly created app.
+- `customModule` - If a custom skeleton module should be used instead of the default, add the npm module name.
 
 **Options**
 

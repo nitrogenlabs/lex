@@ -35,7 +35,6 @@ export const compileTemplate = (options, context, compilation) => {
       (compilation) => {
         const {cache} = compilation;
 
-        console.log('compileTemplate::cache', cache);
         if(cache) {
           if(!cache[compilerName]) {
             cache[compilerName] = {};
@@ -49,7 +48,6 @@ export const compileTemplate = (options, context, compilation) => {
             (chunks, callback) => {
               const {assets, errors} = compilation;
 
-              console.log('compileTemplate::chunks', chunks);
               if(!chunks[0]) {
                 return callback(errors[0] || 'FaviconsPlugin Error: Icon generation failed');
               }
@@ -70,29 +68,26 @@ export const compileTemplate = (options, context, compilation) => {
 
   // Compile and return a promise
   return new Promise((resolve, reject) => {
-    console.log('compileTemplate::promise::1');
     childCompiler.runAsChild((error, entries, childCompilation) => {
-      console.log('compileTemplate::promise::2', error);
       if(error) {
         return reject(error);
       }
 
-      console.log('compileTemplate::promise::3');
+      const {assets, errors, hash} = childCompilation;
+
       // Replace [hash] placeholders in filename
       const outputName = compilation.mainTemplate.hooks.assetPath.call(
         outputOptions.filename,
-        {chunk: entries[0], hash: childCompilation.hash}
+        {chunk: entries[0], hash}
       );
 
-      console.log('compileTemplate::promise::4::outputName', outputName);
       // Resolve / reject the promise
-      if(childCompilation && childCompilation.errors && childCompilation.errors.length) {
-        const {errors} = childCompilation;
+      if(errors && errors.length) {
         const errorDetails: string = errors.map((compilationError: Error) => compilationError.message).join('\n');
         return reject(new Error(`FaviconsPlugin Error:\n${errorDetails}`));
       }
 
-      return resolve({outputName, stats: JSON.parse(childCompilation.assets[outputName].source())});
+      return resolve({outputName, stats: JSON.parse(assets[outputName].source())});
     });
   });
 };

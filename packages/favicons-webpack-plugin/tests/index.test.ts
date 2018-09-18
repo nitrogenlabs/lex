@@ -1,3 +1,4 @@
+import dirCompare from 'dir-compare';
 import {promisify} from 'es6-promisify';
 import HtmlPlugin from 'html-webpack-plugin';
 import path from 'path';
@@ -23,28 +24,27 @@ const baseWebpackConfig = (plugin): Configuration => ({
   bail: true,
   devtool: 'eval',
   entry: {
-    entry: path.resolve(__dirname, 'fixtures/entry.js')
+    entry: path.resolve(__dirname, './fixtures/entry.js')
   },
   mode: 'development',
   module: {
     rules: [
       {
         exclude: /(node_modules)/,
-        loader: 'babel-loader',
+        loader: path.resolve(__dirname, '../../../node_modules/babel-loader'),
         options: {
           babelrc: false,
           comments: false,
-          ignore: ['**/*.test.ts', '**/*.test.tsx'],
-          presets: ['env', 'typescript']
+          presets: ['env']
         },
-        test: /\.(js|ts|tsx)$/
+        test: /\.(js)$/
       }
     ]
   },
   output: {path: path.resolve(__dirname, '../dist', `test-${outputId + 1}`)},
   plugins: [new HtmlPlugin()].concat(plugin),
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx']
+    extensions: ['.js']
   }
 });
 
@@ -61,17 +61,18 @@ describe('FaviconsPlugin', () => {
 
   it('should generate the expected default result', (done) => {
     console.log('test1');
-    const onComplete = (stats) => {
-      console.log('onComplete::stats', stats);
-      // const {outputPath} = stats.compilation.compiler;
-      // const expected = path.resolve(__dirname, 'fixtures/expected/default');
-      // const compareResult = dirCompare.compareSync(outputPath, expected, compareOptions);
-      // const diffFiles = compareResult.diffSet.filter((diff) => diff.state !== 'equal');
-      // expect(diffFiles[0]).toBeUndefined();
+    const onComplete = (unused, stats) => {
+      const {outputPath} = stats.compilation.compiler;
+      console.log('onComplete::outputPath', outputPath);
+      const expected = path.resolve(__dirname, './fixtures/expected/default');
+      console.log('onComplete::expected', expected);
+      const compareResult = dirCompare.compareSync(outputPath, expected, compareOptions);
+      const diffFiles = compareResult.diffSet.filter((diff) => diff.state !== 'equal');
+      expect(diffFiles[0]).toBeUndefined();
       done();
     };
-    webpack(baseWebpackConfig(new FaviconsPlugin({logo: logoPath})), onComplete);
-    // webpack(baseWebpackConfig(new FaviconsPlugin({logo: logoPath})), onComplete);
+
+    webpack(baseWebpackConfig(new FaviconsPlugin({icons: {favicons: true}, logo: logoPath})), onComplete);
   });
 
   // it('should generate a configured JSON file', async () => {

@@ -19,7 +19,7 @@ module.exports = {
   //   '<rootDir>/src',
   //   '<rootDir>/tests'
   // ],
-  testEnvironment: 'jsdom',
+  testEnvironment: 'node',
   // testPathIgnorePatterns: [
   //   '/node_modules/'
   // ],

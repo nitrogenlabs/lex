@@ -2,6 +2,7 @@ import execa from 'execa';
 import fs from 'fs';
 import capitalize from 'lodash/capitalize';
 import isEmpty from 'lodash/isEmpty';
+import merge from 'lodash/merge';
 import {DateTime} from 'luxon';
 import path from 'path';
 
@@ -15,7 +16,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
   const gitOptions: string[] = [
     'log',
     '-3',
-    '--pretty=format:{"authorName": "%an", "authorEmail": "%ae", "hashShort": "%h", "hashFull": "%h", "tag": "%D", "date": %ct, "subject": "%s","comments": "%b"}[lex_break]'
+    '--pretty=format:{"authorName": "%an", "authorEmail": "%ae", "hashShort": "%h", "hashFull": "%H", "tag": "%D", "date": %ct, "subject": "%s","comments": "%b"}[lex_break]'
   ];
 
   // Run git
@@ -27,8 +28,9 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
     if(!git.status) {
       const {stdout} = git;
       const entries: string[] = stdout.split('[lex_break]').filter((item) => !!item);
-      const gitJSON = JSON.parse(`[${entries.join(',')}]`);
-      const headerPattern: RegExp = /^(\w*)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$/;
+      const gitJSON = JSON.parse(
+        (`[${entries.join(',')}]`).replace(/"[^"]*(?:""[^"]*)*"/g, (match) => match.replace(/\n/g, '[lex_break]'))
+      );
       const commitContent = {};
       let version: string = 'Unreleased';
 
@@ -54,14 +56,17 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
           }
         }
 
-        const subjectLines: string[] = comments.split('\n');
-
         if(!commitContent[version]) {
-          commitContent[version] = {};
+          commitContent[version] = {list: {}};
         }
 
-        commitContent[version].list = subjectLines.reduce((list, nextLine: string) => {
+        const subjectLines: string[] = comments.split('[lex_break]');
+        const topics = {};
+
+        for(let idx: number = 0, len: number = subjectLines.length; idx < len; idx++) {
+          const nextLine: string = subjectLines[idx];
           const formatLine: string = nextLine.trim();
+          const headerPattern: RegExp = /^(\w*)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$/;
           const matches = formatLine.match(headerPattern);
 
           if(matches) {
@@ -71,20 +76,21 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
             const details = {
               authorEmail,
               authorName,
-              details: `${itemType} ${itemDetails}`,
+              details: itemDetails,
               hashFull,
-              hashShort
+              hashShort,
+              type: itemType
             };
 
-            if(!list[itemScope]) {
-              list[itemScope] = [];
+            if(!topics[itemScope]) {
+              topics[itemScope] = {[itemType]: [details]};
+            } else {
+              topics[itemScope][itemType].push(details);
             }
-
-            list[itemScope].push(details);
           }
+        }
 
-          return list;
-        }, {});
+        commitContent[version] = merge(commitContent[version], {list: topics});
       });
 
       const formatLog: string = Object.keys(commitContent).reduce((content: string, versionKey: string) => {
@@ -92,28 +98,41 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
         const formatScopes: string[] = Object.keys(list);
         let updatedContent: string = content;
 
-        updatedContent += `\n## ${version} (${date})\n`;
+        const versionLabel: string = version ? version : 'Unreleased';
+        const headerLabels: string[] = [versionLabel];
+        if(date) {
+          headerLabels.push(`(${date})`);
+        }
+
+        updatedContent += `\n## ${headerLabels.join(' ')}\n`;
 
         formatScopes.forEach((scopeName: string) => {
-          const scopeList = list[scopeName];
           updatedContent += `\n### ${scopeName}\n\n`;
 
-          scopeList.forEach((changes) => {
-            const {authorEmail, authorName, details, hashFull, hashShort} = changes;
-            const {gitUrl} = config;
-            let hash: string = `#${hashShort}`;
+          // Get the topic name
+          const itemList = list[scopeName];
+          const itemNames: string[] = Object.keys(itemList);
 
-            if(!isEmpty(gitUrl)) {
-              let commitPath: string = 'commits';
+          itemNames.forEach((itemName: string) => {
+            updatedContent += `* ${itemName}\n`;
 
-              if(gitUrl.includes('github.com')) {
-                commitPath = 'commit';
+            itemList[itemName].forEach((changes) => {
+              const {authorEmail, authorName, details, hashFull, hashShort} = changes;
+              const {gitUrl} = config;
+              let hash: string = `#${hashShort}`;
+
+              if(!isEmpty(gitUrl)) {
+                let commitPath: string = 'commits';
+
+                if(gitUrl.includes('github.com')) {
+                  commitPath = 'commit';
+                }
+
+                hash = `[#${hashShort}](${gitUrl}/${commitPath}/${hashFull})`;
               }
 
-              hash = `[#${hashShort}](${gitUrl}/${commitPath}/${hashFull})`;
-            }
-
-            updatedContent += `  * ${details} ([${authorName}](mailto:${authorEmail}) in ${hash})\n`;
+              updatedContent += `  * ${details} ([${authorName}](mailto:${authorEmail}) in ${hash})\n`;
+            });
           });
         });
 
@@ -124,7 +143,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       fs.writeFileSync(logFile, formatLog);
       spinner.succeed('Git change log complete!');
     } else {
-      spinner.fail('Failed1 generating change.log!');
+      spinner.fail('Failed generating change log!');
     }
 
     // Kill process
@@ -134,7 +153,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
-    spinner.fail('Failed2 generating change.log!');
+    spinner.fail('Failed generating change log!');
 
     // Kill process
     return 1;
