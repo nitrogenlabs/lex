@@ -18,6 +18,13 @@ export interface FaviconsPluginOptions {
   readonly title?: string;
 }
 
+export interface FaviconsPluginCache {
+  readonly hash: string;
+  readonly optionHash: string;
+  readonly result?: string;
+  readonly version: string;
+}
+
 export interface FaviconsPluginIconTypes {
   readonly android?: boolean;
   readonly appleIcon?: boolean;

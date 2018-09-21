@@ -10,7 +10,8 @@
     "lint": "eslint ./src --ext .ts,.tsx",
     "prepublish": "yarn test",
     "test": "lex test",
-    "update": "lex update -i"
+    "update": "yarn upgrade-interactive --latest",
+    "watch": "NODE_ENV=development yarn clean && yarn compile -w"
   },
   "repository": {
     "type": "git",
@@ -43,7 +44,7 @@
     "eval": "^0.1.0",
     "lodash": "^4.17.10",
     "url": "^0.11.0",
-    "webpack-sources": "^1.1.0"
+    "webpack-sources": "^1.3.0"
   },
   "devDependencies": {
     "@types/jest": "^23.3.1",

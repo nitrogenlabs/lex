@@ -11,7 +11,7 @@
     "clean:npm": "find . -name 'package-lock.json' -type f -delete",
     "clean:yarn": "find . -name 'yarn.lock' -type f -delete",
     "test": "jest --clearCache && jest",
-    "update": "lex update -i"
+    "update": "yarn upgrade-interactive --latest"
   },
   "devDependencies": {
     "jest-cli": "^23.6.0",
