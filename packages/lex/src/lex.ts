@@ -1,7 +1,22 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {add, build, clean, compile, create, dev, init, publish, test, update, upgrade, versions} from './commands';
+import {
+  add,
+  build,
+  clean,
+  compile,
+  create,
+  dev,
+  init,
+  linked,
+  publish,
+  test,
+  update,
+  upgrade,
+  versions
+} from './commands';
+
 
 const packageConfig = require('../package.json');
 
@@ -74,6 +89,10 @@ program.command('init <appName> [packageName]')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action(init);
+
+program.command('linked')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .action(linked);
 
 program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')

@@ -109,7 +109,7 @@ export const checkLinkedModules = () => {
     const linkedMsg: string = linked.reduce(
       (msg: string, linkedModule: LinkedModuleType) =>
         `${msg}\n * ${linkedModule.name}`,
-      `Linked ${msgModule} Warning:`
+      `Linked ${msgModule}:`
     );
     log(boxen(linkedMsg, {borderStyle: 'round', dimBorder: true, padding: 1}), 'warn');
   }

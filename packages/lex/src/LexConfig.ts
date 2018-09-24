@@ -136,10 +136,9 @@ export class LexConfig {
 
   // Get configuration
   static parseConfig(cmd, isRoot: boolean = true): void {
-    const {cliName = 'Lex', lexConfig, quiet, typescript} = cmd;
-    const defaultConfigPath: string = isRoot ?
-      path.resolve(cwd, './lex.config.js') :
-      find.sync('lex.config.js', cwd, 5);
+    const {cliName = 'Lex', lexConfig, lexConfigName, quiet, typescript} = cmd;
+    const configName: string = lexConfigName || 'lex.config.js';
+    const defaultConfigPath: string = isRoot ? path.resolve(cwd, `./${configName}`) : find.sync(configName, cwd, 5);
     const configPath: string = lexConfig || defaultConfigPath;
     const configExists: boolean = fs.existsSync(configPath);
 

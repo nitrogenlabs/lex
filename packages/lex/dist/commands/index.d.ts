@@ -5,6 +5,7 @@ export { compile } from './compile';
 export { create } from './create';
 export { dev } from './dev';
 export { init } from './init';
+export { linked } from './link';
 export { publish } from './publish';
 export { test } from './test';
 export { update } from './update';
