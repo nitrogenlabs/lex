@@ -1938,9 +1938,13 @@
   version "3.0.3"
   resolved "https://registry.npmjs.org/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
 
-"@types/node@*", "@types/node@^10.10.1":
+"@types/node@*":
   version "10.10.1"
   resolved "https://registry.npmjs.org/@types/node/-/node-10.10.1.tgz#d5c96ca246a418404914d180b7fdd625ad18eca6"
+
+"@types/node@^10.11.0":
+  version "10.11.0"
+  resolved "https://registry.npmjs.org/@types/node/-/node-10.11.0.tgz#ddd0d67a3b6c3810dd1a59e36675fa82de5e19ae"
 
 "@types/ora@^1.3.4":
   version "1.3.4"
@@ -2900,7 +2904,7 @@ browserify-zlib@^0.2.0:
   dependencies:
     pako "~1.0.5"
 
-browserslist@^4.0.0, browserslist@^4.0.1, browserslist@^4.1.0, browserslist@^4.1.1:
+browserslist@^4.0.0, browserslist@^4.1.0, browserslist@^4.1.1:
   version "4.1.1"
   resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.1.1.tgz#328eb4ff1215b12df6589e9ab82f8adaa4fc8cd6"
   dependencies:
@@ -3122,9 +3126,13 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000865, caniuse-lite@^1.0.30000884, caniuse-lite@^1.0.30000885:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000884:
   version "1.0.30000885"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000885.tgz#e889e9f8e7e50e769f2a49634c932b8aee622984"
+
+caniuse-lite@^1.0.30000887:
+  version "1.0.30000887"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000887.tgz#1769458c27bbdcf61b0cb6b5072bb6cd11fd9c23"
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -3937,13 +3945,13 @@ cssesc@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/cssesc/-/cssesc-1.0.1.tgz#ef7bd8d0229ed6a3a7051ff7771265fe7330e0a8"
 
-cssnano-preset-default@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/cssnano-preset-default/-/cssnano-preset-default-4.0.0.tgz#c334287b4f7d49fb2d170a92f9214655788e3b6b"
+cssnano-preset-default@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/cssnano-preset-default/-/cssnano-preset-default-4.0.1.tgz#063c874bc82afe49d4a8790688348dce3f59e672"
   dependencies:
     css-declaration-sorter "^3.0.0"
     cssnano-util-raw-cache "^4.0.0"
-    postcss "^6.0.0"
+    postcss "^7.0.0"
     postcss-calc "^6.0.0"
     postcss-colormin "^4.0.0"
     postcss-convert-values "^4.0.0"
@@ -3990,14 +3998,14 @@ cssnano-util-same-parent@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/cssnano-util-same-parent/-/cssnano-util-same-parent-4.0.0.tgz#d2a3de1039aa98bc4ec25001fa050330c2a16dac"
 
-cssnano@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.npmjs.org/cssnano/-/cssnano-4.1.0.tgz#682c37b84b9b7df616450a5a8dc9269b9bd10734"
+cssnano@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/cssnano/-/cssnano-4.1.1.tgz#46e97285ca709b8f7e1ceafb352699d0ac15102a"
   dependencies:
     cosmiconfig "^5.0.0"
-    cssnano-preset-default "^4.0.0"
+    cssnano-preset-default "^4.0.1"
     is-resolvable "^1.0.0"
-    postcss "^6.0.0"
+    postcss "^7.0.0"
 
 csso@^3.5.0:
   version "3.5.1"
@@ -4534,7 +4542,7 @@ end-of-stream@^1.0.0, end-of-stream@^1.1.0:
   dependencies:
     once "^1.4.0"
 
-enhanced-resolve@^4.0.0, enhanced-resolve@^4.1.0:
+enhanced-resolve@^4.1.0:
   version "4.1.0"
   resolved "https://registry.npmjs.org/enhanced-resolve/-/enhanced-resolve-4.1.0.tgz#41c7e0bfdfe74ac1ffe1e57ad6a5c6c9f3742a7f"
   dependencies:
@@ -4634,15 +4642,15 @@ escodegen@^1.9.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-styleguidejs@^0.7.7, eslint-config-styleguidejs@^0.7.9:
-  version "0.7.10"
-  resolved "https://registry.npmjs.org/eslint-config-styleguidejs/-/eslint-config-styleguidejs-0.7.10.tgz#112fcef2ae49ba96abc8928f609779e3a743a7a3"
+eslint-config-styleguidejs@^0.7.11:
+  version "0.7.11"
+  resolved "https://registry.npmjs.org/eslint-config-styleguidejs/-/eslint-config-styleguidejs-0.7.11.tgz#736b7988efd6dd43a16a2a5d2a63195618d1994d"
   dependencies:
     babel-eslint "^9.0.0"
     eslint-plugin-babel "^5.2.0"
     eslint-plugin-flowtype "^2.50.1"
     eslint-plugin-import "^2.14.0"
-    eslint-plugin-jest "^21.22.0"
+    eslint-plugin-jest "^21.22.1"
     eslint-plugin-react "^7.11.1"
     eslint-plugin-react-native "^3.3.0"
     eslint-plugin-typescript "^0.12.0"
@@ -4689,9 +4697,9 @@ eslint-plugin-import@^2.14.0:
     read-pkg-up "^2.0.0"
     resolve "^1.6.0"
 
-eslint-plugin-jest@^21.22.0:
-  version "21.22.0"
-  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.22.0.tgz#1b9e49b3e5ce9a3d0a51af4579991d517f33726e"
+eslint-plugin-jest@^21.22.1:
+  version "21.22.1"
+  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.22.1.tgz#bc805e9b1c75c3bc92e47c44dd41370c1af7ebcc"
 
 eslint-plugin-react-native-globals@^0.1.1:
   version "0.1.2"
@@ -5623,7 +5631,7 @@ glob@^7.0.0, glob@^7.0.3, glob@^7.0.5, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-global-modules-path@^2.1.0:
+global-modules-path@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/global-modules-path/-/global-modules-path-2.3.0.tgz#b0e2bac6beac39745f7db5c59d26a36a0b94f7dc"
 
@@ -6315,7 +6323,7 @@ init-package-json@^1.10.3:
     validate-npm-package-license "^3.0.1"
     validate-npm-package-name "^3.0.0"
 
-inquirer@^6.0.0, inquirer@^6.1.0, inquirer@^6.2.0:
+inquirer@^6.1.0, inquirer@^6.2.0:
   version "6.2.0"
   resolved "https://registry.npmjs.org/inquirer/-/inquirer-6.2.0.tgz#51adcd776f661369dc1e894859c2560a224abdd8"
   dependencies:
@@ -7123,13 +7131,6 @@ jest-worker@^23.2.0:
   dependencies:
     merge-stream "^1.0.1"
 
-jest@^23.6.0:
-  version "23.6.0"
-  resolved "https://registry.npmjs.org/jest/-/jest-23.6.0.tgz#ad5835e923ebf6e19e7a1d7529a432edfee7813d"
-  dependencies:
-    import-local "^1.0.0"
-    jest-cli "^23.6.0"
-
 jimp@^0.2.13, jimp@^0.2.21:
   version "0.2.28"
   resolved "https://registry.npmjs.org/jimp/-/jimp-0.2.28.tgz#dd529a937190f42957a7937d1acc3a7762996ea2"
@@ -7743,7 +7744,7 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.2.0, loose-envify@^1.3
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
-loud-rejection@^1.0.0, loud-rejection@^1.6.0:
+loud-rejection@^1.0.0:
   version "1.6.0"
   resolved "https://registry.npmjs.org/loud-rejection/-/loud-rejection-1.6.0.tgz#5b46f80147edee578870f086d04821cf998e551f"
   dependencies:
@@ -9176,9 +9177,9 @@ postcss-color-hex-alpha@^5.0.2:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-color-mod-function@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/postcss-color-mod-function/-/postcss-color-mod-function-3.0.1.tgz#20d600e3014f38266261722ba9a36a2a9859efa7"
+postcss-color-mod-function@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.npmjs.org/postcss-color-mod-function/-/postcss-color-mod-function-3.0.3.tgz#816ba145ac11cc3cb6baa905a75a49f903e4d31d"
   dependencies:
     "@csstools/convert-colors" "^1.4.0"
     postcss "^7.0.2"
@@ -9208,22 +9209,22 @@ postcss-convert-values@^4.0.0:
     postcss "^6.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-custom-media@^7.0.2:
-  version "7.0.2"
-  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.2.tgz#e55fcd3a5ffe0d42c1cf99fe4a716a24f5228248"
+postcss-custom-media@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.4.tgz#98e593c4a9a38fefee848434131fa16d316ee165"
   dependencies:
     postcss "^7.0.2"
 
-postcss-custom-properties@^8.0.3:
-  version "8.0.3"
-  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.3.tgz#5c8f398ed3296b782a087c72fc53bda9e8ef70fb"
+postcss-custom-properties@^8.0.5:
+  version "8.0.5"
+  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.5.tgz#e78a7bd813196332db9dface66a528ae5da8b98f"
   dependencies:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-custom-selectors@^5.1.1:
-  version "5.1.1"
-  resolved "https://registry.npmjs.org/postcss-custom-selectors/-/postcss-custom-selectors-5.1.1.tgz#2fc76266eeab537cb19a15c2f513b24d99529bce"
+postcss-custom-selectors@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.npmjs.org/postcss-custom-selectors/-/postcss-custom-selectors-5.1.2.tgz#64858c6eb2ecff2fb41d0b28c9dd7b3db4de7fba"
   dependencies:
     postcss "^7.0.2"
     postcss-selector-parser "^5.0.0-rc.3"
@@ -9259,9 +9260,9 @@ postcss-discard-overridden@^4.0.0:
   dependencies:
     postcss "^6.0.0"
 
-postcss-env-function@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/postcss-env-function/-/postcss-env-function-2.0.1.tgz#d1f38482f79e3a9840ac4ec16da229bd3032b7c1"
+postcss-env-function@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/postcss-env-function/-/postcss-env-function-2.0.2.tgz#0f3e3d3c57f094a92c2baf4b6241f0b0da5365d7"
   dependencies:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
@@ -9283,14 +9284,6 @@ postcss-focus-within@^3.0.0:
   resolved "https://registry.npmjs.org/postcss-focus-within/-/postcss-focus-within-3.0.0.tgz#763b8788596cee9b874c999201cdde80659ef680"
   dependencies:
     postcss "^7.0.2"
-
-postcss-font-family-system-ui@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.npmjs.org/postcss-font-family-system-ui/-/postcss-font-family-system-ui-4.1.0.tgz#2bacc716428f50acfc7ecef4eec8bfa31905fa67"
-  dependencies:
-    browserslist "^4.0.1"
-    caniuse-lite "^1.0.30000865"
-    postcss "^7.0.0"
 
 postcss-font-variant@^4.0.0:
   version "4.0.0"
@@ -9571,28 +9564,27 @@ postcss-place@^4.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-preset-env@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.0.tgz#a7afd0ec098bca8312c95dbbd11efa88f15da30e"
+postcss-preset-env@^6.0.6:
+  version "6.0.6"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.6.tgz#f728b9a43bf01c24eb06efeeff59de0b31ee1105"
   dependencies:
     autoprefixer "^9.1.5"
     browserslist "^4.1.1"
-    caniuse-lite "^1.0.30000885"
+    caniuse-lite "^1.0.30000887"
     cssdb "^3.2.1"
     postcss "^7.0.2"
     postcss-attribute-case-insensitive "^4.0.0"
     postcss-color-functional-notation "^2.0.1"
     postcss-color-hex-alpha "^5.0.2"
-    postcss-color-mod-function "^3.0.1"
+    postcss-color-mod-function "^3.0.3"
     postcss-color-rebeccapurple "^4.0.1"
-    postcss-custom-media "^7.0.2"
-    postcss-custom-properties "^8.0.3"
-    postcss-custom-selectors "^5.1.1"
+    postcss-custom-media "^7.0.4"
+    postcss-custom-properties "^8.0.5"
+    postcss-custom-selectors "^5.1.2"
     postcss-dir-pseudo-class "^5.0.0"
-    postcss-env-function "^2.0.1"
+    postcss-env-function "^2.0.2"
     postcss-focus-visible "^4.0.0"
     postcss-focus-within "^3.0.0"
-    postcss-font-family-system-ui "^4.1.0"
     postcss-font-variant "^4.0.0"
     postcss-gap-properties "^2.0.0"
     postcss-image-set-function "^3.0.1"
@@ -10059,7 +10051,18 @@ react-final-form@^3.6.5:
   version "3.6.5"
   resolved "https://registry.npmjs.org/react-final-form/-/react-final-form-3.6.5.tgz#191324bc686b20e9e49c929a79949f34b38ba8e5"
 
-react-hot-loader@^4.3.10, react-hot-loader@^4.3.3:
+react-hot-loader@^4.3.11:
+  version "4.3.11"
+  resolved "https://registry.npmjs.org/react-hot-loader/-/react-hot-loader-4.3.11.tgz#fe5cf7be7700c249b58293f977c1e6e0900f0d87"
+  dependencies:
+    fast-levenshtein "^2.0.6"
+    global "^4.3.0"
+    hoist-non-react-statics "^2.5.0"
+    prop-types "^15.6.1"
+    react-lifecycles-compat "^3.0.4"
+    shallowequal "^1.0.2"
+
+react-hot-loader@^4.3.3:
   version "4.3.10"
   resolved "https://registry.npmjs.org/react-hot-loader/-/react-hot-loader-4.3.10.tgz#10290b4a554cd91d2684a94724aa3a70e002007a"
   dependencies:
@@ -11424,7 +11427,7 @@ supports-color@^3.1.2, supports-color@^3.2.3:
   dependencies:
     has-flag "^1.0.0"
 
-supports-color@^5.1.0, supports-color@^5.3.0, supports-color@^5.4.0:
+supports-color@^5.1.0, supports-color@^5.3.0, supports-color@^5.4.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   dependencies:
@@ -11799,9 +11802,9 @@ tryer@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/tryer/-/tryer-1.0.1.tgz#f2c85406800b9b0f74c9f7465b81eaad241252f8"
 
-ts-jest@^23.1.4:
-  version "23.10.0"
-  resolved "https://registry.npmjs.org/ts-jest/-/ts-jest-23.10.0.tgz#1b1ce1d795791dedf0229b7577b35eaed8565bbd"
+ts-jest@^23.10.1:
+  version "23.10.1"
+  resolved "https://registry.npmjs.org/ts-jest/-/ts-jest-23.10.1.tgz#ad0196f7b81f08888897004d9ed870c1a901511a"
   dependencies:
     bs-logger "0.x"
     buffer-from "1.x"
@@ -12062,10 +12065,6 @@ url-join@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/url-join/-/url-join-1.1.0.tgz#741c6c2f4596c4830d6718460920d0c92202dc78"
 
-url-join@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/url-join/-/url-join-4.0.0.tgz#4d3340e807d3773bda9991f8305acdcc2a665d2a"
-
 url-parse-lax@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/url-parse-lax/-/url-parse-lax-1.0.0.tgz#7af8f303645e9bd79a272e7a14ac68bc0609da73"
@@ -12151,7 +12150,7 @@ uuid@^3.0.1, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.npmjs.org/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
 
-v8-compile-cache@^2.0.0:
+v8-compile-cache@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.0.2.tgz#a428b28bb26790734c4fc8bc9fa106fccebf6a6c"
 
@@ -12304,48 +12303,33 @@ webpack-bundle-analyzer@^3.0.2:
     opener "^1.5.1"
     ws "^6.0.0"
 
-webpack-cli@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/webpack-cli/-/webpack-cli-3.1.0.tgz#d71a83687dcfeb758fdceeb0fe042f96bcf62994"
+webpack-cli@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.npmjs.org/webpack-cli/-/webpack-cli-3.1.1.tgz#92be3e324c1788208a301172139febb476566262"
   dependencies:
     chalk "^2.4.1"
     cross-spawn "^6.0.5"
-    enhanced-resolve "^4.0.0"
-    global-modules-path "^2.1.0"
-    import-local "^1.0.0"
-    inquirer "^6.0.0"
+    enhanced-resolve "^4.1.0"
+    global-modules-path "^2.3.0"
+    import-local "^2.0.0"
     interpret "^1.1.0"
     loader-utils "^1.1.0"
-    supports-color "^5.4.0"
-    v8-compile-cache "^2.0.0"
-    yargs "^12.0.1"
+    supports-color "^5.5.0"
+    v8-compile-cache "^2.0.2"
+    yargs "^12.0.2"
 
-webpack-dev-middleware@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.2.0.tgz#a20ceef194873710052da678f3c6ee0aeed92552"
+webpack-dev-middleware@3.4.0, webpack-dev-middleware@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.4.0.tgz#1132fecc9026fd90f0ecedac5cbff75d1fb45890"
   dependencies:
-    loud-rejection "^1.6.0"
-    memory-fs "~0.4.1"
-    mime "^2.3.1"
-    path-is-absolute "^1.0.0"
-    range-parser "^1.0.3"
-    url-join "^4.0.0"
-    webpack-log "^2.0.0"
-
-webpack-dev-middleware@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.3.0.tgz#8104daf4d4f65defe06ee2eaaeea612a7c541462"
-  dependencies:
-    loud-rejection "^1.6.0"
     memory-fs "~0.4.1"
     mime "^2.3.1"
     range-parser "^1.0.3"
-    url-join "^4.0.0"
     webpack-log "^2.0.0"
 
-webpack-dev-server@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.npmjs.org/webpack-dev-server/-/webpack-dev-server-3.1.8.tgz#eb7a95945d1108170f902604fb3b939533d9daeb"
+webpack-dev-server@^3.1.9:
+  version "3.1.9"
+  resolved "https://registry.npmjs.org/webpack-dev-server/-/webpack-dev-server-3.1.9.tgz#8b32167624d2faff40dcedc2cbce17ed1f34d3e0"
   dependencies:
     ansi-html "0.0.7"
     bonjour "^3.5.0"
@@ -12372,7 +12356,7 @@ webpack-dev-server@^3.1.8:
     spdy "^3.4.1"
     strip-ansi "^3.0.0"
     supports-color "^5.1.0"
-    webpack-dev-middleware "3.2.0"
+    webpack-dev-middleware "3.4.0"
     webpack-log "^2.0.0"
     yargs "12.0.2"
 
@@ -12660,7 +12644,7 @@ yargs-parser@^9.0.2:
   dependencies:
     camelcase "^4.1.0"
 
-yargs@12.0.2, yargs@^12.0.1:
+yargs@12.0.2, yargs@^12.0.1, yargs@^12.0.2:
   version "12.0.2"
   resolved "https://registry.npmjs.org/yargs/-/yargs-12.0.2.tgz#fe58234369392af33ecbef53819171eff0f5aadc"
   dependencies:
