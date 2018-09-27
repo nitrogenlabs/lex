@@ -1,4 +1,3 @@
-export { add } from './add';
 export { build } from './build';
 export { clean } from './clean';
 export { compile } from './compile';

@@ -1,3 +1,4 @@
+import evaluate from 'eval';
 import path from 'path';
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
 
@@ -57,7 +58,7 @@ export const compileTemplate = (options, context, compilation) => {
               let resultJson;
 
               try {
-                resultJson = JSON.stringify(eval(resultCode));
+                resultJson = JSON.stringify(evaluate(resultCode));
                 compilation.assets[resultFile] = {size: () => resultJson.length, source: () => resultJson};
                 return callback(null);
               } catch(resultError) {

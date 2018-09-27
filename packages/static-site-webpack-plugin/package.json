@@ -1,15 +1,16 @@
 {
   "name": "@nlabs/static-site-webpack-plugin",
-  "version": "0.1.1",
+  "version": "1.15.0",
   "description": "Minimal, static site generator powered by webpack",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "yarn compile",
+    "build": "NODE_ENV=production && yarn clean && yarn compile",
+    "clean": "rm -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "clean": "lex clean",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublish": "yarn test",
-    "test": "lex test",
+    "prepublishOnly": "yarn build",
+    "reset": "rm -rf node_modules yarn.lock",
+    "test": "yarn lint && NODE_ENV=test && jest",
     "update": "yarn upgrade-interactive --latest",
     "watch": "NODE_ENV=development yarn clean && yarn compile -w"
   },
@@ -47,18 +48,19 @@
     "webpack-sources": "^1.3.0"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.1",
+    "@types/jest": "^23.3.5",
     "compression-webpack-plugin": "^2.0.0",
     "ejs": "^2.3.4",
-    "eslint": "^5.6.0",
-    "eslint-config-styleguidejs": "^0.7.11",
+    "eslint": "^5.6.1",
+    "eslint-config-styleguidejs": "^0.7.13",
     "glob": "^7.0.3",
-    "rimraf": "^2.4.4",
-    "typescript": "^3.0.1",
-    "webpack": "^4.16.5",
+    "rimraf": "^2.5.2",
+    "typescript": "^3.0.3",
+    "webpack": "^4.18.1",
     "webpack-stats-plugin": "^0.2.1"
   },
   "peerDependencies": {
     "webpack": "^4.0.0"
-  }
+  },
+  "gitHead": "d035de0f35014eae24e2a5741a6948c561f19cc4"
 }

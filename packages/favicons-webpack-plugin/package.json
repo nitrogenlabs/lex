@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/favicons-webpack-plugin",
-  "version": "0.1.0",
+  "version": "1.15.0",
   "description": "Let webpack generate all your favicons and icons for you",
   "main": "./lib/index.js",
   "files": [
@@ -14,7 +14,7 @@
     "lint": "eslint ./src --ext .ts,.tsx",
     "prepublishOnly": "yarn build",
     "reset": "rm -rf node_modules yarn.lock",
-    "test": "jest --clearCache && yarn lint && NODE_ENV=test && jest",
+    "test": "yarn lint && NODE_ENV=test && jest",
     "update": "yarn upgrade-interactive --latest",
     "watch": "NODE_ENV=development yarn clean && yarn compile -w"
   },
@@ -47,28 +47,29 @@
   },
   "homepage": "https://github.com/nitrogenlabs/favicons-webpack-plugin",
   "dependencies": {
+    "eval": "^0.1.2",
     "favicons": "^5.2.0",
     "loader-utils": "^1.1.0",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.0",
+    "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "@types/denodeify": "^1.2.31",
     "@types/favicons": "^5.1.0",
     "@types/html-webpack-plugin": "^3.2.0",
-    "@types/jest": "^23.3.2",
+    "@types/jest": "^23.3.5",
     "@types/loader-utils": "^1.1.3",
     "@types/memory-fs": "^0.3.1",
-    "@types/node": "^10.11.0",
+    "@types/node": "^10.11.6",
     "@types/rimraf": "^2.0.2",
-    "@types/webpack": "^4.4.11",
-    "babel-loader": "^8.0.2",
+    "@types/webpack": "^4.4.15",
+    "babel-loader": "^8.0.4",
     "denodeify": "^1.2.1",
     "dir-compare": "^1.0.1",
     "es6-promisify": "^6.0.0",
-    "eslint": "^5.6.0",
-    "eslint-config-styleguidejs": "^0.7.11",
+    "eslint": "^5.6.1",
+    "eslint-config-styleguidejs": "^0.7.13",
     "express": "^4.13.4",
     "html-webpack-plugin": "^3.2.0",
     "memory-fs": "^0.4.1",
@@ -80,5 +81,6 @@
   },
   "peerDependencies": {
     "webpack": "^4.0.0"
-  }
+  },
+  "gitHead": "d035de0f35014eae24e2a5741a6948c561f19cc4"
 }

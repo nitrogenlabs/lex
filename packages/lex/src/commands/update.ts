@@ -20,7 +20,7 @@ export const update = async (cmd: any, callback: any = process.exit) => {
 
   const upgradeOptions: string[] = packageManager === 'npm' ?
     ['update'] :
-    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
+    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest', '--tilde'];
 
   try {
     const pm = await execa(packageManager, upgradeOptions, {
