@@ -1,5 +1,5 @@
-import evaluate from 'eval';
 import cheerio from 'cheerio';
+import evaluate from 'eval';
 import isArray from 'lodash/isArray';
 import isEmpty from 'lodash/isEmpty';
 import isPlainObject from 'lodash/isPlainObject';
@@ -72,9 +72,8 @@ export class StaticSitePlugin {
 
             if(crawl) {
               const relativePaths = StaticSitePlugin.relativePathsFromHtml({path: key, source: rawSource});
-
-              return StaticSitePlugin
-                .renderPaths(crawl, userLocals, relativePaths, render, assets, webpackStats, compilation);
+              const options = {crawl, userLocals, relativePaths, render, assets, webpackStats, compilation};
+              return StaticSitePlugin.renderPaths(options);
             }
 
             return Promise.resolve(null);

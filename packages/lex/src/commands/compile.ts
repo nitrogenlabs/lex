@@ -1,29 +1,9 @@
-import cpy from 'cpy';
 import execa from 'execa';
 import fs from 'fs';
 import path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, createSpinner, log, relativeFilePath} from '../utils';
-import {removeFiles} from './clean';
-
-const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
-  const {outputFullPath, sourceFullPath} = LexConfig.config;
-  const copyFrom: string[] = files.map((fileName: string) => `${sourceFullPath}/${fileName}`);
-
-  try {
-    let total: number = 0;
-    spinner.start(`Copying ${typeName} files...`);
-    await cpy(copyFrom, `${outputFullPath}/${outputDir}`).on('progress', (progress) => {
-      total = progress.totalFiles;
-      spinner.text = `Copying ${typeName} files (${progress.completedFiles} of ${progress.totalFiles})...`;
-    });
-    spinner.succeed(`Successfully copied ${total} ${typeName} files!`);
-  } catch(error) {
-    // Stop spinner
-    spinner.fail(`Copying of ${typeName} files failed.`);
-  }
-};
+import {checkLinkedModules, copyFiles, createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
 export const compile = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
