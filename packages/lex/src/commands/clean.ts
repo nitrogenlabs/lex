@@ -1,21 +1,5 @@
-import path from 'path';
-import rimraf from 'rimraf';
-
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
-
-const cwd: string = process.cwd();
-export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
-  const filePath: string = isRelative ? path.resolve(cwd, fileName) : fileName;
-
-  rimraf(filePath, (error) => {
-    if(error) {
-      return reject(error);
-    }
-
-    return resolve();
-  });
-});
+import {createSpinner, log, removeFiles} from '../utils';
 
 export const clean = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;

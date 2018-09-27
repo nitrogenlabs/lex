@@ -11,7 +11,7 @@ export interface LexConfigType {
     outputFullPath?: string;
     outputHash?: boolean;
     outputPath?: string;
-    packageManager?: string;
+    packageManager?: 'npm' | 'yarn';
     sourceFullPath?: string;
     sourcePath?: string;
     targetEnvironment?: 'node' | 'web';

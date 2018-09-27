@@ -1,32 +1,12 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {
-  add,
-  build,
-  clean,
-  compile,
-  create,
-  dev,
-  init,
-  linked,
-  publish,
-  test,
-  update,
-  upgrade,
-  versions
-} from './commands';
+import {build, clean, compile, create, dev, init, linked, publish, test, update, upgrade, versions} from './commands';
 
 
 const packageConfig = require('../package.json');
 
 // Commands
-program.command('add <type> [name]')
-  .option('-l, --lexConfig <path>', 'Lex configuration file path (ie. lex.config.js).')
-  .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('-t, --typescript', 'Add Typescript based files.')
-  .action(add);
-
 program.command('build')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')

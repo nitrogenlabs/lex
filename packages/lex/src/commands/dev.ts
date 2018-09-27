@@ -2,8 +2,7 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log, relativeFilePath} from '../utils';
-import {removeFiles} from './clean';
+import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
 export const dev = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, open, quiet, remove, variables} = cmd;

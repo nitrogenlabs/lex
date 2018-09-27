@@ -1,6 +1,5 @@
 import generateFavicons from 'favicons';
 import loaderUtils from 'loader-utils';
-import webpack from 'webpack';
 
 import {emitCacheInformationFile, loadIconsFromDiskCache} from './cache';
 
@@ -49,38 +48,38 @@ const generateIcons = (loader, imageFileStream, pathPrefix, query, callback) => 
   });
 };
 
-module.exports = function(this: webpack.loader.LoaderContext, content) {
-  this.cacheable && this.cacheable();
+module.exports = (loaderContext: any, content) => {
+  loaderContext.cacheable && loaderContext.cacheable();
 
-  if(!this.emitFile) {
+  if(!loaderContext.emitFile) {
     throw new Error('FaviconsPlugin Error: emitFile is required from module system');
   }
 
-  if(!this.async) {
+  if(!loaderContext.async) {
     throw new Error('FaviconsPlugin Error: async is required');
   }
 
-  const callback = this.async();
-  const query = loaderUtils.parseQuery(this.query);
-  const {context = this.rootContext, outputFilePrefix, regExp} = query;
-  const pathPrefix = loaderUtils.interpolateName(this, outputFilePrefix, {content, context, regExp});
-  const fileHash = loaderUtils.interpolateName(this, '[hash]', {content, context, regExp});
+  const callback = loaderContext.async();
+  const query: any = loaderUtils.parseQuery(loaderContext.query);
+  const {context = loaderContext.rootContext, outputFilePrefix, regExp} = query;
+  const pathPrefix = loaderUtils.interpolateName(loaderContext, outputFilePrefix, {content, context, regExp});
+  const fileHash = loaderUtils.interpolateName(loaderContext, '[hash]', {content, context, regExp});
   const cacheFile = `${pathPrefix}.cache`;
 
-  loadIconsFromDiskCache(this, query, cacheFile, fileHash, (loadError: Error, cachedResult) => {
+  loadIconsFromDiskCache(loaderContext, query, cacheFile, fileHash, (loadError: Error, cachedResult) => {
     if(loadError) {
       callback(loadError);
     } else if(cachedResult) {
       callback(null, `module.exports = ${JSON.stringify(cachedResult)}`);
     } else {
       // Generate icons
-      generateIcons(this, content, pathPrefix, query, (generateError: Error, iconResult) => {
+      generateIcons(loaderContext, content, pathPrefix, query, (generateError: Error, iconResult) => {
         if(generateError) {
           callback(generateError);
           return null;
         }
 
-        emitCacheInformationFile(this, query, cacheFile, fileHash, iconResult);
+        emitCacheInformationFile(loaderContext, query, cacheFile, fileHash, iconResult);
         callback(null, `module.exports = ${JSON.stringify(iconResult)}`);
         return null;
       });
