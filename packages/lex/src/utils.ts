@@ -4,6 +4,7 @@ import cpy from 'cpy';
 import findFileUp from 'find-file-up';
 import fs from 'fs';
 import glob from 'glob';
+import isEmpty from 'lodash/isEmpty';
 import ora from 'ora';
 import path from 'path';
 import rimraf from 'rimraf';
@@ -186,7 +187,7 @@ export interface LinkedModuleType {
 export const linkedModules = (startPath?: string): LinkedModuleType[] => {
   const workingPath: string = startPath || process.cwd();
   let modulePath: string;
-  let prefix: string = '';
+  let prefix: string;
 
   // if we have a scope we should check if the modules inside the folder is linked
   if(workingPath.includes('@')) {
@@ -205,7 +206,8 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
         const deepList: LinkedModuleType[] = linkedModules(foundPath);
         list.push(...deepList);
       } else if(stats.isSymbolicLink()) {
-        list.push({name: `${prefix}/${path.basename(foundPath)}`, path: foundPath});
+        const moduleNames: string[] = ([prefix, path.basename(foundPath)]).filter((item: string) => !isEmpty(item));
+        list.push({name: `${moduleNames.join('/')}`, path: foundPath});
       }
 
       return list;

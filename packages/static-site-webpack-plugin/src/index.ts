@@ -7,7 +7,7 @@ import path from 'path';
 import url from 'url';
 import RawSource from 'webpack-sources/lib/RawSource';
 
-import {StaticSitePluginOptions} from './types/main';
+import {StaticSitePluginOptions, StaticSiteRenderPaths} from './types/main';
 
 const defaultOptions = {
   crawl: true,
@@ -28,15 +28,16 @@ export class StaticSitePlugin {
     }
   }
 
-  static renderPaths(
-    crawl: boolean,
-    userLocals: string[],
-    paths: string[],
-    render,
-    assets,
-    webpackStats,
-    compilation
-  ): Promise<any> {
+  static renderPaths(options: StaticSiteRenderPaths): Promise<any> {
+    const {
+      assets,
+      compilation,
+      crawl,
+      paths,
+      render,
+      userLocals,
+      webpackStats
+    } = options;
     console.log('paths', paths);
     let filePaths: any = paths;
 
@@ -72,7 +73,15 @@ export class StaticSitePlugin {
 
             if(crawl) {
               const relativePaths = StaticSitePlugin.relativePathsFromHtml({path: key, source: rawSource});
-              const options = {crawl, userLocals, relativePaths, render, assets, webpackStats, compilation};
+              const options: StaticSiteRenderPaths = {
+                assets,
+                compilation,
+                crawl,
+                relativePaths,
+                render,
+                userLocals,
+                webpackStats
+              };
               return StaticSitePlugin.renderPaths(options);
             }
 
@@ -205,7 +214,7 @@ export class StaticSitePlugin {
           throw new Error(`StaticSitePlugin Error: Export from "${entry}" must be a function that returns an HTML string. Is output.libraryTarget in the configuration set to "umd"?`);
         }
 
-        return StaticSitePlugin.renderPaths(crawl, locals, paths, render, assets, webpackStats, compilation);
+        return StaticSitePlugin.renderPaths({assets, compilation, crawl, locals, paths, render, webpackStats});
       } catch(error) {
         return Promise.reject(error);
       }
