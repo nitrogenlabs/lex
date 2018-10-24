@@ -43,6 +43,7 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
         '--baseUrl', sourceFullPath,
         '--declaration',
         '--emitDeclarationOnly',
+        '--inlineSourceMap',
         '--jsx', 'react',
         '--lib', ['esnext', 'dom'],
         '--module', 'commonjs',
@@ -54,7 +55,6 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
         '--outDir', outputFullPath,
         '--removeComments',
         '--rootDir', sourceFullPath,
-        '--sourceMap',
         '--sourceRoot', sourceFullPath,
         '--target', 'es5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']

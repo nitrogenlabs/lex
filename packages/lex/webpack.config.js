@@ -178,7 +178,7 @@ const webpackConfig = {
       }
     ]
   },
-  optimization: {
+  optimization: libraryName ? {} : {
     runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {

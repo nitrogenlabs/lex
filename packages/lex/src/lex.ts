@@ -1,7 +1,21 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import {build, clean, compile, create, dev, init, linked, publish, test, update, upgrade, versions} from './commands';
+import {
+  build,
+  clean,
+  compile,
+  create,
+  dev,
+  init,
+  linked,
+  migrate,
+  publish,
+  test,
+  update,
+  upgrade,
+  versions
+} from './commands';
 
 
 const packageConfig = require('../package.json');
@@ -74,6 +88,10 @@ program.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action(linked);
 
+program.command('migrate')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .action(migrate);
+
 program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
   .option('-o, --otp <code>', 'Provide a two-factor code.')
@@ -101,6 +119,7 @@ program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('--registry', 'Add a custom registry url.')
   .action(update);
 
 program.command('upgrade')

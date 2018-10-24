@@ -1,5 +1,5 @@
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log, removeFiles} from '../utils';
+import {createSpinner, log, removeFiles, removeModules} from '../utils';
 
 export const clean = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;
@@ -18,18 +18,16 @@ export const clean = async (cmd: any, callback: any = process.exit) => {
 
   try {
     // Remove node_modules
-    await removeFiles('./node_modules', true);
+    await removeModules();
 
     // Remove test coverage reports
     await removeFiles('./coverage', true);
 
-    // Remove yarn files
-    await removeFiles('./yarn.lock', true);
+    // Remove yarn logs
     await removeFiles('./yarn-error.log', true);
     await removeFiles('./yarn-debug.log', true);
 
-    // Remove npm files
-    await removeFiles('./package-lock.json', true);
+    // Remove npm logs
     await removeFiles('./npm-debug.log', true);
 
     if(snapshots) {

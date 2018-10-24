@@ -156,6 +156,19 @@ export const getPackageJson = (packagePath?: string) => {
   return JSON.parse(packageData);
 };
 
+export const removeConflictModules = (moduleList: object) => {
+  const updatedList: object = {...moduleList};
+
+  Object.keys(updatedList).forEach((moduleName: string) => {
+    const regex: RegExp = new RegExp('^(?!@types\/).*(babel|jest|webpack).*$', 'gi');
+    if(regex.test(moduleName)) {
+      delete updatedList[moduleName];
+    }
+  });
+
+  return updatedList;
+};
+
 export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
   const filePath: string = isRelative ? path.resolve(cwd, fileName) : fileName;
 
@@ -166,6 +179,23 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
 
     return resolve();
   });
+});
+
+export const removeModules = () => new Promise(async (resolve, reject) => {
+  try {
+    // Remove node_modules
+    await removeFiles('./node_modules', true);
+
+    // Remove yarn lock
+    await removeFiles('./yarn.lock', true);
+
+    // Remove npm lock
+    await removeFiles('./package-lock.json', true);
+
+    resolve();
+  } catch(error) {
+    reject(error);
+  }
 });
 
 export const setPackageJson = (json, packagePath?: string) => {

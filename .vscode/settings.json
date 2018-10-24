@@ -7,13 +7,13 @@
     "transpiler"
   ],
   "css.validate": false,
-  "editor.autoClosingBrackets": false,
+  "editor.autoClosingBrackets": "never",
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
   "editor.rulers": [
     120
   ],
-  "editor.tabCompletion": true,
+  "editor.tabCompletion": "on",
   "editor.tabSize": 2,
   "editor.wordWrap": "off",
   "editor.wordWrapColumn": 120,
@@ -66,9 +66,5 @@
   "typescriptHero.imports.multiLineTrailingComma": false,
   "typescriptHero.imports.multiLineWrapThreshold": 120,
   "typescriptHero.imports.organizeOnSave": true,
-  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-  "tslint.enable": true,
-  "tslint.packageManager": "yarn",
-  "tslint.autoFixOnSave": true,
-  "tslint.configFile": "./tslint.json"
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false
 }

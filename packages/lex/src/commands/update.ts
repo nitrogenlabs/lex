@@ -4,7 +4,7 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log} from '../utils';
 
 export const update = async (cmd: any, callback: any = process.exit) => {
-  const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;
+  const {cliName = 'Lex', packageManager: cmdPackageManager, quiet, registry} = cmd;
 
   // Display status
   log(`${cliName} updating packages...`, 'info', quiet);
@@ -21,6 +21,10 @@ export const update = async (cmd: any, callback: any = process.exit) => {
   const upgradeOptions: string[] = packageManager === 'npm' ?
     ['update'] :
     [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest', '--tilde'];
+
+  if(registry) {
+    upgradeOptions.push('--registry', registry);
+  }
 
   try {
     const pm = await execa(packageManager, upgradeOptions, {
