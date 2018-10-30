@@ -1,8 +1,7 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
-import cpy from 'cpy';
 import findFileUp from 'find-file-up';
-import fs from 'fs';
+import fs from 'fs-extra';
 import glob from 'glob';
 import isEmpty from 'lodash/isEmpty';
 import ora from 'ora';
@@ -92,21 +91,22 @@ export const createSpinner = (quiet = false): any => {
   return ora({color: 'yellow'});
 };
 
-export const copyFiles = async (files: string[], outputDir: string, typeName: string, spinner) => {
+export const copyFiles = async (files: string[], typeName: string, spinner) => {
   const {outputFullPath, sourceFullPath} = LexConfig.config;
-  const copyFrom: string[] = files.map((fileName: string) => `${sourceFullPath}/${fileName}`);
+  const items = files.map((fileName: string) => ({
+    from: fileName,
+    to: path.resolve(outputFullPath, path.relative(sourceFullPath, fileName))
+  }));
 
   try {
-    let total: number = 0;
     spinner.start(`Copying ${typeName} files...`);
-    await cpy(copyFrom, `${outputFullPath}/${outputDir}`).on('progress', (progress) => {
-      total = progress.totalFiles;
-      spinner.text = `Copying ${typeName} files (${progress.completedFiles} of ${progress.totalFiles})...`;
-    });
-    spinner.succeed(`Successfully copied ${total} ${typeName} files!`);
+    await Promise.all(items.map(({from, to}) => fs.copy(from, to)));
+    spinner.succeed(`Successfully copied ${files.length} ${typeName} files!`);
   } catch(error) {
     // Stop spinner
     spinner.fail(`Copying of ${typeName} files failed.`);
+    log(`Error: ${error.message}`, 'error');
+    console.log(error);
   }
 };
 
@@ -154,6 +154,11 @@ export const getPackageJson = (packagePath?: string) => {
   // Configure package.json
   const packageData: string = fs.readFileSync(formatPath).toString();
   return JSON.parse(packageData);
+};
+
+export const getFilesByExt = (ext: string): string[] => {
+  const {sourceFullPath} = LexConfig.config;
+  return glob.sync(`${sourceFullPath}/**/*${ext}`);
 };
 
 export const removeConflictModules = (moduleList: object) => {

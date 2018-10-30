@@ -3,7 +3,28 @@ import fs from 'fs';
 import path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, copyFiles, createSpinner, log, relativeFilePath, removeFiles} from '../utils';
+import {checkLinkedModules, copyFiles, createSpinner, getFilesByExt, log, relativeFilePath, removeFiles} from '../utils';
+
+export const hasFileType = (startPath: string, ext: string[]): boolean => {
+  if(!fs.existsSync(startPath)) {
+    return false;
+  }
+
+  const files: string[] = fs.readdirSync(startPath);
+
+  return files.some((file: string) => {
+    const filename: string = path.join(startPath, file);
+    const fileExt: string = path.extname(filename);
+    const stat = fs.lstatSync(filename);
+
+    if(stat.isDirectory()) {
+      // Recursive search
+      return hasFileType(filename, ext);
+    }
+
+    return ext.includes(fileExt);
+  });
+};
 
 export const compile = async (cmd: any, callback: any = process.exit) => {
   const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
@@ -139,19 +160,24 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
     return callback(1);
   }
 
-  if(fs.existsSync(`${sourceFullPath}/styles`)) {
+  // Use PostCSS for CSS files
+  const cssFiles: string[] = getFilesByExt('.css');
+
+  if(cssFiles.length) {
     const postcssPath: string = relativeFilePath('postcss-cli/bin/postcss', nodePath);
     const postcssOptions: string[] = [
-      `${sourceFullPath}/styles/**/*.css`,
-      '-d',
-      `${outputFullPath}/styles`,
+      `${sourceFullPath}/**/*.css`,
+      '--base',
+      sourceFullPath,
+      '--dir',
+      outputFullPath,
       '--config',
       path.resolve(__dirname, '../../.postcssrc.js')
     ];
 
     try {
       await execa(postcssPath, postcssOptions, {encoding: 'utf-8'});
-      spinner.succeed('Successfully formatted css!');
+      spinner.succeed(`Successfully formatted ${cssFiles.length} css files!`);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -164,9 +190,16 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
     }
   }
 
-  if(fs.existsSync(`${sourceFullPath}/img`)) {
+  // Copy image files
+  const gifFiles: string[] = getFilesByExt('.gif');
+  const jpgFiles: string[] = getFilesByExt('.jpg');
+  const pngFiles: string[] = getFilesByExt('.png');
+  const svgFiles: string[] = getFilesByExt('.svg');
+  const imgFiles: string[] = [...gifFiles, ...jpgFiles, ...pngFiles, ...svgFiles];
+
+  if(imgFiles.length) {
     try {
-      await copyFiles(['img/**/*.jpg', 'img/**/*.png', 'img/**/*.gif', 'img/**/*.svg'], 'img', 'image', spinner);
+      await copyFiles(imgFiles, 'image', spinner);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -179,20 +212,16 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
     }
   }
 
-  if(fs.existsSync(`${sourceFullPath}/fonts`)) {
+  // Copy font files
+  const ttfFiles: string[] = getFilesByExt('.ttf');
+  const otfFiles: string[] = getFilesByExt('.otf');
+  const woffFiles: string[] = getFilesByExt('.woff');
+  const woff2Files: string[] = getFilesByExt('.woff2');
+  const fontFiles: string[] = [...ttfFiles, ...otfFiles, ...woffFiles, ...woff2Files];
+
+  if(fontFiles.length) {
     try {
-      await copyFiles(
-        [
-          'fonts/**/*.ttf',
-          'fonts/**/*.otf',
-          'fonts/**/*.woff',
-          'fonts/**/*.svg',
-          'fonts/**/*.woff2'
-        ],
-        'fonts',
-        'font',
-        spinner
-      );
+      await copyFiles(fontFiles, 'font', spinner);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -205,9 +234,12 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
     }
   }
 
-  if(fs.existsSync(`${sourceFullPath}/docs`)) {
+  // Copy markdown files
+  const mdFiles: string[] = getFilesByExt('.md');
+
+  if(mdFiles.length) {
     try {
-      await copyFiles(['docs/**/*.md'], 'docs', 'document', spinner);
+      await copyFiles(mdFiles, 'documents', spinner);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);

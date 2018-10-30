@@ -1,5 +1,9 @@
 const path = require('path');
-const nodePath = path.resolve(__dirname, './node_modules');
+const {relativeFilePath} = require('./utils');
+const pluginPath = relativeFilePath('postcss-import', path.resolve(__dirname, './node_modules'));
+const nodePath = path.resolve(pluginPath, '../');
+
+find.sync(configName, cwd, 5);
 
 module.exports = {
   plugins: [

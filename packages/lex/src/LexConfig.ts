@@ -1,8 +1,7 @@
-import * as find from 'find-file-up';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {log} from './utils';
+import {log, relativeFilePath} from './utils';
 
 const cwd: string = process.cwd();
 
@@ -138,7 +137,9 @@ export class LexConfig {
   static parseConfig(cmd, isRoot: boolean = true): void {
     const {cliName = 'Lex', lexConfig, lexConfigName, quiet, typescript} = cmd;
     const configName: string = lexConfigName || 'lex.config.js';
-    const defaultConfigPath: string = isRoot ? path.resolve(cwd, `./${configName}`) : find.sync(configName, cwd, 5);
+    const defaultConfigPath: string = isRoot
+      ? path.resolve(cwd, `./${configName}`)
+      : relativeFilePath(configName, cwd);
     const configPath: string = lexConfig || defaultConfigPath;
     const configExists: boolean = fs.existsSync(configPath);
 
