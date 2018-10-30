@@ -25,6 +25,14 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: ['/node_modules/'],
   coverageReporters: ['html', 'text'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 90,
+      lines: 80,
+      statements: -10
+    }
+  },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions,
   moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': path.resolve(__dirname, './emptyModule')},

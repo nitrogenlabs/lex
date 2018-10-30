@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.16.1",
+  "version": "1.16.6",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -116,6 +116,7 @@
     "postcss-simple-vars": "^5.0.1",
     "postcss-url": "^8.0.0",
     "react": "^16.6.0",
+    "react-dom": "^16.6.0",
     "react-hot-loader": "^4.3.11",
     "resolve": "^1.8.1",
     "rimraf": "^2.6.2",
@@ -142,8 +143,6 @@
     "eslint": "^5.8.0",
     "eslint-config-styleguidejs": "^0.7.13",
     "lerna": "^3.4.3",
-    "react": "^16.5.2",
-    "react-dom": "^16.6.0",
     "ts-jest": "^23.10.4"
   },
   "gitHead": "fd2d203d9345baad810ef261a27bb0a96009868d"
