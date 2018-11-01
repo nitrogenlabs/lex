@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 const path = require('path');
 
 const {relativeFilePath} = require('./dist/utils');
@@ -27,6 +31,9 @@ if(commandName === 'test') {
 }
 
 const plugins = [
+  // Styled Components
+  [`${pluginPath}/../babel-plugin-styled-components`],
+
   // Stage 0
   `${pluginPath}/plugin-proposal-function-bind`,
 

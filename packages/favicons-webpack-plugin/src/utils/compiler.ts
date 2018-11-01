@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 import evaluate from 'eval';
 import path from 'path';
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';

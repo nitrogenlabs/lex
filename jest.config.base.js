@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 module.exports = {
   collectCoverage: true,
   coveragePathIgnorePatterns: [
@@ -5,25 +9,22 @@ module.exports = {
     '(tests/.*.mock).(jsx?|tsx?)$'
   ],
   coverageReporters: ['html', 'text'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 90,
+      lines: 80,
+      statements: -10
+    }
+  },
   moduleDirectories: [
-    // '../node_modules',
     './node_modules'
   ],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'json'],
-  // moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': './emptyModule'},
   modulePaths: [
-    // '../node_modules',
     'node_modules'
   ],
-  // roots: [
-  //   '<rootDir>/src',
-  //   '<rootDir>/tests'
-  // ],
   testEnvironment: 'node',
-  // testPathIgnorePatterns: [
-  //   '/node_modules/'
-  // ],
-  // testRegex: '(/tests/.*.(test|spec)).(jsx?|tsx?)$',
   testURL: 'http://localhost',
   transform: {'^.+\\.ts$': 'ts-jest'},
   transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'],

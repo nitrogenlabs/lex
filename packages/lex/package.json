@@ -26,7 +26,7 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "NODE_ENV=production && yarn clean && yarn compile",
+    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
     "clean": "rm -rf dist node_modules yarn.lock package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
@@ -35,7 +35,7 @@
     "reset": "rm -rf node_modules yarn.lock",
     "test": "yarn lint && NODE_ENV=test && yarn env && jest",
     "update": "yarn upgrade-interactive --latest",
-    "watch": "NODE_ENV=development yarn clean && yarn compile -w"
+    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
   },
   "resolutions": {
     "babel-core": "^7.0.0-bridge.0"
@@ -74,6 +74,7 @@
     "babel-jest": "^23.6.0",
     "babel-loader": "8.0.4",
     "babel-plugin-istanbul": "^5.1.0",
+    "babel-plugin-styled-components": "^1.8.0",
     "babel-preset-jest": "^23.2.0",
     "boxen": "^2.0.0",
     "caniuse-lite": "^1.0.30000902",
@@ -134,7 +135,8 @@
     "webpack-dev-server": "^3.1.10"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.8",
+    "@nlabs/mock-execa": "^1.0.0",
+    "@types/jest": "^23.3.9",
     "@types/luxon": "^1.4.0",
     "@types/node": "^10.12.1",
     "@types/ora": "^1.3.4",
@@ -142,8 +144,6 @@
     "@types/webpack": "^4.4.17",
     "eslint": "^5.8.0",
     "eslint-config-styleguidejs": "^0.7.13",
-    "lerna": "^3.4.3",
     "ts-jest": "^23.10.4"
-  },
-  "gitHead": "fd2d203d9345baad810ef261a27bb0a96009868d"
+  }
 }

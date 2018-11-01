@@ -1,0 +1,5 @@
+{
+  "extends": [
+    "styleguidejs/typescript"
+  ]
+}

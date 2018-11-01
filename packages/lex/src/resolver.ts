@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 const fs = require('fs');
 const path = require('path');
 const resolve = require('resolve');

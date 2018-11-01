@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 import {declare} from '@babel/helper-plugin-utils';
 import pluginTransform from '@babel/plugin-transform-runtime';
 import presetEnv from '@babel/preset-env';

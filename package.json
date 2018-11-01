@@ -10,14 +10,17 @@
     "update": "yarn upgrade-interactive --latest"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.1",
     "jest-cli": "^23.6.0",
     "lerna": "^3.4.3",
     "ts-jest": "^23.10.4",
     "typescript": "^3.1.4"
   },
   "workspaces": [
-    "packages/lex",
     "packages/favicons-webpack-plugin",
+    "packages/lex",
+    "packages/mock-execa",
     "packages/static-site-webpack-plugin"
   ]
 }

@@ -1,8 +1,9 @@
 {
   "lerna": "3.3.2",
   "packages": [
-    "packages/lex",
     "packages/favicons-webpack-plugin",
+    "packages/lex",
+    "packages/mock-execa",
     "packages/static-site-webpack-plugin"
   ],
   "npmClient": "yarn",

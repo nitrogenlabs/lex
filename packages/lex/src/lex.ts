@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/**
+ * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 import program from 'commander';
 
 import {
@@ -16,7 +20,6 @@ import {
   upgrade,
   versions
 } from './commands';
-
 
 const packageConfig = require('../package.json');
 

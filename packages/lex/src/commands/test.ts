@@ -70,7 +70,7 @@ export const test = async (cmd: any, callback: any = process.exit) => {
     return callback(jest.status);
   } catch(error) {
     // Display error message
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Testing failed!');
