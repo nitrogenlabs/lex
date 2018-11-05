@@ -10,12 +10,12 @@ import {log, relativeFilePath} from './utils';
 const cwd: string = process.cwd();
 
 export interface LexConfigType {
-  babelPlugins?: string[];
-  babelPresets?: string[];
+  babel?: any;
   entryHTML?: string;
   entryJS?: string;
   env?: object;
   gitUrl?: string;
+  jest?: any;
   libraryName?: string;
   libraryTarget?: string;
   outputFile?: string;
@@ -27,15 +27,16 @@ export interface LexConfigType {
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
   useTypescript?: boolean;
+  webpack?: any;
 }
 
 export class LexConfig {
   static config: LexConfigType = {
-    babelPlugins: [],
-    babelPresets: [],
+    babel: {},
     entryHTML: 'index.html',
     entryJS: 'index.js',
     env: null,
+    jest: {},
     outputFullPath: path.resolve(cwd, './dist'),
     outputHash: false,
     outputPath: './dist',
@@ -43,7 +44,8 @@ export class LexConfig {
     sourceFullPath: path.resolve(cwd, './src'),
     sourcePath: './src',
     targetEnvironment: 'node',
-    useTypescript: false
+    useTypescript: false,
+    webpack: {}
   };
 
   // Set options from a custom configuration file
@@ -114,13 +116,17 @@ export class LexConfig {
     // Add Babel plugins
     if(babelPlugins !== undefined) {
       const plugins: string[] = babelPlugins.split(',');
-      params.babelPlugins = plugins.map((plugin: string) => `${path.resolve(cwd, './node_modules')}/${plugin}}`);
+      const mappedPlugins = plugins.map((plugin: string) => `${path.resolve(cwd, './node_modules')}/${plugin}}`);
+      const existingPlugins = params.babel.plugins || [];
+      params.babel.plugins = [...existingPlugins, ...mappedPlugins];
     }
 
     // Add Babel presets
     if(babelPresets !== undefined) {
       const presets: string[] = babelPresets.split(',');
-      params.babelPresets = presets.map((preset: string) => `${path.resolve(cwd, './node_modules')}/${preset}}`);
+      const mappedPresets = presets.map((preset: string) => `${path.resolve(cwd, './node_modules')}/${preset}}`);
+      const existingPresets = params.babel.presets || [];
+      params.babel.presets = [...existingPresets, ...mappedPresets];
     }
 
     // Set the target environment
@@ -188,7 +194,7 @@ export class LexConfig {
     const tsconfigPath: string = path.resolve(cwd, './tsconfig.json');
 
     if(!fs.existsSync(tsconfigPath)) {
-      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../tsconfig.json')));
+      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../../../tsconfig.base.json')));
     }
   }
 }

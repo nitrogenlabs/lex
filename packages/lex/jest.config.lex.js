@@ -3,7 +3,7 @@ const path = require('path');
 const {relativeFilePath} = require('./dist/utils');
 
 const rootDir = process.cwd();
-const {sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
+const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
 const nodePath = path.resolve(__dirname, './node_modules');
@@ -25,14 +25,6 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: ['/node_modules/'],
   coverageReporters: ['html', 'text'],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 90,
-      lines: 80,
-      statements: -10
-    }
-  },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions,
   moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': path.resolve(__dirname, './emptyModule')},
@@ -53,5 +45,6 @@ module.exports = {
   testURL: 'http://localhost',
   transform,
   transformIgnorePatterns,
-  verbose: true
+  verbose: true,
+  ...jest
 };

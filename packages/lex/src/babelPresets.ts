@@ -5,7 +5,8 @@
 import {declare} from '@babel/helper-plugin-utils';
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
-const {babelPlugins: plugins = [], babelPresets: presets = []} = lexConfig;
+const {babel} = lexConfig;
+const {plugins = [], presets = []} = babel;
 
 export default declare((api) => {
   api.assertVersion(7);

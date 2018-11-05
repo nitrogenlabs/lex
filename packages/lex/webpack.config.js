@@ -25,7 +25,16 @@ const processVariables = Object.keys(envVariables).reduce((list, varName) => {
 }, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
-const {isStatic, outputFullPath, sourceFullPath, outputFile, outputHash, libraryName, libraryTarget} = lexConfig;
+const {
+  isStatic,
+  outputFullPath,
+  sourceFullPath,
+  outputFile,
+  outputHash,
+  libraryName,
+  libraryTarget,
+  webpack: webpackCustom
+} = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
@@ -228,4 +237,4 @@ if(!isProduction) {
   webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
 }
 
-module.exports = webpackConfig;
+module.exports = {...webpackConfig, ...webpackCustom};
