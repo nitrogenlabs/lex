@@ -8,6 +8,7 @@ const {relativeFilePath} = require('./dist/utils');
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {babel = {}, commandName, targetEnvironment, useTypescript} = lexConfig;
+const {plugins: babelPlugins = [], presets: babelPresets = []} = babel;
 
 // Babel Plugin/preset paths
 const nodePath = path.resolve(__dirname, './node_modules');
@@ -59,7 +60,7 @@ const plugins = [
   `${pluginPath}/plugin-proposal-json-strings`,
 
   // User provided plugins
-  ...babel.plugins
+  ...babelPlugins
 ];
 
 const presets = [
@@ -72,7 +73,7 @@ const presets = [
   useTypescript ? `${pluginPath}/preset-typescript` : `${pluginPath}/preset-flow`,
 
   // User provided presets
-  ...babel.presets
+  ...babelPresets
 ];
 
 if(commandName === 'dev') {

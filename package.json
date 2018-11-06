@@ -18,9 +18,9 @@
     "typescript": "^3.1.4"
   },
   "workspaces": [
+    "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",
-    "packages/mock-execa",
     "packages/static-site-webpack-plugin"
   ]
 }

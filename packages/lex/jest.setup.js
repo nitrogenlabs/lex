@@ -1,1 +1,1 @@
-module.exports = require('@nlabs/mock-execa');
+module.exports = require('@nlabs/execa-mock');
