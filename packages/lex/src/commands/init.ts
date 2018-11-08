@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import execa from 'execa';
@@ -9,7 +9,12 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
-export const init = async (appName: string, packageName: string, cmd: any, callback: any = process.exit) => {
+export const init = async (
+  appName: string,
+  packageName: string,
+  cmd: any,
+  callback: any = () => ({})
+): Promise<number> => {
   const {cliName = 'Lex', install, packageManager: cmdPackageManager, quiet, typescript} = cmd;
   const cwd: string = process.cwd();
   let status: number = 0;
@@ -55,7 +60,8 @@ export const init = async (appName: string, packageName: string, cmd: any, callb
     spinner.fail('Downloaded of app failed.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 
   // Move into configured directory
@@ -63,7 +69,8 @@ export const init = async (appName: string, packageName: string, cmd: any, callb
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
     log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
-    return callback(1);
+    callback(1);
+    return 1;
   }
 
   // Configure package.json
@@ -88,7 +95,8 @@ export const init = async (appName: string, packageName: string, cmd: any, callb
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-    return callback(1);
+    callback(1);
+    return 1;
   }
 
   if(install) {
@@ -120,10 +128,12 @@ export const init = async (appName: string, packageName: string, cmd: any, callb
       spinner.fail('Failed to install dependencies.');
 
       // Kill process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
   // Kill process
-  return callback(status);
+  callback(status);
+  return status;
 };

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 const path = require('path');
@@ -7,10 +7,10 @@ const path = require('path');
 const {relativeFilePath} = require('./dist/utils');
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
-const {babel = {}, commandName, targetEnvironment, useTypescript} = lexConfig;
-const {plugins: babelPlugins = [], presets: babelPresets = []} = babel;
+const {babel, commandName, targetEnvironment, useTypescript} = lexConfig;
 
 // Babel Plugin/preset paths
+const {plugins: babelPlugins = [], presets: babelPresets = []} = babel || {};
 const nodePath = path.resolve(__dirname, './node_modules');
 const pluginPath = relativeFilePath('@babel/plugin-proposal-function-bind', nodePath, 1);
 

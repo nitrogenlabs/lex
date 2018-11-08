@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import execa from 'execa';
@@ -38,7 +38,7 @@ export const hasFileType = (startPath: string, ext: string[]): boolean => {
   });
 };
 
-export const compile = async (cmd: any, callback: any = process.exit) => {
+export const compile = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
 
   // Spinner
@@ -107,7 +107,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
         spinner.fail('Type checking failed.');
 
         // Kill Process
-        return callback(1);
+        callback(1);
+        return 1;
       }
     } catch(error) {
       // Display error message
@@ -117,7 +118,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Type checking failed.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -159,7 +161,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Code compiling failed.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   } catch(error) {
     // Display error message
@@ -169,7 +172,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('Code compiling failed.');
 
     // Kill Process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 
   // Use PostCSS for CSS files
@@ -198,7 +202,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Failed formatting css.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -220,7 +225,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Failed to move images to output directory.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -242,7 +248,8 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Failed to move fonts to output directory.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -260,10 +267,12 @@ export const compile = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('Failed to move docs to output directory.');
 
       // Kill Process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
   // Stop process
-  return callback(0);
+  callback(0);
+  return 0;
 };

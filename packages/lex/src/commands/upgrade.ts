@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import compareVersions from 'compare-versions';
@@ -12,7 +12,7 @@ import {parseVersion} from './versions';
 
 const packageConfig = require('../../package.json');
 
-export const upgrade = (cmd: any, callback: any = process.exit) => {
+export const upgrade = (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
 
   // Display status
@@ -31,7 +31,8 @@ export const upgrade = (cmd: any, callback: any = process.exit) => {
 
       if(versionDiff === 0) {
         log(`\nCurrently up-to-date. Version ${latest} is the latest.`, 'note', quiet);
-        return callback(0);
+        callback(0);
+        return 0;
       }
 
       log(`\nCurrently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
@@ -57,7 +58,8 @@ export const upgrade = (cmd: any, callback: any = process.exit) => {
       }
 
       // Stop process
-      return callback(yarn.status);
+      callback(yarn.status);
+      return yarn.status;
     })
     .catch((error) => {
       // Display error message
@@ -67,6 +69,7 @@ export const upgrade = (cmd: any, callback: any = process.exit) => {
       spinner.fail('Failed to updated packages.');
 
       // Kill process
-      return callback(1);
+      callback(1);
+      return 1;
     });
 };

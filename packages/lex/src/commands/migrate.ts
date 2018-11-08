@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import execa from 'execa';
@@ -7,7 +7,7 @@ import execa from 'execa';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, removeConflictModules, removeModules} from '../utils';
 
-export const migrate = async (cmd: any, callback: any = process.exit) => {
+export const migrate = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;
 
   const cwd: string = process.cwd();
@@ -49,7 +49,8 @@ export const migrate = async (cmd: any, callback: any = process.exit) => {
     }
 
     // Kill process
-    return callback(installStatus);
+    callback(installStatus);
+    return installStatus;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -58,6 +59,7 @@ export const migrate = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('Failed to remove modules.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

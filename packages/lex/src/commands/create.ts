@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import fs from 'fs';
@@ -9,7 +9,7 @@ import {createChangelog} from '../create/changelog';
 import {LexConfig} from '../LexConfig';
 import {copyFolderRecursiveSync, getFilenames, log, removeFiles, updateTemplateName} from '../utils';
 
-export const create = async (type: string, cmd: any, callback: any = process.exit) => {
+export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', outputFile, quiet} = cmd;
   const cwd: string = process.cwd();
   log(`${cliName} create ${type}...`, 'info', quiet);
@@ -27,7 +27,9 @@ export const create = async (type: string, cmd: any, callback: any = process.exi
 
   switch(type) {
     case 'changelog': {
-      return callback(await createChangelog({cliName, config, outputFile, quiet}));
+      const statusChangelog: number = await createChangelog({cliName, config, outputFile, quiet});
+      callback(statusChangelog);
+      return statusChangelog;
     }
     case 'store': {
       try {
@@ -56,11 +58,13 @@ export const create = async (type: string, cmd: any, callback: any = process.exi
           updateTemplateName(storeFilePath, name, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
-          return callback(1);
+          callback(1);
+          return 1;
         }
       } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-        return callback(1);
+        callback(1);
+        return 1;
       }
       break;
     }
@@ -115,11 +119,13 @@ export const create = async (type: string, cmd: any, callback: any = process.exi
           updateTemplateName(viewFilePath, name, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
-          return callback(1);
+          callback(1);
+          return 1;
         }
       } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-        return callback(1);
+        callback(1);
+        return 1;
       }
       break;
     }
@@ -133,5 +139,6 @@ export const create = async (type: string, cmd: any, callback: any = process.exi
     }
   }
 
-  return callback(0);
+  callback(0);
+  return 0;
 };

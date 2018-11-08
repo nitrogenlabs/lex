@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {LexConfig} from '../LexConfig';
 import {createSpinner, log, removeFiles, removeModules} from '../utils';
 
-export const clean = async (cmd: any, callback: any = process.exit) => {
+export const clean = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;
 
   // Spinner
@@ -42,7 +42,8 @@ export const clean = async (cmd: any, callback: any = process.exit) => {
     spinner.succeed('Successfully cleaned!');
 
     // Stop process
-    return callback(0);
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -51,6 +52,7 @@ export const clean = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('Failed to clean project.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

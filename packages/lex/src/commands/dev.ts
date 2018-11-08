@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import execa from 'execa';
@@ -8,7 +8,7 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
-export const dev = async (cmd: any, callback: any = process.exit) => {
+export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', config, open, quiet, remove, variables} = cmd;
 
   // Spinner
@@ -30,7 +30,8 @@ export const dev = async (cmd: any, callback: any = process.exit) => {
       variablesObj = JSON.parse(variables);
     } catch(error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -79,7 +80,8 @@ export const dev = async (cmd: any, callback: any = process.exit) => {
       spinner.fail('There was an error while running Webpack.');
     }
 
-    return callback(webpack.status);
+    callback(webpack.status);
+    return webpack.status;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -88,6 +90,7 @@ export const dev = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('There was an error while running Webpack.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

@@ -4,8 +4,47 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath} from '../utils';
 
-export const test = async (cmd: any, callback: any = process.exit) => {
-  const {cliName = 'Lex', config, detectOpenHandles, quiet, removeCache, setup, update, watch} = cmd;
+export const test = async (cmd: any, callback: any = process.exit): Promise<number> => {
+  const {
+    bail,
+    changedFilesWithAncestor,
+    changedSince,
+    ci,
+    cliName = 'Lex',
+    collectCoverageFrom,
+    colors,
+    config,
+    debug,
+    detectOpenHandles,
+    env,
+    errorOnDeprecated,
+    expand,
+    forceExit,
+    json,
+    lastCommit,
+    listTests,
+    logHeapUsage,
+    maxWorkers,
+    noStackTrace,
+    notify,
+    onlyChanged,
+    outputFile,
+    passWithNoTests,
+    quiet,
+    removeCache,
+    runInBand,
+    setup,
+    showConfig,
+    silent,
+    testLocationInResults,
+    testNamePattern,
+    testPathPattern,
+    update,
+    useStderr,
+    verbose,
+    watch,
+    watchAll
+  } = cmd;
 
   log(`${cliName} testing...`, 'info', quiet);
 
@@ -29,6 +68,131 @@ export const test = async (cmd: any, callback: any = process.exit) => {
   const jestSetupFile: string = setup || '';
   const jestOptions: string[] = ['--config', jestConfigFile];
 
+  if(bail) {
+    jestOptions.push('--bail');
+  }
+
+  if(changedFilesWithAncestor) {
+    jestOptions.push('--changedFilesWithAncestor');
+  }
+
+  if(changedSince) {
+    jestOptions.push('--changedSince');
+  }
+
+  if(ci) {
+    jestOptions.push('--ci');
+  }
+
+  if(collectCoverageFrom) {
+    jestOptions.push('--collectCoverageFrom', collectCoverageFrom);
+  }
+
+  if(colors) {
+    jestOptions.push('--colors');
+  }
+
+  if(debug) {
+    jestOptions.push('--debug');
+  }
+
+  // Detect open handles
+  if(detectOpenHandles) {
+    jestOptions.push('--detectOpenHandles');
+  }
+
+  if(env) {
+    jestOptions.push('--env');
+  }
+
+  if(errorOnDeprecated) {
+    jestOptions.push('--errorOnDeprecated');
+  }
+
+  if(expand) {
+    jestOptions.push('--expand');
+  }
+
+  if(forceExit) {
+    jestOptions.push('--forceExit');
+  }
+
+  if(json) {
+    jestOptions.push('--json');
+  }
+
+  if(lastCommit) {
+    jestOptions.push('--lastCommit');
+  }
+
+  if(listTests) {
+    jestOptions.push('--listTests');
+  }
+
+  if(logHeapUsage) {
+    jestOptions.push('--logHeapUsage');
+  }
+
+  if(maxWorkers) {
+    jestOptions.push('--maxWorkers', maxWorkers);
+  }
+
+  if(noStackTrace) {
+    jestOptions.push('--noStackTrace');
+  }
+
+  if(notify) {
+    jestOptions.push('--notify');
+  }
+
+  if(onlyChanged) {
+    jestOptions.push('--onlyChanged');
+  }
+
+  if(outputFile) {
+    jestOptions.push('--outputFile', outputFile);
+  }
+
+  if(passWithNoTests) {
+    jestOptions.push('--passWithNoTests');
+  }
+
+  if(runInBand) {
+    jestOptions.push('--runInBand');
+  }
+
+  if(showConfig) {
+    jestOptions.push('--showConfig');
+  }
+
+  if(silent) {
+    jestOptions.push('--silent');
+  }
+
+  if(testLocationInResults) {
+    jestOptions.push('--testLocationInResults');
+  }
+
+  if(testNamePattern) {
+    jestOptions.push('--testNamePattern', testNamePattern);
+  }
+
+  if(testPathPattern) {
+    jestOptions.push('--testPathPattern', testPathPattern);
+  }
+
+  if(useStderr) {
+    jestOptions.push('--useStderr');
+  }
+
+  if(verbose) {
+    jestOptions.push('--verbose');
+  }
+
+  if(watchAll) {
+    jestOptions.push('--watchAll');
+  }
+
   // Clear cache
   if(removeCache) {
     jestOptions.push('--no-cache');
@@ -37,11 +201,6 @@ export const test = async (cmd: any, callback: any = process.exit) => {
   if(jestSetupFile !== '') {
     const cwd: string = process.cwd();
     jestOptions.push(`--setupTestFrameworkScriptFile=${path.resolve(cwd, jestSetupFile)}`);
-  }
-
-  // Detect open handles
-  if(detectOpenHandles) {
-    jestOptions.push('--detectOpenHandles');
   }
 
   // Update snapshots
@@ -67,7 +226,8 @@ export const test = async (cmd: any, callback: any = process.exit) => {
     }
 
     // Kill process
-    return callback(jest.status);
+    callback(jest.status);
+    return jest.status;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
@@ -76,6 +236,7 @@ export const test = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('Testing failed!');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

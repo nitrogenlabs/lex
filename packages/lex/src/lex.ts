@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import program from 'commander';
@@ -38,12 +38,21 @@ program.command('build')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
-  .action(build);
+  .option('--outputChunkFilename <filename>', 'The output filename for additional chunks.')
+  .option('--outputFilename <filename>', 'The output filename of the bundle. Default: "[name].js".')
+  .option('--outputJsonpFunction <func>', 'The name of the JSONP function used for chunk loading. Default: "webpackJsonp".')
+  .option('--outputLibrary <library>', 'Expose the exports of the entry point as library.')
+  .option('--outputLibraryTarget <target>', 'The type for exposing the exports of the entry point as library. Default: "var".')
+  .option('--outputPathinfo <hasInfo>', 'The output filename for additional chunks. Default: false')
+  .option('--outputPublicPath <path>', 'The public path for the assets. Default: "/"')
+  .option('--outputSourceMapFilename <filename>', 'The output filename for the SourceMap. Default: "[name].map"')
+  .option('--buildDelimiter <delimiter>', 'Display custom text after build output. Default: "=== Build done ==="')
+  .action((cmd) => build(cmd, process.exit));
 
 program.command('clean')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
-  .action(clean);
+  .action((cmd) => clean(cmd, process.exit));
 
 program.command('compile')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
@@ -58,12 +67,12 @@ program.command('compile')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
-  .action(compile);
+  .action((cmd) => compile(cmd, process.exit));
 
 program.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--outputFile <path>', 'Output filename')
-  .action(create);
+  .action((type, cmd) => create(type, cmd, process.exit));
 
 program.command('dev')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
@@ -78,22 +87,22 @@ program.command('dev')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
-  .action(dev);
+  .action((cmd) => dev(cmd, process.exit));
 
 program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
-  .action(init);
+  .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit));
 
 program.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action(linked);
+  .action((cmd) => linked(cmd, process.exit));
 
 program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action(migrate);
+  .action((cmd) => migrate(cmd, process.exit));
 
 program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
@@ -103,7 +112,7 @@ program.command('publish')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-t, --tag <tag>', 'Registers the published package with the given tag.')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
-  .action(publish);
+  .action((cmd) => publish(cmd, process.exit));
 
 program.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
@@ -111,28 +120,59 @@ program.command('test')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('-r, --removeCache', 'Clear Jest cache.')
+  .option('-r, --clearCache', 'Clear Jest cache.')
   .option('-s, --setup <path>', 'Jest setup file path.')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-u, --update', 'Update snapshots. Runs "jest --updateSnapshots"')
-  .option('-w, --watch', 'Watches for changes and tests.')
-  .action(test);
+  .option('-w, --watch <path>', 'Watch files for changes and rerun tests related to changed files.')
+  .option('--bail', 'Exit the test suite immediately upon the first failing test suite.')
+  .option('--changedFilesWithAncestor', 'Runs tests related to the current changes and the changes made in the last commit.')
+  .option('--changedSince', 'Runs tests related the changes since the provided branch.')
+  .option('--ci', 'When this option is provided, Jest will assume it is running in a CI environment.')
+  .option('--collectCoverageFrom <glob>', 'A glob pattern relative to matching the files that coverage info needs to be collected from.')
+  .option('--colors', 'Forces test results output highlighting even if stdout is not a TTY.')
+  .option('--debug', 'Print debugging info about your Jest config.')
+  .option('--detectOpenHandles', 'Attempt to collect and print open handles preventing Jest from exiting cleanly.')
+  .option('--env', 'The test environment used for all tests. This can point to any file or node module. Examples: jsdom, node or path/to/my-environment.js.')
+  .option('--errorOnDeprecated', 'Make calling deprecated APIs throw helpful error messages.')
+  .option('--expand', 'Use this flag to show full diffs and errors instead of a patch.')
+  .option('--forceExit', 'Force Jest to exit after all tests have completed running.')
+  .option('--json', 'Prints the test results in JSON.')
+  .option('--lastCommit', 'Run all tests affected by file changes in the last commit made.')
+  .option('--listTests', 'Lists all tests as JSON that Jest will run given the arguments, and exits.')
+  .option('--logHeapUsage', 'Logs the heap usage after every test.')
+  .option('--maxWorkers <num>', 'Specifies the maximum number of workers the worker-pool will spawn for running tests. ')
+  .option('--noStackTrace', 'Disables stack trace in test results output.')
+  .option('--notify', 'Activates notifications for test results.')
+  .option('--onlyChanged', 'un based on which files have changed in the current repository. ')
+  .option('--outputFile <filename>', 'Write test results to a file when the --json option is also specified.')
+  .option('--passWithNoTests', 'Allows the test suite to pass when no files are found.')
+  .option('--runInBand', 'Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests.')
+  .option('--showConfig', 'Print your Jest config and then exits.')
+  .option('--silent', 'Prevent tests from printing messages through the console.')
+  .option('--testLocationInResults', 'Adds a location field to test results.')
+  .option('--testNamePattern <regex>', 'Run only tests with a name that matches the regex. ')
+  .option('--testPathPattern <regex>', 'A regexp pattern string that is matched against all tests paths before executing the test.')
+  .option('--useStderr', 'Divert all output to stderr.')
+  .option('--verbose', 'Display individual test results with the test suite hierarchy.')
+  .option('--watchAll', 'Watch files for changes and rerun all tests when something changes.')
+  .action((cmd) => test(cmd, process.exit));
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--registry', 'Add a custom registry url.')
-  .action(update);
+  .action((cmd) => update(cmd, process.exit));
 
 program.command('upgrade')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action(upgrade);
+  .action((cmd) => upgrade(cmd, process.exit));
 
 program.command('versions')
   .option('-j, --json', 'Print the version as a JSON object.')
-  .action(versions);
+  .action((cmd) => versions(cmd, process.exit));
 
 // Initialize
 program

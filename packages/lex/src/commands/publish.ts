@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import chalk from 'chalk';
@@ -9,7 +9,7 @@ import semver from 'semver';
 import {LexConfig} from '../LexConfig';
 import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
 
-export const publish = async (cmd, callback: any = process.exit) => {
+export const publish = async (cmd, callback: any = process.exit): Promise<number> => {
   const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
   log(`${cliName} publishing npm module...`, 'info', quiet);
 
@@ -50,7 +50,8 @@ export const publish = async (cmd, callback: any = process.exit) => {
   } catch(error) {
     log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
     console.error(chalk.red(error.message));
-    return callback(1);
+    callback(1);
+    return 1;
   }
 
   // Update package.json with the latest version
@@ -72,7 +73,8 @@ export const publish = async (cmd, callback: any = process.exit) => {
 
       if(!semver.valid(packageVersion)) {
         log(`\n${cliName} Error: Version is invalid in package.json`, 'error', quiet);
-        return callback(1);
+        callback(1);
+        return 1;
       }
 
       if(validReleases.includes(formatBump)) {
@@ -81,11 +83,13 @@ export const publish = async (cmd, callback: any = process.exit) => {
         nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
       } else {
         log(`\n${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
-        return callback(1);
+        callback(1);
+        return 1;
       }
     } else {
       log(`\n${cliName} Error: Bump type is missing.`, 'error', quiet);
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -97,7 +101,8 @@ export const publish = async (cmd, callback: any = process.exit) => {
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
       log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
-      return callback(1);
+      callback(1);
+      return 1;
     }
   } else {
     nextVersion = prevVersion;
@@ -116,7 +121,8 @@ export const publish = async (cmd, callback: any = process.exit) => {
     }
 
     // Kill process
-    return callback(npmPublish.status);
+    callback(npmPublish.status);
+    return npmPublish.status;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -125,6 +131,7 @@ export const publish = async (cmd, callback: any = process.exit) => {
     spinner.fail('Publishing to npm has failed.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

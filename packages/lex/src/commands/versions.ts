@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {log} from '../utils';
@@ -18,7 +18,7 @@ export const jsonVersions = () => JSON.stringify(Object.keys(packages).reduce((l
   list[key] = packages[key];
   return list;
 }, {}));
-export const versions = (cmd: any, callback: any = process.exit) => {
+export const versions = (cmd: any, callback: any = () => (0)): Promise<number> => {
   if(cmd.json) {
     console.log(JSON.stringify(Object.keys(packages).reduce((list, key) => {
       list[key] = packages[key];
@@ -34,5 +34,6 @@ export const versions = (cmd: any, callback: any = process.exit) => {
     log(`  Webpack: ${packages.webpack}`, 'info', false);
   }
 
-  return callback(0);
+  callback(0);
+  return Promise.resolve(0);
 };

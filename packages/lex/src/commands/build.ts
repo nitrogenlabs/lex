@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import execa from 'execa';
@@ -8,9 +8,24 @@ import * as path from 'path';
 import {LexConfig} from '../LexConfig';
 import {checkLinkedModules, createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
-
-export const build = async (cmd: any, callback: any = process.exit) => {
-  const {cliName = 'Lex', config, mode, quiet = false, remove, variables} = cmd;
+export const build = async (cmd: any, callback: any = () => ({})): Promise<number> => {
+  const {
+    buildDelimiter,
+    cliName = 'Lex',
+    config,
+    mode,
+    outputChunkFilename,
+    outputFilename,
+    outputJsonpFunction,
+    outputLibrary,
+    outputLibraryTarget,
+    outputPathinfo,
+    outputPublicPath,
+    outputSourceMapFilename,
+    quiet = false,
+    remove,
+    variables
+  } = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -36,7 +51,8 @@ export const build = async (cmd: any, callback: any = process.exit) => {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
 
       // Kill process
-      return callback(1);
+      callback(1);
+      return 1;
     }
   }
 
@@ -68,15 +84,49 @@ export const build = async (cmd: any, callback: any = process.exit) => {
   }
 
   const webpackMode: string = mode || 'production';
+  const webpackOptions: string[] = ['--config', webpackConfig, '--mode', webpackMode];
+
+  if(outputChunkFilename) {
+    webpackOptions.push('--output-chunk-filename', outputChunkFilename);
+  }
+
+  if(outputFilename) {
+    webpackOptions.push('--output-filename', outputFilename);
+  }
+
+  if(outputJsonpFunction) {
+    webpackOptions.push('--output-jsonp-function', outputJsonpFunction);
+  }
+
+  if(outputLibrary) {
+    webpackOptions.push('--output-library', outputLibrary);
+  }
+
+  if(outputLibraryTarget) {
+    webpackOptions.push('--output-library-target', outputLibraryTarget);
+  }
+
+  if(outputPathinfo) {
+    webpackOptions.push('--output-path-info', outputPathinfo);
+  }
+
+  if(outputPublicPath) {
+    webpackOptions.push('--output-public-path', outputPublicPath);
+  }
+
+  if(outputSourceMapFilename) {
+    webpackOptions.push('--output-source-map-filename', outputSourceMapFilename);
+  }
+
+  if(buildDelimiter) {
+    webpackOptions.push('--build-delimiter', buildDelimiter);
+  }
 
   // Compile using webpack
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
     const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
-    const webpack = await execa(webpackPath, ['--config', webpackConfig, '--mode', webpackMode], {
-      encoding: 'utf-8',
-      stdio: 'inherit'
-    });
+    const webpack = await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
 
     // Stop spinner
     if(!webpack.status) {
@@ -86,7 +136,8 @@ export const build = async (cmd: any, callback: any = process.exit) => {
     }
 
     // Stop process
-    return callback(webpack.status);
+    callback(webpack.status);
+    return webpack.status;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -95,6 +146,7 @@ export const build = async (cmd: any, callback: any = process.exit) => {
     spinner.fail('Build failed.');
 
     // Kill process
-    return callback(1);
+    callback(1);
+    return 1;
   }
 };

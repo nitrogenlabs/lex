@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2018, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {LexConfig} from '../LexConfig';
 import {checkLinkedModules, log} from '../utils';
 
-export const linked = async (cmd: any, callback: any = process.exit) => {
+export const linked = (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display status
@@ -16,5 +16,6 @@ export const linked = async (cmd: any, callback: any = process.exit) => {
 
   // Check for linked modules
   checkLinkedModules();
-  return callback(0);
+  callback(0);
+  return Promise.resolve(0);
 };
