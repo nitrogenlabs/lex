@@ -51,7 +51,7 @@
     "@types/jest": "^23.3.9",
     "compression-webpack-plugin": "^2.0.0",
     "ejs": "^2.3.4",
-    "eslint": "^5.8.0",
+    "eslint": "^5.9.0",
     "eslint-config-styleguidejs": "^0.7.13",
     "glob": "^7.0.3",
     "rimraf": "^2.5.2",

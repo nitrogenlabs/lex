@@ -39,10 +39,13 @@ const {
 // Only add plugins if they are needed
 const plugins = [
   new DefinePlugin(processVariables),
-  new SVGSpritemapPlugin({
-    filename: './icons/icons.svg',
-    prefix: '',
-    src: `${sourceFullPath}/**/*.svg`
+  new SVGSpritemapPlugin(`${sourceFullPath}/**/*.svg`, {
+    output: {
+      filename: './icons/icons.svg'
+    },
+    sprite: {
+      prefix: false
+    }
   })
 ];
 
@@ -119,7 +122,8 @@ const webpackConfig = {
   bail: true,
   cache: !isProduction,
   entry: {
-    index: `${sourceFullPath}/${lexConfig.entryJS}`
+    index: `${sourceFullPath}/${lexConfig.entryJS}`,
+    polyfill: relativeFilePath('node_modules/@babel/polyfill', __dirname)
   },
   mode: environment,
   module: {

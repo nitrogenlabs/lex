@@ -47,8 +47,8 @@
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
-    "@types/node": "^10.12.3",
-    "eslint": "^5.8.0",
+    "@types/node": "^10.12.7",
+    "eslint": "^5.9.0",
     "eslint-config-styleguidejs": "^0.7.13",
     "ts-jest": "^23.10.4",
     "typescript": "^3.1.6"
