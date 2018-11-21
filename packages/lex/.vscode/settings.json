@@ -4,6 +4,7 @@
     "arkhamjs",
     "nitrogenlabs",
     "nlabs",
+    "polyfill",
     "transpiler"
   ],
   "css.validate": false,

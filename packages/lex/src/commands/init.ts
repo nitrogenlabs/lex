@@ -68,7 +68,7 @@ export const init = async (
   try {
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
-    log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
+    log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
     callback(1);
     return 1;
   }

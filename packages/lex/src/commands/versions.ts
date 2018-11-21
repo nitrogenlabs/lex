@@ -14,10 +14,10 @@ export const packages = {
   typescript: parseVersion(packageConfig.dependencies.typescript),
   webpack: parseVersion(packageConfig.dependencies.webpack)
 };
-export const jsonVersions = () => JSON.stringify(Object.keys(packages).reduce((list, key) => {
+export const jsonVersions = () => Object.keys(packages).reduce((list, key) => {
   list[key] = packages[key];
   return list;
-}, {}));
+}, {});
 export const versions = (cmd: any, callback: any = () => (0)): Promise<number> => {
   if(cmd.json) {
     console.log(JSON.stringify(Object.keys(packages).reduce((list, key) => {
