@@ -5,6 +5,7 @@
 export {build} from './build';
 export {clean} from './clean';
 export {compile} from './compile';
+export {config} from './config';
 export {create} from './create';
 export {dev} from './dev';
 export {init} from './init';

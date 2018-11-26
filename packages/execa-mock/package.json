@@ -47,10 +47,10 @@
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
-    "@types/node": "^10.12.9",
+    "@types/node": "^10.12.10",
     "eslint": "^5.9.0",
     "eslint-config-styleguidejs": "^0.7.13",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^23.10.5",
     "typescript": "^3.1.6"
   }
 }

@@ -9,6 +9,7 @@ import {
   build,
   clean,
   compile,
+  config,
   create,
   dev,
   init,
@@ -53,6 +54,11 @@ program.command('clean')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
   .action((cmd) => clean(cmd, process.exit));
+
+program.command('config <type>')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('--json <path>', 'Save output to json file.')
+  .action((type, cmd) => config(type, cmd, process.exit));
 
 program.command('compile')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')

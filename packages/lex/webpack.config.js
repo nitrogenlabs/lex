@@ -153,28 +153,28 @@ const webpackConfig = {
             loader: postcssLoaderPath,
             options: {
               plugins: [
-                require('postcss-import')({addDependencyTo: webpack}),
-                require('postcss-url'),
-                require('postcss-for'),
-                require('postcss-percentage')({
+                require(relativeFilePath('node_modules/postcss-import', __dirname))({addDependencyTo: webpack}),
+                require(relativeFilePath('node_modules/postcss-url', __dirname)),
+                require(relativeFilePath('node_modules/postcss-for', __dirname)),
+                require(relativeFilePath('node_modules/postcss-percentage', __dirname))({
                   floor: true,
                   precision: 9,
                   trimTrailingZero: true
                 }),
-                require('postcss-custom-properties')({
+                require(relativeFilePath('node_modules/postcss-custom-properties', __dirname))({
                   preserve: false,
                   strict: false,
                   warnings: false
                 }),
-                require('postcss-simple-vars'),
-                require('postcss-nesting'),
-                require('postcss-flexbugs-fixes'),
-                require('postcss-preset-env')({
+                require(relativeFilePath('node_modules/postcss-simple-vars', __dirname)),
+                require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
+                require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
+                require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
                   browsers: ['last 5 versions'],
                   stage: 0
                 }),
-                require('cssnano')({autoprefixer: false}),
-                require('postcss-browser-reporter')
+                require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
+                require(relativeFilePath('node_modules/postcss-browser-reporter', __dirname))
               ]
             }
           }

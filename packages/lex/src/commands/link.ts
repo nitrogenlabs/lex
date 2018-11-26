@@ -5,7 +5,7 @@
 import {LexConfig} from '../LexConfig';
 import {checkLinkedModules, log} from '../utils';
 
-export const linked = (cmd: any, callback: any = process.exit): Promise<number> => {
+export const linked = (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display status
