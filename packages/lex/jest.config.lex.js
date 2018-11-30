@@ -9,13 +9,13 @@ const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG 
 const nodePath = path.resolve(__dirname, './node_modules');
 const babelPolyfillPath = relativeFilePath('@babel/polyfill/dist/polyfill.js', nodePath);
 let moduleFileExtensions = ['js', 'json'];
-let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
+let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js|jsx)?$';
 let transform = {'\\.(js)$': path.resolve(__dirname, './jest.preprocessor.js')};
 let transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$'];
 
 if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
-  testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js|ts|tsx)?$';
+  testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js|jsx|ts|tsx)?$';
   transform = {'\\.(js|ts|tsx)$': path.resolve(__dirname, './jest.preprocessor.js')};
   transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'];
 }
@@ -23,7 +23,7 @@ if(useTypescript) {
 module.exports = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
-  coveragePathIgnorePatterns: ['/node_modules/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '__snapshots__'],
   coverageReporters: ['html', 'text'],
   moduleDirectories: ['node_modules'],
   moduleFileExtensions,

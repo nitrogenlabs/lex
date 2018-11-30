@@ -130,6 +130,7 @@ const webpackConfig = {
     rules: [
       {
         enforce: 'pre',
+        exclude: /(node_modules)/,
         loader: sourceLoaderPath,
         test: /\.(js|ts|tsx)$/
       },

@@ -209,7 +209,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(watch) {
-    jestOptions.push('--watch');
+    jestOptions.push('--watch', watch);
   }
 
   // Test app using jest
