@@ -24,7 +24,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
 
   const upgradeOptions: string[] = packageManager === 'npm' ?
     ['update'] :
-    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest', '--tilde'];
+    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
   if(registry) {
     upgradeOptions.push('--registry', registry);
