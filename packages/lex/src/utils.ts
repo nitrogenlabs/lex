@@ -42,14 +42,15 @@ export const log = (message: string, type: string = 'info', quiet = false) => {
   }
 };
 
-export const getFilenames = (props) => {
+export const getFilenames = (props: any) => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
+
   // Set filename
   let nameCaps: string;
-  const itemNames: string[] = ['stores', 'views'];
+  const itemTypes: string[] = ['stores', 'views'];
 
   if(!name) {
-    if(itemNames.includes(name)) {
+    if(itemTypes.includes(type)) {
       log(`\n${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
       return callback(1);
     }

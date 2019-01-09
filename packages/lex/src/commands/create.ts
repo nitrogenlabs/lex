@@ -10,7 +10,7 @@ import {LexConfig} from '../LexConfig';
 import {copyFolderRecursiveSync, getFilenames, log, removeFiles, updateTemplateName} from '../utils';
 
 export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {cliName = 'Lex', outputFile, quiet} = cmd;
+  const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;
   const cwd: string = process.cwd();
   log(`${cliName} create ${type}...`, 'info', quiet);
 
@@ -33,7 +33,13 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
     }
     case 'store': {
       try {
-        const {nameCaps, templateExt, templatePath} = getFilenames({});
+        const {nameCaps, templateExt, templatePath} = getFilenames({
+          cliName,
+          name: outputName,
+          quiet,
+          type,
+          useTypescript
+        });
         const storePath: string = `${cwd}/${nameCaps}Store`;
 
         if(!fs.existsSync(storePath)) {
@@ -86,7 +92,13 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       break;
     }
     case 'view': {
-      const {nameCaps, templatePath, templateReact} = getFilenames({});
+      const {nameCaps, templatePath, templateReact} = getFilenames({
+        cliName,
+        name: outputName,
+        quiet,
+        type,
+        useTypescript
+      });
       const viewPath: string = `${cwd}/${nameCaps}View`;
 
       try {

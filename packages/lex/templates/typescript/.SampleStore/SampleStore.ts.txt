@@ -1,4 +1,4 @@
-import {Store} from 'arkhamjs';
+import {Store} from '@nlabs/arkhamjs';
 
 export class SampleStore extends Store {
   constructor() {
@@ -12,8 +12,9 @@ export class SampleStore extends Store {
 
   onAction(type: string, data, state): object {
     switch(type) {
-      default:
+      default: {
         return state;
+      }
     }
   }
 }

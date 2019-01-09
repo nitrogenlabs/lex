@@ -1,13 +1,7 @@
-import './sampleView.css';
-
-import {Flux} from 'arkhamjs';
+import {Flux} from '@nlabs/arkhamjs';
 import * as React from 'react';
 
-export interface SampleViewState {
-  readonly content: string;
-}
-
-export class SampleView extends React.Component<{}, SampleViewState> {
+export class SampleView extends React.Component<{}, {}> {
   constructor(props) {
     super(props);
 

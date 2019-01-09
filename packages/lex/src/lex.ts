@@ -77,7 +77,9 @@ program.command('compile')
 
 program.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .option('--outputFile <path>', 'Output filename')
+  .option('-t, --typescript', 'Create Typescript version.')
+  .option('--outputFile <path>', 'Output filename.')
+  .option('--outputName <name>', 'Output name.')
   .action((type, cmd) => create(type, cmd, process.exit));
 
 program.command('dev')
