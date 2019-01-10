@@ -78,12 +78,12 @@
     "babel-plugin-styled-components": "^1.10.0",
     "babel-preset-jest": "^23.2.0",
     "boxen": "^2.1.0",
-    "caniuse-lite": "^1.0.30000927",
+    "caniuse-lite": "^1.0.30000928",
     "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "compare-versions": "^3.4.0",
     "copy-webpack-plugin": "^4.5.4",
-    "core-js": "^2.6.1",
+    "core-js": "^2.6.2",
     "css-loader": "^2.1.0",
     "cssnano": "4.1.8",
     "download-npm-package": "^3.1.12",
@@ -145,7 +145,7 @@
     "@types/webpack": "^4.4.22",
     "eslint": "^5.12.0",
     "eslint-config-styleguidejs": "^0.7.14",
-    "lerna": "^3.10.1",
+    "lerna": "^3.10.2",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.2"
   }
