@@ -273,7 +273,7 @@ export const checkLinkedModules = () => {
 };
 
 // Get file paths relative to Lex
-export const relativeFilePath = (filename: string, nodePath: string, backUp: number = 0) => {
+export const relativeFilePath = (filename: string, nodePath: string = './', backUp: number = 0) => {
   const nestDepth: number = 10;
 
   if(backUp) {
