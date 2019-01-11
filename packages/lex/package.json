@@ -102,7 +102,7 @@
     "json-d-ts": "^1.0.1",
     "latest-version": "^4.0.0",
     "lodash": "^4.17.11",
-    "luxon": "^1.9.0",
+    "luxon": "^1.10.0",
     "ora": "^3.0.0",
     "postcss-browser-reporter": "^0.5.0",
     "postcss-cli": "^6.1.1",
@@ -124,13 +124,13 @@
     "rimraf": "^2.6.3",
     "semver": "^5.6.0",
     "source-map-loader": "^0.2.4",
-    "source-map-support": "^0.5.9",
+    "source-map-support": "^0.5.10",
     "static-site-generator-webpack-plugin": "^3.4.2",
     "style-loader": "^0.23.1",
     "svg-spritemap-webpack-plugin": "^3.2.0",
     "tsconfig-paths": "^3.7.0",
     "typescript": "3.2.2",
-    "webpack": "4.28.1",
+    "webpack": "4.28.4",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
@@ -145,7 +145,7 @@
     "@types/webpack": "^4.4.22",
     "eslint": "^5.12.0",
     "eslint-config-styleguidejs": "^0.7.14",
-    "lerna": "^3.10.2",
+    "lerna": "^3.10.5",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.2"
   }

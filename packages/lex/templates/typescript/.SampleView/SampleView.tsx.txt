@@ -1,7 +1,7 @@
 import {Flux} from '@nlabs/arkhamjs';
 import * as React from 'react';
 
-export class SampleView extends React.Component<{}, {}> {
+export class SampleView extends React.Component<any, any> {
   constructor(props) {
     super(props);
 

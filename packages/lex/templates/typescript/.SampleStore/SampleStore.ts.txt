@@ -5,12 +5,12 @@ export class SampleStore extends Store {
     super('sample');
   }
 
-  initialState(): object {
+  initialState(): any {
     return {
     };
   }
 
-  onAction(type: string, data, state): object {
+  onAction(type: string, data, state): any {
     switch(type) {
       default: {
         return state;

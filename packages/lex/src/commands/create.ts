@@ -12,7 +12,7 @@ import {copyFolderRecursiveSync, getFilenames, log, removeFiles, updateTemplateN
 export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;
   const cwd: string = process.cwd();
-  log(`${cliName} create ${type}...`, 'info', quiet);
+  log(`${cliName} creating ${type}...`, 'info', quiet);
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -54,14 +54,14 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
           fs.renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
 
           // Search and replace store name
-          updateTemplateName(storeTestPath, name, nameCaps);
+          updateTemplateName(storeTestPath, outputName, nameCaps);
 
           // Rename source file
           const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
           fs.renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
 
           // Search and replace store name
-          updateTemplateName(storeFilePath, name, nameCaps);
+          updateTemplateName(storeFilePath, outputName, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
           callback(1);
@@ -110,25 +110,25 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
           fs.renameSync(`${cwd}/.SampleView`, viewPath);
 
           // Rename CSS
-          const viewStylePath: string = `${viewPath}/${name}View.css`;
+          const viewStylePath: string = `${viewPath}/${outputName}View.css`;
           fs.renameSync(`${viewPath}/sampleView.css`, viewStylePath);
 
           // Search and replace view name
-          updateTemplateName(viewStylePath, name, nameCaps);
+          updateTemplateName(viewStylePath, outputName, nameCaps);
 
           // Rename test
           const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
           fs.renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
 
           // Search and replace view name
-          updateTemplateName(viewTestPath, name, nameCaps);
+          updateTemplateName(viewTestPath, outputName, nameCaps);
 
           // Rename source file
           const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
           fs.renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
 
           // Search and replace view name
-          updateTemplateName(viewFilePath, name, nameCaps);
+          updateTemplateName(viewFilePath, outputName, nameCaps);
         } else {
           log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
           callback(1);

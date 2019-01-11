@@ -59,7 +59,7 @@ export const getFilenames = (props: any) => {
   }
 
   // Display message
-  log(`${cliName} adding ${type}...`, 'info', quiet);
+  log(`${cliName} adding ${name} ${type}...`, 'info', quiet);
 
   // Template directory
   let templatePath: string;
