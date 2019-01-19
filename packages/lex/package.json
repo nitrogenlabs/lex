@@ -78,7 +78,7 @@
     "babel-plugin-styled-components": "^1.10.0",
     "babel-preset-jest": "^23.2.0",
     "boxen": "^2.1.0",
-    "caniuse-lite": "^1.0.30000928",
+    "caniuse-lite": "^1.0.30000929",
     "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "compare-versions": "^3.4.0",
@@ -129,7 +129,7 @@
     "style-loader": "^0.23.1",
     "svg-spritemap-webpack-plugin": "^3.2.0",
     "tsconfig-paths": "^3.7.0",
-    "typescript": "3.2.2",
+    "typescript": "3.2.4",
     "webpack": "4.28.4",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^3.2.1",
@@ -137,16 +137,16 @@
   },
   "devDependencies": {
     "@nlabs/execa-mock": "^1.0.0",
-    "@types/jest": "^23.3.12",
-    "@types/luxon": "^1.4.1",
+    "@types/jest": "^23.3.13",
+    "@types/luxon": "^1.4.2",
     "@types/node": "^10.12.18",
     "@types/ora": "^3.0.0",
-    "@types/react": "^16.7.18",
-    "@types/webpack": "^4.4.22",
-    "eslint": "^5.12.0",
+    "@types/react": "^16.7.20",
+    "@types/webpack": "^4.4.23",
+    "eslint": "^5.12.1",
     "eslint-config-styleguidejs": "^0.7.14",
-    "lerna": "^3.10.5",
+    "lerna": "^3.10.6",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.4"
   }
 }

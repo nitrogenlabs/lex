@@ -9,7 +9,7 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {cliName = 'Lex', config, open, quiet, remove, variables} = cmd;
+  const {cliName = 'Lex', config, open, quiet, remove, variables, watch} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -64,11 +64,15 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     webpackOptions.push('--open');
   }
 
+  if(watch) {
+    webpackOptions.push('--watch');
+  }
+
   // Start development spinner
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
     const webpackDevPath: string = relativeFilePath('webpack-dev-server/bin/webpack-dev-server.js', nodePath);
-    const webpack = await execa(webpackDevPath, webpackOptions, {
+    const webpack: any = await execa(webpackDevPath, webpackOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });

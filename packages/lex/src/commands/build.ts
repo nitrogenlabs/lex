@@ -24,7 +24,8 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
     outputSourceMapFilename,
     quiet = false,
     remove,
-    variables
+    variables,
+    watch
   } = cmd;
 
   // Spinner
@@ -122,11 +123,15 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
     webpackOptions.push('--build-delimiter', buildDelimiter);
   }
 
+  if(watch) {
+    webpackOptions.push('--watch');
+  }
+
   // Compile using webpack
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
     const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
-    const webpack = await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
+    const webpack: any = await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
 
     // Stop spinner
     if(!webpack.status) {

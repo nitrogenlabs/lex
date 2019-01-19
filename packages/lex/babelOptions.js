@@ -32,6 +32,9 @@ if(commandName === 'test') {
 }
 
 const plugins = [
+  // Transform
+  [`${pluginPath}/plugin-transform-runtime`, {helpers: false, regenerator: true}],
+
   // Styled Components
   [`${pluginPath}/../babel-plugin-styled-components`],
 

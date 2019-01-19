@@ -6,6 +6,7 @@ const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
+const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
@@ -33,21 +34,32 @@ const {
   outputHash,
   libraryName,
   libraryTarget,
+  targetEnvironment,
   webpack: webpackCustom
 } = lexConfig;
 
 // Only add plugins if they are needed
 const plugins = [
-  new DefinePlugin(processVariables),
-  new SVGSpritemapPlugin(`${sourceFullPath}/**/*.svg`, {
+  new DefinePlugin(processVariables)
+];
+
+// Add svg files
+const globOptions = {
+  cwd: sourceFullPath,
+  dot: false,
+  nodir: true,
+  nosort: true
+};
+if(glob.sync('./**/*.svg', globOptions).length) {
+  plugins.push(new SVGSpritemapPlugin(`${sourceFullPath}/**/*.svg`, {
     output: {
       filename: './icons/icons.svg'
     },
     sprite: {
       prefix: false
     }
-  })
-];
+  }));
+}
 
 // If there is are static directories, make sure we copy the files over
 const staticPaths = [];
@@ -114,6 +126,7 @@ const cssLoaderPath = relativeFilePath('node_modules/css-loader', __dirname);
 const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirname);
 const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
 const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
+const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
 const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
@@ -122,10 +135,9 @@ const webpackConfig = {
   bail: true,
   cache: !isProduction,
   entry: {
-    index: `${sourceFullPath}/${lexConfig.entryJS}`,
-    polyfill: relativeFilePath('node_modules/@babel/polyfill', __dirname)
+    index: `${sourceFullPath}/${lexConfig.entryJS}`
   },
-  mode: environment,
+  mode: 'development',
   module: {
     rules: [
       {
@@ -191,6 +203,10 @@ const webpackConfig = {
         ]
       },
       {
+        loader: jsonLoaderPath,
+        test: /\.json$/
+      },
+      {
         loader: fileLoaderPath,
         test: /\.(png|svg|jpg|gif)$/
       }
@@ -217,8 +233,9 @@ const webpackConfig = {
   },
   plugins,
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx']
-  }
+    extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
+  },
+  target: targetEnvironment
 };
 
 // Add development plugins
