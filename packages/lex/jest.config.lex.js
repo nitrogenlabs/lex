@@ -23,7 +23,7 @@ if(useTypescript) {
 module.exports = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
-  coveragePathIgnorePatterns: ['/node_modules/', '__snapshots__', '.d.ts'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/dist', '/lib', '__snapshots__', '.d.ts'],
   coverageReporters: ['html', 'text'],
   moduleDirectories: ['node_modules'],
   moduleFileExtensions,

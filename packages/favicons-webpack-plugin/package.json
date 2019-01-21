@@ -69,14 +69,14 @@
     "dir-compare": "^1.6.0",
     "es6-promisify": "^6.0.1",
     "eslint": "^5.12.1",
-    "eslint-config-styleguidejs": "^0.7.14",
+    "eslint-config-styleguidejs": "^1.0.1",
     "express": "^4.16.4",
     "html-webpack-plugin": "^3.2.0",
     "memory-fs": "^0.4.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.3",
     "typescript": "^3.2.4",
-    "webpack": "^4.28.4",
+    "webpack": "^4.29.0",
     "webpack-dev-middleware": "^3.5.1"
   },
   "peerDependencies": {

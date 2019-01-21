@@ -52,11 +52,11 @@
     "compression-webpack-plugin": "^2.0.0",
     "ejs": "^2.3.4",
     "eslint": "^5.12.1",
-    "eslint-config-styleguidejs": "^0.7.14",
+    "eslint-config-styleguidejs": "^1.0.1",
     "glob": "^7.0.3",
     "rimraf": "^2.6.3",
     "typescript": "^3.2.4",
-    "webpack": "^4.28.4",
+    "webpack": "^4.29.0",
     "webpack-stats-plugin": "^0.2.1"
   },
   "peerDependencies": {

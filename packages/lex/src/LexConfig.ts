@@ -23,6 +23,7 @@ export interface LexConfigType {
   outputHash?: boolean;
   outputPath?: string;
   packageManager?: 'npm' | 'yarn';
+  preset?: 'web' | 'node' | 'lambda';
   sourceFullPath?: string;
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
@@ -41,9 +42,10 @@ export class LexConfig {
     outputHash: false,
     outputPath: './dist',
     packageManager: 'yarn',
+    preset: 'web',
     sourceFullPath: path.resolve(cwd, './src'),
     sourcePath: './src',
-    targetEnvironment: 'node',
+    targetEnvironment: 'web',
     useTypescript: false,
     webpack: {}
   };

@@ -34,6 +34,7 @@ const {
   outputHash,
   libraryName,
   libraryTarget,
+  preset,
   targetEnvironment,
   webpack: webpackCustom
 } = lexConfig;
@@ -130,14 +131,24 @@ const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
 const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
+// Make sure we add polyfill for web apps
+let entry;
+
+if(preset === 'web' || targetEnvironment === 'web') {
+  entry = {
+    babelPolyfill: relativeFilePath('node_modules/@babel/polyfill', __dirname),
+    index: `${sourceFullPath}/${lexConfig.entryJS}`
+  };
+} else {
+  entry = `${sourceFullPath}/${lexConfig.entryJS}`;
+}
+
 // Webpack config
 const webpackConfig = {
   bail: true,
-  cache: !isProduction,
-  entry: {
-    index: `${sourceFullPath}/${lexConfig.entryJS}`
-  },
-  mode: 'development',
+  cache: false, // !isProduction,
+  entry,
+  mode: environment,
   module: {
     rules: [
       {
@@ -235,7 +246,7 @@ const webpackConfig = {
   resolve: {
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
   },
-  target: targetEnvironment
+  target: preset || targetEnvironment
 };
 
 // Add development plugins

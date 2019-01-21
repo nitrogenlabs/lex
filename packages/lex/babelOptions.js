@@ -7,7 +7,7 @@ const path = require('path');
 const {relativeFilePath} = require('./dist/utils');
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
-const {babel, commandName, targetEnvironment, useTypescript} = lexConfig;
+const {babel, commandName, preset, targetEnvironment, useTypescript} = lexConfig;
 
 // Babel Plugin/preset paths
 const {plugins: babelPlugins = [], presets: babelPresets = []} = babel || {};
@@ -20,17 +20,7 @@ const babelNodeEnv = [presetEnvPath];
 const babelTestEnv = [presetEnvPath];
 const babelWebEnv = [presetEnvPath, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
 
-// Set correct build environment
-let presetEnv;
-
-if(commandName === 'test') {
-  presetEnv = babelTestEnv;
-} else if(targetEnvironment === 'web') {
-  presetEnv = babelWebEnv;
-} else {
-  presetEnv = babelNodeEnv;
-}
-
+// Plugins
 const plugins = [
   // Transform
   [`${pluginPath}/plugin-transform-runtime`, {helpers: false, regenerator: true}],
@@ -65,6 +55,18 @@ const plugins = [
   // User provided plugins
   ...babelPlugins
 ];
+
+// Set correct build environment
+let presetEnv;
+
+if(commandName === 'test') {
+  presetEnv = babelTestEnv;
+} else if(preset === 'web' || targetEnvironment === 'web') {
+  presetEnv = babelWebEnv;
+} else {
+  plugins.push([`${pluginPath}/plugin-transform-runtime`, {helpers: false, regenerator: true}]);
+  presetEnv = babelNodeEnv;
+}
 
 const presets = [
   presetEnv,
