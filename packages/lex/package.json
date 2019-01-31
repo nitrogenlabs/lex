@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.20.8",
+  "version": "1.20.9",
   "description": "Lex",
   "license": "MIT",
   "bin": {
