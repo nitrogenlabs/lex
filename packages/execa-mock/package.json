@@ -46,11 +46,11 @@
     "uv": "^1.0.7"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.13",
-    "@types/node": "^10.12.20",
-    "eslint": "^5.12.1",
+    "@types/jest": "^24.0.0",
+    "@types/node": "^10.12.23",
+    "eslint": "^5.13.0",
     "eslint-config-styleguidejs": "^1.0.2",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.2.4"
+    "typescript": "^3.3.3"
   }
 }

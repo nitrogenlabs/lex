@@ -4,7 +4,7 @@
   "scripts": {
     "build": "lerna run build",
     "lint": "lerna run lint",
-    "clean": "yarn clean:root && lerna run clean",
+    "clean": "lerna run clean && yarn clean:root",
     "clean:root": "rm -rf *.log node_modules *.lock package-lock.json",
     "test": "jest --clearCache && jest",
     "update": "yarn upgrade-interactive --latest"

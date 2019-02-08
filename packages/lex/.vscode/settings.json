@@ -59,6 +59,8 @@
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "javascript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.quoteStyle": "single",
   "javascript.updateImportsOnFileMove.enabled": "never",
   "html.autoClosingTags": false,
   "html.format.enable": false,
@@ -69,10 +71,12 @@
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.quoteStyle": "single",
   "typescript.updateImportsOnFileMove.enabled": "never",
   "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": false,
   "typescriptHero.imports.multiLineTrailingComma": false,
   "typescriptHero.imports.multiLineWrapThreshold": 120,
   "typescriptHero.imports.organizeOnSave": true,
-  "window.zoomLevel": 0,
+  "window.zoomLevel": 0
 }
