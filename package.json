@@ -4,10 +4,10 @@
   "scripts": {
     "build": "lerna run build",
     "lint": "lerna run lint",
-    "clean": "lerna run clean && yarn clean:root",
+    "clean": "lerna run clean && npm run clean:root",
     "clean:root": "rm -rf *.log node_modules *.lock package-lock.json",
     "test": "jest --clearCache && jest",
-    "update": "yarn upgrade-interactive --latest"
+    "update": "npx upgrade-interactive --latest"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",

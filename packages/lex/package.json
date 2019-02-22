@@ -26,16 +26,16 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
-    "clean": "rm -rf dist node_modules yarn.lock package-lock.json *.log coverage",
+    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
+    "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "yarn build",
-    "reset": "rm -rf node_modules yarn.lock",
-    "test": "yarn lint && NODE_ENV=test && yarn env && jest",
-    "update": "yarn upgrade-interactive --latest",
-    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
+    "prepublishOnly": "npm run build",
+    "reset": "rm -rf node_modules packages-lock.json",
+    "test": "npm run lint && NODE_ENV=test && npm run env && jest",
+    "update": "npm run upgrade-interactive --latest",
+    "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },
   "resolutions": {
     "babel-core": "^7.0.0-bridge.0",
@@ -77,15 +77,15 @@
     "babel-plugin-istanbul": "^5.1.0",
     "babel-plugin-styled-components": "^1.10.0",
     "babel-preset-jest": "^24.1.0",
-    "boxen": "^2.1.0",
+    "boxen": "^3.0.0",
     "caniuse-lite": "^1.0.30000935",
     "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "compare-versions": "^3.4.0",
-    "copy-webpack-plugin": "^4.5.4",
+    "copy-webpack-plugin": "^5.0.0",
     "core-js": "^2.6.4",
     "css-loader": "^2.1.0",
-    "cssnano": "4.1.8",
+    "cssnano": "^4.1.10",
     "download-npm-package": "^3.1.12",
     "execa": "^1.0.0",
     "exports-loader": "^0.7.0",
@@ -103,6 +103,7 @@
     "latest-version": "^4.0.0",
     "lodash": "^4.17.11",
     "luxon": "^1.11.1",
+    "npm-check": "^5.9.0",
     "ora": "^3.0.0",
     "postcss-browser-reporter": "^0.5.0",
     "postcss-cli": "^6.1.1",
@@ -130,7 +131,7 @@
     "svg-spritemap-webpack-plugin": "^3.2.1",
     "tsconfig-paths": "^3.8.0",
     "typescript": "3.3.3",
-    "webpack": "4.29.3",
+    "webpack": "^4.29.5",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.1.14"
@@ -139,7 +140,7 @@
     "@nlabs/execa-mock": "^1.20.10",
     "@types/jest": "^24.0.0",
     "@types/luxon": "^1.10.3",
-    "@types/node": "^10.12.23",
+    "@types/node": "^11.9.4",
     "@types/ora": "^3.0.0",
     "@types/react": "^16.8.2",
     "@types/webpack": "^4.4.24",
@@ -147,7 +148,7 @@
     "eslint-config-styleguidejs": "^1.0.2",
     "jest-cli": "^24.1.0",
     "lerna": "^3.11.0",
-    "ts-jest": "^23.10.5",
+    "ts-jest": "^24.0.0",
     "typescript": "^3.3.3"
   }
 }

@@ -17,14 +17,10 @@ See Lex [documentation site](http://lex.nitrogenlabs.com) for full details.
 
 ## Installation
 
-Lex is installed globally using either npm or yarn.
+Lex is installed globally using npm.
 
 ```shell
-// Using npm
 $ npm install -g @nlabs/lex
-
-// Using yarn
-yarn global add @nlabs/lex
 ```
 
 lex compile -c ./webpack.config.js
@@ -33,7 +29,7 @@ lex compile -c ./webpack.config.js
 
 ```shell
 // Install a skeleton app with the ArkhamJS framework
-$ npm install -g yarn @nlabs/lex
+$ npm install -g @nlabs/lex
 $ lex init myApp -i
 $ cd myApp
 

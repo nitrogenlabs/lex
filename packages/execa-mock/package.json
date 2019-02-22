@@ -25,16 +25,16 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
-    "clean": "rm -rf dist node_modules yarn.lock package-lock.json *.log coverage",
+    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
+    "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "yarn build",
-    "reset": "rm -rf node_modules yarn.lock",
-    "test": "yarn lint && NODE_ENV=test && yarn env && jest",
-    "update": "yarn upgrade-interactive --latest",
-    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
+    "prepublishOnly": "npm run build",
+    "reset": "rm -rf node_modules packages-lock.json",
+    "test": "npm run lint && NODE_ENV=test && npm run env && jest",
+    "update": "npx upgrade-interactive --latest",
+    "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },
   "dependencies": {
     "cross-spawn": "^6.0.5",

@@ -21,17 +21,17 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
 
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;
-
-  const upgradeOptions: string[] = packageManager === 'npm' ?
-    ['update'] :
-    [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
+  const updateApp: string = packageManager === 'npm' ? 'npx' : 'yarn';
+  const updateOptions: string[] = packageManager === 'npm'
+    ? ['npm-check', '--update']
+    : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
   if(registry) {
-    upgradeOptions.push('--registry', registry);
+    updateOptions.push('--registry', registry);
   }
 
   try {
-    const pm = await execa(packageManager, upgradeOptions, {
+    const pm = await execa(updateApp, updateOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });

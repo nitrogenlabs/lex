@@ -101,7 +101,7 @@ program.command('dev')
 
 program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit));
@@ -119,7 +119,7 @@ program.command('publish')
   .option('-o, --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-p, --private', 'Publishes the module as restricted.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-t, --tag <tag>', 'Registers the published package with the given tag.')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action((cmd) => publish(cmd, process.exit));
@@ -170,13 +170,13 @@ program.command('test')
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--registry', 'Add a custom registry url.')
   .action((cmd) => update(cmd, process.exit));
 
 program.command('upgrade')
-  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: yarn', /^(npm|yarn)$/i, 'yarn')
+  .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => upgrade(cmd, process.exit));
 

@@ -37,29 +37,23 @@ export const upgrade = (cmd: any, callback: any = process.exit): Promise<number>
 
       log(`\nCurrently out of date. Upgrading from version ${current} to ${latest}...`, 'note', quiet);
 
-      // We will always install @nlabs/lex globally using npm. There is an issue with installing with yarn globally.
-      // const {packageManager} = LexConfig.config;
-      const packageManager: string = 'npm';
+      const upgradeOptions: string[] = ['install', '-g', `${cliPackage}@latest`];
 
-      const upgradeOptions: string[] = packageManager === 'npm' ?
-        ['install', '-g', `${cliPackage}@latest`] :
-        ['global', 'add', `${cliPackage}@latest`];
-
-      const yarn = await execa(packageManager, upgradeOptions, {
+      const upgrade = await execa('npm', upgradeOptions, {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
 
       // Stop loader
-      if(!yarn.status) {
+      if(!upgrade.status) {
         spinner.succeed(`Successfully updated ${cliName}!`);
       } else {
         spinner.fail('Failed to updated packages.');
       }
 
       // Stop process
-      callback(yarn.status);
-      return yarn.status;
+      callback(upgrade.status);
+      return upgrade.status;
     })
     .catch((error) => {
       // Display error message

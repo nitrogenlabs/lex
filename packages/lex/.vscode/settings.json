@@ -28,7 +28,7 @@
   "eslint.autoFixOnSave": true,
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
-  "eslint.packageManager": "yarn",
+  "eslint.packageManager": "npm",
   "eslint.validate": [
     {
       "language": "javascript",

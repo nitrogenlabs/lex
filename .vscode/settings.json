@@ -26,7 +26,7 @@
     "postcss": "css"
   },
   "eslint.autoFixOnSave": true,
-  "eslint.packageManager": "yarn",
+  "eslint.packageManager": "npm",
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
   "eslint.validate": [

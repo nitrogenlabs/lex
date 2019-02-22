@@ -41,7 +41,7 @@ export class LexConfig {
     outputFullPath: path.resolve(cwd, './dist'),
     outputHash: false,
     outputPath: './dist',
-    packageManager: 'yarn',
+    packageManager: 'npm',
     preset: 'web',
     sourceFullPath: path.resolve(cwd, './src'),
     sourcePath: './src',

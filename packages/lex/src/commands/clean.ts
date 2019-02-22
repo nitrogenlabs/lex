@@ -27,10 +27,6 @@ export const clean = async (cmd: any, callback: any = () => ({})): Promise<numbe
     // Remove test coverage reports
     await removeFiles('./coverage', true);
 
-    // Remove yarn logs
-    await removeFiles('./yarn-error.log', true);
-    await removeFiles('./yarn-debug.log', true);
-
     // Remove npm logs
     await removeFiles('./npm-debug.log', true);
 

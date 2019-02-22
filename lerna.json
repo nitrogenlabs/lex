@@ -6,7 +6,7 @@
     "packages/lex",
     "packages/static-site-webpack-plugin"
   ],
-  "npmClient": "yarn",
+  "npmClient": "npm",
   "useWorkspaces": true,
   "version": "1.20.10"
 }
