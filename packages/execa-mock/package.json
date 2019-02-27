@@ -52,5 +52,6 @@
     "eslint-config-styleguidejs": "^1.0.2",
     "ts-jest": "^23.10.5",
     "typescript": "^3.3.3"
-  }
+  },
+  "gitHead": "096e4da64409d7fd561703af9982212c2adad5c3"
 }
