@@ -15,7 +15,7 @@
     "prepublishOnly": "npm run build",
     "reset": "rm -rf node_modules packages-lock.json",
     "test": "npm run lint && NODE_ENV=test && jest",
-    "update": "npx upgrade-interactive --latest",
+    "update": "npm-check --update",
     "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },
   "repository": {

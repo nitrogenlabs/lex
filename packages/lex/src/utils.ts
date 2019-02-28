@@ -268,7 +268,7 @@ export const checkLinkedModules = () => {
         `${msg}\n * ${linkedModule.name}`,
       `Linked ${msgModule}:`
     );
-    log(boxen(linkedMsg, {borderStyle: 'round', dimBorder: true, padding: 1}), 'warn');
+    log(boxen(linkedMsg, {dimBorder: true, padding: 1}), 'warn');
   }
 };
 
