@@ -39,7 +39,8 @@
   },
   "resolutions": {
     "babel-core": "^7.0.0-bridge.0",
-    "webpack": "^4.0.0"
+    "webpack": "^4.0.0",
+    "webpack/acorn": "6.0.5"
   },
   "dependencies": {
     "@babel/cli": "^7.2.3",
