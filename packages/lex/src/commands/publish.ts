@@ -2,7 +2,6 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import chalk from 'chalk';
 import execa from 'execa';
 import semver from 'semver';
 
@@ -49,7 +48,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
     prevVersion = packageJson.version;
   } catch(error) {
     log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
-    console.error(chalk.red(error.message));
+    log(error.message, 'error');
     callback(1);
     return 1;
   }
