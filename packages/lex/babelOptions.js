@@ -32,7 +32,6 @@ const plugins = [
   `${pluginPath}/plugin-proposal-function-bind`,
 
   // Stage 1
-  `${pluginPath}/plugin-proposal-export-default-from`,
   `${pluginPath}/plugin-proposal-logical-assignment-operators`,
   [`${pluginPath}/plugin-proposal-optional-chaining`, {loose: false}],
   [`${pluginPath}/plugin-proposal-pipeline-operator`, {proposal: 'minimal'}],
@@ -42,15 +41,21 @@ const plugins = [
   // Stage 2
   [`${pluginPath}/plugin-proposal-decorators`, {legacy: true}],
   `${pluginPath}/plugin-proposal-function-sent`,
-  `${pluginPath}/plugin-proposal-export-namespace-from`,
   `${pluginPath}/plugin-proposal-numeric-separator`,
   `${pluginPath}/plugin-proposal-throw-expressions`,
 
   // Stage 3
-  `${pluginPath}/plugin-syntax-dynamic-import`,
-  `${pluginPath}/plugin-syntax-import-meta`,
   [`${pluginPath}/plugin-proposal-class-properties`, {loose: false}],
   `${pluginPath}/plugin-proposal-json-strings`,
+
+  // Import/Exports
+  `${pluginPath}/plugin-syntax-dynamic-import`,
+  `${pluginPath}/plugin-syntax-import-meta`,
+  `${pluginPath}/plugin-proposal-export-default-from`,
+  `${pluginPath}/plugin-proposal-export-namespace-from`,
+
+  // CommonJS
+  `${pluginPath}/plugin-transform-modules-commonjs`,
 
   // User provided plugins
   ...babelPlugins

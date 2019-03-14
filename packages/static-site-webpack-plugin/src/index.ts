@@ -155,7 +155,7 @@ export class StaticSitePlugin {
   }
 
   static pathToAssetName(outputPath: string): string {
-    let outputFileName: string = outputPath.replace(/^(\/|\\)/, ''); // Remove leading slashes for webpack-dev-server
+    let outputFileName: string = outputPath.replace(/^(\/|\\)/, ''); // Remove leading slashes for dev server
 
     if(!/\.(html?)$/i.test(outputFileName)) {
       outputFileName = path.join(outputFileName, 'index.html');

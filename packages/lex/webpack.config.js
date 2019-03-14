@@ -12,6 +12,7 @@ const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const {WebpackPluginServe} = require('webpack-plugin-serve');
 
 const {relativeFilePath} = require('./dist/utils');
 
@@ -51,6 +52,7 @@ const globOptions = {
   nodir: true,
   nosort: true
 };
+
 if(glob.sync('./**/*.svg', globOptions).length) {
   plugins.push(new SVGSpritemapPlugin(`${sourceFullPath}/**/*.svg`, {
     output: {
@@ -146,7 +148,7 @@ if(preset === 'web' || targetEnvironment === 'web') {
 // Webpack config
 const webpackConfig = {
   bail: true,
-  cache: false, // !isProduction,
+  cache: !isProduction,
   entry,
   mode: environment,
   module: {
@@ -255,16 +257,20 @@ if(!isProduction) {
     'react-hot-loader': reactHotLoaderPath,
     webpack: webpackPath
   };
+  webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
   webpackConfig.plugins.push(
-    new HotModuleReplacementPlugin(),
-    new BundleAnalyzerPlugin({openAnalyzer: false}),
+    new WebpackPluginServe({
+      historyFallback: true,
+      hmr: true,
+      port: 9000,
+      progress: true,
+      static: [outputFullPath],
+      waitForBuild: true
+    }),
+    // new HotModuleReplacementPlugin(),
+    // new BundleAnalyzerPlugin({openAnalyzer: false}),
   );
-  webpackConfig.devServer = {
-    historyApiFallback: true,
-    hotOnly: true,
-    noInfo: false,
-    port: 9000
-  };
+  webpackConfig.watch = true;
   webpackConfig.devtool = 'inline-source-map';
 } else if(isStatic) {
   webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());

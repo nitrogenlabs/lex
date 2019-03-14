@@ -71,8 +71,8 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   // Start development spinner
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
-    const webpackDevPath: string = relativeFilePath('webpack-dev-server/bin/webpack-dev-server.js', nodePath);
-    const webpack: any = await execa(webpackDevPath, webpackOptions, {
+    const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
+    const webpack: any = await execa(webpackPath, webpackOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });

@@ -45,6 +45,6 @@ module.exports = {
   testURL: 'http://localhost',
   transform,
   transformIgnorePatterns,
-  verbose: true,
+  verbose: false,
   ...jest
 };
