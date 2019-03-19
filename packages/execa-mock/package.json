@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/execa-mock",
-  "version": "1.22.0",
+  "version": "1.22.2",
   "description": "Execa jest mock",
   "license": "MIT",
   "bin": {
@@ -53,5 +53,5 @@
     "ts-jest": "^23.10.5",
     "typescript": "^3.3.3"
   },
-  "gitHead": "096e4da64409d7fd561703af9982212c2adad5c3"
+  "gitHead": "a2c4070b7523f8968fa440315b27702b3ef31b3c"
 }

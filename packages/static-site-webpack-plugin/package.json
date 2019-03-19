@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/static-site-webpack-plugin",
-  "version": "1.22.0",
+  "version": "1.22.2",
   "description": "Minimal, static site generator powered by webpack",
   "main": "./lib/index.js",
   "scripts": {
@@ -65,5 +65,5 @@
   "resolutions": {
     "webpack": "^4.0.0"
   },
-  "gitHead": "fd2d203d9345baad810ef261a27bb0a96009868d"
+  "gitHead": "a2c4070b7523f8968fa440315b27702b3ef31b3c"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.22.1",
+  "version": "1.22.2",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -81,7 +81,7 @@
     "babel-plugin-styled-components": "^1.10.0",
     "babel-preset-jest": "^24.3.0",
     "boxen": "^3.0.0",
-    "caniuse-lite": "^1.0.30000947",
+    "caniuse-lite": "^1.0.30000950",
     "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "compare-versions": "^3.4.0",
@@ -135,22 +135,22 @@
     "tsconfig-paths": "^3.8.0",
     "webpack": "4.28.4",
     "webpack-bundle-analyzer": "^3.1.0",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.0",
     "webpack-plugin-serve": "^0.7.3"
   },
   "devDependencies": {
-    "@nlabs/execa-mock": "^1.22.0",
+    "@nlabs/execa-mock": "^1.22.2",
     "@types/jest": "^24.0.11",
     "@types/luxon": "^1.10.3",
     "@types/node": "^11.11.3",
     "@types/ora": "^3.2.0",
     "@types/react": "^16.8.8",
-    "@types/webpack": "^4.4.25",
-    "eslint": "^5.15.1",
+    "@types/webpack": "^4.4.26",
+    "eslint": "^5.15.3",
     "eslint-config-styleguidejs": "^1.0.8",
     "lerna": "^3.13.1",
     "ts-jest": "^24.0.0",
     "typescript": "^3.3.3333"
   },
-  "gitHead": "096e4da64409d7fd561703af9982212c2adad5c3"
+  "gitHead": "a2c4070b7523f8968fa440315b27702b3ef31b3c"
 }
