@@ -16,13 +16,15 @@ const {WebpackPluginServe} = require('webpack-plugin-serve');
 
 const {relativeFilePath} = require('./dist/utils');
 
-const {DefinePlugin, HotModuleReplacementPlugin} = webpack;
+const {DefinePlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const envVariables = lexConfig.env || {NODE_ENV: environment};
-const processVariables = Object.keys(envVariables).reduce((list, varName) => {
-  list[`process.env.${varName}`] = JSON.stringify(envVariables[varName]);
+const {env: localEnvironment} = process;
+const allEnvVariables = {...envVariables, ...localEnvironment};
+const processVariables = Object.keys(allEnvVariables).reduce((list, varName) => {
+  list[`process.env.${varName}`] = JSON.stringify(allEnvVariables[varName]);
   return list;
 }, {});
 
@@ -130,7 +132,6 @@ const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirn
 const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
 const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
 const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
-const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
 // Make sure we add polyfill for web apps
@@ -253,12 +254,17 @@ const webpackConfig = {
 
 // Add development plugins
 if(!isProduction) {
+  const hotReactDom = relativeFilePath('node_modules/@hot-loader/react-dom', __dirname);
+  const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
+
   webpackConfig.resolve.alias = {
+    'react-dom': hotReactDom,
     'react-hot-loader': reactHotLoaderPath,
     webpack: webpackPath
   };
   webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
   webpackConfig.plugins.push(
+    new BundleAnalyzerPlugin({openAnalyzer: false}),
     new WebpackPluginServe({
       historyFallback: true,
       hmr: true,
@@ -267,8 +273,6 @@ if(!isProduction) {
       static: [outputFullPath],
       waitForBuild: true
     }),
-    // new HotModuleReplacementPlugin(),
-    // new BundleAnalyzerPlugin({openAnalyzer: false}),
   );
   webpackConfig.watch = true;
   webpackConfig.devtool = 'inline-source-map';
