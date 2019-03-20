@@ -1,4 +1,4 @@
-# lex
+# @nlabs/lex
 
 Lex is a console line execution module. Works out of the box for any React project, taking care of all your development needs. No need to install unit testing, transpilers, compilers, or even development servers. Install Lex globally and let go of all the grunt work, allowing you focus on coding your app.
 
