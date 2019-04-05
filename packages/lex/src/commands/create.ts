@@ -79,7 +79,7 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       await removeFiles('tsconfig.json', true);
 
       // Get tsconfig template
-      const templatePath: string = path.resolve(__dirname, '../../tsconfig.json');
+      const templatePath: string = path.resolve(__dirname, '../../tsconfig.template.json');
       let data: string = fs.readFileSync(templatePath, 'utf8');
 
       // Update Lex tsconfig template with source and output directories

@@ -39,21 +39,17 @@ export const upgrade = (cmd: any, callback: any = process.exit): Promise<number>
 
       const upgradeOptions: string[] = ['install', '-g', `${cliPackage}@latest`];
 
-      const upgrade = await execa('npm', upgradeOptions, {
+      await execa('npm', upgradeOptions, {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
 
       // Stop loader
-      if(!upgrade.status) {
-        spinner.succeed(`Successfully updated ${cliName}!`);
-      } else {
-        spinner.fail('Failed to updated packages.');
-      }
+      spinner.succeed(`Successfully updated ${cliName}!`);
 
       // Stop process
-      callback(upgrade.status);
-      return upgrade.status;
+      callback(0);
+      return 0;
     })
     .catch((error) => {
       // Display error message
@@ -63,7 +59,7 @@ export const upgrade = (cmd: any, callback: any = process.exit): Promise<number>
       spinner.fail('Failed to updated packages.');
 
       // Kill process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     });
 };

@@ -7,10 +7,10 @@
     "inlineSourceMap": true,
     "jsx": "react",
     "lib": [
-      "dom",
       "es6",
       "es7",
-      "esnext"
+      "esnext",
+      "dom"
     ],
     "module": "commonjs",
     "moduleResolution": "node",

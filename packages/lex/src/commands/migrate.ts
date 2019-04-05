@@ -34,23 +34,17 @@ export const migrate = async (cmd: any, callback: any = process.exit): Promise<n
 
   // Install new list of packages
   try {
-    const installDep = await execa(packageManager, ['install'], {
+    await execa(packageManager, ['install'], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
 
-    const installStatus: number = installDep.status;
-
     // Stop loader
-    if(!installStatus) {
-      spinner.succeed('Successfully migrated app!');
-    } else {
-      spinner.fail('Failed to remove modules.');
-    }
+    spinner.succeed('Successfully migrated app!');
 
     // Kill process
-    callback(installStatus);
-    return installStatus;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -59,7 +53,7 @@ export const migrate = async (cmd: any, callback: any = process.exit): Promise<n
     spinner.fail('Failed to remove modules.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

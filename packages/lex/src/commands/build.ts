@@ -131,18 +131,14 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
     const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
-    const webpack: any = await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
+    await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
 
     // Stop spinner
-    if(!webpack.status) {
-      spinner.succeed('Build completed successfully!');
-    } else {
-      spinner.fail('Build failed.');
-    }
+    spinner.succeed('Build completed successfully!');
 
     // Stop process
-    callback(webpack.status);
-    return webpack.status;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -151,7 +147,7 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
     spinner.fail('Build failed.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

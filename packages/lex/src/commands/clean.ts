@@ -48,7 +48,7 @@ export const clean = async (cmd: any, callback: any = () => ({})): Promise<numbe
     spinner.fail('Failed to clean project.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

@@ -72,20 +72,16 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   try {
     const nodePath: string = path.resolve(__dirname, '../../node_modules');
     const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
-    const webpack: any = await execa(webpackPath, webpackOptions, {
+    await execa(webpackPath, webpackOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
 
     // Stop spinner
-    if(!webpack.status) {
-      spinner.succeed('Development server stopped.');
-    } else {
-      spinner.fail('There was an error while running Webpack.');
-    }
+    spinner.succeed('Development server stopped.');
 
-    callback(webpack.status);
-    return webpack.status;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -94,7 +90,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     spinner.fail('There was an error while running Webpack.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

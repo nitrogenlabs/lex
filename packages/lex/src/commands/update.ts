@@ -23,7 +23,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   const packageManager: string = cmdPackageManager || configPackageManager;
   const updateApp: string = packageManager === 'npm' ? 'npx' : 'yarn';
   const updateOptions: string[] = packageManager === 'npm'
-    ? ['npm-check', '--update']
+    ? ['npx', 'npm-check-updates', '-u', '-n', '-t', '--pre', '0', cmd.interactive ? '-i' : '']
     : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
   if(registry) {
@@ -31,21 +31,29 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   }
 
   try {
-    const pm = await execa(updateApp, updateOptions, {
+    await execa(updateApp, updateOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
 
-    // Stop loader
-    if(!pm.status) {
-      spinner.succeed('Successfully updated packages!');
-    } else {
-      spinner.fail('Failed to updated packages.');
+    if(packageManager === 'npm') {
+      await execa('npm', ['i'], {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      });
+
+      await execa('npm', ['audit', 'fix'], {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      });
     }
 
+    // Stop loader
+    spinner.succeed('Successfully updated packages!');
+
     // Kill process
-    callback(pm.status);
-    return pm.status;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -54,7 +62,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
     spinner.fail('Failed to updated packages.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

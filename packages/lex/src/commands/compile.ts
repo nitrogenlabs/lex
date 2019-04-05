@@ -98,18 +98,14 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
     // Type checking
     try {
-      const typescript = await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
+      await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
 
       // Stop spinner
-      if(!typescript.status) {
-        spinner.succeed('Successfully completed type checking!');
-      } else {
-        spinner.fail('Type checking failed.');
+      spinner.succeed('Successfully completed type checking!');
 
-        // Kill Process
-        callback(1);
-        return 1;
-      }
+      // Kill Process
+      callback(0);
+      return 0;
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -118,8 +114,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Type checking failed.');
 
       // Kill Process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 
@@ -155,15 +151,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
 
     // Stop spinner
-    if(!babel.status) {
-      spinner.succeed((babel.stdout || '').replace('.', '!').trim());
-    } else {
-      spinner.fail('Code compiling failed.');
-
-      // Kill Process
-      callback(1);
-      return 1;
-    }
+    spinner.succeed((babel.stdout || '').toString().replace('.', '!').trim());
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -172,8 +160,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     spinner.fail('Code compiling failed.');
 
     // Kill Process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 
   // Use PostCSS for CSS files
@@ -202,8 +190,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed formatting css.');
 
       // Kill Process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 
@@ -225,8 +213,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move images to output directory.');
 
       // Kill Process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 
@@ -248,8 +236,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move fonts to output directory.');
 
       // Kill Process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 
@@ -267,8 +255,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move docs to output directory.');
 
       // Kill Process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 

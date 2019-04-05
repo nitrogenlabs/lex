@@ -4,15 +4,15 @@
   "description": "Minimal, static site generator powered by webpack",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
+    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
     "clean": "rm -rf dist node_modules yarn.lock package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn build",
     "reset": "rm -rf node_modules yarn.lock",
-    "test": "npm run lint && NODE_ENV=test && jest",
-    "update": "npm-check --update",
-    "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
+    "test": "yarn lint && NODE_ENV=test && jest",
+    "update": "yarn upgradeInteractive --latest",
+    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
   },
   "repository": {
     "type": "git",

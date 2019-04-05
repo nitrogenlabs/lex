@@ -9,15 +9,15 @@ const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG 
 const nodePath = path.resolve(__dirname, './node_modules');
 const babelPolyfillPath = relativeFilePath('@babel/polyfill/dist/polyfill.js', nodePath);
 let moduleFileExtensions = ['js', 'json'];
-let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js|jsx)?$';
+let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
 let transform = {'\\.(js)$': path.resolve(__dirname, './jest.preprocessor.js')};
-let transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$'];
+let transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js)$'];
 
 if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
-  testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js|jsx|ts|tsx)?$';
+  testRegex = '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)?$';
   transform = {'\\.(js|ts|tsx)$': path.resolve(__dirname, './jest.preprocessor.js')};
-  transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'];
+  transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$'];
 }
 
 module.exports = {

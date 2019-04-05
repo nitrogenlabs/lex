@@ -214,20 +214,16 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
 
   // Test app using jest
   try {
-    const jest = await execa(jestPath, jestOptions, {
+    await execa(jestPath, jestOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
 
-    if(!jest.status) {
-      spinner.succeed('Testing completed!');
-    } else {
-      spinner.fail('Testing failed!');
-    }
+    spinner.succeed('Testing completed!');
 
     // Kill process
-    callback(jest.status);
-    return jest.status;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
@@ -236,7 +232,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
     spinner.fail('Testing failed!');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

@@ -100,28 +100,24 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
       log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   } else {
     nextVersion = prevVersion;
   }
 
   try {
-    const npmPublish = await execa(packageManager, publishOptions, {
+    await execa(packageManager, publishOptions, {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
 
-    if(!npmPublish.status) {
-      spinner.succeed(`Successfully published npm package: ${packageName}!`);
-    } else {
-      spinner.fail('Publishing to npm has failed.');
-    }
+    spinner.succeed(`Successfully published npm package: ${packageName}!`);
 
     // Kill process
-    callback(npmPublish.status);
-    return npmPublish.status;
+    callback(0);
+    return 0;
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -130,7 +126,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
     spinner.fail('Publishing to npm has failed.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 };

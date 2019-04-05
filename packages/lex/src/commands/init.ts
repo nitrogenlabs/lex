@@ -17,7 +17,6 @@ export const init = async (
 ): Promise<number> => {
   const {cliName = 'Lex', install, packageManager: cmdPackageManager, quiet, typescript} = cmd;
   const cwd: string = process.cwd();
-  let status: number = 0;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -47,10 +46,9 @@ export const init = async (
   }
 
   try {
-    const download = await execa(dnpPath, [appModule, tmpPath], {});
+    await execa(dnpPath, [appModule, tmpPath], {});
 
     // Stop spinner and update status
-    status += download.status;
     spinner.succeed('Successfully downloaded app!');
   } catch(error) {
     console.log('error', error);
@@ -60,8 +58,8 @@ export const init = async (
     spinner.fail('Downloaded of app failed.');
 
     // Kill process
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 
   // Move into configured directory
@@ -69,8 +67,8 @@ export const init = async (
     fs.renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
     log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 
   // Configure package.json
@@ -95,8 +93,8 @@ export const init = async (
     fs.writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-    callback(1);
-    return 1;
+    callback(error.status);
+    return error.status;
   }
 
   if(install) {
@@ -107,19 +105,13 @@ export const init = async (
 
     // Install dependencies
     try {
-      const install = await execa(packageManager, ['install'], {
+      await execa(packageManager, ['install'], {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
 
       // Stop spinner
-      if(!install.status) {
-        spinner.succeed('Successfully installed dependencies!');
-      } else {
-        spinner.fail('Failed to install dependencies.');
-      }
-
-      status += install.status;
+      spinner.succeed('Successfully installed dependencies!');
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -128,12 +120,12 @@ export const init = async (
       spinner.fail('Failed to install dependencies.');
 
       // Kill process
-      callback(1);
-      return 1;
+      callback(error.status);
+      return error.status;
     }
   }
 
   // Kill process
-  callback(status);
-  return status;
+  callback(0);
+  return 0;
 };
