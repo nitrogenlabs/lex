@@ -102,10 +102,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
       // Stop spinner
       spinner.succeed('Successfully completed type checking!');
-
-      // Kill Process
-      callback(0);
-      return 0;
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
