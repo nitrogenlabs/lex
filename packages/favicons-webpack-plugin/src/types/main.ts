@@ -2,14 +2,6 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-declare module 'webpack' {
-  namespace loader {
-    interface LoaderContext {
-      rootContext: string;
-    }
-  }
-}
-
 export interface FaviconsPluginOptions {
   readonly background?: string;
   readonly emitStats?: boolean;

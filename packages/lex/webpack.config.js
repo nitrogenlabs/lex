@@ -13,6 +13,7 @@ const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const {WebpackPluginServe} = require('webpack-plugin-serve');
+const merge = require('lodash/merge');
 
 const {relativeFilePath} = require('./dist/utils');
 
@@ -247,6 +248,12 @@ const webpackConfig = {
   },
   plugins,
   resolve: {
+    alias: {
+      '@nlabs/arkhamjs': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs')),
+      '@nlabs/arkhamjs-utils-react': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs-utils-react')),
+      react: path.resolve(path.join(process.cwd(), './node_modules/react')),
+      'react-dom': path.resolve(path.join(process.cwd(), './node_modules/react-dom'))
+    },
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
   },
   target: preset || targetEnvironment
@@ -255,11 +262,10 @@ const webpackConfig = {
 // Add development plugins
 if(!isProduction) {
   const hotReactDom = relativeFilePath('node_modules/@hot-loader/react-dom', __dirname);
-  const reactHotLoaderPath = relativeFilePath('node_modules/react-hot-loader', __dirname);
 
   webpackConfig.resolve.alias = {
+    ...webpackConfig.resolve.alias,
     'react-dom': hotReactDom,
-    'react-hot-loader': reactHotLoaderPath,
     webpack: webpackPath
   };
   webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
@@ -280,4 +286,4 @@ if(!isProduction) {
   webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
 }
 
-module.exports = {...webpackConfig, ...webpackCustom};
+module.exports = merge(webpackConfig, webpackCustom);

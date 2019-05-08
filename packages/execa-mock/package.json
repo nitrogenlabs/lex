@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/execa-mock",
-  "version": "1.22.5",
+  "version": "1.23.2",
   "description": "Execa jest mock",
   "license": "MIT",
   "bin": {
@@ -39,19 +39,19 @@
   "dependencies": {
     "cross-spawn": "^6.0.5",
     "get-stream": "^5.1.0",
-    "is-stream": "^1.1.0",
+    "is-stream": "^2.0.0",
     "npm-run-path": "^3.1.0",
     "signal-exit": "^3.0.0",
     "strip-eof": "^2.0.0",
     "uv": "^1.0.7"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.0",
-    "@types/node": "^11.13.0",
+    "@types/jest": "^24.0.12",
+    "@types/node": "^12.0.0",
     "eslint": "^5.13.0",
-    "eslint-config-styleguidejs": "^1.0.2",
-    "ts-jest": "^24.0.1",
-    "typescript": "^3.3.3"
+    "eslint-config-styleguidejs": "^1.0.11",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
   },
-  "gitHead": "a2c4070b7523f8968fa440315b27702b3ef31b3c"
+  "gitHead": "b638aeec2562fd11b8bda4e73c183fa90721175f"
 }
