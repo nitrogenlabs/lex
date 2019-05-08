@@ -86,10 +86,6 @@ const presets = [
   ...babelPresets
 ];
 
-if(commandName === 'dev') {
-  plugins.push(`${pluginPath}/../react-hot-loader/babel.js`);
-}
-
 // Configuration for babel 7
 module.exports = {
   babelrc: false,
