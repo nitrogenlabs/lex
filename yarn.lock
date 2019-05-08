@@ -14894,7 +14894,7 @@ webpack-stats-plugin@^0.2.1:
   resolved "https://registry.yarnpkg.com/webpack-stats-plugin/-/webpack-stats-plugin-0.2.1.tgz#1f5bac13fc25d62cbb5fd0ff646757dc802b8595"
   integrity sha512-OYMZLpZrK/qLA79NE4kC4DCt85h/5ipvWJcsefKe9MMw0qU4/ck/IJg+4OmWA+5EfrZZpHXDq92IptfYDWVfkw==
 
-webpack@^4.0.0, webpack@^4.30.0:
+webpack@^4.30.0:
   version "4.30.0"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.30.0.tgz#aca76ef75630a22c49fcc235b39b4c57591d33a9"
   integrity sha512-4hgvO2YbAFUhyTdlR4FNyt2+YaYBYHavyzjCMbZzgglo02rlKi/pcsEzwCuCpsn1ryzIl1cq/u8ArIKu8JBYMg==
