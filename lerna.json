@@ -8,5 +8,5 @@
   ],
   "npmClient": "npm",
   "useWorkspaces": true,
-  "version": "1.22.6"
+  "version": "1.23.0"
 }
