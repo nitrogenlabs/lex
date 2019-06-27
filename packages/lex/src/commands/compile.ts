@@ -78,7 +78,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--emitDeclarationOnly',
         '--inlineSourceMap',
         '--jsx', 'react',
-        '--lib', ['esnext', 'dom'],
+        '--lib', ['es6', 'es7', 'esnext', 'dom'],
         '--module', 'commonjs',
         '--moduleResolution', 'node',
         '--noImplicitReturns',
@@ -104,6 +104,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+      log(JSON.stringify(error, null, 2), 'info', quiet);
 
       // Stop spinner
       spinner.fail('Type checking failed.');
