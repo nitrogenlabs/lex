@@ -84,7 +84,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--noImplicitReturns',
         '--noImplicitThis',
         '--noStrictGenericChecks',
-        '--noUnusedLocals',
         '--outDir', outputFullPath,
         '--removeComments',
         '--rootDir', sourceFullPath,

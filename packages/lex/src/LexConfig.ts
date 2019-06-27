@@ -11,6 +11,7 @@ const cwd: string = process.cwd();
 
 export interface LexConfigType {
   babel?: any;
+  configFiles?: string[];
   entryHTML?: string;
   entryJS?: string;
   env?: object;
@@ -34,6 +35,7 @@ export interface LexConfigType {
 export class LexConfig {
   static config: LexConfigType = {
     babel: {},
+    configFiles: [],
     entryHTML: 'index.html',
     entryJS: 'index.js',
     env: null,

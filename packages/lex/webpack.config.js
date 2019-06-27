@@ -147,6 +147,7 @@ if(preset === 'web' || targetEnvironment === 'web') {
   entry = `${sourceFullPath}/${lexConfig.entryJS}`;
 }
 
+console.log('environment', environment);
 // Webpack config
 const webpackConfig = {
   bail: true,
@@ -198,7 +199,7 @@ const webpackConfig = {
                 require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
                 require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
                 require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
-                  browsers: ['last 5 versions'],
+                  browsers: ['last 5 version'],
                   stage: 0
                 }),
                 require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
@@ -237,7 +238,8 @@ const webpackConfig = {
           test: /[\\/]node_modules[\\/]/
         }
       }
-    }
+    },
+    usedExports: true
   },
   output: {
     filename: outputFilename,
@@ -268,9 +270,10 @@ if(!isProduction) {
     'react-dom': hotReactDom,
     webpack: webpackPath
   };
+  webpackConfig.optimization = {};
   webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
   webpackConfig.plugins.push(
-    new BundleAnalyzerPlugin({openAnalyzer: false}),
+    // new BundleAnalyzerPlugin({openAnalyzer: false}),
     new WebpackPluginServe({
       historyFallback: true,
       hmr: true,
