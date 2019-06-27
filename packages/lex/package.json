@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.23.0",
+  "version": "1.23.1",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -143,7 +143,7 @@
     "webpack-plugin-serve": "^0.11.0"
   },
   "devDependencies": {
-    "@nlabs/execa-mock": "^1.23.0",
+    "@nlabs/execa-mock": "^1.23.1",
     "@types/jest": "^24.0.15",
     "@types/luxon": "^1.15.1",
     "@types/node": "^12.0.10",
