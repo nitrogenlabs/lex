@@ -20,6 +20,7 @@
     "noUnusedLocals": false,
     "pretty": true,
     "removeComments": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "target": "ES5",
     "types": [

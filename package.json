@@ -10,17 +10,18 @@
     "update": "yarn upgradeInteractive --latest"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.15",
-    "@types/node": "^12.0.10",
-    "jest-cli": "^24.8.0",
-    "lerna": "^3.15.0",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.5.2"
+    "@types/jest": "^24.0.21",
+    "@types/node": "^12.12.5",
+    "jest-cli": "^24.9.0",
+    "lerna": "^3.18.3",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.6.4"
   },
   "workspaces": [
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",
+    "packages/starfire",
     "packages/static-site-webpack-plugin"
   ]
 }

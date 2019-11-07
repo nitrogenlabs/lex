@@ -42,22 +42,22 @@
   "homepage": "https://github.com/nitrogenlabs/static-site-webpack-plugin",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "eval": "^0.1.0",
-    "lodash": "^4.17.10",
+    "eval": "^0.1.4",
+    "lodash": "^4.17.15",
     "url": "^0.11.0",
-    "webpack-sources": "^1.3.0"
+    "webpack-sources": "^1.4.3"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.15",
+    "@types/jest": "^24.0.21",
     "compression-webpack-plugin": "^3.0.0",
-    "ejs": "^2.6.2",
-    "eslint": "^6.0.1",
-    "eslint-config-styleguidejs": "^1.0.13",
-    "glob": "^7.1.4",
-    "rimraf": "^2.6.3",
-    "typescript": "^3.5.2",
-    "webpack": "^4.35.0",
-    "webpack-stats-plugin": "^0.2.1"
+    "ejs": "^2.7.1",
+    "eslint": "^6.6.0",
+    "eslint-config-styleguidejs": "^1.0.16",
+    "glob": "^7.1.5",
+    "rimraf": "^3.0.0",
+    "typescript": "^3.6.4",
+    "webpack": "^4.41.2",
+    "webpack-stats-plugin": "^0.3.0"
   },
   "peerDependencies": {
     "webpack": "^4.0.0"

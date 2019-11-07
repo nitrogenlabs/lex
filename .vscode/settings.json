@@ -5,6 +5,7 @@
     "nitrogenlabs",
     "nlabs",
     "polyfill",
+    "starfire",
     "transpiler"
   ],
   "css.validate": false,

@@ -14,6 +14,7 @@ import {
   dev,
   init,
   linked,
+  lint,
   migrate,
   publish,
   test,
@@ -109,6 +110,42 @@ program.command('init <appName> [packageName]')
 program.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => linked(cmd, process.exit));
+
+program.command('lint')
+  .option('--cache', 'Only check changed files. Default: false.')
+  .option('--cache-location <path>', 'Path to the cache file or directory.')
+  .option('--color', 'Force enabling of color.')
+  .option('--config <path>', 'Use this configuration, overriding .eslintrc.* config options if present.')
+  .option('--debug', 'Output debugging information.')
+  .option('--env-info', 'Output execution environment information. Default: false.')
+  .option('--env <name>', 'Specify environments.')
+  .option('--ext <type>', 'Specify JavaScript file extensions. Default: .js.')
+  .option('--fix', 'Automatically fix problems.')
+  .option('--fix-dry-run', 'Automatically fix problems without saving the changes to the file system.')
+  .option('--fix-type <type>', 'Specify the types of fixes to apply (problem, suggestion, layout).')
+  .option('--format <name>', 'Use a specific output format. Default: stylish.')
+  .option('--global <variables>', 'Define global variables.')
+  .option('--ignore-path <path>', 'Specify path of ignore file.')
+  .option('--ignore-pattern <pattern>', 'Pattern of files to ignore (in addition to those in .eslintignore).')
+  .option('--init', 'Run config initialization wizard. Default: false.')
+  .option('--max-warnings <num>', 'Number of warnings to trigger nonzero exit code. Default: -1.')
+  .option('--no-color', 'Force disabling of color.')
+  .option('--no-eslintrc', 'Disable use of configuration from .eslintrc.*.')
+  .option('--no-ignore', 'Disable use of ignore files and patterns.')
+  .option('--no-inline-config', 'Prevent comments from changing config or rules.')
+  .option('--output-file <path>', 'Specify file to write report to.')
+  .option('--parser <name>', 'Specify the parser to be used.')
+  .option('--parser-options <options>', 'Specify parser options.')
+  .option('--plugin <plugins>', 'Specify plugins.')
+  .option('--print-config <path>', 'Print the configuration for the given file.')
+  .option('-q, --quiet', 'No Lex notifications printed in the console.')
+  .option('--report-unused-disable-directives', 'Adds reported errors for unused eslint-disable directives.')
+  .option('--resolve-plugins-relative-to <path>', 'A folder where plugins should be resolved from.')
+  .option('--rule <path>', 'Specify rules.')
+  .option('--rulesdir <path>', 'Use additional rules from this directory.')
+  .option('--stdin', 'Lint code provided on <STDIN> - Default: false.')
+  .option('--stdin-filename <name>', 'Specify filename to process STDIN as.')
+  .action((cmd) => lint(cmd, process.exit));
 
 program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')

@@ -10,6 +10,7 @@ export {create} from './create';
 export {dev} from './dev';
 export {init} from './init';
 export {linked} from './link';
+export {lint} from './lint';
 export {migrate} from './migrate';
 export {publish} from './publish';
 export {test} from './test';

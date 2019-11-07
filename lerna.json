@@ -4,9 +4,10 @@
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",
+    "packages/starfire",
     "packages/static-site-webpack-plugin"
   ],
-  "npmClient": "npm",
+  "npmClient": "yarn",
   "useWorkspaces": true,
   "version": "1.24.1"
 }
