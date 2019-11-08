@@ -32,5 +32,7 @@ export const plugins = [
   `${pluginPath}/plugin-syntax-dynamic-import`,
   `${pluginPath}/plugin-syntax-import-meta`,
   [`${pluginPath}/plugin-proposal-class-properties`, {loose: false}],
-  `${pluginPath}/plugin-proposal-json-strings`
+  `${pluginPath}/plugin-proposal-json-strings`,
+
+  `${pluginPath}/plugin-transform-modules-commonjs`
 ];

@@ -12,7 +12,7 @@ import {plugins} from './babelPlugins';
 
 const lexConfig = JSON.parse(process.env.LEX_CONFIG || '{}');
 const {targetEnvironment} = lexConfig;
-const babelWebEnv = [presetEnv, {modules: false, targets: {browsers: ['last 5 versions', 'ie >= 10']}}];
+const babelWebEnv = [presetEnv, {modules: false}];
 const babelNodeEnv = [presetEnv];
 
 export default declare((api) => {

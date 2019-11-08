@@ -78,7 +78,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--emitDeclarationOnly',
         '--inlineSourceMap',
         '--jsx', 'react',
-        '--lib', ['es6', 'es7', 'esnext', 'dom'],
+        '--lib', ['ES5', 'ES6', 'ES2015', 'ES7', 'ES2016', 'ES2017', 'ES2018', 'ESNext', 'DOM'],
         '--module', 'commonjs',
         '--moduleResolution', 'node',
         '--noImplicitReturns',
@@ -86,9 +86,10 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--noStrictGenericChecks',
         '--outDir', outputFullPath,
         '--removeComments',
+        '--resolveJsonModule',
         '--rootDir', sourceFullPath,
         '--sourceRoot', sourceFullPath,
-        '--target', 'es5',
+        '--target', 'ES5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
 
@@ -104,7 +105,10 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-      log(JSON.stringify(error, null, 2), 'info', quiet);
+
+      if(!quiet) {
+        console.error(error);
+      }
 
       // Stop spinner
       spinner.fail('Type checking failed.');
@@ -151,6 +155,10 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+
+    if(!quiet) {
+      console.error(error);
+    }
 
     // Stop spinner
     spinner.fail('Code compiling failed.');

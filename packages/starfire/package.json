@@ -74,7 +74,7 @@
     "lodash": "^4.17.15",
     "mem": "^5.1.1",
     "minimatch": "^3.0.4",
-    "parse5": "^5.1.0",
+    "parse5": "^5.1.1",
     "postcss-less": "^3.1.4",
     "postcss-media-query-parser": "^0.2.3",
     "postcss-scss": "^2.0.0",
@@ -92,10 +92,10 @@
     "unified": "^8.4.1"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.21",
+    "@types/jest": "^24.0.22",
     "@types/mem": "^4.2.0",
     "@types/minimist": "^1.2.0",
-    "@types/node": "^12.12.5",
+    "@types/node": "^12.12.6",
     "codecov": "^3.6.1",
     "cross-env": "^6.0.3",
     "jest": "^25.0.0",

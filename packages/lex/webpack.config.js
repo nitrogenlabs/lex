@@ -140,14 +140,14 @@ let entry;
 
 if(preset === 'web' || targetEnvironment === 'web') {
   entry = {
-    babelPolyfill: relativeFilePath('node_modules/@babel/polyfill', __dirname),
-    index: `${sourceFullPath}/${lexConfig.entryJS}`
+    corejs: relativeFilePath('node_modules/core-js/stable', __dirname),
+    index: `${sourceFullPath}/${lexConfig.entryJS}`,
+    regeneratorRuntime: relativeFilePath('node_modules/regenerator-runtime/runtime.js', __dirname)
   };
 } else {
   entry = `${sourceFullPath}/${lexConfig.entryJS}`;
 }
 
-console.log('environment', environment);
 // Webpack config
 const webpackConfig = {
   bail: true,
@@ -199,7 +199,6 @@ const webpackConfig = {
                 require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
                 require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
                 require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
-                  browsers: ['last 5 version'],
                   stage: 0
                 }),
                 require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
@@ -224,7 +223,9 @@ const webpackConfig = {
       },
       {
         loader: fileLoaderPath,
-        test: /\.(png|svg|jpg|gif)$/
+        //   test: /\.(png|svg|jpg|gif)$/
+        // loader  : 'url-loader?limit=30000&name=images/[name].[ext]',
+        test    : /\.(gif|jpg|png|svg)$/
       }
     ]
   },
