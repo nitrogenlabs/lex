@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/starfire",
-  "version": "0.2.0",
+  "version": "1.24.2",
   "description": "Starfire keeps code clean with style",
   "license": "MIT",
   "bin": {
