@@ -8,7 +8,7 @@ const {concat, hardline, literalline, markAsRoot} = DocBuilders;
 export class EmbedMarkdown {
   static embed(path, print, textToDoc, options) {
     const node = path.getValue();
-    const getParserName = (lang) => {
+    const getParserName = () => {
       const supportInfo = Support.getSupportInfo(null, {
         plugins: options.plugins,
         pluginsLoaded: true
@@ -41,7 +41,7 @@ export class EmbedMarkdown {
       const lang = node.lang.split(/\s/, 1)[0];
       const parser = getParserName(lang);
       if(parser) {
-        const styleUnit = options.__inJsTemplate ? '~' : '`';
+        const styleUnit = options.__inJsTemplate ? '~' : '`'; // eslint-disable-line
         const style = styleUnit.repeat(
           Math.max(3, Util.getMaxContinuousCount(node.value, styleUnit) + 1)
         );

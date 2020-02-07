@@ -48,16 +48,16 @@
     "webpack-sources": "^1.4.3"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.22",
-    "compression-webpack-plugin": "^3.0.0",
-    "ejs": "^2.7.1",
-    "eslint": "^6.6.0",
+    "@types/jest": "^24.0.25",
+    "compression-webpack-plugin": "^3.1.0",
+    "ejs": "^3.0.1",
+    "eslint": "^6.8.0",
     "eslint-config-styleguidejs": "^1.0.16",
     "glob": "^7.1.6",
     "rimraf": "^3.0.0",
-    "typescript": "^3.7.2",
+    "typescript": "^3.7.4",
     "webpack": "^4.41.2",
-    "webpack-stats-plugin": "^0.3.0"
+    "webpack-stats-plugin": "^0.3.1"
   },
   "peerDependencies": {
     "webpack": "^4.0.0"

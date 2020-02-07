@@ -13,7 +13,7 @@ import {SFASTType, SFCommentsType} from '../types/ast';
 import {SFParserType} from '../types/doc';
 import {SFLanguageOptionsType} from '../types/options';
 
-const jsonPackage = require('../../package.json');
+const appPackage = require('../../package.json');
 
 const {clearCache, resolveConfig} = ResolveConfig;
 
@@ -56,7 +56,7 @@ export class Starfire {
   };
 
   static get version(): string {
-    const {version}: any = {...jsonPackage};
+    const {version}: any = appPackage;
     return version;
   }
 

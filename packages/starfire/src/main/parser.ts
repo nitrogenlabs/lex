@@ -1,80 +1,109 @@
 import path from 'path';
 
-import {ConfigError} from '../common/errors/ConfigError';
-import {LanguageJS} from '../languages/js';
-import {SFParserType} from '../types/doc';
-import {SFLanguageOptionsType} from '../types/options';
+import {ConfigError} from '../common/errors';
+import {locEnd, locStart} from '../languages/js/loc';
 
-const {locStart, locEnd} = LanguageJS;
 
-export class Parser {
-  static getParsers(options: SFLanguageOptionsType) {
-    return options.plugins.reduce((parsers, plugin) => ({...parsers, ...plugin.parsers}), {});
-  }
+// Use defineProperties()/getOwnPropertyDescriptor() to prevent
+// triggering the parsers getters.
+const ownNames = Object.getOwnPropertyNames;
+const ownDescriptor = Object.getOwnPropertyDescriptor;
 
-  static resolveParser(opts, parsers?): SFParserType {
-    const {parser} = opts;
-    const updatedParsers = parsers ? {...parsers} : Parser.getParsers(opts);
-    if(typeof parser === 'function') {
-      // Custom parser API always works with JavaScript.
-      return {astFormat: 'estree', locEnd, locStart, parse: parser};
+export const getParsers = (options) => {
+  const parsers = {};
+  for(const plugin of options.plugins) {
+    if(!plugin.parsers) {
+      continue;
     }
 
-    if(typeof parser === 'string') {
-      if(updatedParsers.hasOwnProperty(parser)) {
-        return parsers[parser];
-      }
-      try {
-        return {astFormat: 'estree', locEnd, locStart, parse: require(path.resolve(process.cwd(), parser))};
-      } catch(err) {
-        /* istanbul ignore next */
-        throw new ConfigError(`Couldn't resolve parser "${parser}"`);
-      }
+    for(const name of ownNames(plugin.parsers)) {
+      Object.defineProperty(parsers, name, ownDescriptor(plugin.parsers, name));
+    }
+  }
+
+  return parsers;
+};
+
+export const resolveParser = (opts, parsers?) => {
+  const updatedParsers = parsers || getParsers(opts);
+
+  if(typeof opts.parser === 'function') {
+    // Custom parser API always works with JavaScript.
+    return {
+      parse: opts.parser,
+      astFormat: 'estree',
+      locStart,
+      locEnd
+    };
+  }
+
+  if(typeof opts.parser === 'string') {
+    if(Object.prototype.hasOwnProperty.call(updatedParsers, opts.parser)) {
+      return updatedParsers[opts.parser];
     }
 
     /* istanbul ignore next */
-    return parsers.typescript;
-  }
-
-  static parse(text: string, opts) {
-    const parsers = Parser.getParsers(opts);
-
-    // Copy the "parse" function from parser to a new object whose values are
-    // functions. Use defineProperty()/getOwnPropertyDescriptor() such that we
-    // don't invoke the parser.parse getters.
-    const parsersForCustomParserApi = Object.keys(parsers).reduce(
-      (object, parserName) =>
-        Object.defineProperty(
-          object,
-          parserName,
-          Object.getOwnPropertyDescriptor(parsers[parserName], 'parse')
-        ),
-      {}
-    );
-
-    const {preprocess, parse} = Parser.resolveParser(opts, parsers);
-    let updatedText: string = text;
-
-    try {
-      if(preprocess) {
-        updatedText = preprocess(updatedText, opts);
+    if(process.env.PRETTIER_TARGET === 'universal') {
+      throw new ConfigError(
+        `Couldn't resolve parser "${opts.parser}". Parsers must be explicitly added to the standalone bundle.`
+      );
+    } else {
+      try {
+        return {
+          parse: eval('require')(path.resolve(process.cwd(), opts.parser)),
+          astFormat: 'estree',
+          locStart,
+          locEnd
+        };
+      } catch(err) {
+        /* istanbul ignore next */
+        throw new ConfigError(`Couldn't resolve parser "${opts.parser}"`);
       }
-
-      return {ast: parse(updatedText, parsersForCustomParserApi, opts), text: updatedText};
-    } catch(error) {
-      const {loc} = error;
-
-      if(loc) {
-        const codeFrame = require('@babel/code-frame');
-        error.codeFrame = codeFrame.codeFrameColumns(text, loc, {
-          highlightCode: true
-        });
-        error.message += `\n${error.codeFrame}`;
-        throw error;
-      }
-
-      /* istanbul ignore next */
-      throw error.stack;
     }
   }
-}
+};
+
+export const parse = (text: string, opts) => {
+  const parsers = getParsers(opts);
+  let updateText: string = text;
+
+  // Create a new object {parserName: parseFn}. Uses defineProperty() to only call
+  // the parsers getters when actually calling the parser `parse` function.
+  const parsersForCustomParserApi = Object.keys(parsers).reduce(
+    (object, parserName) =>
+      Object.defineProperty(object, parserName, {
+        enumerable: true,
+        get() {
+          return parsers[parserName].parse;
+        }
+      }),
+    {}
+  );
+
+  const parser = resolveParser(opts, parsers);
+
+  try {
+    if(parser.preprocess) {
+      updateText = parser.preprocess(updateText, opts);
+    }
+
+    return {
+      text: updateText,
+      ast: parser.parse(updateText, parsersForCustomParserApi, opts)
+    };
+  } catch(error) {
+    const {loc} = error;
+
+    if(loc) {
+      const codeFrame = require('@babel/code-frame');
+      error.codeFrame = codeFrame.codeFrameColumns(updateText, loc, {
+        highlightCode: true
+      });
+      error.message += `\n${error.codeFrame}`;
+      throw error;
+    }
+
+    /* istanbul ignore next */
+    throw error.stack;
+  }
+};

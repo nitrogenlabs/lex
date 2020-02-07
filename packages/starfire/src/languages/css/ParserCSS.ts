@@ -3,6 +3,10 @@ import grayMatter from 'gray-matter';
 import {ParserError} from '../../common/errors/ParserError';
 
 export class ParserCSS {
+  static IS_POSSIBLY_SCSS = /(\w\s*: [^}:]+|#){|@import[^\n]+(url|,)/;
+  static DEFAULT_SCSS_DIRECTIVE = /(\s*?)(!default).*$/;
+  static GLOBAL_SCSS_DIRECTIVE = /(\s*?)(!global).*$/;
+
   static parseSelector(selector) {
     // If there's a comment inside of a selector, the parser tries to parse
     // the content of the comment as selectors which turns it into complete
@@ -114,10 +118,10 @@ export class ParserCSS {
     if(node.groups) {
       return node.groups.reduce((previousValue, currentValue, index) => (
         previousValue +
-          ParserCSS.stringifyGroup(currentValue) +
-          (currentValue.type === 'comma_group' && index !== node.groups.length - 1
-            ? ','
-            : '')
+        ParserCSS.stringifyGroup(currentValue) +
+        (currentValue.type === 'comma_group' && index !== node.groups.length - 1
+          ? ','
+          : '')
       ), '');
     }
 
@@ -210,9 +214,6 @@ export class ParserCSS {
     const result = ParserCSS.addMissingType(mediaParser(value));
     return ParserCSS.addTypePrefix(result, 'media-');
   }
-
-  static DEFAULT_SCSS_DIRECTIVE = /(\s*?)(!default).*$/;
-  static GLOBAL_SCSS_DIRECTIVE = /(\s*?)(!global).*$/;
 
   static parseNestedCSS(node) {
     if(node && typeof node === 'object') {
@@ -446,13 +447,11 @@ export class ParserCSS {
     // https://github.com/shellscape/postcss-less/issues/88
     const LessParser = require('postcss-less/dist/less-parser');
     LessParser.prototype.atrule = function() {
-      return Object.getPrototypeOf(LessParser.prototype).atrule.apply(this, arguments);
+      return Object.getPrototypeOf(LessParser.prototype).atrule.apply(this, arguments); // eslint-disable-line
     };
 
     return require('postcss-less');
   }
-
-  static IS_POSSIBLY_SCSS = /(\w\s*: [^}:]+|#){|@import[^\n]+(url|,)/;
 
   static parse(text, parsers, opts) {
     const hasExplicitParserChoice =

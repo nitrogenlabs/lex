@@ -1,132 +1,215 @@
-import leven from 'leven';
 
-import {OptionsDescriptor} from './OptionsDescriptor';
-import {OptionsValidator} from './OptionsValidator';
 
-export class OptionsNormalizer {
-  static defaultOptions = {
-    descriptor: '',
-    logger: {warn: console.warn},
-    passThrough: []
-  };
+const vnopts = require('vnopts');
+const leven = require('leven');
+const chalk = require('chalk');
 
-  static normalizeOptions(options, optionInfos, opts = OptionsNormalizer.defaultOptions) {
-    const {logger: optsLogger = console} = opts;
-    const logger = !optsLogger ? {warn() {}} : optsLogger;
-    const {descriptor, passThrough} = opts;
-    const optionInfoMap = optionInfos.reduce(
-      (reduced, optionInfo) => ({...reduced, [optionInfo.name]: optionInfo}),
-      {}
-    );
+const cliDescriptor = {
+  key: (key) => (key.length === 1 ? `-${key}` : `--${key}`),
+  value: (value) => vnopts.apiDescriptor.value(value),
+  pair: ({key, value}) =>
+    (value === false
+      ? `--no-${key}`
+      : value === true
+        ? cliDescriptor.key(key)
+        : value === ''
+          ? `${cliDescriptor.key(key)} without an argument`
+          : `${cliDescriptor.key(key)}=${value}`)
+};
 
-    const normalizedOptions = Object.keys(options).reduce((newOptions, key: string) => {
-      const optionInfo = optionInfoMap[key];
-      let optionName: string = key;
-      let optionValue = options[key];
-
-      if(!optionInfo) {
-        if(passThrough || passThrough.indexOf(optionName) !== -1) {
-          newOptions[optionName] = optionValue;
-        } else {
-          logger.warn(OptionsNormalizer.createUnknownOptionMessage(optionName, optionValue, optionInfos, descriptor));
-        }
-
-        return newOptions;
-      }
-
-      const {array, choices, deprecated, default: optionDefault, redirect} = optionInfo;
-
-      if(!deprecated) {
-        optionValue = OptionsNormalizer.normalizeOption(optionValue, optionInfo);
-      } else if(typeof redirect === 'string') {
-        logger.warn(OptionsNormalizer.createRedirectOptionMessage(optionInfo, descriptor));
-        optionName = redirect;
-      } else if(optionValue) {
-        logger.warn(OptionsNormalizer.createRedirectOptionMessage(optionInfo, descriptor));
-        optionValue = redirect.value;
-        optionName = redirect.option;
-      }
-
-      if(choices) {
-        const choiceInfo = choices.find((choice) => choice.value === optionValue);
-
-        if(choiceInfo && choiceInfo.deprecated) {
-          logger.warn(OptionsNormalizer.createRedirectChoiceMessage(optionInfo, choiceInfo, descriptor));
-          optionValue = choiceInfo.redirect;
-        }
-      }
-
-      if(array && !Array.isArray(optionValue)) {
-        optionValue = [optionValue];
-      }
-
-      if(optionValue !== optionDefault) {
-        OptionsValidator.validateOption(optionValue, optionInfoMap[optionName], {descriptor});
-      }
-
-      newOptions[optionName] = optionValue;
-      return newOptions;
-    }, {});
-
-    return normalizedOptions;
+class FlagSchema extends vnopts.ChoiceSchema {
+  constructor({name, flags}) {
+    super({name, choices: flags});
+    this._flags = flags.slice().sort();
   }
-
-  static normalizeOption(option, optionInfo) {
-    return optionInfo.type === 'int' ? Number(option) : option;
-  }
-
-  static createUnknownOptionMessage(key, value, optionInfos, descriptor) {
-    const messages = [`Ignored unknown option ${descriptor(key, value)}.`];
-
-    const suggestedOptionInfo = optionInfos.find(
-      (optionInfo) => leven(optionInfo.name, key) < 3
-    );
-    if(suggestedOptionInfo) {
-      messages.push(`Did you mean ${JSON.stringify(suggestedOptionInfo.name)}?`);
+  preprocess(value, utils) {
+    if(
+      typeof value === 'string' &&
+      value.length !== 0 &&
+      this._flags.indexOf(value) === -1
+    ) {
+      const suggestion = this._flags.find((flag) => leven(flag, value) < 3);
+      if(suggestion) {
+        utils.logger.warn(
+          [
+            `Unknown flag ${chalk.yellow(utils.descriptor.value(value))},`,
+            `did you mean ${chalk.blue(utils.descriptor.value(suggestion))}?`
+          ].join(' ')
+        );
+        return suggestion;
+      }
     }
-
-    return messages.join(' ');
+    return value;
   }
-
-  static createRedirectOptionMessage(optionInfo, descriptor) {
-    return `${descriptor(optionInfo.name)} is deprecated. Starfire now treats it as ${
-      typeof optionInfo.redirect === 'string'
-        ? descriptor(optionInfo.redirect)
-        : descriptor(optionInfo.redirect.option, optionInfo.redirect.value)}.`;
-  }
-
-  static createRedirectChoiceMessage(optionInfo, choiceInfo, descriptor) {
-    return `${descriptor(optionInfo.name, choiceInfo.value)} is deprecated. Starfire now treats it as ${descriptor(
-      optionInfo.name,
-      choiceInfo.redirect)}.`;
-  }
-
-  static normalizeApiOptions(options, optionInfos, opts) {
-    return OptionsNormalizer.normalizeOptions(options, optionInfos, {
-      descriptor: OptionsDescriptor.apiDescriptor,
-      ...opts
-    });
-  }
-
-  static normalizeCliOptions(options, optionInfos, opts) {
-    const args = options._ || [];
-
-    const newOptions: any = OptionsNormalizer.normalizeOptions(
-      Object.keys(options).reduce(
-        (reduced, key) =>
-          ({
-            ...reduced,
-            ...(key.length === 1 // omit alias
-              ? null
-              : {[key]: options[key]})
-          }),
-        {}
-      ),
-      optionInfos,
-      {descriptor: OptionsDescriptor.cliDescriptor, ...opts}
-    );
-    newOptions._ = args; // eslint-disable-line
-
-    return newOptions;
+  expected() {
+    return 'a flag';
   }
 }
+
+let hasDeprecationWarned;
+
+export const optionInfoToSchema = (optionInfo, {isCLI, optionInfos}) => {
+  let SchemaConstructor;
+  const parameters: any = {name: optionInfo.name};
+  const handlers: any = {};
+
+  switch(optionInfo.type) {
+    case 'int':
+      SchemaConstructor = vnopts.IntegerSchema;
+      if(isCLI) {
+        parameters.preprocess = (value) => Number(value);
+      }
+      break;
+    case 'string':
+      SchemaConstructor = vnopts.StringSchema;
+      break;
+    case 'choice':
+      SchemaConstructor = vnopts.ChoiceSchema;
+      parameters.choices = optionInfo.choices.map((choiceInfo) =>
+        (typeof choiceInfo === 'object' && choiceInfo.redirect
+          ? {
+            ...choiceInfo,
+            redirect: {
+              to: {key: optionInfo.name, value: choiceInfo.redirect}
+            }
+          }
+          : choiceInfo)
+      );
+      break;
+    case 'boolean':
+      SchemaConstructor = vnopts.BooleanSchema;
+      break;
+    case 'flag':
+      SchemaConstructor = FlagSchema;
+      parameters.flags = optionInfos
+        .map((optionInfo) =>
+          [].concat(
+            optionInfo.alias || [],
+            optionInfo.description ? optionInfo.name : [],
+            optionInfo.oppositeDescription ? `no-${optionInfo.name}` : []
+          )
+        )
+        .reduce((a, b) => a.concat(b), []);
+      break;
+    case 'path':
+      SchemaConstructor = vnopts.StringSchema;
+      break;
+    default:
+      throw new Error(`Unexpected type ${optionInfo.type}`);
+  }
+
+  if(optionInfo.exception) {
+    parameters.validate = (value, schema, utils) => optionInfo.exception(value) || schema.validate(value, utils);
+  } else {
+    parameters.validate = (value, schema, utils) => value === undefined || schema.validate(value, utils);
+  }
+
+  if(optionInfo.redirect) {
+    handlers.redirect = (value) =>
+      (!value
+        ? undefined
+        : {
+          to: {
+            key: optionInfo.redirect.option,
+            value: optionInfo.redirect.value
+          }
+        });
+  }
+
+  if(optionInfo.deprecated) {
+    handlers.deprecated = true;
+  }
+
+  // allow CLI overriding, e.g., prettier package.json --tab-width 1 --tab-width 2
+  if(isCLI && !optionInfo.array) {
+    const originalPreprocess = parameters.preprocess || ((x) => x);
+    parameters.preprocess = (value, schema, utils) =>
+      schema.preprocess(
+        originalPreprocess(
+          Array.isArray(value) ? value[value.length - 1] : value
+        ),
+        utils
+      );
+  }
+
+  return optionInfo.array
+    ? vnopts.ArraySchema.create(
+      {
+        preprocess: isCLI ? (v) => [].concat(v) : undefined,
+        ...handlers,
+        valueSchema: SchemaConstructor.create(parameters)
+      }
+    )
+    : SchemaConstructor.create({...parameters, ...handlers});
+};
+
+export const optionInfosToSchemas = (optionInfos, {isCLI}) => {
+  const schemas = [];
+
+  if(isCLI) {
+    schemas.push(vnopts.AnySchema.create({name: '_'}));
+  }
+
+  for(const optionInfo of optionInfos) {
+    schemas.push(optionInfoToSchema(optionInfo, {isCLI, optionInfos}));
+
+    if(optionInfo.alias && isCLI) {
+      schemas.push(
+        vnopts.AliasSchema.create({
+          name: optionInfo.alias,
+          sourceName: optionInfo.name
+        })
+      );
+    }
+  }
+
+  return schemas;
+};
+
+export const normalizeOptions = (
+  options,
+  optionInfos,
+  {logger = false, isCLI = false, passThrough = false} = {}
+) => {
+  const unknown = !passThrough
+    ? vnopts.levenUnknownHandler
+    : Array.isArray(passThrough)
+      ? (key, value) =>
+        (passThrough.indexOf(key) === -1 ? undefined : {[key]: value})
+      : (key, value) => ({[key]: value});
+
+  const descriptor = isCLI ? cliDescriptor : vnopts.apiDescriptor;
+  const schemas = optionInfosToSchemas(optionInfos, {isCLI});
+  const normalizer = new vnopts.Normalizer(schemas, {
+    logger,
+    unknown,
+    descriptor
+  });
+
+  const shouldSuppressDuplicateDeprecationWarnings = logger !== false;
+
+  if(shouldSuppressDuplicateDeprecationWarnings && hasDeprecationWarned) {
+    normalizer._hasDeprecationWarned = hasDeprecationWarned;
+  }
+
+  const normalized = normalizer.normalize(options);
+
+  if(shouldSuppressDuplicateDeprecationWarnings) {
+    hasDeprecationWarned = normalizer._hasDeprecationWarned;
+  }
+
+  return normalized;
+};
+
+export const normalizeApiOptions = (options, optionInfos, opts) => normalizeOptions(options, optionInfos, opts);
+
+export const normalizeCliOptions = (options, optionInfos, opts) => normalizeOptions(
+  options,
+  optionInfos,
+  {isCLI: true, ...opts}
+);
+
+module.exports = {
+  normalizeApiOptions,
+  normalizeCliOptions
+};

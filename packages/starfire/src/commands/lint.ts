@@ -1,11 +1,17 @@
-import chalk from 'chalk';
-import {spawnSync, SpawnSyncReturns} from 'child_process';
+import execa from 'execa';
 import * as path from 'path';
 
 import {StarfireConfig} from '../StarfireConfig';
+import {createSpinner} from '../utils';
 
-export const lint = (cmd) => {
-  console.log(chalk.cyan('Starfire lint...'));
+export const lint = async (cmd) => {
+  const {
+    quiet
+  } = cmd;
+
+  // Spinner
+  const spinner = createSpinner(quiet);
+  spinner.start('Linting files...');
 
   // Get custom configuration
   StarfireConfig.parseConfig(cmd);
@@ -38,10 +44,18 @@ export const lint = (cmd) => {
 
   console.log('eslintPath', eslintPath);
   console.log('eslintOptions', eslintOptions);
-  const eslint: SpawnSyncReturns<Buffer> = spawnSync(eslintPath, eslintOptions, {
-    encoding: 'utf-8',
-    stdio: 'inherit'
-  });
+  try {
+    await execa(eslintPath, eslintOptions, {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-  process.exit(eslint.status);
+    spinner.succeed('Linting completed!');
+    process.exit(0);
+  } catch(error) {
+    // Stop spinner
+    spinner.fail('Linting failed!');
+
+    process.exit(1);
+  }
 };

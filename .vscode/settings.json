@@ -68,5 +68,8 @@
   "typescriptHero.imports.multiLineTrailingComma": false,
   "typescriptHero.imports.multiLineWrapThreshold": 120,
   "typescriptHero.imports.organizeOnSave": true,
-  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
 }

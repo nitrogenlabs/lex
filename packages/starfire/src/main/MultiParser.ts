@@ -1,35 +1,42 @@
-import {AstToDoc} from './AstToDoc';
-import {Comments} from './Comments';
-import {OptionsNormalizer} from './OptionsNormalizer';
-import {Parser} from './Parser';
+import {attach} from './comments';
+import {normalize} from './options';
 
-export class MultiParser {
-  static printSubtree(path, print, options) {
-    if(options.printer.embed) {
-      return options.printer.embed(
-        path,
-        print,
-        (text, partialNextOptions) => MultiParser.textToDoc(text, partialNextOptions, options),
-        options
-      );
-    }
-
-    return null;
-  }
-
-  static textToDoc(text: string, partialNextOptions, parentOptions) {
-    const nextOptions = OptionsNormalizer.normalizeOptions({
+export const textToDoc = (text: string, partialNextOptions, parentOptions, printAstToDoc) => {
+  let updatedText: string = text;
+  const nextOptions = normalize(
+    {
       ...parentOptions,
       ...partialNextOptions,
-      originalText: text,
-      parentParser: parentOptions.parser
-    }, {passThrough: true, inferParser: false});
+      parentParser: parentOptions.parser,
+      embeddedInHtml: !!(
+        parentOptions.embeddedInHtml ||
+        parentOptions.parser === 'html' ||
+        parentOptions.parser === 'vue' ||
+        parentOptions.parser === 'angular' ||
+        parentOptions.parser === 'lwc'
+      ),
+      originalText: updatedText
+    },
+    {passThrough: true}
+  );
 
-    const result = Parser.parse(text, nextOptions);
-    const {ast, text: resultText} = result;
-    const astComments = ast.comments;
-    delete ast.comments;
-    Comments.attach(astComments, ast, resultText, nextOptions);
-    return AstToDoc.printAstToDoc(ast, nextOptions);
+  const result = require('./parser').parse(updatedText, nextOptions);
+  const {ast, text: resultText} = result;
+  updatedText = resultText;
+
+  const astComments = ast.comments;
+  delete ast.comments;
+  attach(astComments, ast, text, nextOptions);
+  return printAstToDoc(ast, nextOptions);
+};
+
+export const printSubtree = (path, print, options, printAstToDoc) => {
+  if(options.printer.embed) {
+    return options.printer.embed(
+      path,
+      print,
+      (text, partialNextOptions) => textToDoc(text, partialNextOptions, options, printAstToDoc),
+      options
+    );
   }
-}
+};

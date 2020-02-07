@@ -834,7 +834,9 @@ export class PrinterCSS {
     let counter = -1;
     let ancestorNode;
 
-    while(ancestorNode = path.getParentNode(++counter)) {
+    while(ancestorNode = path.getParentNode(counter)) {
+      counter = counter + 1;
+
       if(types.indexOf(ancestorNode.type) !== -1) {
         return counter;
       }
@@ -852,8 +854,10 @@ export class PrinterCSS {
     const node = path.getValue();
     const parts = [];
     let i = 0;
-    path.map((pathChild) => {
+
+    path.forEach((pathChild) => {
       const prevNode = node.nodes[i - 1];
+
       if(
         prevNode &&
         prevNode.type === 'css-comment' &&
@@ -896,7 +900,8 @@ export class PrinterCSS {
           }
         }
       }
-      i++;
+
+      i = i + 1;
     }, 'nodes');
 
     return concat(parts);

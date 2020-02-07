@@ -1,7 +1,4 @@
-import cosmiconfig from 'cosmiconfig';
-import getStream from 'get-stream';
-
-export class ThirdParty {
-  static cosmiconfig = cosmiconfig;
-  static getStream = getStream;
-}
+export {default as cosmiconfig} from 'cosmiconfig';
+export {sync as findParentDir} from 'find-parent-dir';
+export {default as getStream} from 'get-stream';
+export {default as isCI} from 'is-ci';

@@ -6,68 +6,6 @@ import {PrinterJS} from './PrinterJS';
 // Based on:
 // https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
 export class LanguageJS {
-  static options = options;
-  static printers = {estree: PrinterJS};
-
-  static locStart(node) {
-    // Handle nodes with decorators. They should start at the first decorator
-    if(node.declaration && node.declaration.decorators && node.declaration.decorators.length > 0) {
-      return LanguageJS.locStart(node.declaration.decorators[0]);
-    }
-
-    if(node.decorators && node.decorators.length > 0) {
-      return LanguageJS.locStart(node.decorators[0]);
-    }
-
-    if(node.__location) {
-      return node.__location.startOffset;
-    }
-
-    if(node.range) {
-      return node.range[0];
-    }
-
-    if(typeof node.start === 'number') {
-      return node.start;
-    }
-
-    if(node.loc) {
-      return node.loc.start;
-    }
-
-    return null;
-  }
-
-  static locEnd(node) {
-    const endNode = node.nodes && Util.getLast(node.nodes);
-
-    if(endNode && node.source && !node.source.end) {
-      node = endNode;
-    }
-
-    let loc;
-
-    if(node.range) {
-      loc = node.range[1];
-    } else if(typeof node.end === 'number') {
-      loc = node.end;
-    }
-
-    if(node.__location) {
-      return node.__location.endOffset;
-    }
-
-    if(node.typeAnnotation) {
-      return Math.max(loc, LanguageJS.locEnd(node.typeAnnotation));
-    }
-
-    if(node.loc && !loc) {
-      return node.loc.end;
-    }
-
-    return loc;
-  }
-
   static languages = [
     {
       aceMode: 'javascript',
@@ -161,6 +99,68 @@ export class LanguageJS {
       vscodeLanguageIds: ['json', 'jsonc']
     }
   ];
+  static options = options;
+  static printers = {estree: PrinterJS};
+
+  static locStart(node) {
+    // Handle nodes with decorators. They should start at the first decorator
+    if(node.declaration && node.declaration.decorators && node.declaration.decorators.length > 0) {
+      return LanguageJS.locStart(node.declaration.decorators[0]);
+    }
+
+    if(node.decorators && node.decorators.length > 0) {
+      return LanguageJS.locStart(node.decorators[0]);
+    }
+
+    if(node.__location) { // eslint-disable-line
+      return node.__location.startOffset; // eslint-disable-line
+    }
+
+    if(node.range) {
+      return node.range[0];
+    }
+
+    if(typeof node.start === 'number') {
+      return node.start;
+    }
+
+    if(node.loc) {
+      return node.loc.start;
+    }
+
+    return null;
+  }
+
+  static locEnd(node) {
+    let updatedNode = {...node};
+    const endNode = updatedNode.nodes && Util.getLast(updatedNode.nodes);
+
+    if(endNode && updatedNode.source && !updatedNode.source.end) {
+      updatedNode = endNode;
+    }
+
+    let loc;
+
+    if(updatedNode.range) {
+      loc = updatedNode.range[1];
+    } else if(typeof updatedNode.end === 'number') {
+      loc = updatedNode.end;
+    }
+
+    if(updatedNode.__location) { // eslint-disable-line
+      return updatedNode.__location.endOffset; // eslint-disable-line
+    }
+
+    if(updatedNode.typeAnnotation) {
+      return Math.max(loc, LanguageJS.locEnd(updatedNode.typeAnnotation));
+    }
+
+    if(updatedNode.loc && !loc) {
+      return updatedNode.loc.end;
+    }
+
+    return loc;
+  }
 
   static get typescript() {
     return {

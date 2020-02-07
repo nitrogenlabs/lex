@@ -184,7 +184,7 @@ export class PrinterMarkdown {
         }
 
         // fenced code block
-        const styleUnit = options.__inJsTemplate ? '~' : '`';
+        const styleUnit = options.__inJsTemplate ? '~' : '`'; // eslint-disable-line
         const style = styleUnit.repeat(
           Math.max(
             3,

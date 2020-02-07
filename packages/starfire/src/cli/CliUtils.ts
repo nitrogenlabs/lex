@@ -19,7 +19,7 @@ import {ResolveConfig} from '../config/ResolveConfig';
 import {Options} from '../main/Options';
 import {OptionsNormalizer} from '../main/OptionsNormalizer';
 import {Starfire} from '../StarFire/Starfire';
-import {CLIConstants} from './CLIConstants';
+import {CATEGORY_FORMAT, CATEGORY_OTHER, categoryOptions, categoryOrder, usageSummary} from './CLIConstants';
 
 export interface LogFunctionType {
   debug: (type: string, color: string) => void;
@@ -110,9 +110,9 @@ export class CliUtils {
       return null;
     }
 
-    options = {...options, filePath};
+    const updatedOptions = {...options, filePath};
 
-    if(!Starfire.check(input, options)) {
+    if(!Starfire.check(input, updatedOptions)) {
       if(!context.argv.write) {
         context.logger.log(filePath);
       }
@@ -323,7 +323,7 @@ export class CliUtils {
 
     try {
       const filePaths = globby
-        .sync(updatedPatterns, {dot: true, nodir: true})
+        .sync(updatedPatterns, {dot: true})
         .map((filePath) => path.relative(process.cwd(), filePath));
 
       if(filePaths.length === 0) {
@@ -477,8 +477,8 @@ export class CliUtils {
     );
 
     const groupedOptions = groupBy(options, (option) => option.category);
-    const firstCategories = CLIConstants.categoryOrder.slice(0, -1);
-    const lastCategories = CLIConstants.categoryOrder.slice(-1);
+    const firstCategories = categoryOrder.slice(0, -1);
+    const lastCategories = categoryOrder.slice(-1);
     const restCategories = Object.keys(groupedOptions).filter(
       (category) =>
         firstCategories.indexOf(category) === -1 &&
@@ -493,7 +493,7 @@ export class CliUtils {
       return `${category} options:\n\n${CliUtils.indent(categoryOptions, 2)}`;
     });
 
-    return [CLIConstants.usageSummary].concat(optionsUsage, ['']).join('\n\n');
+    return [usageSummary].concat(optionsUsage, ['']).join('\n\n');
   }
 
   static createOptionUsage(context, option, threshold): string {
@@ -666,9 +666,9 @@ export class CliUtils {
       const prefix = color ? `[${chalk[color](loggerName)}] ` : '';
 
       return (message, opts) => {
-        opts = {newline: true, ...opts};
+        const updatedOpts = {newline: true, ...opts};
         const stream = process[loggerName === 'log' ? 'stdout' : 'stderr'];
-        stream.write(message.replace(/^/gm, prefix) + (opts.newline ? '\n' : ''));
+        stream.write(message.replace(/^/gm, prefix) + (updatedOpts.newline ? '\n' : ''));
       };
     };
 
@@ -682,7 +682,7 @@ export class CliUtils {
 
   static normalizeDetailedOption(name, option): any {
     return {
-      category: CLIConstants.CATEGORY_OTHER, ...option,
+      category: CATEGORY_OTHER, ...option,
       choices:
         option.choices &&
         option.choices.map((choice) => {
@@ -752,7 +752,7 @@ export class CliUtils {
     return supportOptions.reduce((reduced, option) => {
       const newOption = {
         ...option,
-        category: option.cliCategory || CLIConstants.CATEGORY_FORMAT,
+        category: option.cliCategory || CATEGORY_FORMAT,
         description: option.cliDescription || option.description,
         forwardToApi: option.name,
         name: option.cliName || dashify(option.name)
@@ -795,7 +795,7 @@ export class CliUtils {
       showUnreleased: true
     }).options;
     const detailedOptionMap = CliUtils.normalizeDetailedOptionMap(
-      {...CliUtils.createDetailedOptionMap(supportOptions), ...CLIConstants.options}
+      {...CliUtils.createDetailedOptionMap(supportOptions), ...categoryOptions}
     );
     const detailedOptions = Util.arrayify(detailedOptionMap, 'name');
     const apiDefaultOptions = supportOptions

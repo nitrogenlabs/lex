@@ -1,58 +1,108 @@
+import fs from 'fs';
+import globby from 'globby';
+import uniqBy from 'lodash/uniqBy';
+import path from 'path';
+import resolve from 'resolve';
 
-import * as readPkgUp from 'read-pkg-up';
-import * as resolve from 'resolve';
+import partition from '../utils/partition';
+import * as internalPlugins from './internalPlugins';
+import {findParentDir} from './thirdParty';
 
-import {LanguageCSS} from '../languages/css';
-import {LanguageGraphql} from '../languages/graphql';
-import {LanguageGlimmer} from '../languages/handlebars';
-import {LanguageHTML} from '../languages/html';
-import {LanguageJS} from '../languages/js';
-import {LanguageMarkdown} from '../languages/markdown';
+const findPluginsInNodeModules = (nodeModulesDir) => {
+  const pluginPackageJsonPaths = globby.sync(
+    [
+      'prettier-plugin-*/package.json',
+      '@*/prettier-plugin-*/package.json',
+      '@prettier/plugin-*/package.json'
+    ],
+    {cwd: nodeModulesDir}
+  );
+  return pluginPackageJsonPaths.map(path.dirname);
+};
 
-export class LoadPlugins {
-  static loadPlugins(plugins = []) {
-    const internalPlugins = [
-      LanguageCSS,
-      LanguageGlimmer,
-      LanguageGraphql,
-      LanguageHTML,
-      LanguageJS,
-      LanguageMarkdown
-    ];
-
-    const externalPlugins = plugins.concat(LoadPlugins.getPluginsFromPackage(readPkgUp.sync({normalize: false}).pkg))
-      .map((plugin) => {
-        if(typeof plugin !== 'string') {
-          return plugin;
-        }
-
-        const pluginPath = resolve.sync(plugin, {basedir: process.cwd()});
-        return {name: plugin, ...require(pluginPath)};
-      });
-
-    return LoadPlugins.deduplicate(internalPlugins.concat(externalPlugins));
+const isDirectory = (dir): boolean => {
+  try {
+    return fs.statSync(dir).isDirectory();
+  } catch(e) {
+    return false;
   }
+};
 
-  static getPluginsFromPackage(pkg) {
-    if(!pkg) {
-      return [];
+export const loadPlugins = (plugins = [], pluginSearchDirs = []) => {
+  const updatedPlugins = [...plugins];
+  let updatedSearchDir = [...pluginSearchDirs];
+
+  // unless pluginSearchDirs are provided, auto-load plugins from node_modules that are parent to Prettier
+  if(!updatedSearchDir.length) {
+    const autoLoadDir = findParentDir(__dirname, 'node_modules');
+
+    if(autoLoadDir) {
+      updatedSearchDir = [autoLoadDir];
     }
-
-    const deps = {...pkg.dependencies, ...pkg.devDependencies};
-
-    return Object.keys(deps).filter((dep) => dep.startsWith('starfire-plugin-') || dep.startsWith('@starfire/plugin-'));
   }
 
-  static deduplicate(items) {
-    const uniqItems = [];
+  const [externalPluginNames, externalPluginInstances] = partition(
+    updatedPlugins,
+    (plugin) => typeof plugin === 'string'
+  );
 
-    for(const item of items) {
-      if(uniqItems.indexOf(item) < 0) {
-        uniqItems.push(item);
+  const externalManualLoadPluginInfos = externalPluginNames.map((pluginName) => {
+    let requirePath: string;
+
+    try {
+      // try local files
+      requirePath = resolve.sync(path.resolve(process.cwd(), pluginName));
+    } catch(e) {
+      // try node modules
+      requirePath = resolve.sync(pluginName, {basedir: process.cwd()});
+    }
+    return {
+      name: pluginName,
+      requirePath
+    };
+  });
+
+  const externalAutoLoadPluginInfos = updatedSearchDir
+    .map((pluginSearchDir) => {
+      const resolvedPluginSearchDir = path.resolve(
+        process.cwd(),
+        pluginSearchDir
+      );
+
+      const nodeModulesDir = path.resolve(
+        resolvedPluginSearchDir,
+        'node_modules'
+      );
+
+      // In some fringe cases (ex: files "mounted" as virtual directories), the
+      // isDirectory(resolvedPluginSearchDir) check might be false even though
+      // the node_modules actually exists.
+      if(
+        !isDirectory(nodeModulesDir) &&
+        !isDirectory(resolvedPluginSearchDir)
+      ) {
+        throw new Error(
+          `${pluginSearchDir} does not exist or is not a directory`
+        );
       }
-    }
 
-    return uniqItems;
-  }
-}
+      return findPluginsInNodeModules(nodeModulesDir).map((pluginName) => ({
+        name: pluginName,
+        requirePath: resolve.sync(pluginName, {
+          basedir: resolvedPluginSearchDir
+        })
+      }));
+    })
+    .reduce((a, b) => a.concat(b), []);
 
+  const externalPlugins = uniqBy(externalManualLoadPluginInfos.concat(externalAutoLoadPluginInfos), 'requirePath')
+    .map((externalPluginInfo) =>
+      Object.assign(
+        {name: externalPluginInfo.name},
+        eval('require')(externalPluginInfo.requirePath)
+      )
+    )
+    .concat(externalPluginInstances);
+
+  return internalPlugins.concat(externalPlugins);
+};

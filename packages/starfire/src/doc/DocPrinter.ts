@@ -1,500 +1,538 @@
-import {Util} from '../common/Util';
-import {DocBuilders} from './DocBuilders';
+import {convertEndOfLineToChars} from '../common/endOfLine';
+import {getStringWidth} from '../common/util';
+import {concat, cursor, fill} from './docBuilders';
 
-export class DocPrinter {
-  static MODE_BREAK: number = 1;
-  static MODE_FLAT: number = 2;
+/** @type {Record<symbol, typeof MODE_BREAK | typeof MODE_FLAT>} */
+let groupModeMap;
 
-  static rootIndent() {
-    return {length: 0, queue: [], value: ''};
+const MODE_BREAK = 1;
+const MODE_FLAT = 2;
+
+export const generateInd = (ind, newPart, options) => {
+  const queue =
+    newPart.type === 'dedent'
+      ? ind.queue.slice(0, -1)
+      : ind.queue.concat(newPart);
+
+  let value: string = '';
+  let length: number = 0;
+  let lastTabs: number = 0;
+  let lastSpaces: number = 0;
+
+  const addTabs = (count) => {
+    value += '\t'.repeat(count);
+    length += options.tabWidth * count;
+  };
+
+  const addSpaces = (count) => {
+    value += ' '.repeat(count);
+    length += count;
+  };
+
+  const resetLast = () => {
+    lastTabs = 0;
+    lastSpaces = 0;
+  };
+
+  const flushTabs = () => {
+    if(lastTabs > 0) {
+      addTabs(lastTabs);
+    }
+    resetLast();
+  };
+
+  const flushSpaces = () => {
+    if(lastSpaces > 0) {
+      addSpaces(lastSpaces);
+    }
+    resetLast();
+  };
+
+  const flush = () => {
+    if(options.useTabs) {
+      flushTabs();
+    } else {
+      flushSpaces();
+    }
+  };
+
+  for(const part of queue) {
+    switch(part.type) {
+      case 'indent':
+        flush();
+        if(options.useTabs) {
+          addTabs(1);
+        } else {
+          addSpaces(options.tabWidth);
+        }
+        break;
+      case 'stringAlign':
+        flush();
+        value += part.n;
+        length += part.n.length;
+        break;
+      case 'numberAlign':
+        lastTabs += 1;
+        lastSpaces += part.n;
+        break;
+      /* istanbul ignore next */
+      default:
+        throw new Error(`Unexpected type '${part.type}'`);
+    }
   }
 
-  static makeIndent(ind, options) {
-    return DocPrinter.generateInd(ind, {type: 'indent'}, options);
+  flushSpaces();
+
+  return {...ind, value, length, queue};
+};
+
+export const rootIndent = () => ({value: '', length: 0, queue: []});
+export const makeIndent = (ind, options) => generateInd(ind, {type: 'indent'}, options);
+export const makeAlign = (ind, n, options) => (n === -Infinity
+  ? ind.root || rootIndent()
+  : n < 0
+    ? generateInd(ind, {type: 'dedent'}, options)
+    : !n
+      ? ind
+      : n.type === 'root'
+        ? Object.assign({}, ind, {root: ind})
+        : typeof n === 'string'
+          ? generateInd(ind, {type: 'stringAlign', n}, options)
+          : generateInd(ind, {type: 'numberAlign', n}, options));
+
+export const trim = (out: any[]): number => {
+  if(out.length === 0) {
+    return 0;
   }
 
-  static makeAlign(ind, n, options) {
-    return n === -Infinity
-      ? ind.root || DocPrinter.rootIndent()
-      : n < 0
-        ? DocPrinter.generateInd(ind, {type: 'dedent'}, options)
-        : !n
-          ? ind
-          : n.type === 'root'
-            ? {...ind, root: ind}
-            : typeof n === 'string'
-              ? DocPrinter.generateInd(ind, {type: 'stringAlign', n}, options)
-              : DocPrinter.generateInd(ind, {type: 'numberAlign', n}, options);
+  let trimCount: number = 0;
+
+  // Trim whitespace at the end of line
+  while(
+    out.length > 0 &&
+    typeof out[out.length - 1] === 'string' &&
+    out[out.length - 1].match(/^[ \t]*$/)
+  ) {
+    trimCount += out.pop().length;
   }
 
-  static generateInd(ind, newPart, options) {
-    const queue = newPart.type === 'dedent' ? ind.queue.slice(0, -1) : ind.queue.concat(newPart);
-    let value: string = '';
-    let length: number = 0;
-    let lastTabs: number = 0;
-    let lastSpaces: number = 0;
-    const addTabs = (count) => {
-      value += '\t'.repeat(count);
-      length += options.tabWidth * count;
-    };
-    const addSpaces = (count) => {
-      value += ' '.repeat(count);
-      length += count;
-    };
-    const flush = () => {
-      if(options.useTabs) {
-        flushTabs();
-      } else {
-        flushSpaces();
-      }
-    };
-    const flushTabs = () => {
-      if(lastTabs > 0) {
-        addTabs(lastTabs);
+  if(out.length && typeof out[out.length - 1] === 'string') {
+    const trimmed = out[out.length - 1].replace(/[ \t]*$/, '');
+    trimCount += out[out.length - 1].length - trimmed.length;
+    out[out.length - 1] = trimmed;
+  }
+
+  return trimCount;
+};
+
+export const fits = (next, restCommands, width: number, options, mustBeFlat?: boolean) => {
+  let restIdx: number = restCommands.length;
+  const cmds = [next];
+  let updatedWidth: number = width;
+
+  // `out` is only used for width counting because `trim` requires to look
+  // backwards for space characters.
+  const out = [];
+
+  while(updatedWidth >= 0) {
+    if(cmds.length === 0) {
+      if(restIdx === 0) {
+        return true;
       }
 
-      resetLast();
-    };
-    const flushSpaces = () => {
-      if(lastSpaces > 0) {
-        addSpaces(lastSpaces);
-      }
+      cmds.push(restCommands[restIdx - 1]);
+      restIdx = restIdx - 1;
 
-      resetLast();
-    };
-    const resetLast = () => {
-      lastTabs = 0;
-      lastSpaces = 0;
-    };
+      continue;
+    }
 
-    queue.forEach((part) => {
-      switch(part.type) {
+    const x = cmds.pop();
+    const ind = x[0];
+    const mode = x[1];
+    const doc = x[2];
+
+    if(typeof doc === 'string') {
+      out.push(doc);
+
+      updatedWidth -= getStringWidth(doc);
+    } else {
+      switch(doc.type) {
+        case 'concat':
+          for(let i = doc.parts.length - 1; i >= 0; i--) {
+            cmds.push([ind, mode, doc.parts[i]]);
+          }
+
+          break;
         case 'indent':
-          flush();
-          if(options.useTabs) {
-            addTabs(1);
-          } else {
-            addSpaces(options.tabWidth);
+          cmds.push([makeIndent(ind, options), mode, doc.contents]);
+
+          break;
+        case 'align':
+          cmds.push([makeAlign(ind, doc.n, options), mode, doc.contents]);
+
+          break;
+        case 'trim':
+          updatedWidth += trim(out);
+
+          break;
+        case 'group':
+          if(mustBeFlat && doc.break) {
+            return false;
+          }
+          cmds.push([ind, doc.break ? MODE_BREAK : mode, doc.contents]);
+
+          if(doc.id) {
+            groupModeMap[doc.id] = cmds[cmds.length - 1][1];
           }
           break;
-        case 'stringAlign':
-          flush();
-          value += part.n;
-          length += part.n.length;
+        case 'fill':
+          for(let i = doc.parts.length - 1; i >= 0; i--) {
+            cmds.push([ind, mode, doc.parts[i]]);
+          }
+
           break;
-        case 'numberAlign':
-          lastTabs += 1;
-          lastSpaces += part.n;
+        case 'if-break': {
+          const groupMode = doc.groupId ? groupModeMap[doc.groupId] : mode;
+          if(groupMode === MODE_BREAK) {
+            if(doc.breakContents) {
+              cmds.push([ind, mode, doc.breakContents]);
+            }
+          }
+          if(groupMode === MODE_FLAT) {
+            if(doc.flatContents) {
+              cmds.push([ind, mode, doc.flatContents]);
+            }
+          }
+
           break;
-        /* istanbul ignore next */
-        default:
-          throw new Error(`Unexpected type '${part.type}'`);
-      }
-    });
-
-    flushSpaces();
-
-    return {...ind, value, length, queue};
-  }
-
-  static fits(next, restCommands, width, options, mustBeFlat?) {
-    let restIdx: number = restCommands.length;
-    const cmds = [next];
-
-    while(width >= 0) {
-      if(cmds.length === 0) {
-        if(restIdx === 0) {
-          return true;
         }
-        cmds.push(restCommands[restIdx - 1]);
+        case 'line':
+          switch(mode) {
+            // fallthrough
+            case MODE_FLAT:
+              if(!doc.hard) {
+                if(!doc.soft) {
+                  out.push(' ');
 
-        restIdx--;
-
-        continue;
-      }
-
-      const x = cmds.pop();
-      const ind = x[0];
-      const mode = x[1];
-      const doc = x[2];
-
-      if(typeof doc === 'string') {
-        width -= Util.getStringWidth(doc);
-      } else {
-        switch(doc.type) {
-          case 'concat':
-            for(let i = doc.parts.length - 1; i >= 0; i--) {
-              cmds.push([ind, mode, doc.parts[i]]);
-            }
-
-            break;
-          case 'indent':
-            cmds.push([DocPrinter.makeIndent(ind, options), mode, doc.contents]);
-
-            break;
-          case 'align':
-            cmds.push([DocPrinter.makeAlign(ind, doc.n, options), mode, doc.contents]);
-
-            break;
-          case 'group':
-            if(mustBeFlat && doc.break) {
-              return false;
-            }
-            cmds.push([ind, doc.break ? DocPrinter.MODE_BREAK : mode, doc.contents]);
-
-            break;
-          case 'fill':
-            for(let i = doc.parts.length - 1; i >= 0; i--) {
-              cmds.push([ind, mode, doc.parts[i]]);
-            }
-
-            break;
-          case 'if-break':
-            if(mode === DocPrinter.MODE_BREAK) {
-              if(doc.breakContents) {
-                cmds.push([ind, mode, doc.breakContents]);
-              }
-            }
-            if(mode === DocPrinter.MODE_FLAT) {
-              if(doc.flatContents) {
-                cmds.push([ind, mode, doc.flatContents]);
-              }
-            }
-
-            break;
-          case 'line':
-            switch(mode) {
-              // fallthrough
-              case DocPrinter.MODE_FLAT:
-                if(!doc.hard) {
-                  if(!doc.soft) {
-                    width -= 1;
-                  }
-
-                  break;
+                  updatedWidth -= 1;
                 }
-                return true;
 
-              case DocPrinter.MODE_BREAK:
-                return true;
-              default:
                 break;
-            }
-            break;
-          default:
-            break;
-        }
+              }
+              return true;
+
+            case MODE_BREAK:
+              return true;
+          }
+          break;
       }
     }
-    return false;
   }
+  return false;
+};
 
-  static printDocToString(document, options) {
-    const width = options.maxLineLength;
-    const newLine = options.newLine || '\n';
-    let pos = 0;
-    // cmds is basically a stack. We've turned a recursive call into a
-    // while loop which is much faster. The while loop below adds new
-    // cmds to the array instead of recursively calling `print`.
-    const cmds = [[DocPrinter.rootIndent(), DocPrinter.MODE_BREAK, document]];
-    const out = [];
-    let shouldRemeasure = false;
-    let lineSuffix = [];
+export const printDocToString = (doc, options) => {
+  groupModeMap = {};
 
-    while(cmds.length !== 0) {
-      const x = cmds.pop();
-      const ind = x[0];
-      const mode = x[1];
-      const doc = x[2];
+  const width = options.printWidth;
+  const newLine = convertEndOfLineToChars(options.endOfLine);
+  let pos = 0;
+  // cmds is basically a stack. We've turned a recursive call into a
+  // while loop which is much faster. The while loop below adds new
+  // cmds to the array instead of recursively calling `print`.
+  const cmds = [[rootIndent(), MODE_BREAK, doc]];
+  const out = [];
+  let shouldRemeasure = false;
+  let lineSuffix = [];
 
-      if(typeof doc === 'string') {
-        out.push(doc);
+  while(cmds.length !== 0) {
+    const x = cmds.pop();
+    const ind = x[0];
+    const mode = x[1];
+    const doc = x[2];
 
-        pos += Util.getStringWidth(doc);
-      } else {
-        switch(doc.type) {
-          case 'cursor':
-            out.push(DocBuilders.cursor.placeholder);
+    if(typeof doc === 'string') {
+      out.push(doc);
 
-            break;
-          case 'concat':
-            for(let i = doc.parts.length - 1; i >= 0; i--) {
-              cmds.push([ind, mode, doc.parts[i]]);
-            }
+      pos += getStringWidth(doc);
+    } else {
+      switch(doc.type) {
+        case 'cursor':
+          out.push(cursor.placeholder);
 
-            break;
-          case 'indent':
-            cmds.push([DocPrinter.makeIndent(ind, options), mode, doc.contents]);
+          break;
+        case 'concat':
+          for(let i = doc.parts.length - 1; i >= 0; i--) {
+            cmds.push([ind, mode, doc.parts[i]]);
+          }
 
-            break;
-          case 'align':
-            cmds.push([DocPrinter.makeAlign(ind, doc.n, options), mode, doc.contents]);
+          break;
+        case 'indent':
+          cmds.push([makeIndent(ind, options), mode, doc.contents]);
 
-            break;
-          case 'group':
-            switch(mode) {
-              default:
+          break;
+        case 'align':
+          cmds.push([makeAlign(ind, doc.n, options), mode, doc.contents]);
+
+          break;
+        case 'trim':
+          pos -= trim(out);
+
+          break;
+        case 'group':
+          switch(mode) {
+            case MODE_FLAT:
+              if(!shouldRemeasure) {
+                cmds.push([
+                  ind,
+                  doc.break ? MODE_BREAK : MODE_FLAT,
+                  doc.contents
+                ]);
+
                 break;
-              case DocPrinter.MODE_FLAT:
-                if(!shouldRemeasure) {
-                  cmds.push([ind, doc.break ? DocPrinter.MODE_BREAK : DocPrinter.MODE_FLAT, doc.contents]);
-                  break;
-                }
-                // fallthrough
+              }
 
-              case DocPrinter.MODE_BREAK: {
-                shouldRemeasure = false;
-                const next = [ind, DocPrinter.MODE_FLAT, doc.contents];
-                const rem = width - pos;
+            case MODE_BREAK: {
+              shouldRemeasure = false;
 
-                if(!doc.break && DocPrinter.fits(next, cmds, rem, options)) {
-                  cmds.push(next);
-                } else {
-                  // Expanded states are a rare case where a document
-                  // can manually provide multiple representations of
-                  // itself. It provides an array of documents
-                  // going from the least expanded (most flattened)
-                  // representation first to the most expanded. If a
-                  // group has these, we need to manually go through
-                  // these states and find the first one that fits.
-                  if(doc.expandedStates) {
-                    const mostExpanded =
-                      doc.expandedStates[doc.expandedStates.length - 1];
+              const next = [ind, MODE_FLAT, doc.contents];
+              const rem = width - pos;
 
-                    if(doc.break) {
-                      cmds.push([ind, DocPrinter.MODE_BREAK, mostExpanded]);
+              if(!doc.break && fits(next, cmds, rem, options)) {
+                cmds.push(next);
+              } else {
+                // Expanded states are a rare case where a document
+                // can manually provide multiple representations of
+                // itself. It provides an array of documents
+                // going from the least expanded (most flattened)
+                // representation first to the most expanded. If a
+                // group has these, we need to manually go through
+                // these states and find the first one that fits.
+                if(doc.expandedStates) {
+                  const mostExpanded =
+                    doc.expandedStates[doc.expandedStates.length - 1];
 
-                      break;
-                    } else {
-                      for(let i = 1; i < doc.expandedStates.length + 1; i++) {
-                        if(i >= doc.expandedStates.length) {
-                          cmds.push([ind, DocPrinter.MODE_BREAK, mostExpanded]);
+                  if(doc.break) {
+                    cmds.push([ind, MODE_BREAK, mostExpanded]);
+
+                    break;
+                  } else {
+                    for(let i = 1; i < doc.expandedStates.length + 1; i++) {
+                      if(i >= doc.expandedStates.length) {
+                        cmds.push([ind, MODE_BREAK, mostExpanded]);
+
+                        break;
+                      } else {
+                        const state = doc.expandedStates[i];
+                        const cmd = [ind, MODE_FLAT, state];
+
+                        if(fits(cmd, cmds, rem, options)) {
+                          cmds.push(cmd);
 
                           break;
-                        } else {
-                          const state = doc.expandedStates[i];
-                          const cmd = [ind, DocPrinter.MODE_FLAT, state];
-
-                          if(DocPrinter.fits(cmd, cmds, rem, options)) {
-                            cmds.push(cmd);
-
-                            break;
-                          }
                         }
                       }
                     }
-                  } else {
-                    cmds.push([ind, DocPrinter.MODE_BREAK, doc.contents]);
                   }
+                } else {
+                  cmds.push([ind, MODE_BREAK, doc.contents]);
                 }
-
-                break;
               }
+
+              break;
             }
+          }
+
+          if(doc.id) {
+            groupModeMap[doc.id] = cmds[cmds.length - 1][1];
+          }
+          break;
+        // Fills each line with as much code as possible before moving to a new
+        // line with the same indentation.
+        //
+        // Expects doc.parts to be an array of alternating content and
+        // whitespace. The whitespace contains the linebreaks.
+        //
+        // For example:
+        //   ["I", line, "love", line, "monkeys"]
+        // or
+        //   [{ type: group, ... }, softline, { type: group, ... }]
+        //
+        // It uses this parts structure to handle three main layout cases:
+        // * The first two content items fit on the same line without
+        //   breaking
+        //   -> output the first content item and the whitespace "flat".
+        // * Only the first content item fits on the line without breaking
+        //   -> output the first content item "flat" and the whitespace with
+        //   "break".
+        // * Neither content item fits on the line without breaking
+        //   -> output the first content item and the whitespace with "break".
+        case 'fill': {
+          const rem = width - pos;
+
+          const {parts} = doc;
+          if(parts.length === 0) {
             break;
-          // Fills each line with as much code as possible before moving to a new
-          // line with the same indentation.
-          //
-          // Expects doc.parts to be an array of alternating content and
-          // whitespace. The whitespace contains the linebreaks.
-          //
-          // For example:
-          //   ["I", line, "love", line, "monkeys"]
-          // or
-          //   [{ type: group, ... }, softline, { type: group, ... }]
-          //
-          // It uses this parts structure to handle three main layout cases:
-          // * The first two content items fit on the same line without
-          //   breaking
-          //   -> output the first content item and the whitespace "flat".
-          // * Only the first content item fits on the line without breaking
-          //   -> output the first content item "flat" and the whitespace with
-          //   "break".
-          // * Neither content item fits on the line without breaking
-          //   -> output the first content item and the whitespace with "break".
-          case 'fill': {
-            const rem = width - pos;
+          }
 
-            const {parts} = doc;
-            if(parts.length === 0) {
-              break;
-            }
+          const content = parts[0];
+          const contentFlatCmd = [ind, MODE_FLAT, content];
+          const contentBreakCmd = [ind, MODE_BREAK, content];
+          const contentFits = fits(contentFlatCmd, [], rem, options, true);
 
-            const content = parts[0];
-            const contentFlatCmd = [ind, DocPrinter.MODE_FLAT, content];
-            const contentBreakCmd = [ind, DocPrinter.MODE_BREAK, content];
-            const contentFits = DocPrinter.fits(contentFlatCmd, [], rem, options, true);
-
-            if(parts.length === 1) {
-              if(contentFits) {
-                cmds.push(contentFlatCmd);
-              } else {
-                cmds.push(contentBreakCmd);
-              }
-              break;
-            }
-
-            const whitespace = parts[1];
-            const whitespaceFlatCmd = [ind, DocPrinter.MODE_FLAT, whitespace];
-            const whitespaceBreakCmd = [ind, DocPrinter.MODE_BREAK, whitespace];
-
-            if(parts.length === 2) {
-              if(contentFits) {
-                cmds.push(whitespaceFlatCmd);
-                cmds.push(contentFlatCmd);
-              } else {
-                cmds.push(whitespaceBreakCmd);
-                cmds.push(contentBreakCmd);
-              }
-              break;
-            }
-
-            // At this point we've handled the first pair (context, separator)
-            // and will create a new fill doc for the rest of the content.
-            // Ideally we wouldn't mutate the array here but coping all the
-            // elements to a new array would make this algorithm quadratic,
-            // which is unusable for large arrays (e.g. large texts in JSX).
-            parts.splice(0, 2);
-            const remainingCmd = [ind, mode, DocBuilders.fill(parts)];
-
-            const secondContent = parts[0];
-
-            const firstAndSecondContentFlatCmd = [
-              ind,
-              DocPrinter.MODE_FLAT,
-              DocBuilders.concat([content, whitespace, secondContent])
-            ];
-            const firstAndSecondContentFits = DocPrinter.fits(
-              firstAndSecondContentFlatCmd,
-              [],
-              rem,
-              options,
-              true
-            );
-
-            if(firstAndSecondContentFits) {
-              cmds.push(remainingCmd);
-              cmds.push(whitespaceFlatCmd);
-              cmds.push(contentFlatCmd);
-            } else if(contentFits) {
-              cmds.push(remainingCmd);
-              cmds.push(whitespaceBreakCmd);
+          if(parts.length === 1) {
+            if(contentFits) {
               cmds.push(contentFlatCmd);
             } else {
-              cmds.push(remainingCmd);
+              cmds.push(contentBreakCmd);
+            }
+            break;
+          }
+
+          const whitespace = parts[1];
+          const whitespaceFlatCmd = [ind, MODE_FLAT, whitespace];
+          const whitespaceBreakCmd = [ind, MODE_BREAK, whitespace];
+
+          if(parts.length === 2) {
+            if(contentFits) {
+              cmds.push(whitespaceFlatCmd);
+              cmds.push(contentFlatCmd);
+            } else {
               cmds.push(whitespaceBreakCmd);
               cmds.push(contentBreakCmd);
             }
             break;
           }
-          case 'if-break':
-            if(mode === DocPrinter.MODE_BREAK) {
-              if(doc.breakContents) {
-                cmds.push([ind, mode, doc.breakContents]);
-              }
-            }
-            if(mode === DocPrinter.MODE_FLAT) {
-              if(doc.flatContents) {
-                cmds.push([ind, mode, doc.flatContents]);
-              }
-            }
 
-            break;
-          case 'line-suffix':
-            lineSuffix.push([ind, mode, doc.contents]);
-            break;
-          case 'line-suffix-boundary':
-            if(lineSuffix.length > 0) {
-              cmds.push([ind, mode, {type: 'line', hard: true}]);
-            }
-            break;
-          case 'line':
-            switch(mode) {
-              default:
-                break;
-              case DocPrinter.MODE_FLAT:
-                if(!doc.hard) {
-                  if(!doc.soft) {
-                    out.push(' ');
+          // At this point we've handled the first pair (context, separator)
+          // and will create a new fill doc for the rest of the content.
+          // Ideally we wouldn't mutate the array here but coping all the
+          // elements to a new array would make this algorithm quadratic,
+          // which is unusable for large arrays (e.g. large texts in JSX).
+          parts.splice(0, 2);
+          const remainingCmd = [ind, mode, fill(parts)];
 
-                    pos += 1;
-                  }
+          const secondContent = parts[0];
 
-                  break;
-                } else {
-                  // This line was forced into the output even if we
-                  // were in flattened mode, so we need to tell the next
-                  // group that no matter what, it needs to remeasure
-                  // because the previous measurement didn't accurately
-                  // capture the entire expression (this is necessary
-                  // for nested groups)
-                  shouldRemeasure = true;
-                }
-                // fallthrough
+          const firstAndSecondContentFlatCmd = [
+            ind,
+            MODE_FLAT,
+            concat([content, whitespace, secondContent])
+          ];
+          const firstAndSecondContentFits = fits(
+            firstAndSecondContentFlatCmd,
+            [],
+            rem,
+            options,
+            true
+          );
 
-              case DocPrinter.MODE_BREAK:
-                if(lineSuffix.length) {
-                  cmds.push([ind, mode, doc]);
-                  [].push.apply(cmds, lineSuffix.reverse());
-                  lineSuffix = [];
-                  break;
-                }
-
-                if(doc.literal) {
-                  if(ind.root) {
-                    out.push(newLine, ind.root.value);
-                    pos = ind.root.length;
-                  } else {
-                    out.push(newLine);
-                    pos = 0;
-                  }
-                } else {
-                  if(out.length > 0) {
-                    // Trim whitespace at the end of line
-                    while(
-                      out.length > 0 &&
-                      out[out.length - 1].match(/^[^\S\n]*$/)
-                    ) {
-                      out.pop();
-                    }
-
-                    if(
-                      out.length &&
-                      (options.parser !== 'markdown' ||
-                        // preserve markdown's `break` node (two trailing spaces)
-                        !/\S {2}$/.test(out[out.length - 1]))
-                    ) {
-                      out[out.length - 1] = out[out.length - 1].replace(
-                        /[^\S\n]*$/,
-                        ''
-                      );
-                    }
-                  }
-
-                  out.push(newLine + ind.value);
-                  pos = ind.length;
-                }
-                break;
-            }
-            break;
-          default:
-            break;
+          if(firstAndSecondContentFits) {
+            cmds.push(remainingCmd);
+            cmds.push(whitespaceFlatCmd);
+            cmds.push(contentFlatCmd);
+          } else if(contentFits) {
+            cmds.push(remainingCmd);
+            cmds.push(whitespaceBreakCmd);
+            cmds.push(contentFlatCmd);
+          } else {
+            cmds.push(remainingCmd);
+            cmds.push(whitespaceBreakCmd);
+            cmds.push(contentBreakCmd);
+          }
+          break;
         }
+        case 'if-break': {
+          const groupMode = doc.groupId ? groupModeMap[doc.groupId] : mode;
+          if(groupMode === MODE_BREAK) {
+            if(doc.breakContents) {
+              cmds.push([ind, mode, doc.breakContents]);
+            }
+          }
+          if(groupMode === MODE_FLAT) {
+            if(doc.flatContents) {
+              cmds.push([ind, mode, doc.flatContents]);
+            }
+          }
+
+          break;
+        }
+        case 'line-suffix':
+          lineSuffix.push([ind, mode, doc.contents]);
+          break;
+        case 'line-suffix-boundary':
+          if(lineSuffix.length > 0) {
+            cmds.push([ind, mode, {type: 'line', hard: true}]);
+          }
+          break;
+        case 'line':
+          switch(mode) {
+            case MODE_FLAT:
+              if(!doc.hard) {
+                if(!doc.soft) {
+                  out.push(' ');
+
+                  pos += 1;
+                }
+
+                break;
+              } else {
+                // This line was forced into the output even if we
+                // were in flattened mode, so we need to tell the next
+                // group that no matter what, it needs to remeasure
+                // because the previous measurement didn't accurately
+                // capture the entire expression (this is necessary
+                // for nested groups)
+                shouldRemeasure = true;
+              }
+
+            case MODE_BREAK:
+              if(lineSuffix.length) {
+                cmds.push([ind, mode, doc]);
+                [].push.apply(cmds, lineSuffix.reverse());
+                lineSuffix = [];
+                break;
+              }
+
+              if(doc.literal) {
+                if(ind.root) {
+                  out.push(newLine, ind.root.value);
+                  pos = ind.root.length;
+                } else {
+                  out.push(newLine);
+                  pos = 0;
+                }
+              } else {
+                pos -= trim(out);
+                out.push(newLine + ind.value);
+                pos = ind.length;
+              }
+              break;
+          }
+          break;
+        default:
       }
     }
-
-    const cursorPlaceholderIndex = out.indexOf(DocBuilders.cursor.placeholder);
-
-    if(cursorPlaceholderIndex !== -1) {
-      const beforeCursor = out.slice(0, cursorPlaceholderIndex).join('');
-      const afterCursor = out.slice(cursorPlaceholderIndex + 1).join('');
-
-      return {
-        cursor: beforeCursor.length,
-        formatted: beforeCursor + afterCursor
-      };
-    }
-
-    return {formatted: out.join('')};
   }
-}
+
+  const cursorPlaceholderIndex = out.indexOf(cursor.placeholder);
+  if(cursorPlaceholderIndex !== -1) {
+    const otherCursorPlaceholderIndex = out.indexOf(
+      cursor.placeholder,
+      cursorPlaceholderIndex + 1
+    );
+    const beforeCursor = out.slice(0, cursorPlaceholderIndex).join('');
+    const aroundCursor = out
+      .slice(cursorPlaceholderIndex + 1, otherCursorPlaceholderIndex)
+      .join('');
+    const afterCursor = out.slice(otherCursorPlaceholderIndex + 1).join('');
+
+    return {
+      formatted: beforeCursor + aroundCursor + afterCursor,
+      cursorNodeStart: beforeCursor.length,
+      cursorNodeText: aroundCursor
+    };
+  }
+
+  return {formatted: out.join('')};
+};

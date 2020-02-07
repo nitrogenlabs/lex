@@ -1,7 +1,6 @@
-
-
 import {Util} from '../../common/util';
 import {DocBuilders} from '../../doc/DocBuilders';
+
 
 const {concat, dedent, group, hardline, indent, join, softline} = DocBuilders;
 

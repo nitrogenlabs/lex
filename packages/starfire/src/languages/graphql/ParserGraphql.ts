@@ -5,16 +5,19 @@ export class ParserGraphql {
     const comments = [];
     const {startToken} = ast.loc;
     let {next} = startToken;
+
     while(next.kind !== '<EOF>') {
       if(next.kind === 'Comment') {
-        Object.assign(next, {
+        next = {
+          ...next,
           // The Comment token's column starts _after_ the `#`,
           // but we need to make sure the node captures the `#`
           column: next.column - 1
-        });
+        };
         comments.push(next);
       }
-      next = next.next;
+      const {next: nestedNext} = next;
+      next = nestedNext;
     }
 
     return comments;

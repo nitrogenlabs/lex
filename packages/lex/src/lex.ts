@@ -3,7 +3,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import program from 'commander';
+import commander from 'commander';
 
 import {
   build,
@@ -26,7 +26,7 @@ import {
 const packageConfig = require('../package.json');
 
 // Commands
-program.command('build')
+commander.command('build')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
   .option('-l, --lexConfig <path>', 'Lex configuration file path (lex.config.js).')
@@ -52,17 +52,17 @@ program.command('build')
   .option('--buildDelimiter <delimiter>', 'Display custom text after build output. Default: "=== Build done ==="')
   .action((cmd) => build(cmd, process.exit));
 
-program.command('clean')
+commander.command('clean')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
   .action((cmd) => clean(cmd, process.exit));
 
-program.command('config <type>')
+commander.command('config <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--json <path>', 'Save output to json file.')
   .action((type, cmd) => config(type, cmd, process.exit));
 
-program.command('compile')
+commander.command('compile')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Transpiler configuration file path (ie. .flowconfig or tsconfig.json).')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
@@ -77,14 +77,14 @@ program.command('compile')
   .option('--outputPath <path>', 'Output path')
   .action((cmd) => compile(cmd, process.exit));
 
-program.command('create <type>')
+commander.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Create Typescript version.')
   .option('--outputFile <path>', 'Output filename.')
   .option('--outputName <name>', 'Output name.')
   .action((type, cmd) => create(type, cmd, process.exit));
 
-program.command('dev')
+commander.command('dev')
   .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
@@ -100,18 +100,18 @@ program.command('dev')
   .option('--outputPath <path>', 'Output path')
   .action((cmd) => dev(cmd, process.exit));
 
-program.command('init <appName> [packageName]')
+commander.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit));
 
-program.command('linked')
+commander.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => linked(cmd, process.exit));
 
-program.command('lint')
+commander.command('lint')
   .option('--cache', 'Only check changed files. Default: false.')
   .option('--cache-location <path>', 'Path to the cache file or directory.')
   .option('--color', 'Force enabling of color.')
@@ -147,11 +147,11 @@ program.command('lint')
   .option('--stdin-filename <name>', 'Specify filename to process STDIN as.')
   .action((cmd) => lint(cmd, process.exit));
 
-program.command('migrate')
+commander.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => migrate(cmd, process.exit));
 
-program.command('publish')
+commander.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
   .option('-o, --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
@@ -161,7 +161,7 @@ program.command('publish')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action((cmd) => publish(cmd, process.exit));
 
-program.command('test')
+commander.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
   .option('-d, --detectOpenHandles', 'Attempt to collect and print open handles preventing Jest from exiting cleanly')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
@@ -205,23 +205,23 @@ program.command('test')
   .option('--watchAll', 'Watch files for changes and rerun all tests when something changes.')
   .action((cmd) => test(cmd, process.exit));
 
-program.command('update')
+commander.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--registry', 'Add a custom registry url.')
   .action((cmd) => update(cmd, process.exit));
 
-program.command('upgrade')
+commander.command('upgrade')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => upgrade(cmd, process.exit));
 
-program.command('versions')
+commander.command('versions')
   .option('-j, --json', 'Print the version as a JSON object.')
   .action((cmd) => versions(cmd, process.exit));
 
 // Initialize
-program
+commander
   .version(packageConfig.version)
   .parse(process.argv);

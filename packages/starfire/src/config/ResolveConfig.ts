@@ -1,122 +1,162 @@
+import cosmiconfig from 'cosmiconfig';
 import mem from 'mem';
 import minimatch from 'minimatch';
 import path from 'path';
+import resolve from 'resolve';
 
-import {ThirdParty} from '../common/ThirdParty';
-import {ResolveEditorConfig} from './ResolveEditorConfig';
+import {loadToml} from '../utils/loadToml';
+import {SFResolveOptions} from './config.types';
+import resolveEditorConfig from './resolveConfigEditorconfig';
 
-export class ResolveConfig {
-  static get getExplorerMemoized() {
-    return mem((opts) =>
-      ThirdParty.cosmiconfig('starfire', {
-        cache: opts.cache,
-        rcExtensions: true,
-        sync: opts.sync,
-        transform: (result) => {
-          if(result && result.config) {
-            delete result.config.$schema;
-          }
-          return result;
+const getExplorerMemoized = mem(({cache, sync}: SFResolveOptions) => {
+  const explorer = cosmiconfig('prettier', {
+    cache,
+    transform: (result) => {
+      if(result && result.config) {
+        if(typeof result.config === 'string') {
+          const modulePath = resolve.sync(result.config, {
+            basedir: path.dirname(result.filepath)
+          });
+          result.config = eval('require')(modulePath);
         }
-      })
-    );
-  }
 
-  /** @param {{ cache: boolean, sync: boolean }} opts */
-  static getLoadFunction(opts) {
-    // Normalize opts before passing to a memoized function
-    opts = {sync: false, cache: false, ...opts};
-    return ResolveConfig.getExplorerMemoized(opts).load;
-  }
+        if(typeof result.config !== 'object') {
+          throw new Error(
+            'Config is only allowed to be an object, ' +
+            `but received ${typeof result.config} in "${result.filepath}"`
+          );
+        }
 
-  static resolveConfigPath(filePath, opts, sync) {
-    opts = {useCache: true, ...opts};
-    const loadOpts = {
-      cache: !!opts.useCache,
-      editorconfig: !!opts.editorconfig,
-      sync: !!sync
-    };
-    const load = ResolveConfig.getLoadFunction(loadOpts);
-    const loadEditorConfig = ResolveEditorConfig.getLoadFunction(loadOpts);
-    const arr = [load, loadEditorConfig].map((l) => l(filePath, opts.config));
-
-    const unwrapAndMerge = (mergeArr) => {
-      const result = mergeArr[0];
-      const editorConfigured = mergeArr[1];
-      const merged = {
-        ...editorConfigured,
-        ...ResolveConfig.mergeOverrides({...result}, filePath)
-      };
-
-      if(!result && !editorConfigured) {
-        return null;
+        delete result.config.$schema;
       }
-
-      return merged;
-    };
-
-    if(loadOpts.sync) {
-      return unwrapAndMerge(arr);
+      return result;
+    },
+    searchPlaces: [
+      'package.json',
+      '.prettierrc',
+      '.prettierrc.json',
+      '.prettierrc.yaml',
+      '.prettierrc.yml',
+      '.prettierrc.js',
+      'prettier.config.js',
+      '.prettierrc.toml'
+    ],
+    loaders: {
+      '.toml': loadToml
     }
+  });
 
-    return Promise.all(arr).then(unwrapAndMerge);
-  }
+  const load = sync ? explorer.loadSync : explorer.load;
+  const search = sync ? explorer.searchSync : explorer.search;
 
-  static clearCache() {
-    mem.clear(ResolveConfig.getExplorerMemoized);
-    ResolveEditorConfig.clearCache();
-  }
+  return {
+    // cosmiconfig v4 interface
+    load: (searchPath, configPath?) =>
+      (configPath ? load(configPath) : search(searchPath))
+  };
+});
 
-  static resolveConfig(filePath, opts) {
-    return ResolveConfig.resolveConfigPath(filePath, opts, false);
-  }
+// Based on eslint: https://github.com/eslint/eslint/blob/master/lib/config/config-ops.js
+const pathMatchesGlobs = (filePath, patterns, excludedPatterns) => {
+  const patternList = [].concat(patterns);
+  const excludedPatternList = [].concat(excludedPatterns || []);
+  const opts = {matchBase: true, dot: true};
 
-  static resolveConfigSync(filePath, opts) {
-    return ResolveConfig.resolveConfigPath(filePath, opts, true);
-  }
+  return (
+    patternList.some((pattern) => minimatch(filePath, pattern, opts)) &&
+    !excludedPatternList.some((excludedPattern) =>
+      minimatch(filePath, excludedPattern, opts)
+    )
+  );
+};
 
-  static resolveConfigFile(filePath) {
-    return ResolveConfig.getLoadFunction({sync: false})(filePath).then((result) => (result ? result.filePath : null));
-  }
-
-  static resolveConfigFileSync(filePath) {
-    const result = ResolveConfig.getLoadFunction({sync: true})(filePath);
-    return result ? result.filePath : null;
-  }
-
-  static mergeOverrides(configResult, filePath) {
-    const options = {...configResult.config};
-    if(filePath && options.overrides) {
-      const relativeFilePath = path.relative(
-        path.dirname(configResult.filePath),
-        filePath
-      );
-      for(const override of options.overrides) {
-        if(
-          ResolveConfig.pathMatchesGlobs(
-            relativeFilePath,
-            override.files,
-            override.excludeFiles
-          )
-        ) {
-          Object.assign(options, override.options);
-        }
+const mergeOverrides = (configResult, filePath) => {
+  const options = Object.assign({}, configResult.config);
+  if(filePath && options.overrides) {
+    const relativeFilePath = path.relative(
+      path.dirname(configResult.filepath),
+      filePath
+    );
+    for(const override of options.overrides) {
+      if(
+        pathMatchesGlobs(
+          relativeFilePath,
+          override.files,
+          override.excludeFiles
+        )
+      ) {
+        Object.assign(options, override.options);
       }
     }
-
-    delete options.overrides;
-    return options;
   }
 
-  // Based on eslint: https://github.com/eslint/eslint/blob/master/lib/config/config-ops.js
-  static pathMatchesGlobs(filePath, patterns, excludedPatterns) {
-    const patternList = [].concat(patterns);
-    const excludedPatternList = [].concat(excludedPatterns || []);
-    const opts = {matchBase: true};
+  delete options.overrides;
+  return options;
+};
 
-    return (
-      patternList.some((pattern) => minimatch(filePath, pattern, opts)) &&
-      !excludedPatternList.some((excludedPattern) => minimatch(filePath, excludedPattern, opts))
+// Normalize opts before passing to a memoized function
+/** @param {{ cache: boolean, sync: boolean }} opts */
+const getLoadFunction = (opts) => getExplorerMemoized({...opts, sync: false, cache: false}).load;
+
+const syncResolveConfig = (filePath, opts, sync) => {
+  const {config, editorconfig, useCache} = {...opts, useCache: true};
+  const loadOpts = {
+    cache: !!useCache,
+    sync: !!sync,
+    editorconfig: !!editorconfig
+  };
+  const load = getLoadFunction(loadOpts);
+  const loadEditorConfig = resolveEditorConfig.getLoadFunction(loadOpts);
+  const arr = [load, loadEditorConfig].map((l) => l(filePath, config));
+
+  const unwrapAndMerge = (arr) => {
+    const result = arr[0];
+    const editorConfigured = arr[1];
+    const merged = Object.assign(
+      {},
+      editorConfigured,
+      mergeOverrides(Object.assign({}, result), filePath)
     );
+
+    ['plugins', 'pluginSearchDirs'].forEach((optionName) => {
+      if(Array.isArray(merged[optionName])) {
+        merged[optionName] = merged[optionName].map((value) =>
+          (typeof value === 'string' && value.startsWith('.') // relative path
+            ? path.resolve(path.dirname(result.filepath), value)
+            : value)
+        );
+      }
+    });
+
+    if(!result && !editorConfigured) {
+      return null;
+    }
+
+    return merged;
+  };
+
+  if(loadOpts.sync) {
+    return unwrapAndMerge(arr);
   }
-}
+
+  return Promise.all(arr).then(unwrapAndMerge);
+};
+
+export const resolveConfig: any = (filePath, opts) => syncResolveConfig(filePath, opts, false);
+resolveConfig.sync = (filePath, opts) => syncResolveConfig(filePath, opts, true);
+
+export const clearCache = () => {
+  mem.clear(getExplorerMemoized);
+  resolveEditorConfig.clearCache();
+};
+
+export const resolveConfigFile = (filePath) => {
+  const load = getLoadFunction({sync: false});
+  return load(filePath).then((result) => (result ? result.filepath : null));
+};
+
+resolveConfigFile.sync = (filePath) => {
+  const load = getLoadFunction({sync: true});
+  const result = load(filePath);
+  return result ? result.filepath : null;
+};

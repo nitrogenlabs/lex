@@ -1,3 +1,5 @@
+import cloneDeep from 'lodash/cloneDeep';
+
 import {Util} from '../../common/Util';
 import {options} from './options';
 import {PrinterCSS} from './PrinterCSS';
@@ -58,21 +60,24 @@ export class LanguageCSS {
     },
     astFormat: 'css',
     locEnd(node) {
-      const endNode = node.nodes && getLast(node.nodes);
+      let updatedNode = cloneDeep(node);
+      const endNode = updatedNode.nodes && getLast(updatedNode.nodes);
 
-      if(endNode && node.source && !node.source.end) {
-        node = endNode;
+      if(endNode && updatedNode.source && !updatedNode.source.end) {
+        updatedNode = endNode;
       }
 
-      if(node.source) {
-        return lineColumnToIndex(node.source.end, node.source.input.css);
+      if(updatedNode.source) {
+        return lineColumnToIndex(updatedNode.source.end, updatedNode.source.input.css);
       }
 
       return null;
     },
     locStart(node) {
-      if(node.source) {
-        return lineColumnToIndex(node.source.start, node.source.input.css) - 1;
+      const updatedNode = cloneDeep(node);
+
+      if(updatedNode.source) {
+        return lineColumnToIndex(updatedNode.source.start, updatedNode.source.input.css) - 1;
       }
 
       return null;
