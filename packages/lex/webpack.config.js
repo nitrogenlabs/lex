@@ -57,7 +57,10 @@ const globOptions = {
 };
 
 if(glob.sync('./**/*.svg', globOptions).length) {
-  plugins.push(new SVGSpritemapPlugin(`${sourceFullPath}/**/*.svg`, {
+  plugins.push(new SVGSpritemapPlugin([
+    `${sourceFullPath}/icons/*.svg`,
+    `${sourceFullPath}/icons/**/*.svg`
+  ], {
     output: {
       filename: './icons/icons.svg'
     },
