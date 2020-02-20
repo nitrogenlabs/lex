@@ -4,7 +4,6 @@
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",
-    "packages/starfire",
     "packages/static-site-webpack-plugin"
   ],
   "npmClient": "yarn",
