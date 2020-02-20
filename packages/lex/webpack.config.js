@@ -138,24 +138,13 @@ const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
 const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
-// Make sure we add polyfill for web apps
-let entry;
-
-if(preset === 'web' || targetEnvironment === 'web') {
-  entry = {
-    corejs: relativeFilePath('node_modules/core-js/stable', __dirname),
-    index: `${sourceFullPath}/${lexConfig.entryJS}`,
-    regeneratorRuntime: relativeFilePath('node_modules/regenerator-runtime/runtime.js', __dirname)
-  };
-} else {
-  entry = `${sourceFullPath}/${lexConfig.entryJS}`;
-}
-
 // Webpack config
 const webpackConfig = {
   bail: true,
   cache: !isProduction,
-  entry,
+  entry: {
+    index: `${sourceFullPath}/${lexConfig.entryJS}`
+  },
   mode: environment,
   module: {
     rules: [
@@ -257,8 +246,10 @@ const webpackConfig = {
     alias: {
       '@nlabs/arkhamjs': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs')),
       '@nlabs/arkhamjs-utils-react': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs-utils-react')),
+      'core-js': path.resolve(__dirname, './node_modules/core-js'),
       react: path.resolve(path.join(process.cwd(), './node_modules/react')),
-      'react-dom': path.resolve(path.join(process.cwd(), './node_modules/react-dom'))
+      'react-dom': path.resolve(path.join(process.cwd(), './node_modules/react-dom')),
+      'regenerator-runtime': path.resolve(__dirname, './node_modules/regenerator-runtime')
     },
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
   },

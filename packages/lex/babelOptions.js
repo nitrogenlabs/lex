@@ -16,9 +16,26 @@ const pluginPath = relativeFilePath('@babel/plugin-proposal-function-bind', node
 
 // Presets
 const presetEnvPath = `${pluginPath}/preset-env`;
-const babelNodeEnv = [presetEnvPath];
-const babelTestEnv = [presetEnvPath];
-const babelWebEnv = [presetEnvPath, {modules: false, targets: {browsers: ['last 5 versions', 'ie 11']}}];
+const babelNodeEnv = [
+  presetEnvPath,
+  {
+    corejs: 3,
+    useBuiltIns: 'usage'
+  }
+];
+const babelTestEnv = [
+  presetEnvPath,
+  {
+    corejs: 3,
+    useBuiltIns: 'usage'
+  }
+];
+const babelWebEnv = [
+  presetEnvPath, {
+    corejs: 3,
+    modules: false,
+    useBuiltIns: 'usage'
+  }];
 
 // Plugins
 const plugins = [
