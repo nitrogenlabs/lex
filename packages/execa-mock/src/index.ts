@@ -10,7 +10,6 @@ import npmRunPath from 'npm-run-path';
 import onExit from 'signal-exit';
 import stripEof from 'strip-eof';
 import util from 'util';
-import uv from 'uv';
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 let mockResults = [];
@@ -155,7 +154,7 @@ module.exports = jest.fn((cmd, args, opts) => {
     if(err || code !== 0 || signal !== null) {
       if(!err) {
         const newError: any = new Error(`Command failed: ${joinedCmd}\n${stderr}${stdout}`);
-        newError.code = code < 0 ? uv.errname(code) : code;
+        newError.code = code;
       }
 
       // TODO: missing some timeout logic for killed
