@@ -285,6 +285,19 @@ export const relativeFilePath = (filename: string, nodePath: string = './', back
   return findFileUp.sync(filename, nodePath, nestDepth);
 };
 
+// Get file paths relative to Lex
+export const getNodePath = (moduleName: string): string => {
+  const modulePath: string = `node_modules/${moduleName}`;
+  const repoPath: string = path.resolve(__dirname, `../../../${modulePath}`);
+
+  if(fs.existsSync(repoPath)) {
+    return repoPath;
+  }
+
+  const localPath: string = path.resolve(__dirname, `../${modulePath}`);
+  return localPath;
+};
+
 export const updateTemplateName = (filePath: string, replace: string, replaceCaps: string) => {
   let data: string = fs.readFileSync(filePath, 'utf8');
   data = data.replace(/sample/g, replace);

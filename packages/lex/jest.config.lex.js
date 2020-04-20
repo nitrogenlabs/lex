@@ -1,13 +1,16 @@
 const path = require('path');
 
-const {relativeFilePath} = require('./dist/utils');
+const {getNodePath} = require('./dist/utils');
 
 const rootDir = process.cwd();
 const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
 const nodePath = path.resolve(__dirname, './node_modules');
-const babelPolyfillPath = relativeFilePath('@babel/polyfill/dist/polyfill.js', nodePath);
+const setupFiles = [
+  getNodePath('core-js'),
+  getNodePath('regenerator-runtime/runtime')
+];
 let moduleFileExtensions = ['js', 'json'];
 let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
 let transform = {'\\.(js)$': path.resolve(__dirname, './jest.preprocessor.js')};
@@ -35,7 +38,7 @@ module.exports = {
   ],
   resolver: path.resolve(__dirname, './dist/resolver.js'),
   rootDir,
-  setupFiles: [babelPolyfillPath],
+  setupFiles,
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: [
     '/node_modules/',
