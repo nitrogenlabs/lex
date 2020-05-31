@@ -11,12 +11,12 @@
     "update": "yarn upgradeInteractive --latest"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@types/node": "^13.13.0",
-    "jest-cli": "^25.3.0",
-    "lerna": "^3.20.2",
-    "ts-jest": "^25.4.0",
-    "typescript": "^3.8.3"
+    "@types/jest": "^25.2.3",
+    "@types/node": "^14.0.6",
+    "jest-cli": "^26.0.1",
+    "lerna": "^3.22.0",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.9.3"
   },
   "workspaces": [
     "packages/execa-mock",
