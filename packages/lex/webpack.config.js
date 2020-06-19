@@ -86,7 +86,7 @@ if(fs.existsSync(`${sourceFullPath}/docs/`)) {
 }
 
 if(staticPaths.length) {
-  plugins.push(new CopyWebpackPlugin(staticPaths));
+  plugins.push(new CopyWebpackPlugin({patterns: staticPaths}));
 }
 
 // Create site ico files
@@ -215,8 +215,6 @@ const webpackConfig = {
       },
       {
         loader: fileLoaderPath,
-        //   test: /\.(png|svg|jpg|gif)$/
-        // loader  : 'url-loader?limit=30000&name=images/[name].[ext]',
         test    : /\.(gif|jpg|png|svg)$/
       }
     ]
@@ -268,9 +266,48 @@ if(!isProduction) {
   webpackConfig.optimization = {};
   webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
   webpackConfig.plugins.push(
-    // new BundleAnalyzerPlugin({openAnalyzer: false}),
+    new BundleAnalyzerPlugin({openAnalyzer: false}),
     new WebpackPluginServe({
-      historyFallback: true,
+      historyFallback: {
+        disableDotRule: true,
+        index: '/index.html',
+        rewrites: [
+          // Javascript files
+          {
+            from: /.js/,
+            to: ({parsedUrl: {pathname}}) => {
+              const pathUrl = pathname.split('/');
+              const fileIndex = pathUrl.length > 1 ? pathUrl.length - 1 : 0;
+              return `/${pathUrl[fileIndex]}`;
+            }
+          },
+
+          // Styles
+          {
+            from: /.css/,
+            to: ({parsedUrl: {pathname}}) => pathname
+          },
+
+          // Images
+          {
+            from: /.gif/,
+            to: ({parsedUrl: {pathname}}) => pathname
+          },
+          {
+            from: /.jpg/,
+            to: ({parsedUrl: {pathname}}) => pathname
+          },
+          {
+            from: /.png/,
+            to: ({parsedUrl: {pathname}}) => pathname
+          },
+          {
+            from: /.svg/,
+            to: ({parsedUrl: {pathname}}) => pathname
+          }
+        ],
+        verbose: true
+      },
       hmr: true,
       port: 9000,
       progress: true,

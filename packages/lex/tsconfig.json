@@ -1,3 +1,11 @@
 {
-  "extends": "../../tsconfig.json"
+  "exclude": [
+    "./.vscode",
+    "./dist",
+    "./node_modules"
+  ],
+  "extends": "../../tsconfig.json",
+  "include": [
+    "./src"
+  ]
 }
