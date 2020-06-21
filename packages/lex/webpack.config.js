@@ -15,7 +15,7 @@ const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const {WebpackPluginServe} = require('webpack-plugin-serve');
 const merge = require('lodash/merge');
 
-const {relativeFilePath} = require('./dist/utils');
+const {getNodePath, relativeFilePath} = require('./dist/utils');
 
 const {DefinePlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
@@ -244,10 +244,10 @@ const webpackConfig = {
     alias: {
       '@nlabs/arkhamjs': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs')),
       '@nlabs/arkhamjs-utils-react': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs-utils-react')),
-      'core-js': path.resolve(__dirname, './node_modules/core-js'),
+      'core-js': getNodePath('core-js'),
       react: path.resolve(path.join(process.cwd(), './node_modules/react')),
       'react-dom': path.resolve(path.join(process.cwd(), './node_modules/react-dom')),
-      'regenerator-runtime': path.resolve(__dirname, './node_modules/regenerator-runtime')
+      'regenerator-runtime': getNodePath('regenerator-runtime')
     },
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
   },
