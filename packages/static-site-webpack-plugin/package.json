@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/static-site-webpack-plugin",
-  "version": "1.24.6",
+  "version": "1.24.7",
   "description": "Minimal, static site generator powered by webpack",
   "main": "./lib/index.js",
   "scripts": {
