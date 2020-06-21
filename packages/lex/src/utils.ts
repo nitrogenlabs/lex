@@ -294,7 +294,8 @@ export const getNodePath = (moduleName: string): string => {
     return repoPath;
   }
 
-  return findFileUp.sync(modulePath, '../', 10);
+  const localPath: string = findFileUp.sync(modulePath, './', 10) || `./${modulePath}`;
+  return localPath;
 };
 
 export const updateTemplateName = (filePath: string, replace: string, replaceCaps: string) => {
