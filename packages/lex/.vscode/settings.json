@@ -9,6 +9,9 @@
   ],
   "css.validate": false,
   "editor.autoClosingBrackets": "never",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
   "editor.rulers": [
@@ -25,28 +28,9 @@
   "emmet.syntaxProfiles": {
     "postcss": "css"
   },
-  "eslint.autoFixOnSave": true,
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
   "eslint.packageManager": "npm",
-  "eslint.validate": [
-    {
-      "language": "javascript",
-      "autoFix": true
-    },
-    {
-      "language": "javascriptreact",
-      "autoFix": true
-    },
-    {
-      "language": "typescript",
-      "autoFix": true
-    },
-    {
-      "language": "typescriptreact",
-      "autoFix": true
-    }
-  ],
   "explorer.decorations.badges": false,
   "files.autoSave": "onFocusChange",
   "html.format.indentInnerHtml": true,

@@ -10,6 +10,9 @@
   ],
   "css.validate": false,
   "editor.autoClosingBrackets": "never",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
   "editor.rulers": [
@@ -26,28 +29,9 @@
   "emmet.syntaxProfiles": {
     "postcss": "css"
   },
-  "eslint.autoFixOnSave": true,
   "eslint.packageManager": "npm",
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
-  "eslint.validate": [
-    {
-      "language": "javascript",
-      "autoFix": true
-    },
-    {
-      "language": "javascriptreact",
-      "autoFix": true
-    },
-    {
-      "language": "typescript",
-      "autoFix": true
-    },
-    {
-      "language": "typescriptreact",
-      "autoFix": true
-    }
-  ],
   "explorer.confirmDragAndDrop": false,
   "explorer.decorations.badges": false,
   "files.trimTrailingWhitespace": true,
@@ -68,8 +52,5 @@
   "typescriptHero.imports.multiLineTrailingComma": false,
   "typescriptHero.imports.multiLineWrapThreshold": 120,
   "typescriptHero.imports.organizeOnSave": true,
-  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  }
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false
 }
