@@ -8,12 +8,13 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
 const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
+const isEmpty = require('lodash/isEmpty');
+const merge = require('lodash/merge');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const {WebpackPluginServe} = require('webpack-plugin-serve');
-const merge = require('lodash/merge');
 
 const {getNodePath, relativeFilePath} = require('./dist/utils');
 
@@ -138,6 +139,24 @@ const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
 const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
+// Aliases
+const aliasPaths = {
+  '@nlabs/arkhamjs': relativeFilePath('node_modules/@nlabs/arkhamjs', process.cwd()),
+  '@nlabs/arkhamjs-utils-react': relativeFilePath('node_modules/@nlabs/arkhamjs-utils-react', process.cwd()),
+  'core-js': getNodePath('core-js'),
+  react: relativeFilePath('node_modules/react', process.cwd()),
+  'react-dom': relativeFilePath('node_modules/react-dom', process.cwd()),
+  'regenerator-runtime': getNodePath('regenerator-runtime')
+};
+const aliasKeys = Object.keys(aliasPaths);
+const alias = aliasKeys.reduce((aliases, key) => {
+  if(!isEmpty(aliasPaths[key])) {
+    aliases[key] = aliasPaths[key];
+  }
+
+  return aliases;
+}, {});
+
 // Webpack config
 const webpackConfig = {
   bail: true,
@@ -241,14 +260,7 @@ const webpackConfig = {
   },
   plugins,
   resolve: {
-    alias: {
-      '@nlabs/arkhamjs': relativeFilePath('node_modules/@nlabs/arkhamjs', process.cwd()),
-      '@nlabs/arkhamjs-utils-react': relativeFilePath('node_modules/@nlabs/arkhamjs-utils-react', process.cwd()),
-      'core-js': getNodePath('core-js'),
-      react: relativeFilePath('node_modules/react', process.cwd()),
-      'react-dom': relativeFilePath('node_modules/react-dom', process.cwd()),
-      'regenerator-runtime': getNodePath('regenerator-runtime')
-    },
+    alias,
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
   },
   target: preset || targetEnvironment
