@@ -242,11 +242,11 @@ const webpackConfig = {
   plugins,
   resolve: {
     alias: {
-      '@nlabs/arkhamjs': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs')),
-      '@nlabs/arkhamjs-utils-react': path.resolve(path.join(process.cwd(), './node_modules/@nlabs/arkhamjs-utils-react')),
+      '@nlabs/arkhamjs': relativeFilePath('node_modules/@nlabs/arkhamjs', process.cwd()),
+      '@nlabs/arkhamjs-utils-react': relativeFilePath('node_modules/@nlabs/arkhamjs-utils-react', process.cwd()),
       'core-js': getNodePath('core-js'),
-      react: path.resolve(path.join(process.cwd(), './node_modules/react')),
-      'react-dom': path.resolve(path.join(process.cwd(), './node_modules/react-dom')),
+      react: relativeFilePath('node_modules/react', process.cwd()),
+      'react-dom': relativeFilePath('node_modules/react-dom', process.cwd()),
       'regenerator-runtime': getNodePath('regenerator-runtime')
     },
     extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
