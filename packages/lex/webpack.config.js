@@ -10,6 +10,7 @@ const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const isEmpty = require('lodash/isEmpty');
 const merge = require('lodash/merge');
+const os = require('os');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
@@ -280,13 +281,22 @@ if(!isProduction) {
   webpackConfig.plugins.push(
     new BundleAnalyzerPlugin({openAnalyzer: false}),
     new WebpackPluginServe({
+      client: {
+        silent: process.env.LEX_QUIET === 'true'
+      },
       historyFallback: {
         disableDotRule: true,
         index: '/index.html',
         rewrites: [
+          // Webpack Serve Plugin Websocket
+          {
+            from: '/wps',
+            to: (context) => (context.parsedUrl.pathname),
+          },
+
           // Javascript files
           {
-            from: /.js/,
+            from: /\.js/,
             to: ({parsedUrl: {pathname}}) => {
               const pathUrl = pathname.split('/');
               const fileIndex = pathUrl.length > 1 ? pathUrl.length - 1 : 0;
@@ -294,35 +304,19 @@ if(!isProduction) {
             }
           },
 
-          // Styles
+          // Other static files
           {
-            from: /.css/,
-            to: ({parsedUrl: {pathname}}) => pathname
-          },
-
-          // Images
-          {
-            from: /.gif/,
-            to: ({parsedUrl: {pathname}}) => pathname
-          },
-          {
-            from: /.jpg/,
-            to: ({parsedUrl: {pathname}}) => pathname
-          },
-          {
-            from: /.png/,
-            to: ({parsedUrl: {pathname}}) => pathname
-          },
-          {
-            from: /.svg/,
+            from: /\.[css,gif,ico,jpg,json,png,svg]/,
             to: ({parsedUrl: {pathname}}) => pathname
           }
         ],
-        verbose: true
+        verbose: !(process.env.LEX_QUIET === 'true')
       },
-      hmr: true,
+      log: { level: 'trace' },
+      open: process.env.WEBPACK_DEV_OPEN === 'true',
       port: 9000,
       progress: true,
+      ramdisk: os.platform() !== 'win32',
       static: [outputFullPath],
       waitForBuild: true
     }),

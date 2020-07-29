@@ -9,7 +9,7 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {cliName = 'Lex', config, open, quiet, remove, variables, watch} = cmd;
+  const {cliName = 'Lex', config, open = false, quiet, remove, variables, watch} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -60,10 +60,6 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   // Compile using webpack
   const webpackOptions: string[] = ['--config', webpackConfig];
 
-  if(open) {
-    webpackOptions.push('--open');
-  }
-
   if(watch) {
     webpackOptions.push('--watch');
   }
@@ -74,6 +70,10 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
     await execa(webpackPath, webpackOptions, {
       encoding: 'utf-8',
+      env: {
+        LEX_QUIET: quiet,
+        WEBPACK_DEV_OPEN: open
+      },
       stdio: 'inherit'
     });
 
