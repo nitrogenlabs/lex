@@ -9,7 +9,7 @@ const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG 
 const nodePath = path.resolve(__dirname, './node_modules');
 const setupFiles = [
   getNodePath('core-js'),
-  getNodePath('regenerator-runtime/runtime')
+  getNodePath('regenerator-runtime/runtime.js')
 ];
 let moduleFileExtensions = ['js', 'json'];
 let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';

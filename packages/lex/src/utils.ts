@@ -288,9 +288,9 @@ export const relativeFilePath = (filename: string, nodePath: string = './', back
 // Get file paths relative to Lex
 export const getNodePath = (moduleName: string): string => {
   const modulePath: string = `node_modules/${moduleName}`;
-  const repoPath: string = path.resolve(__dirname, `../../../${modulePath}`);
+  const repoPath: string = findFileUp.sync(modulePath, __dirname);
 
-  if(fs.existsSync(repoPath)) {
+  if(repoPath && fs.existsSync(repoPath)) {
     return repoPath;
   }
 
