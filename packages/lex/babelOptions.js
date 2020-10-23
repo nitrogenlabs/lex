@@ -71,6 +71,9 @@ const plugins = [
   // CommonJS
   `${pluginPath}/plugin-transform-modules-commonjs`,
 
+  // Additional
+  `${nodePath}/babel-plugin-dynamic-import-node`,
+
   // User provided plugins
   ...babelPlugins
 ];

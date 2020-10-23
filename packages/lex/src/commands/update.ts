@@ -20,10 +20,18 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   LexConfig.parseConfig(cmd);
 
   const {packageManager: configPackageManager} = LexConfig.config;
-  const packageManager: string = cmdPackageManager || configPackageManager;
+  const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const updateApp: string = packageManager === 'npm' ? 'npx' : 'yarn';
   const updateOptions: string[] = packageManager === 'npm'
-    ? ['npx', 'npm-check-updates', '-u', '-n', '-t', '--pre', '0', cmd.interactive ? '-i' : '']
+    ? ['npx',
+      'npm-check-updates',
+      '--concurrency', '10',
+      '--packageManager', packageManager,
+      '--pre', '0',
+      '--target', 'latest',
+      cmd.interactive ? '-i' : '',
+      '-u'
+    ]
     : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
   if(registry) {

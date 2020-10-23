@@ -9,12 +9,12 @@ const fs = require('fs');
 const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const isEmpty = require('lodash/isEmpty');
-const merge = require('lodash/merge');
 const os = require('os');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const {merge} = require('webpack-merge');
 const {WebpackPluginServe} = require('webpack-plugin-serve');
 
 const {getNodePath, relativeFilePath} = require('./dist/utils');
@@ -58,12 +58,12 @@ const globOptions = {
   nosort: true
 };
 
-if(glob.sync('./**/*.svg', globOptions).length) {
-  plugins.push(new SVGSpritemapPlugin([
-    `${sourceFullPath}/icons/*.svg`,
-    `${sourceFullPath}/icons/**/*.svg`
-  ], {
+const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
+
+if(glob.sync(svgPaths, globOptions).length) {
+  plugins.push(new SVGSpritemapPlugin(svgPaths, {
     output: {
+      chunk: {keep: true},
       filename: './icons/icons.svg'
     },
     sprite: {
@@ -74,42 +74,27 @@ if(glob.sync('./**/*.svg', globOptions).length) {
 
 // If there is are static directories, make sure we copy the files over
 const staticPaths = [];
+const watchIgnorePaths = [`${sourceFullPath}/**/**.gif`, `${sourceFullPath}/**/**.jpg`, `${sourceFullPath}/**/**.png`];
+const imgPath = `${sourceFullPath}/img/`;
+const fontPath = `${sourceFullPath}/fonts/`;
+const docPath = `${sourceFullPath}/docs/`;
 
-if(fs.existsSync(`${sourceFullPath}/img/`)) {
-  staticPaths.push({from: `${sourceFullPath}/img/`, to: './img/'});
+if(fs.existsSync(imgPath)) {
+  staticPaths.push({from: imgPath, to: './img/'});
+  watchIgnorePaths.push(imgPath);
 }
 
-if(fs.existsSync(`${sourceFullPath}/fonts/`)) {
-  staticPaths.push({from: `${sourceFullPath}/fonts/`, to: './fonts/'});
+if(fs.existsSync(fontPath)) {
+  staticPaths.push({from: fontPath, to: './fonts/'});
+  watchIgnorePaths.push(fontPath);
 }
 
-if(fs.existsSync(`${sourceFullPath}/docs/`)) {
-  staticPaths.push({from: `${sourceFullPath}/docs/`, to: './docs/'});
+if(fs.existsSync(docPath)) {
+  staticPaths.push({from: docPath, to: './docs/'});
 }
 
 if(staticPaths.length) {
   plugins.push(new CopyWebpackPlugin({patterns: staticPaths}));
-}
-
-// Create site ico files
-const siteLogo = `${sourceFullPath}/img/logo.png`;
-
-if(fs.existsSync(siteLogo)) {
-  plugins.push(new FaviconsWebpackPlugin({
-    icons: {
-      android: true,
-      appleIcon: true,
-      appleStartup: false,
-      coast: false,
-      favicons: true,
-      firefox: false,
-      opengraph: true,
-      twitter: true,
-      windows: false,
-      yandex: false
-    },
-    logo: siteLogo
-  }));
 }
 
 if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
@@ -159,172 +144,216 @@ const alias = aliasKeys.reduce((aliases, key) => {
 }, {});
 
 // Webpack config
-const webpackConfig = {
-  bail: true,
-  cache: !isProduction,
-  entry: {
-    index: `${sourceFullPath}/${lexConfig.entryJS}`
-  },
-  mode: environment,
-  module: {
-    rules: [
-      {
-        enforce: 'pre',
-        exclude: /(node_modules)/,
-        loader: sourceLoaderPath,
-        test: /\.(js|ts|tsx)$/
-      },
-      {
-        exclude: /(node_modules)/,
-        loader: babelLoaderPath,
-        options: babelOptions,
-        test: /\.(js|ts|tsx)$/
-      },
-      {
-        test: /\.css$/,
-        use: [
-          styleLoaderPath,
-          {
-            loader: cssLoaderPath,
-            options: {
-              importLoaders: 1
-            }
-          },
-          {
-            loader: postcssLoaderPath,
-            options: {
-              plugins: [
-                require(relativeFilePath('node_modules/postcss-import', __dirname))({addDependencyTo: webpack}),
-                require(relativeFilePath('node_modules/postcss-url', __dirname)),
-                require(relativeFilePath('node_modules/postcss-for', __dirname)),
-                require(relativeFilePath('node_modules/postcss-percentage', __dirname))({
-                  floor: true,
-                  precision: 9,
-                  trimTrailingZero: true
-                }),
-                require(relativeFilePath('node_modules/postcss-custom-properties', __dirname))({
-                  preserve: false,
-                  strict: false,
-                  warnings: false
-                }),
-                require(relativeFilePath('node_modules/postcss-simple-vars', __dirname)),
-                require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
-                require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
-                require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
-                  stage: 0
-                }),
-                require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
-                require(relativeFilePath('node_modules/postcss-browser-reporter', __dirname))
-              ]
-            }
-          }
-        ]
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: htmlLoaderPath,
-            options: {minimize: isProduction}
-          }
-        ]
-      },
-      {
-        loader: jsonLoaderPath,
-        test: /\.json$/
-      },
-      {
-        loader: fileLoaderPath,
-        test    : /\.(gif|jpg|png|svg)$/
-      }
-    ]
-  },
-  optimization: libraryName ? {} : {
-    runtimeChunk: 'single',
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          chunks: 'all',
-          name: 'vendors',
-          test: /[\\/]node_modules[\\/]/
-        }
-      }
+module.exports = (webpackEnv, webpackOptions) => {
+  const {bundleAnalyzer, watch} = webpackOptions;
+  const webpackConfig = {
+    bail: true,
+    cache: !isProduction,
+    devtool: 'inline-cheap-source-map',
+    entry: {
+      index: `${sourceFullPath}/${lexConfig.entryJS}`
     },
-    usedExports: true
-  },
-  output: {
-    filename: outputFilename,
-    library: libraryName,
-    libraryTarget,
-    path: outputFullPath,
-    publicPath: '/'
-  },
-  plugins,
-  resolve: {
-    alias,
-    extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
-  },
-  target: preset || targetEnvironment
-};
-
-// Add development plugins
-if(!isProduction) {
-  const hotReactDom = relativeFilePath('node_modules/@hot-loader/react-dom', __dirname);
-
-  webpackConfig.resolve.alias = {
-    ...webpackConfig.resolve.alias,
-    'react-dom': hotReactDom,
-    webpack: webpackPath
-  };
-  webpackConfig.optimization = {};
-  webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
-  webpackConfig.plugins.push(
-    new BundleAnalyzerPlugin({openAnalyzer: false}),
-    new WebpackPluginServe({
-      client: {
-        silent: process.env.LEX_QUIET === 'true'
-      },
-      historyFallback: {
-        disableDotRule: true,
-        index: '/index.html',
-        rewrites: [
-          // Webpack Serve Plugin Websocket
-          {
-            from: '/wps',
-            to: (context) => (context.parsedUrl.pathname),
-          },
-
-          // Javascript files
-          {
-            from: /\.js/,
-            to: ({parsedUrl: {pathname}}) => {
-              const pathUrl = pathname.split('/');
-              const fileIndex = pathUrl.length > 1 ? pathUrl.length - 1 : 0;
-              return `/${pathUrl[fileIndex]}`;
+    mode: environment,
+    module: {
+      rules: [
+        {
+          enforce: 'pre',
+          exclude: /(node_modules)/,
+          include: [sourceFullPath],
+          loader: sourceLoaderPath,
+          test: /\.(js|ts|tsx)$/
+        },
+        {
+          exclude: /(node_modules)/,
+          loader: babelLoaderPath,
+          options: {...babelOptions, cacheDirectory: true},
+          test: /\.(js|ts|tsx)$/
+        },
+        {
+          test: /\.html$/,
+          use: [
+            {
+              loader: htmlLoaderPath,
+              options: {minimize: isProduction}
             }
-          },
-
-          // Other static files
-          {
-            from: /\.[css,gif,ico,jpg,json,png,svg]/,
-            to: ({parsedUrl: {pathname}}) => pathname
+          ]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            styleLoaderPath,
+            {
+              loader: cssLoaderPath,
+              options: {
+                importLoaders: 1
+              }
+            },
+            {
+              loader: postcssLoaderPath,
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    require(relativeFilePath('node_modules/postcss-import', __dirname))({addDependencyTo: webpack}),
+                    require(relativeFilePath('node_modules/postcss-url', __dirname)),
+                    require(relativeFilePath('node_modules/postcss-for', __dirname)),
+                    require(relativeFilePath('node_modules/postcss-percentage', __dirname))({
+                      floor: true,
+                      precision: 9,
+                      trimTrailingZero: true
+                    }),
+                    require(relativeFilePath('node_modules/postcss-custom-properties', __dirname))({
+                      preserve: false,
+                      strict: false,
+                      warnings: false
+                    }),
+                    require(relativeFilePath('node_modules/autoprefixer', __dirname)),
+                    require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
+                    require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
+                    require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
+                      stage: 0
+                    }),
+                    require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
+                    require(relativeFilePath('node_modules/postcss-browser-reporter', __dirname))
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          loader: jsonLoaderPath,
+          test: /\.json$/
+        },
+        {
+          loader: fileLoaderPath,
+          test: /\.(gif|jpg|png|svg)$/
+        }
+      ]
+    },
+    optimization: libraryName ? {} : {
+      runtimeChunk: 'single',
+      splitChunks: {
+        cacheGroups: {
+          vendor: {
+            chunks: 'all',
+            minSize: 0,
+            name: 'vendors',
+            test: /[\\/]node_modules[\\/]/
           }
-        ],
-        verbose: !(process.env.LEX_QUIET === 'true')
+        }
       },
-      log: { level: 'trace' },
-      open: process.env.WEBPACK_DEV_OPEN === 'true',
-      port: 9000,
-      progress: true,
-      ramdisk: os.platform() !== 'win32',
-      static: [outputFullPath],
-      waitForBuild: true
-    }),
-  );
-  webpackConfig.watch = true;
-  webpackConfig.devtool = 'inline-source-map';
-} else if(isStatic) {
-  webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
-}
+      usedExports: true
+    },
+    output: {
+      filename: outputFilename,
+      library: libraryName,
+      libraryTarget,
+      path: outputFullPath,
+      publicPath: '/'
+    },
+    plugins,
+    resolve: {
+      alias,
+      extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
+    },
+    stats: {
+      warningsFilter: [/Failed to parse source map/]
+    },
+    target: preset || targetEnvironment
+  };
 
-module.exports = merge(webpackConfig, webpackCustom);
+  // Add development plugins
+  if(!isProduction) {
+    const hotReactDom = relativeFilePath('node_modules/@hot-loader/react-dom', __dirname);
+
+    webpackConfig.resolve.alias = {
+      ...webpackConfig.resolve.alias,
+      'react-dom': hotReactDom,
+      webpack: webpackPath
+    };
+    webpackConfig.optimization = {minimize: false};
+    webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
+    webpackConfig.plugins.push(
+      new WebpackPluginServe({
+        client: {
+          silent: process.env.LEX_QUIET === 'true'
+        },
+        historyFallback: {
+          disableDotRule: true,
+          index: '/index.html',
+          rewrites: [
+            // Webpack Serve Plugin Websocket
+            {
+              from: '/wps',
+              to: (context) => (context.parsedUrl.pathname)
+            },
+
+            // Javascript files
+            {
+              from: /\.js/,
+              to: ({parsedUrl: {pathname}}) => {
+                const pathUrl = pathname.split('/');
+                const fileIndex = pathUrl.length > 1 ? pathUrl.length - 1 : 0;
+                return `/${pathUrl[fileIndex]}`;
+              }
+            },
+
+            // Other static files
+            {
+              from: /\.[css,gif,ico,jpg,json,png,svg]/,
+              to: ({parsedUrl: {pathname}}) => pathname
+            }
+          ],
+          verbose: !(process.env.LEX_QUIET === 'true')
+        },
+        log: {level: 'trace'},
+        open: process.env.WEBPACK_DEV_OPEN === 'true',
+        port: 9000,
+        progress: true,
+        ramdisk: os.platform() !== 'win32',
+        static: [outputFullPath],
+        waitForBuild: true
+      }),
+    );
+
+    if(bundleAnalyzer) {
+      webpackConfig.plugins.push(new BundleAnalyzerPlugin({openAnalyzer: false}));
+    }
+
+    if(watch) {
+      webpackConfig.bail = false;
+      webpackConfig.watch = true;
+      webpackConfig.watchOptions = {
+        aggregateTimeout: 500,
+        ignored: ['node_modules/**', ...watchIgnorePaths]
+      };
+    }
+  } else {
+  // Create site ico files
+    const siteLogo = `${sourceFullPath}/img/logo.png`;
+
+    if(fs.existsSync(siteLogo)) {
+      plugins.push(new FaviconsWebpackPlugin({
+        icons: {
+          android: true,
+          appleIcon: true,
+          appleStartup: false,
+          coast: false,
+          favicons: true,
+          firefox: false,
+          opengraph: true,
+          twitter: true,
+          windows: false,
+          yandex: false
+        },
+        logo: siteLogo
+      }));
+    }
+
+    if(isStatic) {
+      webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
+    }
+  }
+
+  return merge(webpackConfig, webpackCustom);
+};

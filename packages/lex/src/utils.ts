@@ -163,7 +163,7 @@ export const getPackageJson = (packagePath?: string) => {
 
 export const getFilesByExt = (ext: string): string[] => {
   const {sourceFullPath} = LexConfig.config;
-  return glob.sync(`${sourceFullPath}/**/*${ext}`);
+  return glob.sync(`${sourceFullPath}/**/**${ext}`);
 };
 
 export const removeConflictModules = (moduleList: object) => {

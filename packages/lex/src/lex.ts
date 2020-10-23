@@ -96,6 +96,7 @@ commander.command('dev')
   .option('-w, --watch', 'Watch for changes.')
   .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
   .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
+  .option('--bundleAnalyzer', 'Run bundle analyzer.')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
   .action((cmd) => dev(cmd, process.exit).then(() => {}));

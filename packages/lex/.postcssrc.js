@@ -22,7 +22,7 @@ module.exports = {
         strict: false,
         warnings: false
       }),
-      require(`${nodePath}/postcss-simple-vars`),
+      require(`${nodePath}/autoprefixer`),
       require(`${nodePath}/postcss-nesting`),
       require(`${nodePath}/postcss-flexbugs-fixes`),
       require(`${nodePath}/postcss-preset-env`)({

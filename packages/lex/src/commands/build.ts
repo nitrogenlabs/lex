@@ -85,7 +85,12 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
   }
 
   const webpackMode: string = mode || 'production';
-  const webpackOptions: string[] = ['--config', webpackConfig, '--mode', webpackMode];
+  const webpackOptions: string[] = [
+    '--color',
+    '--progress',
+    '--config', webpackConfig,
+    '--mode', webpackMode
+  ];
 
   if(outputChunkFilename) {
     webpackOptions.push('--output-chunk-filename', outputChunkFilename);

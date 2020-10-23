@@ -140,32 +140,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   if(watch) {
     babelOptions.push('--watch');
-    // Start type checking spinner
-    spinner.start('Watching for changes...');
-  } else {
-    // Start type checking spinner
-    spinner.start('Compiling with Babel...');
-  }
-
-  try {
-    const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
-
-    // Stop spinner
-    spinner.succeed((babel.stdout || '').toString().replace('.', '!').trim());
-  } catch(error) {
-    // Display error message
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-
-    if(!quiet) {
-      console.error(error);
-    }
-
-    // Stop spinner
-    spinner.fail('Code compiling failed.');
-
-    // Kill Process
-    callback(error.status);
-    return error.status;
   }
 
   // Use PostCSS for CSS files
@@ -174,7 +148,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(cssFiles.length) {
     const postcssPath: string = relativeFilePath('postcss-cli/bin/postcss', nodePath);
     const postcssOptions: string[] = [
-      `${sourceFullPath}/**/*.css`,
+      `${sourceFullPath}/**/**.css`,
       '--base',
       sourceFullPath,
       '--dir',
@@ -262,6 +236,30 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       callback(error.status);
       return error.status;
     }
+  }
+
+  // Start compile spinner
+  spinner.start(watch ? 'Watching for changes...' : 'Compiling with Babel...');
+
+  try {
+    const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
+
+    // Stop spinner
+    spinner.succeed((babel.stdout || '').toString().replace('.', '!').trim());
+  } catch(error) {
+    // Display error message
+    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+
+    if(!quiet) {
+      console.error(error);
+    }
+
+    // Stop spinner
+    spinner.fail('Code compiling failed.');
+
+    // Kill Process
+    callback(error.status);
+    return error.status;
   }
 
   // Stop process

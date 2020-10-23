@@ -16,3 +16,4 @@ dist
 lib
 docs
 tmp
+/report.*.json
