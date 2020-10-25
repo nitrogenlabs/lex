@@ -4,7 +4,7 @@
  */
 const path = require('path');
 const {relativeFilePath} = require('./dist/utils');
-const pluginPath = relativeFilePath('postcss-import', path.resolve(__dirname, './node_modules'));
+const pluginPath = relativeFilePath('postcss-cli', path.resolve(__dirname, './node_modules'));
 const nodePath = path.resolve(pluginPath, '../');
 
 module.exports = {
