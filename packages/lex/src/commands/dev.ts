@@ -9,7 +9,7 @@ import {LexConfig} from '../LexConfig';
 import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables, watch} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -60,7 +60,6 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   // Compile using webpack
   const webpackOptions: string[] = [
     '--color',
-    '--progress',
     '--watch',
     '--config', webpackConfig
   ];
@@ -83,7 +82,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     });
 
     // Stop spinner
-    spinner.succeed('Development server stopped.');
+    spinner.succeed('Development server started.');
 
     callback(0);
     return 0;

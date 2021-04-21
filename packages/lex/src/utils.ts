@@ -87,9 +87,9 @@ export const getFilenames = (props: any) => {
 export const createSpinner = (quiet = false): any => {
   if(quiet) {
     return {
-      fail: () => {},
-      start: () => {},
-      succeed: () => {}
+      fail: () => { },
+      start: () => { },
+      succeed: () => { }
     };
   }
 
@@ -187,7 +187,7 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
       return reject(error);
     }
 
-    return resolve();
+    return resolve(null);
   });
 });
 
@@ -202,7 +202,7 @@ export const removeModules = () => new Promise(async (resolve, reject) => {
     // Remove npm lock
     await removeFiles('./package-lock.json', true);
 
-    resolve();
+    resolve(null);
   } catch(error) {
     reject(error);
   }

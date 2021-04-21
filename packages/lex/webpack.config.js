@@ -4,12 +4,13 @@
  */
 const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const DotenvPlugin = require('dotenv-webpack');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
 const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const isEmpty = require('lodash/isEmpty');
-const os = require('os');
+const ObsoletePlugin = require('obsolete-webpack-plugin');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
@@ -19,17 +20,10 @@ const {WebpackPluginServe} = require('webpack-plugin-serve');
 
 const {getNodePath, relativeFilePath} = require('./dist/utils');
 
-const {DefinePlugin} = webpack;
+const {ProgressPlugin, ProvidePlugin} = webpack;
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
-const envVariables = lexConfig.env || {NODE_ENV: environment};
-const {env: localEnvironment} = process;
-const allEnvVariables = {...envVariables, ...localEnvironment};
-const processVariables = Object.keys(allEnvVariables).reduce((list, varName) => {
-  list[`process.env.${varName}`] = JSON.stringify(allEnvVariables[varName]);
-  return list;
-}, {});
 
 const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 const {
@@ -47,7 +41,31 @@ const {
 
 // Only add plugins if they are needed
 const plugins = [
-  new DefinePlugin(processVariables)
+  new ProgressPlugin({
+    activeModules: false,
+    entries: true,
+    modules: true,
+    dependencies: true,
+    percentBy: null
+  }),
+  new ProvidePlugin({process: 'process/browser'}),
+  new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: true}),
+  new ObsoletePlugin({
+    name: 'obsolete',
+    promptOnNonTargetBrowser: true,
+    template: `
+      <div style="background-color: rgb(32, 41, 69); opacity: 0.8; height: 100%; width: 100%; margin: 0; padding: 0; position: absolute; text-align: center; left: 0; right: 0; bottom: 0; top: 0;">
+        <div style="color: white; font-size: 20px; margin-top: 10%">
+          Your browser is not supported.<br/><br/>
+          Please use a recent
+          <a href="https://www.microsoft.com/en-us/edge" style="color:white">Edge</a>,
+          <a href="https://www.mozilla.org/en-US/firefox/new/" style="color:white">Firefox</a>,
+          <a href="https://www.google.com/chrome/" style="color:white">Chrome</a> or
+          Safari.
+        </div>
+      </div>
+    `
+  })
 ];
 
 // Add svg files
@@ -100,6 +118,9 @@ if(staticPaths.length) {
 if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
   plugins.push(new HtmlWebPackPlugin({
     filename: './index.html',
+    minify: isProduction,
+    scriptLoading: 'defer',
+    showErrors: !isProduction,
     template: `${sourceFullPath}/${lexConfig.entryHTML}`
   }));
 }
@@ -108,21 +129,22 @@ let outputFilename = outputFile;
 
 if(outputFile) {
   outputFilename = outputFile;
-} else if(outputHash) {
+} else if(outputHash || isProduction) {
   outputFilename = '[name].[hash].js';
 } else {
   outputFilename = '[name].js';
 }
 
 // Loader paths
-const sourceLoaderPath = relativeFilePath('node_modules/source-map-loader', __dirname);
 const babelLoaderPath = relativeFilePath('node_modules/babel-loader', __dirname);
-const styleLoaderPath = relativeFilePath('node_modules/style-loader', __dirname);
 const cssLoaderPath = relativeFilePath('node_modules/css-loader', __dirname);
-const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirname);
-const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
 const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
+const graphqlLoaderPath = relativeFilePath('node_modules/graphql-tag/loader', __dirname);
+const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
 const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
+const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirname);
+const sourceMapLoaderPath = relativeFilePath('node_modules/source-map-loader', __dirname);
+const styleLoaderPath = relativeFilePath('node_modules/style-loader', __dirname);
 const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
 
 // Aliases
@@ -149,27 +171,43 @@ module.exports = (webpackEnv, webpackOptions) => {
   const webpackConfig = {
     bail: true,
     cache: !isProduction,
-    devtool: 'inline-cheap-source-map',
+    devtool: isProduction ? 'cheap-module-source-map' : 'eval-cheap-module-source-map',
     entry: {
       index: `${sourceFullPath}/${lexConfig.entryJS}`
     },
+    ignoreWarnings: [/Failed to parse source map/],
     mode: environment,
     module: {
       rules: [
         {
+          test: /\.m?js/,
+          resolve: {
+            fullySpecified: false
+          }
+        },
+        {
           enforce: 'pre',
           exclude: /(node_modules)/,
-          include: [sourceFullPath],
-          loader: sourceLoaderPath,
-          test: /\.(js|ts|tsx)$/
+          include: sourceFullPath,
+          loader: sourceMapLoaderPath,
+          test: /\.(ts|tsx|js)$/
         },
         {
           exclude: /(node_modules)/,
+          include: sourceFullPath,
           loader: babelLoaderPath,
-          options: {...babelOptions, cacheDirectory: true},
-          test: /\.(js|ts|tsx)$/
+          options: {
+            comments: false,
+            cacheDirectory: !isProduction,
+            cacheCompression: isProduction,
+            ignore: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
+            ...babelOptions
+          },
+          test: /\.(ts|tsx|js)$/
         },
         {
+          exclude: /(node_modules)/,
+          include: sourceFullPath,
           test: /\.html$/,
           use: [
             {
@@ -221,16 +259,26 @@ module.exports = (webpackEnv, webpackOptions) => {
           ]
         },
         {
+          exclude: /(node_modules)/,
+          include: sourceFullPath,
           loader: jsonLoaderPath,
           test: /\.json$/
         },
         {
+          exclude: /(node_modules)/,
+          include: sourceFullPath,
           loader: fileLoaderPath,
           test: /\.(gif|jpg|png|svg)$/
+        },
+        {
+          exclude: /(node_modules)/,
+          include: sourceFullPath,
+          loader: graphqlLoaderPath,
+          test: /\.(gql|graphql)$/
         }
       ]
     },
-    optimization: libraryName ? {} : {
+    optimization: !isProduction || libraryName ? {} : {
       runtimeChunk: 'single',
       splitChunks: {
         cacheGroups: {
@@ -252,27 +300,39 @@ module.exports = (webpackEnv, webpackOptions) => {
       publicPath: '/'
     },
     plugins,
+    recordsPath: relativeFilePath('webpack.records.json', process.cwd()),
     resolve: {
       alias,
-      extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql']
+      extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
+      fallback: {
+        crypto: require.resolve('crypto-browserify'),
+        path: require.resolve('path-browserify'),
+        process: require.resolve('process/browser'),
+        stream: require.resolve('stream-browserify'),
+        util: require.resolve('util/')
+      },
+      mainFiles: ['index'],
+      modules: [sourceFullPath, 'node_modules'],
+      unsafeCache: {
+        node_modules: true
+      }
     },
-    stats: {
-      warningsFilter: [/Failed to parse source map/]
-    },
+    // stats: {
+    //   warningsFilter: [/Failed to parse source map/]
+    // },
     target: preset || targetEnvironment
   };
 
   // Add development plugins
   if(!isProduction) {
-    const hotReactDom = relativeFilePath('node_modules/@hot-loader/react-dom', __dirname);
-
     webpackConfig.resolve.alias = {
       ...webpackConfig.resolve.alias,
-      'react-dom': hotReactDom,
+      'react-dom': relativeFilePath('node_modules/@hot-loader/react-dom', __dirname),
       webpack: webpackPath
     };
     webpackConfig.optimization = {minimize: false};
     webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
+    webpackConfig.stats = {errorDetails: true};
     webpackConfig.plugins.push(
       new WebpackPluginServe({
         client: {
@@ -280,14 +340,9 @@ module.exports = (webpackEnv, webpackOptions) => {
         },
         historyFallback: {
           disableDotRule: true,
+          htmlAcceptHeaders: ['text/html','*/*'],
           index: '/index.html',
           rewrites: [
-            // Webpack Serve Plugin Websocket
-            {
-              from: '/wps',
-              to: (context) => (context.parsedUrl.pathname)
-            },
-
             // Javascript files
             {
               from: /\.js/,
@@ -306,13 +361,13 @@ module.exports = (webpackEnv, webpackOptions) => {
           ],
           verbose: !(process.env.LEX_QUIET === 'true')
         },
+        hmr: false,
         log: {level: 'trace'},
         open: process.env.WEBPACK_DEV_OPEN === 'true',
-        port: 9000,
-        progress: true,
-        ramdisk: os.platform() !== 'win32',
+        port: 7000,
+        progress: 'minimal',
         static: [outputFullPath],
-        waitForBuild: true
+        status: true
       }),
     );
 
