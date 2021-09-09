@@ -170,7 +170,7 @@ export const removeConflictModules = (moduleList: object) => {
   const updatedList: object = {...moduleList};
 
   Object.keys(updatedList).forEach((moduleName: string) => {
-    const regex: RegExp = new RegExp('^(?!@types\/).*(babel|jest|webpack).*$', 'gi');
+    const regex: RegExp = new RegExp('^(?!@types\/).*(jest|webpack).*$', 'gi');
     if(regex.test(moduleName)) {
       delete updatedList[moduleName];
     }

@@ -7,7 +7,6 @@ docs
 node_modules
 src
 website
-.babelrc
 .eslint
 package-lock.json
 yarn-error.log

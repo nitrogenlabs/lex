@@ -153,7 +153,7 @@ export const clean = (ast, newObj, parent) => {
     });
   }
 
-  // styled-components, graphql, markdown
+  // graphql, markdown
   if(
     ast.type === 'TaggedTemplateExpression' &&
     (ast.tag.type === 'MemberExpression' ||

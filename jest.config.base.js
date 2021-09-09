@@ -14,7 +14,7 @@ module.exports = {
       branches: 80,
       functions: 90,
       lines: 80,
-      statements: -10
+      statements: 80
     }
   },
   moduleDirectories: [
@@ -26,7 +26,22 @@ module.exports = {
   ],
   testEnvironment: 'node',
   testURL: 'http://localhost',
-  transform: {'^.+\\.ts$': 'ts-jest'},
+  transform: {
+    '^.+\\.ts$': [
+      'esbuild-jest',
+      {
+        sourcemap: true,
+        loaders: {
+          '.js': 'js',
+          '.ts': 'ts',
+          '.test.ts': 'ts',
+          '.tsx': 'tsx',
+          '.test.tsx': 'tsx',
+        }
+      }
+    ],
+    '\\.(gql|graphql)$': 'jest-transform-graphql'
+  },
   transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'],
   verbose: true
 };

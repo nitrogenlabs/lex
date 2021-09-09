@@ -28,7 +28,7 @@ export const migrate = async (cmd: any, callback: any = process.exit): Promise<n
   const appPackage = getPackageJson(packagePath);
   const {dependencies = {}, devDependencies = {}} = appPackage;
 
-  // Remove Babel, Jest and Webpack from app since it will conflict
+  // Remove ESBuild, Jest and Webpack from app since it will conflict
   appPackage.dependencies = removeConflictModules(dependencies);
   appPackage.devDependencies = removeConflictModules(devDependencies);
 

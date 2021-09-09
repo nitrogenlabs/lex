@@ -11,10 +11,10 @@ import {createSpinner, log} from '../utils';
 
 export const config = (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
-  const validTypes: string[] = ['app', 'babel', 'jest', 'webpack'];
+  const validTypes: string[] = ['app', 'jest', 'webpack'];
 
   if(!validTypes.includes(type)) {
-    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, babel, jest, and webpack.`, 'error', quiet);
+    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, jest, and webpack.`, 'error', quiet);
     callback(1);
     return Promise.resolve(1);
   }
@@ -31,14 +31,14 @@ export const config = (type: string, cmd: any, callback: any = () => ({})): Prom
     case 'app':
       configOptions = LexConfig.config;
       break;
-    case 'babel':
-      configOptions = require('../../babelOptions.js');
+    case 'esbuild':
+      configOptions = require('../../esbuildOptions');
       break;
     case 'jest':
-      configOptions = require('../../jest.config.lex.js');
+      configOptions = require('../../jest.config.lex');
       break;
     case 'webpack':
-      configOptions = require('../../webpack.config.js');
+      configOptions = require('../../webpack.config');
       break;
   }
 

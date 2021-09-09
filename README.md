@@ -4,8 +4,7 @@ Lex is a console line execution module. Works out of the box for any React proje
 
 Lex eliminates this hassle. With the most common enterprise configurations used, developers can simply run and go. Lex uses the following libraries to assist in development.
 
-- [Babel](https://babeljs.io/)
-- [Flow](https://flow.org/)
+- [ESBuild](https://esbuild.github.io/)
 - [Jest](https://facebook.github.io/jest/)
 - [Typescript](http://www.typescriptlang.org/)
 - [Webpack](https://webpack.js.org/)

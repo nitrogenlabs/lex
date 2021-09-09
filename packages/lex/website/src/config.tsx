@@ -27,7 +27,7 @@ export const config: GothamConfiguration = {
               {
                 align: 'right',
                 details: 'Lex is a console line execution tool. Works out of the box for any React project, taking care of all your development needs. No need to install unit testing, transpilers, compilers, or even development servers. Install Lex globally and let go of all the grunt work, allowing you focus on coding your app.',
-                image: <img src="http://lex.nitrogenlabs.com/img/screenshot-1.png" />,
+                image: <img src="http://lex.nitrogenlabs.com/images/screenshot-1.png" />,
                 title: 'What is Lex?'
               }
             ],
@@ -71,8 +71,8 @@ export const config: GothamConfiguration = {
                 },
                 {
                   details: 'Transpile ES-next, Flow and Typescript',
-                  image: <Svg name="babel-logo" width={150} height={150} />,
-                  title: 'Babel'
+                  image: <Svg name="esbuild-logo" width={150} height={150} />,
+                  title: 'ESBuild'
                 },
                 {
                   details: 'Unit Test has never been easier.',
@@ -82,13 +82,13 @@ export const config: GothamConfiguration = {
               ]
             },
             splash: {
-              backgroundImage: './img/bg-image.jpg',
+              backgroundImage: './images/bg-image.jpg',
               backgroundTextColor: '#fff',
               buttons: [
                 {label: 'Quick Start', url: '/quickStart'},
                 {label: 'API', url: '/api'}
               ],
-              image: <img src="./img/bg-logo.png" height="350" />
+              image: <img src="./images/bg-logo.png" height="350" />
             },
             topBar: {
               logo: <Svg name="lex-logo-wh" width={130} height={130} />,

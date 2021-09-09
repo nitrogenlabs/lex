@@ -3,7 +3,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import commander from 'commander';
+import {program} from 'commander';
 
 import {
   build,
@@ -26,8 +26,7 @@ import {
 const packageConfig = require('../package.json');
 
 // Commands
-commander.command('build')
-  .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
+program.command('build')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
   .option('-l, --lexConfig <path>', 'Lex configuration file path (lex.config.js).')
   .option('-m, --mode <type>', 'Webpack mode ("production" or "development"). Default: "development".', /^(development|production)$/i, 'development')
@@ -37,8 +36,6 @@ commander.command('build')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .option('-w, --watch', 'Watch for changes.')
-  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
-  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
   .option('--outputChunkFilename <filename>', 'The output filename for additional chunks.')
@@ -52,18 +49,17 @@ commander.command('build')
   .option('--buildDelimiter <delimiter>', 'Display custom text after build output. Default: "=== Build done ==="')
   .action((cmd) => build(cmd, process.exit).then(() => {}));
 
-commander.command('clean')
+program.command('clean')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
   .action((cmd) => clean(cmd, process.exit).then(() => {}));
 
-commander.command('config <type>')
+program.command('config <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--json <path>', 'Save output to json file.')
   .action((type, cmd) => config(type, cmd, process.exit).then(() => {}));
 
-commander.command('compile')
-  .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
+program.command('compile')
   .option('-c, --config <path>', 'Transpiler configuration file path (ie. .flowconfig or tsconfig.json).')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
@@ -71,21 +67,18 @@ commander.command('compile')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-w, --watch', 'Watches for changes and compiles.')
-  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
-  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
   .action((cmd) => compile(cmd, process.exit).then(() => {}));
 
-commander.command('create <type>')
+program.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Create Typescript version.')
   .option('--outputFile <path>', 'Output filename.')
   .option('--outputName <name>', 'Output name.')
   .action((type, cmd) => create(type, cmd, process.exit).then(() => {}));
 
-commander.command('dev')
-  .option('-b, --babel <path>', 'Babel configuration file path (ie. .babelrc).')
+program.command('dev')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
   .option('-l, --lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('-o, --open', 'Automatically open dev server in a new browser window.')
@@ -94,25 +87,23 @@ commander.command('dev')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
   .option('-w, --watch', 'Watch for changes.')
-  .option('--babelPlugins <list>', 'Add Babel plugins (ie. transform-runtime,transform-es2015-modules-amd).')
-  .option('--babelPresets <list>', 'Add Babel presets (ie. es2015,react).')
   .option('--bundleAnalyzer', 'Run bundle analyzer.')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
   .action((cmd) => dev(cmd, process.exit).then(() => {}));
 
-commander.command('init <appName> [packageName]')
+program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
   .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit).then(() => {}));
 
-commander.command('linked')
+program.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => linked(cmd, process.exit).then(() => {}));
 
-commander.command('lint')
+program.command('lint')
   .option('--cache', 'Only check changed files. Default: false.')
   .option('--cache-location <path>', 'Path to the cache file or directory.')
   .option('--color', 'Force enabling of color.')
@@ -148,11 +139,11 @@ commander.command('lint')
   .option('--stdin-filename <name>', 'Specify filename to process STDIN as.')
   .action((cmd) => lint(cmd, process.exit).then(() => {}));
 
-commander.command('migrate')
+program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => migrate(cmd, process.exit).then(() => {}));
 
-commander.command('publish')
+program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
   .option('-o, --otp <code>', 'Provide a two-factor code.')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
@@ -162,7 +153,7 @@ commander.command('publish')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
   .action((cmd) => publish(cmd, process.exit).then(() => {}));
 
-commander.command('test')
+program.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
   .option('-d, --detectOpenHandles', 'Attempt to collect and print open handles preventing Jest from exiting cleanly')
   .option('-e, --environment <name>', 'Target environment. "node" or "web". Default: "node".')
@@ -206,23 +197,23 @@ commander.command('test')
   .option('--watchAll', 'Watch files for changes and rerun all tests when something changes.')
   .action((cmd) => test(cmd, process.exit).then(() => {}));
 
-commander.command('update')
+program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--registry', 'Add a custom registry url.')
   .action((cmd) => update(cmd, process.exit).then(() => {}));
 
-commander.command('upgrade')
+program.command('upgrade')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => upgrade(cmd, process.exit).then(() => {}));
 
-commander.command('versions')
+program.command('versions')
   .option('-j, --json', 'Print the version as a JSON object.')
   .action((cmd) => versions(cmd, process.exit).then(() => {}));
 
 // Initialize
-commander
+program
   .version(packageConfig.version)
   .parse(process.argv);

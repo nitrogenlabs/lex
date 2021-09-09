@@ -15,7 +15,7 @@ article {
 }
 
 .homeContainer {
-  background-image: url("../img/bg-image.jpg");
+  background-image: url("../images/bg-image.jpg");
   background-size: cover;
   min-height: 300px;
 }

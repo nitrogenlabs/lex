@@ -10,10 +10,10 @@ import {log, relativeFilePath} from './utils';
 const cwd: string = process.cwd();
 
 export interface LexConfigType {
-  babel?: any;
   configFiles?: string[];
   entryHTML?: string;
-  entryJS?: string;
+  entryJs?: string;
+  esbuild?: any;
   env?: object;
   gitUrl?: string;
   jest?: any;
@@ -34,10 +34,10 @@ export interface LexConfigType {
 
 export class LexConfig {
   static config: LexConfigType = {
-    babel: {},
     configFiles: [],
     entryHTML: 'index.html',
-    entryJS: 'index.js',
+    entryJs: 'index.js',
+    esbuild: {},
     env: null,
     jest: {},
     outputFullPath: path.resolve(cwd, './dist'),
@@ -81,16 +81,16 @@ export class LexConfig {
     const {sourceFullPath} = LexConfig.config;
 
     // Make sure we change the default entry file if Typescript is being used.
-    const {entryJS} = LexConfig.config;
+    const {entryJs} = LexConfig.config;
 
-    if(entryJS === 'index.js' && value) {
+    if(entryJs === 'index.js' && value) {
       const indexPath: string = path.resolve(cwd, sourceFullPath, 'index.tsx');
       const hasIndexTsx: boolean = fs.existsSync(indexPath);
 
       if(hasIndexTsx) {
-        LexConfig.config.entryJS = 'index.tsx';
+        LexConfig.config.entryJs = 'index.tsx';
       } else {
-        LexConfig.config.entryJS = 'index.ts';
+        LexConfig.config.entryJs = 'index.ts';
       }
     }
   }
@@ -98,7 +98,7 @@ export class LexConfig {
   // Set option updates from the command line
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
-    const {babelPlugins, babelPresets, environment, outputPath, sourcePath, typescript} = cmd;
+    const {environment, outputPath, sourcePath, typescript} = cmd;
 
     // Custom output dir
     if(outputPath !== undefined) {
@@ -115,22 +115,6 @@ export class LexConfig {
     // Determine if we're using Typescript or Flow
     if(typescript !== undefined) {
       params.useTypescript = typescript;
-    }
-
-    // Add Babel plugins
-    if(babelPlugins !== undefined) {
-      const plugins: string[] = babelPlugins.split(',');
-      const mappedPlugins = plugins.map((plugin: string) => `${path.resolve(cwd, './node_modules')}/${plugin}}`);
-      const existingPlugins = params.babel.plugins || [];
-      params.babel.plugins = [...existingPlugins, ...mappedPlugins];
-    }
-
-    // Add Babel presets
-    if(babelPresets !== undefined) {
-      const presets: string[] = babelPresets.split(',');
-      const mappedPresets = presets.map((preset: string) => `${path.resolve(cwd, './node_modules')}/${preset}}`);
-      const existingPresets = params.babel.presets || [];
-      params.babel.presets = [...existingPresets, ...mappedPresets];
     }
 
     // Set the target environment

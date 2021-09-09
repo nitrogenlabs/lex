@@ -4,6 +4,7 @@
  */
 import execa from 'execa';
 import fs from 'fs';
+import glob from 'glob';
 import path from 'path';
 
 import {LexConfig} from '../LexConfig';
@@ -119,27 +120,36 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     }
   }
 
-  // Babel options
-  const babelPath: string = relativeFilePath('@babel/cli/bin/babel.js', nodePath);
-  const transpilerPreset: string = path.resolve(__dirname, useTypescript ? '../babelTypescriptPreset.js' : '../babelFlowPreset.js');
-  const userPreset: string = path.resolve(__dirname, '../babelPresets.js');
-  const babelOptions: string[] = [
-    '--no-babelrc',
-    sourceFullPath,
-    '--out-dir',
-    outputFullPath,
-    '--ignore',
-    useTypescript ? '**/*.test.ts,**/*.test.tsx' : '**/*.test.js',
-    '--extensions',
-    useTypescript ? '.ts,.tsx' : '.js',
-    '-s',
-    'inline',
-    '--presets',
-    `${transpilerPreset},${userPreset}`
+  // Source files
+  const globOptions = {
+    cwd: sourceFullPath,
+    dot: false,
+    nodir: true,
+    nosort: true
+  };
+  const tsFiles: string[] = glob.sync(`${sourceFullPath}/**/**.ts*`, globOptions);
+  const jsFiles: string[] = glob.sync(`${sourceFullPath}/**/**.js`, globOptions);
+  const sourceFiles: string[] = [...tsFiles, ...jsFiles];
+
+  // ESBuild options
+  const esbuildPath: string = relativeFilePath('esbuild/bin/esbuild', nodePath);
+  const esbuildOptions: string[] = [
+    ...sourceFiles,
+    '--color=true',
+    '--format=cjs',
+    '--loader:.js=js',
+    '--outdir=lib',
+    '--platform=node',
+    '--sourcemap=inline',
+    '--target=esnext,node12'
   ];
 
+  if(useTypescript) {
+    esbuildOptions.push('--loader:.ts=ts', '--loader:.tsx=tsx');
+  }
+
   if(watch) {
-    babelOptions.push('--watch');
+    esbuildOptions.push('--watch');
   }
 
   // Use PostCSS for CSS files
@@ -178,11 +188,11 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const jpgFiles: string[] = getFilesByExt('.jpg');
   const pngFiles: string[] = getFilesByExt('.png');
   const svgFiles: string[] = getFilesByExt('.svg');
-  const imgFiles: string[] = [...gifFiles, ...jpgFiles, ...pngFiles, ...svgFiles];
+  const imageFiles: string[] = [...gifFiles, ...jpgFiles, ...pngFiles, ...svgFiles];
 
-  if(imgFiles.length) {
+  if(imageFiles.length) {
     try {
-      await copyFiles(imgFiles, 'image', spinner);
+      await copyFiles(imageFiles, 'image', spinner);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -239,13 +249,13 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   // Start compile spinner
-  spinner.start(watch ? 'Watching for changes...' : 'Compiling with Babel...');
+  spinner.start(watch ? 'Watching for changes...' : 'Compiling with ESBuild...');
 
   try {
-    const babel = await execa(babelPath, babelOptions, {encoding: 'utf-8'});
+    const esbuild = await execa(esbuildPath, esbuildOptions, {encoding: 'utf-8'});
 
     // Stop spinner
-    spinner.succeed((babel.stdout || '').toString().replace('.', '!').trim());
+    spinner.succeed((esbuild.stdout || '').toString().replace('.', '!').trim());
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);

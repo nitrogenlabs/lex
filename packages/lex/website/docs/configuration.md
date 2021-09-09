@@ -5,7 +5,7 @@
 ```js
 {
   entryHTML: 'index.html',
-  entryJS: 'index.js',
+  entryJs: 'index.js',
   env: {'NODE_ENV': process.env.NODE_ENV},
   outputPath: './dist',
   sourcePath: './src',
@@ -14,7 +14,7 @@
 ```
 
 - **entryHTML** - *(string)* Root HTML entry point. This should be the initial HTML filename within the `./src` directory. Default: `'index.html'`
-- **entryJS** - *(string)* Root javascript code entry point. This should be the initial Typescript filename within the `./src` directory. Default: `'index.js'`
+- **entryJs** - *(string)* Root javascript code entry point. This should be the initial Typescript filename within the `./src` directory. Default: `'index.js'`
 - **env** - *(object)*  Key/value sets for environment variables. These environment variables will be available to your app. Default: `{'NODE_ENV': process.env.NODE_ENV}`
 - **libraryName** - *(string)* Name for compiled library.
 - **libraryTarget** - *(string)* File path for compiled library.

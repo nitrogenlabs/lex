@@ -8,7 +8,7 @@ const packageConfig = require('../../package.json');
 
 export const parseVersion = (packageVersion: string = ''): string => packageVersion.replace(/\^/g, '');
 export const packages = {
-  babel: parseVersion(packageConfig.dependencies['@babel/core']),
+  esbuild: parseVersion(packageConfig.dependencies.esbuild),
   jest: parseVersion(packageConfig.dependencies.jest),
   lex: packageConfig.version,
   typescript: parseVersion(packageConfig.dependencies.typescript),
@@ -28,7 +28,7 @@ export const versions = (cmd: any, callback: any = () => (0)): Promise<number> =
     log('Versions:', 'info', false);
     log(`  Lex: ${packages.lex}`, 'info', false);
     log('  ----------', 'note', false);
-    log(`  Babel: ${packages.babel}`, 'info', false);
+    log(`  ESBuild: ${packages.esbuild}`, 'info', false);
     log(`  Jest: ${packages.jest}`, 'info', false);
     log(`  Typescript: ${packages.typescript}`, 'info', false);
     log(`  Webpack: ${packages.webpack}`, 'info', false);

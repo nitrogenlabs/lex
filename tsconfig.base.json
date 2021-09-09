@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "allowJs": false,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "esModuleInterop": true,
@@ -8,12 +8,11 @@
     "jsx": "react",
     "lib": [
       "dom",
-      "es6",
-      "es7",
       "esnext"
     ],
     "module": "commonjs",
     "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noStrictGenericChecks": true,
@@ -22,7 +21,7 @@
     "removeComments": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "target": "ES5",
+    "target": "esnext",
     "types": [
       "jest",
       "node"

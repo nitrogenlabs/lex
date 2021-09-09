@@ -3,8 +3,10 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
+const CompressionWebpackPlugin = require('compression-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const DotenvPlugin = require('dotenv-webpack');
+const {ESBuildMinifyPlugin} = require('esbuild-loader');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
 const glob = require('glob');
@@ -25,7 +27,6 @@ const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 
-const babelOptions = require(path.resolve(__dirname, './babelOptions.js'));
 const {
   isStatic,
   outputFullPath,
@@ -50,6 +51,7 @@ const plugins = [
   }),
   new ProvidePlugin({process: 'process/browser'}),
   new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: true}),
+  new CompressionWebpackPlugin({algorithm: 'gzip'}),
   new ObsoletePlugin({
     name: 'obsolete',
     promptOnNonTargetBrowser: true,
@@ -93,13 +95,13 @@ if(glob.sync(svgPaths, globOptions).length) {
 // If there is are static directories, make sure we copy the files over
 const staticPaths = [];
 const watchIgnorePaths = [`${sourceFullPath}/**/**.gif`, `${sourceFullPath}/**/**.jpg`, `${sourceFullPath}/**/**.png`];
-const imgPath = `${sourceFullPath}/img/`;
+const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
-if(fs.existsSync(imgPath)) {
-  staticPaths.push({from: imgPath, to: './img/'});
-  watchIgnorePaths.push(imgPath);
+if(fs.existsSync(imagePath)) {
+  staticPaths.push({from: imagePath, to: './images/'});
+  watchIgnorePaths.push(imagePath);
 }
 
 if(fs.existsSync(fontPath)) {
@@ -136,7 +138,7 @@ if(outputFile) {
 }
 
 // Loader paths
-const babelLoaderPath = relativeFilePath('node_modules/babel-loader', __dirname);
+const esbuildLoaderPath = relativeFilePath('node_modules/esbuild-loader', __dirname);
 const cssLoaderPath = relativeFilePath('node_modules/css-loader', __dirname);
 const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
 const graphqlLoaderPath = relativeFilePath('node_modules/graphql-tag/loader', __dirname);
@@ -173,7 +175,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     cache: !isProduction,
     devtool: isProduction ? 'cheap-module-source-map' : 'eval-cheap-module-source-map',
     entry: {
-      index: `${sourceFullPath}/${lexConfig.entryJS}`
+      index: `${sourceFullPath}/${lexConfig.entryJs}`
     },
     ignoreWarnings: [/Failed to parse source map/],
     mode: environment,
@@ -193,15 +195,16 @@ module.exports = (webpackEnv, webpackOptions) => {
           test: /\.(ts|tsx|js)$/
         },
         {
-          exclude: /(node_modules)/,
+          exclude: [
+            /(node_modules)/,
+            `${sourceFullPath}/**/*.test.js*`,
+            `${sourceFullPath}/**/*.test.ts*`
+          ],
           include: sourceFullPath,
-          loader: babelLoaderPath,
+          loader: esbuildLoaderPath,
           options: {
-            comments: false,
-            cacheDirectory: !isProduction,
-            cacheCompression: isProduction,
-            ignore: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
-            ...babelOptions
+            loader: 'tsx',
+            target: 'es2015'
           },
           test: /\.(ts|tsx|js)$/
         },
@@ -255,6 +258,13 @@ module.exports = (webpackEnv, webpackOptions) => {
                   ]
                 }
               }
+            },
+            {
+              loader: esbuildLoaderPath,
+              options: {
+                loader: 'css',
+                minify: true
+              }
             }
           ]
         },
@@ -279,6 +289,12 @@ module.exports = (webpackEnv, webpackOptions) => {
       ]
     },
     optimization: !isProduction || libraryName ? {} : {
+      minimizer: [
+        new ESBuildMinifyPlugin({
+          css: true,
+          target: 'es2015'
+        })
+      ],
       runtimeChunk: 'single',
       splitChunks: {
         cacheGroups: {
@@ -385,7 +401,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     }
   } else {
   // Create site ico files
-    const siteLogo = `${sourceFullPath}/img/logo.png`;
+    const siteLogo = `${sourceFullPath}/images/logo.png`;
 
     if(fs.existsSync(siteLogo)) {
       plugins.push(new FaviconsWebpackPlugin({

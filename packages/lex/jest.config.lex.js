@@ -13,13 +13,11 @@ const setupFiles = [
 ];
 let moduleFileExtensions = ['js', 'json'];
 let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
-let transform = {'\\.(js)$': path.resolve(__dirname, './jest.preprocessor.js')};
 let transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js)$'];
 
 if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
   testRegex = '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)?$';
-  transform = {'\\.(js|ts|tsx)$': path.resolve(__dirname, './jest.preprocessor.js')};
   transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$'];
 }
 
@@ -46,7 +44,6 @@ module.exports = {
   ],
   testRegex,
   testURL: 'http://localhost',
-  transform,
   transformIgnorePatterns,
   verbose: false,
   ...jest

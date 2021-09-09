@@ -2,5 +2,12 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./packages"
-  }
+  },
+  "exclude": [
+    "./lib",
+    "./node_modules"
+  ],
+  "include": [
+    "./src"
+  ]
 }
