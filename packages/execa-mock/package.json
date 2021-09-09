@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/execa-mock",
-  "version": "1.25.1",
+  "version": "1.26.0",
   "description": "Execa jest mock",
   "license": "MIT",
   "bin": {
