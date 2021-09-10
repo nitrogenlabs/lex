@@ -88,6 +88,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--outDir', outputFullPath,
         '--removeComments',
         '--resolveJsonModule',
+        '--rootDir', sourceFullPath,
         '--sourceRoot', sourceFullPath,
         '--target', 'ES5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
@@ -139,7 +140,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     '--loader:.js=js',
     '--outdir=lib',
     '--platform=node',
-    '--rootDir', sourceFullPath,
     '--sourcemap=inline',
     '--target=esnext,node14'
   ];
