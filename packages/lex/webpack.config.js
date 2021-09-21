@@ -23,8 +23,7 @@ const {WebpackPluginServe} = require('webpack-plugin-serve');
 const {getNodePath, relativeFilePath} = require('./dist/utils');
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
-const environment = process.env.NODE_ENV || 'development';
-const isProduction = environment === 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 
 const {
@@ -49,26 +48,34 @@ const plugins = [
     dependencies: true,
     percentBy: null
   }),
-  new ProvidePlugin({process: 'process/browser'}),
-  new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: true}),
-  new CompressionWebpackPlugin({algorithm: 'gzip'}),
-  new ObsoletePlugin({
-    name: 'obsolete',
-    promptOnNonTargetBrowser: true,
-    template: `
-      <div style="background-color: rgb(32, 41, 69); opacity: 0.8; height: 100%; width: 100%; margin: 0; padding: 0; position: absolute; text-align: center; left: 0; right: 0; bottom: 0; top: 0;">
-        <div style="color: white; font-size: 20px; margin-top: 10%">
-          Your browser is not supported.<br/><br/>
-          Please use a recent
-          <a href="https://www.microsoft.com/en-us/edge" style="color:white">Edge</a>,
-          <a href="https://www.mozilla.org/en-US/firefox/new/" style="color:white">Firefox</a>,
-          <a href="https://www.google.com/chrome/" style="color:white">Chrome</a> or
-          Safari.
-        </div>
-      </div>
-    `
-  })
+  new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: false})
 ];
+
+const target = preset || targetEnvironment;
+const isWeb = target === 'web';
+
+if(isWeb) {
+  plugins.push(
+    new CompressionWebpackPlugin({algorithm: 'gzip'}),
+    new ProvidePlugin({process: 'process/browser'}),
+    new ObsoletePlugin({
+      name: 'obsolete',
+      promptOnNonTargetBrowser: true,
+      template: `
+        <div style="background-color: rgb(32, 41, 69); opacity: 0.8; height: 100%; width: 100%; margin: 0; padding: 0; position: absolute; text-align: center; left: 0; right: 0; bottom: 0; top: 0;">
+          <div style="color: white; font-size: 20px; margin-top: 10%">
+            Your browser is not supported.<br/><br/>
+            Please use a recent
+            <a href="https://www.microsoft.com/en-us/edge" style="color:white">Edge</a>,
+            <a href="https://www.mozilla.org/en-US/firefox/new/" style="color:white">Firefox</a>,
+            <a href="https://www.google.com/chrome/" style="color:white">Chrome</a> or
+            Safari.
+          </div>
+        </div>
+      `
+    })
+  );
+}
 
 // Add svg files
 const globOptions = {
@@ -131,7 +138,7 @@ let outputFilename = outputFile;
 
 if(outputFile) {
   outputFilename = outputFile;
-} else if(outputHash || isProduction) {
+} else if(outputHash || (isWeb && isProduction)) {
   outputFilename = '[name].[hash].js';
 } else {
   outputFilename = '[name].js';
@@ -173,12 +180,12 @@ module.exports = (webpackEnv, webpackOptions) => {
   const webpackConfig = {
     bail: true,
     cache: !isProduction,
-    devtool: isProduction ? 'cheap-module-source-map' : 'eval-cheap-module-source-map',
+    devtool: isProduction ? 'inline-cheap-module-source-map' : 'eval-cheap-module-source-map',
     entry: {
       index: `${sourceFullPath}/${lexConfig.entryJs}`
     },
     ignoreWarnings: [/Failed to parse source map/],
-    mode: environment,
+    mode: isProduction ? 'production' : 'development',
     module: {
       rules: [
         {
@@ -288,7 +295,7 @@ module.exports = (webpackEnv, webpackOptions) => {
         }
       ]
     },
-    optimization: !isProduction || libraryName ? {} : {
+    optimization: (isProduction && isWeb) ? {
       minimizer: [
         new ESBuildMinifyPlugin({
           css: true,
@@ -307,7 +314,7 @@ module.exports = (webpackEnv, webpackOptions) => {
         }
       },
       usedExports: true
-    },
+    } : {},
     output: {
       filename: outputFilename,
       library: libraryName,
@@ -321,7 +328,12 @@ module.exports = (webpackEnv, webpackOptions) => {
       alias,
       extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
       fallback: {
+        assert: require.resolve('assert/'),
         crypto: require.resolve('crypto-browserify'),
+        fs: require.resolve('fs-extra'),
+        http: require.resolve('stream-http'),
+        https: require.resolve('https-browserify'),
+        os: require.resolve('os-browserify/browser'),
         path: require.resolve('path-browserify'),
         process: require.resolve('process/browser'),
         stream: require.resolve('stream-browserify'),
@@ -336,7 +348,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     // stats: {
     //   warningsFilter: [/Failed to parse source map/]
     // },
-    target: preset || targetEnvironment
+    target
   };
 
   // Add development plugins
