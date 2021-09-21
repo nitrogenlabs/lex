@@ -88,7 +88,6 @@
     "luxon": "^2.0.2",
     "net": "^1.0.2",
     "npm-check-updates": "^11.8.5",
-    "obsolete-webpack-plugin": "^0.5.6",
     "ora": "5.4.1",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",

@@ -12,7 +12,6 @@ const fs = require('fs');
 const glob = require('glob');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const isEmpty = require('lodash/isEmpty');
-const ObsoletePlugin = require('obsolete-webpack-plugin');
 const path = require('path');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const webpack = require('webpack');
@@ -57,23 +56,7 @@ const isWeb = target === 'web';
 if(isWeb) {
   plugins.push(
     new CompressionWebpackPlugin({algorithm: 'gzip'}),
-    new ProvidePlugin({process: 'process/browser'}),
-    new ObsoletePlugin({
-      name: 'obsolete',
-      promptOnNonTargetBrowser: true,
-      template: `
-        <div style="background-color: rgb(32, 41, 69); opacity: 0.8; height: 100%; width: 100%; margin: 0; padding: 0; position: absolute; text-align: center; left: 0; right: 0; bottom: 0; top: 0;">
-          <div style="color: white; font-size: 20px; margin-top: 10%">
-            Your browser is not supported.<br/><br/>
-            Please use a recent
-            <a href="https://www.microsoft.com/en-us/edge" style="color:white">Edge</a>,
-            <a href="https://www.mozilla.org/en-US/firefox/new/" style="color:white">Firefox</a>,
-            <a href="https://www.google.com/chrome/" style="color:white">Chrome</a> or
-            Safari.
-          </div>
-        </div>
-      `
-    })
+    new ProvidePlugin({process: 'process/browser'})
   );
 }
 
