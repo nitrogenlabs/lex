@@ -141,7 +141,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     '--outdir=lib',
     '--platform=node',
     '--sourcemap=inline',
-    '--target=esnext,node14'
+    '--target=node14'
   ];
 
   if(useTypescript) {
@@ -252,10 +252,10 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   spinner.start(watch ? 'Watching for changes...' : 'Compiling with ESBuild...');
 
   try {
-    const esbuild = await execa(esbuildPath, esbuildOptions, {encoding: 'utf-8'});
+    await execa(esbuildPath, esbuildOptions, {encoding: 'utf-8'});
 
     // Stop spinner
-    spinner.succeed((esbuild.stdout || '').toString().replace('.', '!').trim());
+    spinner.succeed('Compile completed successfully!');
   } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);

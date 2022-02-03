@@ -36,6 +36,7 @@ program.command('build')
   .option('-t, --typescript', 'Transpile as Typescript.')
   .option('-v, --variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .option('-w, --watch', 'Watch for changes.')
+  .option('--bundler <name>', 'Bundler to use ("webpack" or "esbuild"). Default: "webpack".', /^(webpack|esbuild)$/i, 'webpack')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
   .option('--outputChunkFilename <filename>', 'The output filename for additional chunks.')
@@ -47,17 +48,17 @@ program.command('build')
   .option('--outputPublicPath <path>', 'The public path for the assets. Default: "/"')
   .option('--outputSourceMapFilename <filename>', 'The output filename for the SourceMap. Default: "[name].map"')
   .option('--buildDelimiter <delimiter>', 'Display custom text after build output. Default: "=== Build done ==="')
-  .action((cmd) => build(cmd, process.exit).then(() => {}));
+  .action((cmd) => build(cmd, process.exit).then(() => { }));
 
 program.command('clean')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-s, --snapshots', 'Remove all "__snapshots__" directories.')
-  .action((cmd) => clean(cmd, process.exit).then(() => {}));
+  .action((cmd) => clean(cmd, process.exit).then(() => { }));
 
 program.command('config <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--json <path>', 'Save output to json file.')
-  .action((type, cmd) => config(type, cmd, process.exit).then(() => {}));
+  .action((type, cmd) => config(type, cmd, process.exit).then(() => { }));
 
 program.command('compile')
   .option('-c, --config <path>', 'Transpiler configuration file path (ie. .flowconfig or tsconfig.json).')
@@ -69,14 +70,14 @@ program.command('compile')
   .option('-w, --watch', 'Watches for changes and compiles.')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
-  .action((cmd) => compile(cmd, process.exit).then(() => {}));
+  .action((cmd) => compile(cmd, process.exit).then(() => { }));
 
 program.command('create <type>')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Create Typescript version.')
   .option('--outputFile <path>', 'Output filename.')
   .option('--outputName <name>', 'Output name.')
-  .action((type, cmd) => create(type, cmd, process.exit).then(() => {}));
+  .action((type, cmd) => create(type, cmd, process.exit).then(() => { }));
 
 program.command('dev')
   .option('-c, --config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
@@ -90,18 +91,18 @@ program.command('dev')
   .option('--bundleAnalyzer', 'Run bundle analyzer.')
   .option('--sourcePath <path>', 'Source path')
   .option('--outputPath <path>', 'Output path')
-  .action((cmd) => dev(cmd, process.exit).then(() => {}));
+  .action((cmd) => dev(cmd, process.exit).then(() => { }));
 
 program.command('init <appName> [packageName]')
   .option('-i, --install', 'Install dependencies.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('-t, --typescript', 'Use a Typescript based app.')
-  .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit).then(() => {}));
+  .action((appName, packageName, cmd) => init(appName, packageName, cmd, process.exit).then(() => { }));
 
 program.command('linked')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action((cmd) => linked(cmd, process.exit).then(() => {}));
+  .action((cmd) => linked(cmd, process.exit).then(() => { }));
 
 program.command('lint')
   .option('--cache', 'Only check changed files. Default: false.')
@@ -137,11 +138,11 @@ program.command('lint')
   .option('--rulesdir <path>', 'Use additional rules from this directory.')
   .option('--stdin', 'Lint code provided on <STDIN> - Default: false.')
   .option('--stdin-filename <name>', 'Specify filename to process STDIN as.')
-  .action((cmd) => lint(cmd, process.exit).then(() => {}));
+  .action((cmd) => lint(cmd, process.exit).then(() => { }));
 
 program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action((cmd) => migrate(cmd, process.exit).then(() => {}));
+  .action((cmd) => migrate(cmd, process.exit).then(() => { }));
 
 program.command('publish')
   .option('-b, --bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch"., ', /^(major|minor|patch|beta|alpha|rc)$/i, 'patch')
@@ -151,7 +152,7 @@ program.command('publish')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-t, --tag <tag>', 'Registers the published package with the given tag.')
   .option('-v, --new-version <versionNumber>', 'Publish as a specific version.')
-  .action((cmd) => publish(cmd, process.exit).then(() => {}));
+  .action((cmd) => publish(cmd, process.exit).then(() => { }));
 
 program.command('test')
   .option('-c, --config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
@@ -195,23 +196,23 @@ program.command('test')
   .option('--useStderr', 'Divert all output to stderr.')
   .option('--verbose', 'Display individual test results with the test suite hierarchy.')
   .option('--watchAll', 'Watch files for changes and rerun all tests when something changes.')
-  .action((cmd) => test(cmd, process.exit).then(() => {}));
+  .action((cmd) => test(cmd, process.exit).then(() => { }));
 
 program.command('update')
   .option('-i, --interactive', 'Choose which packages to update.')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .option('--registry', 'Add a custom registry url.')
-  .action((cmd) => update(cmd, process.exit).then(() => {}));
+  .action((cmd) => update(cmd, process.exit).then(() => { }));
 
 program.command('upgrade')
   .option('-m, --package-manager <manager>', 'Which package manager to use. Default: npm', /^(npm|yarn)$/i, 'npm')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
-  .action((cmd) => upgrade(cmd, process.exit).then(() => {}));
+  .action((cmd) => upgrade(cmd, process.exit).then(() => { }));
 
 program.command('versions')
   .option('-j, --json', 'Print the version as a JSON object.')
-  .action((cmd) => versions(cmd, process.exit).then(() => {}));
+  .action((cmd) => versions(cmd, process.exit).then(() => { }));
 
 // Initialize
 program

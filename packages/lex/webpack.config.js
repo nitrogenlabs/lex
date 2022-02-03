@@ -34,7 +34,7 @@ const {
   libraryName,
   libraryTarget,
   preset,
-  targetEnvironment,
+  targetEnvironment = 'es2015',
   webpack: webpackCustom
 } = lexConfig;
 
@@ -50,8 +50,7 @@ const plugins = [
   new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: false})
 ];
 
-const target = preset || targetEnvironment;
-const isWeb = target === 'web';
+const isWeb = (preset || targetEnvironment) === 'web';
 
 if(isWeb) {
   plugins.push(
@@ -144,6 +143,7 @@ const aliasPaths = {
   '@nlabs/arkhamjs': relativeFilePath('node_modules/@nlabs/arkhamjs', process.cwd()),
   '@nlabs/arkhamjs-utils-react': relativeFilePath('node_modules/@nlabs/arkhamjs-utils-react', process.cwd()),
   'core-js': getNodePath('core-js'),
+  process: relativeFilePath('node_modules/process', process.cwd()),
   react: relativeFilePath('node_modules/react', process.cwd()),
   'react-dom': relativeFilePath('node_modules/react-dom', process.cwd()),
   'regenerator-runtime': getNodePath('regenerator-runtime')
@@ -194,7 +194,7 @@ module.exports = (webpackEnv, webpackOptions) => {
           loader: esbuildLoaderPath,
           options: {
             loader: 'tsx',
-            target: 'es2015'
+            target: targetEnvironment
           },
           test: /\.(ts|tsx|js)$/
         },
@@ -282,7 +282,7 @@ module.exports = (webpackEnv, webpackOptions) => {
       minimizer: [
         new ESBuildMinifyPlugin({
           css: true,
-          target: 'es2015'
+          target: targetEnvironment
         })
       ],
       runtimeChunk: 'single',
@@ -331,7 +331,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     // stats: {
     //   warningsFilter: [/Failed to parse source map/]
     // },
-    target
+    target: isWeb ? 'web' : 'node'
   };
 
   // Add development plugins
