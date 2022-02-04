@@ -28,6 +28,7 @@ export interface LexConfigType {
   sourceFullPath?: string;
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
+  useGraphQl?: boolean;
   useTypescript?: boolean;
   webpack?: any;
 }
@@ -48,13 +49,33 @@ export class LexConfig {
     sourceFullPath: path.resolve(cwd, './src'),
     sourcePath: './src',
     targetEnvironment: 'web',
+    useGraphQl: false,
     useTypescript: false,
     webpack: {}
   };
 
+  static set useTypescript(value: boolean) {
+    LexConfig.config.useTypescript = value;
+    const {sourceFullPath} = LexConfig.config;
+
+    // Make sure we change the default entry file if Typescript is being used.
+    const {entryJs} = LexConfig.config;
+
+    if(entryJs === 'index.js' && value) {
+      const indexPath: string = path.resolve(cwd, sourceFullPath, 'index.tsx');
+      const hasIndexTsx: boolean = fs.existsSync(indexPath);
+
+      if(hasIndexTsx) {
+        LexConfig.config.entryJs = 'index.tsx';
+      } else {
+        LexConfig.config.entryJs = 'index.ts';
+      }
+    }
+  }
+
   // Set options from a custom configuration file
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
-    const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript} = updatedConfig;
+    const {outputFullPath, outputPath, sourcePath, sourceFullPath, useGraphQl, useTypescript} = updatedConfig;
     const cwd: string = process.cwd();
 
     // Use Typescript
@@ -74,25 +95,6 @@ export class LexConfig {
 
     LexConfig.config = {...LexConfig.config, ...updatedConfig};
     return LexConfig.config;
-  }
-
-  static set useTypescript(value: boolean) {
-    LexConfig.config.useTypescript = value;
-    const {sourceFullPath} = LexConfig.config;
-
-    // Make sure we change the default entry file if Typescript is being used.
-    const {entryJs} = LexConfig.config;
-
-    if(entryJs === 'index.js' && value) {
-      const indexPath: string = path.resolve(cwd, sourceFullPath, 'index.tsx');
-      const hasIndexTsx: boolean = fs.existsSync(indexPath);
-
-      if(hasIndexTsx) {
-        LexConfig.config.entryJs = 'index.tsx';
-      } else {
-        LexConfig.config.entryJs = 'index.ts';
-      }
-    }
   }
 
   // Set option updates from the command line

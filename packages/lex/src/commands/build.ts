@@ -2,6 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
+import {build as esBuild} from 'esbuild';
 import execa from 'execa';
 import * as path from 'path';
 
@@ -18,34 +20,39 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
   } = cmd;
   const {
     targetEnvironment = 'node14',
+    useGraphQl,
     useTypescript
   } = LexConfig.config;
 
-  // ESBuild options
-  const nodePath: string = path.resolve(__dirname, '../../node_modules');
-  const esbuildPath: string = relativeFilePath('esbuild/bin/esbuild', nodePath);
-  const esbuildOptions: string[] = [
-    '--bundle',
-    sourcePath,
-    '--color=true',
-    '--loader:.js=js',
-    `--outdir=${outputPath}`,
-    '--platform=node',
-    '--sourcemap=inline',
-    `--target=${targetEnvironment}`
-  ];
+  const loader: any = {
+    '.js': 'js'
+  };
 
   if(useTypescript) {
-    esbuildOptions.push('--loader:.ts=ts', '--loader:.tsx=tsx');
+    loader['.ts'] = 'ts';
+    loader['.tsx'] = 'tsx';
   }
 
-  if(watch) {
-    esbuildOptions.push('--watch');
+  // Plugins
+  const plugins = [];
+
+  if(useGraphQl) {
+    plugins.push(graphqlLoaderPlugin());
   }
 
   try {
-    // Compile using ESBuild
-    await execa(esbuildPath, esbuildOptions, {encoding: 'utf-8'});
+    await esBuild({
+      bundle: true,
+      color: true,
+      entryPoints: [sourcePath],
+      loader,
+      outdir: outputPath,
+      platform: 'node',
+      plugins,
+      sourcemap: 'inline',
+      target: targetEnvironment,
+      watch
+    });
 
     // Stop spinner
     spinner.succeed('Build completed successfully!');
