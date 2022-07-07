@@ -6,13 +6,13 @@ import childProcess from 'child_process';
 import crossSpawn from 'cross-spawn';
 import _getStream from 'get-stream';
 import {isStream} from 'is-stream';
-import npmRunPath from 'npm-run-path';
+import {npmRunPathEnv} from 'npm-run-path';
 import onExit from 'signal-exit';
 import stripEof from 'strip-eof';
 import util from 'util';
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
-let mockResults = [];
+let mockResults: any[] = [];
 
 const getMockCommand = () => {
   const {stdout = '', stderr = '', code = 0} = mockResults.shift() || {};
@@ -40,7 +40,7 @@ const handleArgs = (cmd, args, opts) => {
   };
 
   if(opts.preferLocal) {
-    opts.env = npmRunPath.env(opts);
+    opts.env = npmRunPathEnv(opts);
   }
 
   return {args: parsed.args, cmd: parsed.command, opts: updatedOpts};
