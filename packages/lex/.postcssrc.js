@@ -3,7 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 const path = require('path');
-const {relativeFilePath} = require('./dist/utils');
+const {relativeFilePath} = require('./dist/utils/app');
 const pluginPath = relativeFilePath('postcss-cli', path.resolve(__dirname, './node_modules'));
 const nodePath = path.resolve(pluginPath, '../');
 

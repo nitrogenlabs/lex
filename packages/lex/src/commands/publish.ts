@@ -6,7 +6,8 @@ import execa from 'execa';
 import semver from 'semver';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
+import {createSpinner, getPackageJson, setPackageJson} from '../utils/app';
+import {log} from '../utils/log';
 
 export const publish = async (cmd, callback: any = process.exit): Promise<number> => {
   const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;

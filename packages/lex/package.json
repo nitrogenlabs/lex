@@ -33,7 +33,7 @@
     "ie 11"
   ],
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && esbuild src/**/**.ts* src/**.ts* --platform=node --outdir=./dist --sourcemap=inline --target=node14 --format=cjs",
+    "build": "NODE_ENV=production && rm -rf dist && esbuild src/**/**.ts* src/**.ts* --platform=node --outdir=./dist --sourcemap=inline --target=node16 --format=cjs",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",

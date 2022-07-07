@@ -7,7 +7,8 @@ import execa from 'execa';
 import latestVersion from 'latest-version';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {createSpinner} from '../utils/app';
+import {log} from '../utils/log';
 import {parseVersion} from './versions';
 
 const packageConfig = require('../../package.json');

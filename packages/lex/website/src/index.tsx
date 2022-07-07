@@ -1,8 +1,8 @@
 import {Gotham} from '@nlabs/gothamjs';
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 import {config} from './config';
 
-// Render initial ReactJS code
-ReactDOM.render(<Gotham config={config} />, document.getElementById('app'));
+const root = createRoot(document.getElementById('app'));
+root.render(<Gotham config={config} />);

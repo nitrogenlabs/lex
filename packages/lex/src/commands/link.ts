@@ -3,7 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, log} from '../utils';
+import {checkLinkedModules} from '../utils/app';
+import {log} from '../utils/log';
 
 export const linked = (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;

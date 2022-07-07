@@ -2,7 +2,9 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log, relativeFilePath} from '../utils';
+import {createSpinner} from '../utils/app';
+import {relativeFilePath} from '../utils/file';
+import {log} from '../utils/log';
 
 export const test = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {

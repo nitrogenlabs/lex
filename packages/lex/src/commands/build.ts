@@ -8,7 +8,9 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, createSpinner, log, relativeFilePath, removeFiles} from '../utils';
+import {checkLinkedModules, createSpinner, removeFiles} from '../utils/app';
+import {log} from '../utils/log';
+import {relativeFilePath} from '../utils/file';
 
 export const buildWithEsBuild = async (spinner, cmd, callback) => {
   const {
@@ -19,7 +21,7 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
     watch
   } = cmd;
   const {
-    targetEnvironment = 'node14',
+    targetEnvironment,
     useGraphQl,
     useTypescript
   } = LexConfig.config;
@@ -50,7 +52,7 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
       platform: 'node',
       plugins,
       sourcemap: 'inline',
-      target: targetEnvironment,
+      target: targetEnvironment === 'node' ? 'node14' : 'es2016',
       watch
     });
 

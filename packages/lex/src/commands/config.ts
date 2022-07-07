@@ -7,7 +7,8 @@ import startCase from 'lodash/startCase';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {createSpinner} from '../utils/app';
+import {log} from '../utils/log';
 
 export const config = (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
@@ -44,7 +45,6 @@ export const config = (type: string, cmd: any, callback: any = () => ({})): Prom
 
   // Output config to console
   const jsonOutput: string = JSON.stringify(configOptions, null, 2);
-  console.log(jsonOutput);
 
   if(json) {
     // Spinner

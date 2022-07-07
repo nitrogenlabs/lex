@@ -3,7 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log, removeFiles, removeModules} from '../utils';
+import {createSpinner, removeFiles, removeModules} from '../utils/app';
+import {log} from '../utils/log';
 
 export const clean = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;

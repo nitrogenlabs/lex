@@ -19,7 +19,7 @@ const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const {merge} = require('webpack-merge');
 const {WebpackPluginServe} = require('webpack-plugin-serve');
 
-const {getNodePath, relativeFilePath} = require('./dist/utils');
+const {getNodePath, relativeFilePath} = require('./dist/utils/file');
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -55,7 +55,10 @@ const isWeb = (preset || targetEnvironment) === 'web';
 if(isWeb) {
   plugins.push(
     new CompressionWebpackPlugin({algorithm: 'gzip'}),
-    new ProvidePlugin({process: 'process/browser'})
+    new ProvidePlugin({
+      process: 'process/browser',
+      React: path.resolve(__dirname, './node_modules/react')
+    })
   );
 }
 
@@ -71,6 +74,9 @@ const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
 
 if(glob.sync(svgPaths, globOptions).length) {
   plugins.push(new SVGSpritemapPlugin(svgPaths, {
+    input: {
+      allowDuplicates: false
+    },
     output: {
       chunk: {keep: true},
       filename: './icons/icons.svg'
@@ -194,7 +200,10 @@ module.exports = (webpackEnv, webpackOptions) => {
           loader: esbuildLoaderPath,
           options: {
             loader: 'tsx',
-            target: targetEnvironment
+            target: targetEnvironment === 'node' ? 'node16' : 'es2016'
+          },
+          resolve: {
+            symlinks: true
           },
           test: /\.(ts|tsx|js)$/
         },
@@ -328,9 +337,6 @@ module.exports = (webpackEnv, webpackOptions) => {
         node_modules: true
       }
     },
-    // stats: {
-    //   warningsFilter: [/Failed to parse source map/]
-    // },
     target: isWeb ? 'web' : 'node'
   };
 
@@ -338,7 +344,6 @@ module.exports = (webpackEnv, webpackOptions) => {
   if(!isProduction) {
     webpackConfig.resolve.alias = {
       ...webpackConfig.resolve.alias,
-      'react-dom': relativeFilePath('node_modules/@hot-loader/react-dom', __dirname),
       webpack: webpackPath
     };
     webpackConfig.optimization = {minimize: false};
@@ -353,7 +358,14 @@ module.exports = (webpackEnv, webpackOptions) => {
           disableDotRule: true,
           htmlAcceptHeaders: ['text/html','*/*'],
           index: '/index.html',
+          logger: console.log.bind(console),
           rewrites: [
+            // wps
+            {
+              from: '/wps',
+              to: ({parsedUrl: {pathname}}) => pathname
+            },
+
             // Javascript files
             {
               from: /\.js/,
@@ -364,7 +376,7 @@ module.exports = (webpackEnv, webpackOptions) => {
               }
             },
 
-            // Other static files
+            // Static files
             {
               from: /\.[css,gif,ico,jpg,json,png,svg]/,
               to: ({parsedUrl: {pathname}}) => pathname
@@ -374,8 +386,15 @@ module.exports = (webpackEnv, webpackOptions) => {
         },
         hmr: false,
         log: {level: 'trace'},
+        middleware: (app) => app.use(async (ctx, next) => {
+          if(ctx.path.match(/^\/wps/)) {
+            const {accept, Accept, ...remainingHeaders} = ctx.request.header;
+            ctx.request.header = remainingHeaders;
+          }
+          await next();
+        }),
         open: process.env.WEBPACK_DEV_OPEN === 'true',
-        port: 7000,
+        port: 7001,
         progress: 'minimal',
         static: [outputFullPath],
         status: true
@@ -388,7 +407,7 @@ module.exports = (webpackEnv, webpackOptions) => {
 
     if(watch) {
       webpackConfig.bail = false;
-      webpackConfig.watch = true;
+      // webpackConfig.watch = true;
       webpackConfig.watchOptions = {
         aggregateTimeout: 500,
         ignored: ['node_modules/**', ...watchIgnorePaths]

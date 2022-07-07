@@ -10,7 +10,8 @@ import merge from 'lodash/merge';
 import {DateTime} from 'luxon';
 import path from 'path';
 
-import {createSpinner, log} from '../utils';
+import {createSpinner} from '../utils/app';
+import {log} from '../utils/log';
 
 export const createChangelog = async ({cliName, config, outputFile = 'changelog.tmp.md', quiet}): Promise<number> => {
   // Spinner
@@ -29,13 +30,13 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
 
     const {stdout} = git;
     const entries: string[] = stdout.split('[lex_break]').filter((item) => !!item);
-    const gitJSON = JSON.parse(
+    const gitJson = JSON.parse(
       (`[${entries.join(',')}]`).replace(/"[^"]*(?:""[^"]*)*"/g, (match) => match.replace(/\n/g, '[lex_break]'))
     );
     const commitContent = {};
     let version: string = 'Unreleased';
 
-    gitJSON.forEach((item) => {
+    gitJson.forEach((item) => {
       const {comments, authorEmail, authorName, date, hashFull, hashShort, tag} = item;
       const formatDate: string = DateTime.fromMillis(date).toFormat('DDD');
 

@@ -4,7 +4,8 @@
  */
 import fs from 'fs';
 
-import {copyFileSync, copyFolderRecursiveSync, log} from '../utils';
+import {copyFileSync, copyFolderRecursiveSync} from '../utils/app';
+import {log} from '../utils/log';
 
 export const copy = (from: string, to: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;

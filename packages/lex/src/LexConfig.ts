@@ -5,7 +5,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {log, relativeFilePath} from './utils';
+import {relativeFilePath} from './utils/file';
+import {log} from './utils/log';
 
 const cwd: string = process.cwd();
 

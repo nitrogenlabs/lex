@@ -19,7 +19,6 @@ Lex uses Babel with the following presets:
 - [@babel/preset-env](https://www.npmjs.com/package/@babel/preset-env)
 - [@babel/preset-flow](https://www.npmjs.com/package/@babel/preset-flow)
 - [@babel/preset-react](https://www.npmjs.com/package/@babel/preset-react)
-- [@babel/preset-stage-0](https://www.npmjs.com/package/@babel/preset-stage-0)
 - [@babel/preset-typescript](https://www.npmjs.com/package/@babel/preset-typescript)
 
 ## Static types

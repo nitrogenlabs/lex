@@ -5,7 +5,8 @@
 import execa from 'execa';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, log, removeConflictModules, removeModules} from '../utils';
+import {createSpinner, getPackageJson, removeConflictModules, removeModules} from '../utils/app';
+import {log} from '../utils/log';
 
 export const migrate = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;

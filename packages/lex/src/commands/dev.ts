@@ -6,7 +6,9 @@ import execa from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log, relativeFilePath, removeFiles} from '../utils';
+import {createSpinner, removeFiles} from '../utils/app';
+import {relativeFilePath} from '../utils/file';
+import {log} from '../utils/log';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables, watch} = cmd;

@@ -5,7 +5,8 @@
 import execa from 'execa';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, log} from '../utils';
+import {createSpinner} from '../utils/app';
+import {log} from '../utils/log';
 
 export const update = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet, registry} = cmd;
@@ -23,8 +24,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const updateApp: string = packageManager === 'npm' ? 'npx' : 'yarn';
   const updateOptions: string[] = packageManager === 'npm'
-    ? ['npx',
-      'npm-check-updates',
+    ? ['npm-check-updates',
       '--concurrency', '10',
       '--packageManager', packageManager,
       '--pre', '0',

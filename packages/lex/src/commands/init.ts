@@ -7,7 +7,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, log, setPackageJson} from '../utils';
+import {createSpinner, getPackageJson, setPackageJson} from '../utils/app';
+import {log} from '../utils/log';
 
 export const init = async (
   appName: string,

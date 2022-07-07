@@ -3,8 +3,6 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import boxen from 'boxen';
-import chalk from 'chalk';
-import findFileUp from 'find-file-up';
 import fs from 'fs-extra';
 import glob from 'glob';
 import isEmpty from 'lodash/isEmpty';
@@ -12,35 +10,10 @@ import ora from 'ora';
 import path from 'path';
 import rimraf from 'rimraf';
 
-import {LexConfig} from './LexConfig';
+import type {LexConfigType} from '../LexConfig';
+import {log} from './log';
 
 export const cwd: string = process.cwd();
-
-export const log = (message: string, type: string = 'info', quiet = false) => {
-  if(!quiet) {
-    let color;
-
-    switch(type) {
-      case 'error':
-        color = chalk.red;
-        break;
-      case 'note':
-        color = chalk.grey;
-        break;
-      case 'success':
-        color = chalk.greenBright;
-        break;
-      case 'warn':
-        color = chalk.yellow;
-        break;
-      default:
-        color = chalk.cyan;
-        break;
-    }
-
-    console.log(color(message));
-  }
-};
 
 export const getFilenames = (props: any) => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
@@ -87,17 +60,17 @@ export const getFilenames = (props: any) => {
 export const createSpinner = (quiet = false): any => {
   if(quiet) {
     return {
-      fail: () => { },
-      start: () => { },
-      succeed: () => { }
+      fail: () => {},
+      start: () => {},
+      succeed: () => {}
     };
   }
 
   return ora({color: 'yellow'});
 };
 
-export const copyFiles = async (files: string[], typeName: string, spinner) => {
-  const {outputFullPath, sourceFullPath} = LexConfig.config;
+export const copyFiles = async (files: string[], typeName: string, spinner, config: LexConfigType) => {
+  const {outputFullPath, sourceFullPath} = config;
   const items = files.map((fileName: string) => ({
     from: fileName,
     to: path.resolve(outputFullPath, path.relative(sourceFullPath, fileName))
@@ -161,8 +134,8 @@ export const getPackageJson = (packagePath?: string) => {
   return JSON.parse(packageData);
 };
 
-export const getFilesByExt = (ext: string): string[] => {
-  const {sourceFullPath} = LexConfig.config;
+export const getFilesByExt = (ext: string, config: LexConfigType): string[] => {
+  const {sourceFullPath} = config;
   return glob.sync(`${sourceFullPath}/**/**${ext}`);
 };
 
@@ -270,32 +243,6 @@ export const checkLinkedModules = () => {
     );
     log(boxen(linkedMsg, {dimBorder: true, padding: 1}), 'warn');
   }
-};
-
-// Get file paths relative to Lex
-export const relativeFilePath = (filename: string, nodePath: string = './', backUp: number = 0) => {
-  const nestDepth: number = 10;
-
-  if(backUp) {
-    const filePath: string = findFileUp.sync(filename, nodePath, nestDepth);
-    const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
-    return path.resolve(filePath, previousPath);
-  }
-
-  return findFileUp.sync(filename, nodePath, nestDepth);
-};
-
-// Get file paths relative to Lex
-export const getNodePath = (moduleName: string): string => {
-  const modulePath: string = `node_modules/${moduleName}`;
-  const repoPath: string = findFileUp.sync(modulePath, __dirname);
-
-  if(repoPath && fs.existsSync(repoPath)) {
-    return repoPath;
-  }
-
-  const localPath: string = findFileUp.sync(modulePath, './', 10) || `./${modulePath}`;
-  return localPath;
 };
 
 export const updateTemplateName = (filePath: string, replace: string, replaceCaps: string) => {

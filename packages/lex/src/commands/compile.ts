@@ -13,10 +13,10 @@ import {
   copyFiles,
   createSpinner,
   getFilesByExt,
-  log,
-  relativeFilePath,
   removeFiles
-} from '../utils';
+} from '../utils/app';
+import {relativeFilePath} from '../utils/file';
+import {log} from '../utils/log';
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
   if(!fs.existsSync(startPath)) {
@@ -78,7 +78,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--declaration',
         '--emitDeclarationOnly',
         '--inlineSourceMap',
-        '--jsx', 'react',
+        '--jsx', 'react-jsx',
         '--lib', ['ES5', 'ES6', 'ES2015', 'ES7', 'ES2016', 'ES2017', 'ES2018', 'ESNext', 'DOM'],
         '--module', 'commonjs',
         '--moduleResolution', 'node',
@@ -141,7 +141,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     '--outdir=lib',
     '--platform=node',
     '--sourcemap=inline',
-    '--target=node14'
+    '--target=node16'
   ];
 
   if(useTypescript) {
@@ -153,10 +153,10 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   // Use PostCSS for CSS files
-  const cssFiles: string[] = getFilesByExt('.css');
+  const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
 
   if(cssFiles.length) {
-    const postcssPath: string = relativeFilePath('postcss-cli/bin/postcss', nodePath);
+    const postcssPath: string = relativeFilePath('postcss-cli/index.js', nodePath);
     const postcssOptions: string[] = [
       `${sourceFullPath}/**/**.css`,
       '--base',
@@ -184,15 +184,15 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   // Copy image files
-  const gifFiles: string[] = getFilesByExt('.gif');
-  const jpgFiles: string[] = getFilesByExt('.jpg');
-  const pngFiles: string[] = getFilesByExt('.png');
-  const svgFiles: string[] = getFilesByExt('.svg');
+  const gifFiles: string[] = getFilesByExt('.gif', LexConfig.config);
+  const jpgFiles: string[] = getFilesByExt('.jpg', LexConfig.config);
+  const pngFiles: string[] = getFilesByExt('.png', LexConfig.config);
+  const svgFiles: string[] = getFilesByExt('.svg', LexConfig.config);
   const imageFiles: string[] = [...gifFiles, ...jpgFiles, ...pngFiles, ...svgFiles];
 
   if(imageFiles.length) {
     try {
-      await copyFiles(imageFiles, 'image', spinner);
+      await copyFiles(imageFiles, 'image', spinner, LexConfig.config);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -207,15 +207,15 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   // Copy font files
-  const ttfFiles: string[] = getFilesByExt('.ttf');
-  const otfFiles: string[] = getFilesByExt('.otf');
-  const woffFiles: string[] = getFilesByExt('.woff');
-  const woff2Files: string[] = getFilesByExt('.woff2');
+  const ttfFiles: string[] = getFilesByExt('.ttf', LexConfig.config);
+  const otfFiles: string[] = getFilesByExt('.otf', LexConfig.config);
+  const woffFiles: string[] = getFilesByExt('.woff', LexConfig.config);
+  const woff2Files: string[] = getFilesByExt('.woff2', LexConfig.config);
   const fontFiles: string[] = [...ttfFiles, ...otfFiles, ...woffFiles, ...woff2Files];
 
   if(fontFiles.length) {
     try {
-      await copyFiles(fontFiles, 'font', spinner);
+      await copyFiles(fontFiles, 'font', spinner, LexConfig.config);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -230,11 +230,11 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   // Copy markdown files
-  const mdFiles: string[] = getFilesByExt('.md');
+  const mdFiles: string[] = getFilesByExt('.md', LexConfig.config);
 
   if(mdFiles.length) {
     try {
-      await copyFiles(mdFiles, 'documents', spinner);
+      await copyFiles(mdFiles, 'documents', spinner, LexConfig.config);
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);

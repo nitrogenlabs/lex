@@ -7,7 +7,8 @@ import path from 'path';
 
 import {createChangelog} from '../create/changelog';
 import {LexConfig} from '../LexConfig';
-import {copyFolderRecursiveSync, getFilenames, log, removeFiles, updateTemplateName} from '../utils';
+import {copyFolderRecursiveSync, getFilenames, removeFiles, updateTemplateName} from '../utils/app';
+import {log} from '../utils/log';
 
 export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;

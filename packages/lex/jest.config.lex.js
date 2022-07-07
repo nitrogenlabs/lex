@@ -1,6 +1,6 @@
 const path = require('path');
 
-const {getNodePath} = require('./dist/utils');
+const {getNodePath} = require('./dist/utils/file');
 
 const rootDir = process.cwd();
 const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
