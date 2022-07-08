@@ -1,8 +1,8 @@
 export interface StaticSitePluginOptions {
   readonly crawl?: boolean;
   readonly entry?: string;
-  readonly globals?: string[];
-  readonly locals?: string[];
+  readonly globals?: Record<string, unknown>;
+  readonly locals?: Record<string, unknown>;
   readonly paths?: string[];
 }
 

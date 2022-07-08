@@ -16,8 +16,8 @@ import {StaticSitePluginOptions, StaticSiteRenderPaths} from './types/main';
 const defaultOptions = {
   crawl: true,
   entry: '',
-  globals: [],
-  locals: [],
+  globals: {},
+  locals: {},
   paths: ['/']
 };
 
@@ -76,7 +76,7 @@ export class StaticSitePlugin {
             compilation.assets[assetName] = new RawSource(rawSource);
 
             if(crawl) {
-              const relativePaths = StaticSitePlugin.relativePathsFromHtml({path: key, source: rawSource});
+              const relativePaths = StaticSitePlugin.relativePathsFromHtml({path: key, source: rawSource}) as string[];
               const options: StaticSiteRenderPaths = {
                 assets,
                 compilation,
@@ -171,12 +171,10 @@ export class StaticSitePlugin {
   static relativePathsFromHtml(options) {
     const {source: html, path: currentPath} = options;
     const dom = cheerio.load(html);
-    const linkHrefs = dom('a[href]').map((index: number, el) => dom(el).attr('href')).get();
-    const iframeSrcs = dom('iframe[src]').map((index: number, el) => dom(el).attr('src')).get();
+    const linkHrefs: string[] = dom('a[href]').map((index: number, el) => dom(el).attr('href')).get();
+    const iframeSrcs: string[] = dom('iframe[src]').map((index: number, el) => dom(el).attr('src')).get();
 
-    return []
-      .concat(linkHrefs)
-      .concat(iframeSrcs)
+    return [...linkHrefs, ...iframeSrcs]
       .map((href: string) => {
         if(href.indexOf('//') === 0) {
           return null;
@@ -200,7 +198,7 @@ export class StaticSitePlugin {
       const {crawl, entry, globals, locals, paths} = this.options;
 
       try {
-        const asset = StaticSitePlugin.findAsset(entry, compilation, webpackStatsJson);
+        const asset = StaticSitePlugin.findAsset(entry as string, compilation, webpackStatsJson);
 
         if(asset === null) {
           throw new Error(`StaticSitePlugin Error: Source file not found, "${entry}"`);
@@ -208,7 +206,7 @@ export class StaticSitePlugin {
 
         const assets = StaticSitePlugin.getAssetsFromCompilation(compilation, webpackStatsJson);
         const source = asset.source();
-        let render = evaluate(source, entry, globals, true);
+        let render: any = evaluate(source, entry, globals, true);
 
         if(render.hasOwnProperty('default')) {
           render = render.default;
