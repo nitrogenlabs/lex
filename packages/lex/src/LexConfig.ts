@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import {relativeFilePath} from './utils/file';
@@ -76,7 +76,7 @@ export class LexConfig {
 
   // Set options from a custom configuration file
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
-    const {outputFullPath, outputPath, sourcePath, sourceFullPath, useGraphQl, useTypescript} = updatedConfig;
+    const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript} = updatedConfig;
     const cwd: string = process.cwd();
 
     // Use Typescript

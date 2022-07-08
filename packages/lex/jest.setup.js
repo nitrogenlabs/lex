@@ -1,1 +1,3 @@
-module.exports = require('@nlabs/execa-mock');
+const execaMock = require('@nlabs/execa-mock');
+
+jest.mock('execa', execaMock);

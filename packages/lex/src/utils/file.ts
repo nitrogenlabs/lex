@@ -3,6 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import findFileUp from 'find-file-up';
+import {existsSync} from 'fs-extra';
 
 // Get file paths relative to Lex
 export const relativeFilePath = (filename: string, nodePath: string = './', backUp: number = 0) => {
@@ -22,7 +23,7 @@ export const getNodePath = (moduleName: string): string => {
   const modulePath: string = `node_modules/${moduleName}`;
   const repoPath: string = findFileUp.sync(modulePath, __dirname);
 
-  if(repoPath && fs.existsSync(repoPath)) {
+  if(repoPath && existsSync(repoPath)) {
     return repoPath;
   }
 

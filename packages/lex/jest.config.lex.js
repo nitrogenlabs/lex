@@ -38,12 +38,14 @@ module.exports = {
   rootDir,
   setupFiles,
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost'
+  },
   testPathIgnorePatterns: [
     '/node_modules/',
     `${nodePath}/`
   ],
   testRegex,
-  testURL: 'http://localhost',
   transformIgnorePatterns,
   verbose: false,
   ...jest

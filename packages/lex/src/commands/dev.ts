@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import execa from 'execa';
+import {default as execa} from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
@@ -11,7 +11,7 @@ import {relativeFilePath} from '../utils/file';
 import {log} from '../utils/log';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables, watch} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);

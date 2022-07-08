@@ -2,6 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+const path = require('path');
+
 module.exports = {
   collectCoverage: true,
   coveragePathIgnorePatterns: [
@@ -25,7 +27,6 @@ module.exports = {
     'node_modules'
   ],
   testEnvironment: 'node',
-  testURL: 'http://localhost',
   transform: {
     '^.+\\.ts$': [
       'esbuild-jest',
@@ -42,6 +43,13 @@ module.exports = {
     ],
     '\\.(gql|graphql)$': 'jest-transform-graphql'
   },
-  transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'],
+  transformIgnorePatterns: [
+    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$',
+    path.resolve(__dirname, './packages/execa-mock/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
+    path.resolve(__dirname, './packages/favicons-webpack-plugin/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
+    path.resolve(__dirname, './packages/lex/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
+    path.resolve(__dirname, './packages/starfire/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
+    path.resolve(__dirname, './packages/static-site-webpack-plugin/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$')
+  ],
   verbose: true
 };

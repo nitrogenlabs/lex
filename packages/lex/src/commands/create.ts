@@ -2,8 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 
 import {createChangelog} from '../create/changelog';
 import {LexConfig} from '../LexConfig';

@@ -3,7 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import compareVersions from 'compare-versions';
-import execa from 'execa';
+import {default as execa} from 'execa';
 import latestVersion from 'latest-version';
 
 import {LexConfig} from '../LexConfig';

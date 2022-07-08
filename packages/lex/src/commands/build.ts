@@ -4,7 +4,7 @@
  */
 import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {build as esBuild} from 'esbuild';
-import execa from 'execa';
+import {default as execa} from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';

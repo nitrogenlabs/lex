@@ -1,4 +1,4 @@
-import execa from 'execa';
+import {default as execa} from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';

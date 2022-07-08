@@ -1,4 +1,4 @@
-import execa from 'execa';
+import {default as execa} from 'execa';
 import * as path from 'path';
 
 import {StarfireConfig} from '../StarfireConfig';
@@ -15,7 +15,7 @@ export const lint = async (cmd) => {
 
   // Get custom configuration
   StarfireConfig.parseConfig(cmd);
-  const {sourceDir} = StarfireConfig.config;
+  const {sourceDir = ''} = StarfireConfig.config;
 
   // Configure ESLint
   let eslintConfig: string = path.resolve(__dirname, '../../configs/eslint.flow.json');

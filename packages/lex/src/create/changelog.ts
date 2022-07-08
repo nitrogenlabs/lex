@@ -2,8 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import execa from 'execa';
-import fs from 'fs';
+import {default as execa} from 'execa';
+import * as fs from 'fs-extra';
 import capitalize from 'lodash/capitalize';
 import isEmpty from 'lodash/isEmpty';
 import merge from 'lodash/merge';
@@ -65,6 +65,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       const subjectLines: string[] = comments.split('[lex_break]');
       const topics = {};
 
+      // eslint-disable-next-line no-plusplus
       for(let idx: number = 0, len: number = subjectLines.length; idx < len; idx++) {
         const nextLine: string = subjectLines[idx];
         const formatLine: string = nextLine.trim();

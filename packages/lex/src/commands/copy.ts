@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import fs from 'fs';
+import * as fs from 'fs-extra';
 
 import {copyFileSync, copyFolderRecursiveSync} from '../utils/app';
 import {log} from '../utils/log';

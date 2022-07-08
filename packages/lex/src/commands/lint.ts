@@ -1,4 +1,4 @@
-import execa from 'execa';
+import {default as execa} from 'execa';
 import * as path from 'path';
 
 import {LexConfig} from '../LexConfig';
@@ -10,7 +10,6 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   const {
     noEslintrc = true,
     cliName = 'Lex',
-    config,
     env,
     ext,
     global,
@@ -42,7 +41,6 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
     init,
     envInfo,
     debug,
-    version,
     printConfig
   } = cmd;
 
