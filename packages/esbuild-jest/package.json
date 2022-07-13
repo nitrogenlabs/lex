@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/esbuild-jest",
-  "version": "0.6.0",
+  "version": "1.37.0",
   "description": "Jest plugin to use esbuild for transformation",
   "main": "esbuild-jest.js",
   "module": "esbuild-jest.es.js",

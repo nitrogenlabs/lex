@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/favicons-webpack-plugin",
-  "version": "1.36.0",
+  "version": "1.37.0",
   "description": "Let webpack generate all your favicons and icons for you",
   "main": "./lib/index.js",
   "files": [
