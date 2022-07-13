@@ -28,7 +28,7 @@ module.exports = {
   ],
   testEnvironment: 'node',
   transform: {
-    '^.+\\.ts$': [
+    '^.+\\.tsx?$': [
       'esbuild-jest',
       {
         sourcemap: true,
@@ -44,12 +44,12 @@ module.exports = {
     '\\.(gql|graphql)$': 'jest-transform-graphql'
   },
   transformIgnorePatterns: [
-    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$',
-    path.resolve(__dirname, './packages/execa-mock/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
-    path.resolve(__dirname, './packages/favicons-webpack-plugin/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
-    path.resolve(__dirname, './packages/lex/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
-    path.resolve(__dirname, './packages/starfire/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$'),
-    path.resolve(__dirname, './packages/static-site-webpack-plugin/node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$')
+    '[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$',
+    path.resolve(__dirname, './packages/execa-mock/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    path.resolve(__dirname, './packages/favicons-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    path.resolve(__dirname, './packages/lex/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    path.resolve(__dirname, './packages/starfire/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    path.resolve(__dirname, './packages/static-site-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$')
   ],
   verbose: true
 };

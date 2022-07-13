@@ -1,16 +1,26 @@
-const path = require('path');
+const {resolve} = require('path');
 
 const {getNodePath} = require('./dist/utils/file');
 
 const rootDir = process.cwd();
-const {jest, sourceFullPath, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
+const {jest, sourceFullPath, targetEnvironment, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
-const nodePath = path.resolve(__dirname, './node_modules');
+const nodePath = resolve(__dirname, './node_modules');
 const setupFiles = [
   getNodePath('core-js'),
   getNodePath('regenerator-runtime/runtime.js')
 ];
+let testEnvironment = 'node';
+let testEnvironmentOptions = {};
+
+if(targetEnvironment === 'web') {
+  testEnvironment = 'jsdom';
+  testEnvironmentOptions = {
+    url: 'http://localhost'
+  };
+}
+
 let moduleFileExtensions = ['js', 'json'];
 let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
 let transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js)$'];
@@ -26,27 +36,49 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/dist', '/lib', '__snapshots__', '.d.ts'],
   coverageReporters: ['html', 'text'],
-  moduleDirectories: ['node_modules'],
+  moduleDirectories: [
+    'node_modules',
+    nodePath
+  ],
   moduleFileExtensions,
-  moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': path.resolve(__dirname, './emptyModule')},
+  moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': resolve(__dirname, './emptyModule')},
   modulePaths: [
+    rootDir,
     `${rootDir}/node_modules`,
     nodePath,
     sourceFullPath
   ],
-  resolver: path.resolve(__dirname, './dist/resolver.js'),
+  resolver: resolve(__dirname, './dist/resolver.js'),
   rootDir,
   setupFiles,
-  testEnvironment: 'jsdom',
-  testEnvironmentOptions: {
-    url: 'http://localhost'
-  },
+  testEnvironment,
+  testEnvironmentOptions,
   testPathIgnorePatterns: [
     '/node_modules/',
     `${nodePath}/`
   ],
   testRegex,
-  transformIgnorePatterns,
+  testRunner: `${nodePath}/jest-circus/runner.js`,
+  transform: {
+    '^.+\\.tsx?$': [
+      `${nodePath}/@nlabs/esbuild-jest/dist/index.js`,
+      {
+        format: 'cjs',
+        loaders: {
+          '.js': 'js',
+          '.ts': 'ts',
+          '.test.ts': 'ts',
+          '.spec.ts': 'ts',
+          '.tsx': 'tsx',
+          '.test.tsx': 'tsx',
+          '.spec.tsx': 'tsx'
+        },
+        sourcemap: true
+      }
+    ],
+    '\\.(gql|graphql)$': 'jest-transform-graphql'
+  },
+  transformIgnorePatterns: [],
   verbose: false,
   ...jest
 };

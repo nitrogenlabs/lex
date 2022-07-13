@@ -1,0 +1,13 @@
+.idea
+.travis.yml
+*.bash_profile
+templates/**/__snapshots__
+coverage
+docs
+node_modules
+src
+website
+.eslint
+package-lock.json
+yarn-error.log
+yarn.lock

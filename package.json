@@ -21,6 +21,7 @@
     "v8-to-istanbul": "^9.0.1"
   },
   "workspaces": [
+    "packages/esbuild-jest",
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",

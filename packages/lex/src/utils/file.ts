@@ -4,6 +4,7 @@
  */
 import findFileUp from 'find-file-up';
 import {existsSync} from 'fs-extra';
+import {resolve} from 'path';
 
 // Get file paths relative to Lex
 export const relativeFilePath = (filename: string, nodePath: string = './', backUp: number = 0) => {
@@ -12,7 +13,7 @@ export const relativeFilePath = (filename: string, nodePath: string = './', back
   if(backUp) {
     const filePath: string = findFileUp.sync(filename, nodePath, nestDepth);
     const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
-    return path.resolve(filePath, previousPath);
+    return resolve(filePath, previousPath);
   }
 
   return findFileUp.sync(filename, nodePath, nestDepth);

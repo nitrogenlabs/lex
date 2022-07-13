@@ -1,6 +1,7 @@
 {
   "lerna": "3.3.2",
   "packages": [
+    "packages/esbuild-jest",
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",

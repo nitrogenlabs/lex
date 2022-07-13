@@ -2,53 +2,70 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-const fs = require('fs');
-const path = require('path');
-const resolve = require('resolve');
+const {existsSync} = require('fs-extra');
+const {extname, resolve} = require('path');
+const resolveSync = require('resolve/sync');
+
+const getFullPath = (basedir: string, name: string, extensions: string[]): string => {
+  let fullPath = name;
+
+  extensions.some((ext) => {
+    if(name !== '..') {
+      const filename = resolve(`${basedir}/${name}${ext}`);
+
+      if(existsSync(filename)) {
+        fullPath = filename;
+        return true;
+      }
+    }
+
+    const indexFile = resolve(`${basedir}/${name}/index${ext}`);
+
+    if(existsSync(indexFile)) {
+      fullPath = indexFile;
+      return true;
+    }
+
+    return false;
+  });
+
+  return fullPath;
+};
 
 module.exports = (value, options) => {
   if(value === '') {
     return null;
   }
 
+  const isAbsolute = value.indexOf('/') === 0;
+
+  if(isAbsolute) {
+    return value;
+  }
+
   const {basedir, extensions} = options;
+
+  if(value === '..') {
+    return getFullPath(basedir, '..', extensions);
+  }
+
   const hasBase = value.indexOf('./') >= 0 || value.indexOf('../') >= 0;
 
   if(hasBase) {
-    const existingExt: string = path.extname(value) || '';
+    const existingExt: string = extname(value) || '';
 
     if(existingExt !== '' && extensions.includes(existingExt)) {
-      return path.resolve(`${basedir}/${value}`);
+      return resolve(`${basedir}/${value}`);
     }
 
-    let fullPath = value;
-
-    extensions.some((ext) => {
-      const filename = path.resolve(`${basedir}/${value}${ext}`);
-
-      if(fs.existsSync(filename)) {
-        fullPath = filename;
-        return true;
-      }
-
-      const indexFile = path.resolve(`${basedir}/${value}/index${ext}`);
-
-      if(fs.existsSync(indexFile)) {
-        fullPath = indexFile;
-        return true;
-      }
-
-      return false;
-    });
-
-    return fullPath;
+    return getFullPath(basedir, value, extensions);
   }
 
   try {
-    return resolve.sync(value, {basedir: `${__dirname}/../`, extensions});
+    return resolveSync(value, {basedir: `${__dirname}/../`, extensions});
   } catch(error) {
     try {
-      return resolve.sync(value, {basedir: process.cwd(), extensions});
+      return resolveSync(value, {basedir: process.cwd(), extensions});
     } catch(error) {
       return null;
     }
