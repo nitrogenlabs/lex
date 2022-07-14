@@ -3,7 +3,7 @@ import {Format, Loader, TransformOptions, transformSync} from 'esbuild';
 import rimraf from 'rimraf';
 
 import {Options} from './options';
-import {getExt, loaders} from './utils';
+import {getExt, loaders} from './utils/file';
 
 const createTransformer = (options?: Options) => ({
   process(content: string, filename: string, opts?: any) {

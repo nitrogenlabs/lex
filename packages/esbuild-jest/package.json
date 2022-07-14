@@ -6,7 +6,7 @@
   "module": "esbuild-jest.es.js",
   "typings": "esbuild-jest.d.ts",
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && esbuild src/**.ts* --platform=node --outdir=./dist --sourcemap=inline --target=node16 --format=cjs",
+    "build": "NODE_ENV=production && rm -rf dist && esbuild src/**.ts* src/**/**.ts* --platform=node --outdir=./dist --sourcemap=inline --target=node16 --format=cjs",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "test": "jest --clearCache && jest --detectOpenHandles"
   },
