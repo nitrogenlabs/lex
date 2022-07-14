@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "1.37.1",
+  "version": "1.37.2",
   "description": "Lex",
   "license": "MIT",
   "bin": {
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@luckycatfactory/esbuild-graphql-loader": "^3.7.0",
-    "@nlabs/esbuild-jest": "^1.37.1",
+    "@nlabs/esbuild-jest": "^1.37.2",
     "@nlabs/gothamjs": "^0.8.2",
     "@nlabs/webpack-plugin-static-site": "^0.1.1",
     "acorn": "^8.7.0",
