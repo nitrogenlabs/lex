@@ -1,5 +1,6 @@
-import {extname} from 'path';
+import {extname, resolve} from 'path';
 import {Format, Loader, TransformOptions, transformSync} from 'esbuild';
+import rimraf from 'rimraf';
 
 import {Options} from './options';
 import {getExt, loaders} from './utils';
@@ -24,8 +25,8 @@ const createTransformer = (options?: Options) => ({
     });
 
     const result = transformSync(sources.code, {
-      loader,
       format: options?.format as Format || 'cjs',
+      loader,
       target: options?.target || 'es2018',
       ...(options?.jsxFactory ? {jsxFactory: options.jsxFactory} : {}),
       ...(options?.jsxFragment ? {jsxFragment: options.jsxFragment} : {}),
@@ -45,6 +46,9 @@ const createTransformer = (options?: Options) => ({
     } else {
       map = null;
     }
+
+    const outputFile = resolve(process.cwd(), './out.js');
+    rimraf.sync(outputFile);
 
     return {code, map};
   }

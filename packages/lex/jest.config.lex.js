@@ -1,15 +1,13 @@
 const {resolve} = require('path');
 
-const {getNodePath} = require('./dist/utils/file');
-
 const rootDir = process.cwd();
 const {jest, sourceFullPath, targetEnvironment, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
 const nodePath = resolve(__dirname, './node_modules');
 const setupFiles = [
-  getNodePath('core-js'),
-  getNodePath('regenerator-runtime/runtime.js')
+  `${nodePath}/core-js/stable/index.js`,
+  `${nodePath}/regenerator-runtime/runtime.js`
 ];
 let testEnvironment = 'node';
 let testEnvironmentOptions = {};
@@ -63,7 +61,6 @@ module.exports = {
     '^.+\\.tsx?$': [
       `${nodePath}/@nlabs/esbuild-jest/dist/index.js`,
       {
-        format: 'cjs',
         loaders: {
           '.js': 'js',
           '.ts': 'ts',
@@ -78,7 +75,7 @@ module.exports = {
     ],
     '\\.(gql|graphql)$': 'jest-transform-graphql'
   },
-  transformIgnorePatterns: [],
+  transformIgnorePatterns,
   verbose: false,
   ...jest
 };

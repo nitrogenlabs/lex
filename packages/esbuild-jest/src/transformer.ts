@@ -12,7 +12,8 @@ const {process} = createTransformer({
     [
       `${nodePath}/@babel/plugin-transform-runtime`,
       {
-        corejs: 3
+        corejs: 3,
+        useBuiltIns: 'usage'
       }
     ]
   ],
@@ -22,7 +23,8 @@ const {process} = createTransformer({
         corejs: 3,
         targets: {
           node: 'current'
-        }
+        },
+        useBuiltIns: 'usage'
       }
     ],
     `${nodePath}/@babel/preset-react`,

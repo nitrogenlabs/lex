@@ -7,65 +7,78 @@ const {extname, resolve} = require('path');
 const resolveSync = require('resolve/sync');
 
 const getFullPath = (basedir: string, name: string, extensions: string[]): string => {
-  let fullPath = name;
+  let fileName = name;
 
   extensions.some((ext) => {
-    if(name !== '..') {
-      const filename = resolve(`${basedir}/${name}${ext}`);
+    if(fileName !== '..') {
+      const fullPath = resolve(`${basedir}/${fileName}${ext}`);
 
-      if(existsSync(filename)) {
-        fullPath = filename;
+      if(existsSync(fullPath)) {
+        fileName = fullPath;
         return true;
       }
     }
 
-    const indexFile = resolve(`${basedir}/${name}/index${ext}`);
+    if(fileName !== 'index') {
+      const indexFile = resolve(`${basedir}/${fileName}/index${ext}`);
 
-    if(existsSync(indexFile)) {
-      fullPath = indexFile;
-      return true;
+      if(existsSync(indexFile)) {
+        fileName = indexFile;
+        return true;
+      }
     }
 
     return false;
   });
 
-  return fullPath;
+  return fileName;
 };
 
 module.exports = (value, options) => {
-  if(value === '') {
+  let fileName = value;
+
+  if(fileName === '') {
     return null;
   }
 
-  const isAbsolute = value.indexOf('/') === 0;
+  const isSequencer = fileName.startsWith('jest-sequencer-');
 
-  if(isAbsolute) {
-    return value;
+  if(isSequencer) {
+    fileName = fileName.replace('jest-sequencer-', '');
   }
 
-  const {basedir, extensions} = options;
+  const {basedir, extensions = ['.js', '.ts']} = options;
+  const existingExt = extname(fileName) || '';
+  const hasExtension = existingExt !== '' && extensions.includes(existingExt);
+  const isAbsolute = fileName.indexOf('/') === 0;
 
-  if(value === '..') {
+  if(isAbsolute) {
+    if(hasExtension) {
+      return existsSync(fileName) ? fileName : null;
+    }
+
+    return getFullPath(fileName, 'index', extensions);
+  }
+
+  if(fileName === '..') {
     return getFullPath(basedir, '..', extensions);
   }
 
-  const hasBase = value.indexOf('./') >= 0 || value.indexOf('../') >= 0;
+  const hasBase = fileName.indexOf('./') >= 0 || fileName.indexOf('../') >= 0;
 
   if(hasBase) {
-    const existingExt: string = extname(value) || '';
-
-    if(existingExt !== '' && extensions.includes(existingExt)) {
-      return resolve(`${basedir}/${value}`);
+    if(hasExtension) {
+      return resolve(`${basedir}/${fileName}`);
     }
 
-    return getFullPath(basedir, value, extensions);
+    return getFullPath(basedir, fileName, extensions);
   }
 
   try {
-    return resolveSync(value, {basedir: `${__dirname}/../`, extensions});
+    return resolveSync(fileName, {basedir: `${__dirname}/../`, extensions});
   } catch(error) {
     try {
-      return resolveSync(value, {basedir: process.cwd(), extensions});
+      return resolveSync(fileName, {basedir: process.cwd(), extensions});
     } catch(error) {
       return null;
     }
