@@ -1,35 +1,35 @@
 
 import {createTransformer} from 'babel-jest';
-import {resolve} from 'path';
-
-import {getNodePath} from './utils/file';
+import pluginCjsTransform from '@babel/plugin-transform-modules-commonjs';
+import pluginRuntime from '@babel/plugin-transform-runtime';
+import presetEnv from '@babel/preset-env';
+import presetReact from '@babel/preset-react';
+import presetTypescript from '@babel/preset-typescript';
 
 const {process} = createTransformer({
   parserOpts: {
     plugins: ['jsx', 'typescript']
   },
   plugins: [
-    getNodePath('@babel/plugin-transform-modules-commonjs'),
+    pluginCjsTransform,
     [
-      getNodePath('@babel/plugin-transform-runtime'),
+      pluginRuntime,
       {
-        corejs: 3,
-        useBuiltIns: 'usage'
+        corejs: 3
       }
     ]
   ],
   presets: [
     [
-      getNodePath('@babel/preset-env'), {
+      presetEnv, {
         corejs: 3,
         targets: {
           node: 'current'
-        },
-        useBuiltIns: 'usage'
+        }
       }
     ],
-    getNodePath('@babel/preset-react'),
-    getNodePath('@babel/preset-typescript')
+    presetReact,
+    presetTypescript
   ]
 });
 
