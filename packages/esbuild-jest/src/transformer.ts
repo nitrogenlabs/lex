@@ -12,17 +12,11 @@ const {process} = createTransformer({
   },
   plugins: [
     pluginCjsTransform,
-    [
-      pluginRuntime,
-      {
-        corejs: 3
-      }
-    ]
+    pluginRuntime
   ],
   presets: [
     [
       presetEnv, {
-        corejs: 3,
         targets: {
           node: 'current'
         }
