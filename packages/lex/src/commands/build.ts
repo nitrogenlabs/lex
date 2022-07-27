@@ -52,7 +52,7 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
       platform: 'node',
       plugins,
       sourcemap: 'inline',
-      target: targetEnvironment === 'node' ? 'node14' : 'es2016',
+      target: targetEnvironment === 'node' ? 'node16' : 'es2016',
       watch
     });
 
