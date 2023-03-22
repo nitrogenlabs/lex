@@ -3,15 +3,15 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import boxen from 'boxen';
-import fs from 'fs-extra';
-import glob from 'glob';
-import isEmpty from 'lodash/isEmpty';
+import {copyFile, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
+import {globSync} from 'glob';
+import isEmpty from 'lodash/isEmpty.js';
 import ora from 'ora';
-import path from 'path';
-import rimraf from 'rimraf';
+import {basename as pathBasename, join as pathJoin, relative as pathRelative, resolve as pathResolve} from 'path';
+import {rimrafSync} from 'rimraf';
 
-import type {LexConfigType} from '../LexConfig';
-import {log} from './log';
+import {log} from './log.js';
+import type {LexConfigType} from '../LexConfig.js';
 
 export const cwd: string = process.cwd();
 
@@ -73,12 +73,23 @@ export const copyFiles = async (files: string[], typeName: string, spinner, conf
   const {outputFullPath, sourceFullPath} = config;
   const items = files.map((fileName: string) => ({
     from: fileName,
-    to: path.resolve(outputFullPath, path.relative(sourceFullPath, fileName))
+    to: pathResolve(outputFullPath, pathRelative(sourceFullPath, fileName))
   }));
 
   try {
     spinner.start(`Copying ${typeName} files...`);
-    await Promise.all(items.map(({from, to}) => fs.copy(from, to)));
+    await Promise.all(items.map(({from, to}) => new Promise(
+      (resolve, reject) => {
+        mkdirSync(pathResolve(to, '..'), {recursive: true});
+        return copyFile(from, to, (copyError) => {
+          if(copyError) {
+            reject();
+          } else {
+            resolve(true);
+          }
+        });
+      }
+    )));
     spinner.succeed(`Successfully copied ${files.length} ${typeName} files!`);
   } catch(error) {
     // Stop spinner
@@ -92,32 +103,32 @@ export const copyFileSync = (source: string, target: string) => {
   let targetFile: string = target;
 
   // If target is a directory a new file with the same name will be created
-  if(fs.existsSync(target)) {
-    if(fs.lstatSync(target).isDirectory()) {
-      targetFile = path.join(target, path.basename(source));
+  if(existsSync(target)) {
+    if(lstatSync(target).isDirectory()) {
+      targetFile = pathJoin(target, pathBasename(source));
     }
   }
 
-  fs.writeFileSync(targetFile, fs.readFileSync(source));
+  writeFileSync(targetFile, readFileSync(source));
 };
 
 export const copyFolderRecursiveSync = (source: string, target: string): void => {
   let files: string[] = [];
 
   // Check if folder needs to be created or integrated
-  const targetFolder: string = path.join(target, path.basename(source));
+  const targetFolder: string = pathJoin(target, pathBasename(source));
 
-  if(!fs.existsSync(targetFolder)) {
-    fs.mkdirSync(targetFolder);
+  if(!existsSync(targetFolder)) {
+    mkdirSync(targetFolder);
   }
 
   // Copy
-  if(fs.lstatSync(source).isDirectory()) {
-    files = fs.readdirSync(source);
+  if(lstatSync(source).isDirectory()) {
+    files = readdirSync(source);
     files.forEach((file: string) => {
-      const curSource: string = path.join(source, file);
+      const curSource: string = pathJoin(source, file);
 
-      if(fs.lstatSync(curSource).isDirectory()) {
+      if(lstatSync(curSource).isDirectory()) {
         copyFolderRecursiveSync(curSource, targetFolder);
       } else {
         copyFileSync(curSource, targetFolder);
@@ -130,13 +141,13 @@ export const getPackageJson = (packagePath?: string) => {
   const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
   // Configure package.json
-  const packageData: string = fs.readFileSync(formatPath).toString();
+  const packageData: string = readFileSync(formatPath).toString();
   return JSON.parse(packageData);
 };
 
 export const getFilesByExt = (ext: string, config: LexConfigType): string[] => {
   const {sourceFullPath} = config;
-  return glob.sync(`${sourceFullPath}/**/**${ext}`);
+  return globSync(`${sourceFullPath}/**/**${ext}`);
 };
 
 export const removeConflictModules = (moduleList: object) => {
@@ -153,15 +164,13 @@ export const removeConflictModules = (moduleList: object) => {
 };
 
 export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
-  const filePath: string = isRelative ? path.resolve(cwd, fileName) : fileName;
-
-  rimraf(filePath, (error) => {
-    if(error) {
-      return reject(error);
-    }
-
+  const filePath: string = isRelative ? pathResolve(cwd, fileName) : fileName;
+  try {
+    rimrafSync(filePath);
     return resolve(null);
-  });
+  } catch(error) {
+    return reject(error);
+  }
 });
 
 export const removeModules = () => new Promise(async (resolve, reject) => {
@@ -189,7 +198,7 @@ export const setPackageJson = (json, packagePath?: string) => {
   const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
   // Update package.json
-  fs.writeFileSync(formatPath, JSON.stringify(json, null, 2));
+  writeFileSync(formatPath, JSON.stringify(json, null, 2));
 };
 
 export interface LinkedModuleType {
@@ -207,19 +216,19 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
     prefix = `@${workingPath.split('@').pop()}`;
     modulePath = workingPath;
   } else {
-    modulePath = path.join(workingPath, 'node_modules');
+    modulePath = pathJoin(workingPath, 'node_modules');
   }
 
-  const foundPaths: string[] = glob.sync(`${modulePath}/*`);
+  const foundPaths: string[] = globSync(`${modulePath}/*`);
   return foundPaths.reduce((list: LinkedModuleType[], foundPath: string) => {
     try {
-      const stats = fs.lstatSync(foundPath);
+      const stats = lstatSync(foundPath);
 
       if(stats.isDirectory()) {
         const deepList: LinkedModuleType[] = linkedModules(foundPath);
         list.push(...deepList);
       } else if(stats.isSymbolicLink()) {
-        const moduleNames: string[] = ([prefix, path.basename(foundPath)]).filter((item: string) => !isEmpty(item));
+        const moduleNames: string[] = ([prefix, pathBasename(foundPath)]).filter((item: string) => !isEmpty(item));
         list.push({name: `${moduleNames.join('/')}`, path: foundPath});
       }
 
@@ -246,8 +255,8 @@ export const checkLinkedModules = () => {
 };
 
 export const updateTemplateName = (filePath: string, replace: string, replaceCaps: string) => {
-  let data: string = fs.readFileSync(filePath, 'utf8');
+  let data: string = readFileSync(filePath, 'utf8');
   data = data.replace(/sample/g, replace);
   data = data.replace(/Sample/g, replaceCaps);
-  fs.writeFileSync(filePath, data, 'utf8');
+  writeFileSync(filePath, data, 'utf8');
 };

@@ -2,16 +2,17 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-const {existsSync} = require('fs-extra');
-const {extname, resolve} = require('path');
-const resolveSync = require('resolve/sync');
+import {existsSync} from 'fs';
+import {extname as pathExtname, resolve as pathResolve} from 'path';
+import resolveSync from 'resolve/sync';
+import {fileURLToPath} from 'url';
 
 const getFullPath = (basedir: string, name: string, extensions: string[]): string => {
   let fileName = name;
 
   extensions.some((ext) => {
     if(fileName !== '..') {
-      const fullPath = resolve(`${basedir}/${fileName}${ext}`);
+      const fullPath = pathResolve(`${basedir}/${fileName}${ext}`);
 
       if(existsSync(fullPath)) {
         fileName = fullPath;
@@ -20,7 +21,7 @@ const getFullPath = (basedir: string, name: string, extensions: string[]): strin
     }
 
     if(fileName !== 'index') {
-      const indexFile = resolve(`${basedir}/${fileName}/index${ext}`);
+      const indexFile = pathResolve(`${basedir}/${fileName}/index${ext}`);
 
       if(existsSync(indexFile)) {
         fileName = indexFile;
@@ -34,7 +35,7 @@ const getFullPath = (basedir: string, name: string, extensions: string[]): strin
   return fileName;
 };
 
-module.exports = (value, options) => {
+const resolver = (value, options) => {
   let fileName = value;
 
   if(fileName === '') {
@@ -48,7 +49,7 @@ module.exports = (value, options) => {
   }
 
   const {basedir, extensions = ['.js', '.ts']} = options;
-  const existingExt = extname(fileName) || '';
+  const existingExt = pathExtname(fileName) || '';
   const hasExtension = existingExt !== '' && extensions.includes(existingExt);
   const isAbsolute = fileName.indexOf('/') === 0;
 
@@ -68,14 +69,15 @@ module.exports = (value, options) => {
 
   if(hasBase) {
     if(hasExtension) {
-      return resolve(`${basedir}/${fileName}`);
+      return pathResolve(`${basedir}/${fileName}`);
     }
 
     return getFullPath(basedir, fileName, extensions);
   }
 
   try {
-    return resolveSync(fileName, {basedir: `${__dirname}/../`, extensions});
+    const dirName = fileURLToPath(new URL('.', import.meta.url));
+    return resolveSync(fileName, {basedir: `${dirName}/../`, extensions});
   } catch(error) {
     try {
       return resolveSync(fileName, {basedir: process.cwd(), extensions});
@@ -84,3 +86,5 @@ module.exports = (value, options) => {
     }
   }
 };
+
+export default resolver;

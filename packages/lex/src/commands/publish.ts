@@ -2,12 +2,12 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
-import semver from 'semver';
+import {execa} from 'execa';
+import semver, {ReleaseType} from 'semver';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, setPackageJson} from '../utils/app';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner, getPackageJson, setPackageJson} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const publish = async (cmd, callback: any = process.exit): Promise<number> => {
   const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
@@ -60,11 +60,11 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
     nextVersion = newVersion;
   } else if(bump) {
     // Determine next version
-    const formatBump: string = bump.toString()
+    const formatBump: ReleaseType = bump.toString()
       .trim()
       .toLowerCase();
 
-    if(formatBump && formatBump !== '') {
+    if(formatBump) {
       const validReleases: string[] = ['major', 'minor', 'patch'];
       const validPreReleases: string[] = ['alpha', 'beta', 'rc'];
 

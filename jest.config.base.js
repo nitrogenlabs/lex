@@ -31,14 +31,19 @@ module.exports = {
     '^.+\\.tsx?$': [
       'esbuild-jest',
       {
-        sourcemap: true,
         loaders: {
           '.js': 'js',
           '.ts': 'ts',
           '.test.ts': 'ts',
           '.tsx': 'tsx',
           '.test.tsx': 'tsx',
-        }
+        },
+        presets: [
+          'react',
+          'react-native',
+          'typescript'
+        ],
+        sourcemap: true
       }
     ],
     '\\.(gql|graphql)$': 'jest-transform-graphql'

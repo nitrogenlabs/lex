@@ -2,33 +2,28 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
-import * as fs from 'fs-extra';
-import * as glob from 'glob';
-import * as path from 'path';
+import {execa} from 'execa';
+import {existsSync, lstatSync, readdirSync} from 'fs';
+import {sync as globSync} from 'glob';
+import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {LexConfig} from '../LexConfig';
-import {
-  checkLinkedModules,
-  copyFiles,
-  createSpinner,
-  getFilesByExt,
-  removeFiles
-} from '../utils/app';
-import {relativeFilePath} from '../utils/file';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {checkLinkedModules, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../utils/app.js';
+import {relativeNodePath} from '../utils/file.js';
+import {log} from '../utils/log.js';
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
-  if(!fs.existsSync(startPath)) {
+  if(!existsSync(startPath)) {
     return false;
   }
 
-  const files: string[] = fs.readdirSync(startPath);
+  const files: string[] = readdirSync(startPath);
 
   return files.some((file: string) => {
-    const filename: string = path.join(startPath, file);
-    const fileExt: string = path.extname(filename);
-    const stat = fs.lstatSync(filename);
+    const filename: string = pathJoin(startPath, file);
+    const fileExt: string = pathExtname(filename);
+    const stat = lstatSync(filename);
 
     if(stat.isDirectory()) {
       // Recursive search
@@ -52,8 +47,9 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   LexConfig.parseConfig(cmd);
 
   // Compile type
-  const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
-  const nodePath: string = path.resolve(__dirname, '../../node_modules');
+  const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const nodePath: string = pathResolve(dirName, '../../node_modules');
 
   // Check for linked modules
   checkLinkedModules();
@@ -69,14 +65,13 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     LexConfig.checkTypescriptConfig();
 
     // Check static types with typescript
-    const typescriptPath: string = relativeFilePath('typescript/bin/tsc', nodePath);
+    const typescriptPath: string = relativeNodePath('typescript/bin/tsc', nodePath);
     const typescriptOptions: string[] = config ?
       ['-p', config] :
       [
         '--allowSyntheticDefaultImports',
         '--baseUrl', sourceFullPath,
         '--declaration',
-        '--emitDeclarationOnly',
         '--inlineSourceMap',
         '--jsx', 'react-jsx',
         '--lib', ['ES5', 'ES6', 'ES2015', 'ES7', 'ES2016', 'ES2017', 'ES2018', 'ESNext', 'DOM'],
@@ -84,7 +79,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--moduleResolution', 'node',
         '--noImplicitReturns',
         '--noImplicitThis',
-        '--noStrictGenericChecks',
         '--outDir', outputFullPath,
         '--removeComments',
         '--resolveJsonModule',
@@ -93,6 +87,14 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--target', 'ES5',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
+
+    const delcarationPresets = [
+      'web'
+    ];
+
+    if(delcarationPresets.includes(preset)) {
+      typescriptOptions.push('--emitDeclarationOnly');
+    }
 
     // Start type checking spinner
     spinner.start('Static type checking with Typescript...');
@@ -127,12 +129,12 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = glob.sync(`${sourceFullPath}/**/**.ts*`, globOptions);
-  const jsFiles: string[] = glob.sync(`${sourceFullPath}/**/**.js`, globOptions);
+  const tsFiles: string[] = globSync(`${sourceFullPath}/**/**.ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${sourceFullPath}/**/**.js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   // ESBuild options
-  const esbuildPath: string = relativeFilePath('esbuild/bin/esbuild', nodePath);
+  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', nodePath);
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--color=true',
@@ -141,7 +143,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     '--outdir=lib',
     '--platform=node',
     '--sourcemap=inline',
-    '--target=node16'
+    '--target=node18'
   ];
 
   if(useTypescript) {
@@ -156,7 +158,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
 
   if(cssFiles.length) {
-    const postcssPath: string = relativeFilePath('postcss-cli/index.js', nodePath);
+    const postcssPath: string = relativeNodePath('postcss-cli/index.js', nodePath);
+    const dirName = fileURLToPath(new URL('.', import.meta.url));
     const postcssOptions: string[] = [
       `${sourceFullPath}/**/**.css`,
       '--base',
@@ -164,7 +167,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       '--dir',
       outputFullPath,
       '--config',
-      path.resolve(__dirname, '../../.postcssrc.js')
+      pathResolve(dirName, '../../.postcssrc.js')
     ];
 
     try {

@@ -2,13 +2,14 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
-import * as path from 'path';
+import {execa} from 'execa';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner, removeFiles} from '../utils/app';
-import {relativeFilePath} from '../utils/file';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner, removeFiles} from '../utils/app.js';
+import {relativeNodePath} from '../utils/file.js';
+import {log} from '../utils/log.js';
 
 export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
@@ -57,7 +58,8 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   }
 
   // Get custom webpack configuration file
-  const webpackConfig: string = config || path.resolve(__dirname, '../../webpack.config.js');
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const webpackConfig: string = config || pathResolve(dirName, '../../webpack.config.js');
 
   // Compile using webpack
   const webpackOptions: string[] = [
@@ -70,10 +72,9 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     webpackOptions.push('--bundleAnalyzer');
   }
 
-  // Start development spinner
   try {
-    const nodePath: string = path.resolve(__dirname, '../../node_modules');
-    const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
+    const dirPath: string = pathResolve(dirName, '../..');
+    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
     await execa(webpackPath, webpackOptions, {
       encoding: 'utf-8',
       env: {

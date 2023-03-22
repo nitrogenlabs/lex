@@ -1,3 +1,3 @@
-const execaMock = require('@nlabs/execa-mock');
+import execaMock from '@nlabs/execa-mock';
 
 jest.mock('execa', execaMock);

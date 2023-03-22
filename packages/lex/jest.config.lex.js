@@ -72,6 +72,11 @@ module.exports = {
           '.test.tsx': 'tsx',
           '.spec.tsx': 'tsx'
         },
+        presets: [
+          'react',
+          'react-native',
+          'typescript'
+        ],
         sourcemap: true
       }
     ],

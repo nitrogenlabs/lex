@@ -51,6 +51,7 @@ const plugins = [
 ];
 
 const isWeb = (preset || targetEnvironment) === 'web';
+const isReactNative = preset === 'react-native';
 
 if(isWeb) {
   plugins.push(
@@ -173,6 +174,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     entry: {
       index: `${sourceFullPath}/${lexConfig.entryJs}`
     },
+    externals: isReactNative ? {'react-native': true} : undefined,
     ignoreWarnings: [/Failed to parse source map/],
     mode: isProduction ? 'production' : 'development',
     module: {
@@ -192,7 +194,7 @@ module.exports = (webpackEnv, webpackOptions) => {
         },
         {
           exclude: [
-            /(node_modules)/,
+            /node_modules\/(?!(react-native))/,
             `${sourceFullPath}/**/*.test.js*`,
             `${sourceFullPath}/**/*.test.ts*`
           ],
@@ -322,7 +324,6 @@ module.exports = (webpackEnv, webpackOptions) => {
       fallback: {
         assert: require.resolve('assert/'),
         crypto: require.resolve('crypto-browserify'),
-        fs: require.resolve('fs-extra'),
         http: require.resolve('stream-http'),
         https: require.resolve('https-browserify'),
         os: require.resolve('os-browserify/browser'),

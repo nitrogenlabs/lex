@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import {readFileSync} from 'fs';
+import {resolve as pathResolve} from 'path';
 import {defaults} from 'jest-config';
 
 import {display} from '../examples/names-ts/index';
@@ -8,7 +8,7 @@ import {display} from '../examples/names-ts/index';
 import transformer, {Options} from '../src/index';
 
 const process = (sourcePath: string, options?: Options) => {
-  const content = fs.readFileSync(sourcePath, 'utf-8');
+  const content = readFileSync(sourcePath, 'utf-8');
 
   const Transformer = transformer.createTransformer({
     format: 'esm',
@@ -16,7 +16,7 @@ const process = (sourcePath: string, options?: Options) => {
     ...(options || {})
   });
 
-  const config = {...defaults, cwd: path.resolve()} as any;
+  const config = {...defaults, cwd: pathResolve()} as any;
   const output = Transformer.process(content, sourcePath, config) as {code: string, map: string};
 
   return {...output};

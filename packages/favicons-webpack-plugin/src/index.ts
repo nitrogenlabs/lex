@@ -2,9 +2,9 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import fs from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import isPlainObject from 'lodash/isPlainObject';
-import path from 'path';
+import {resolve as pathResolve} from 'path';
 
 import {FaviconsPluginOptions} from './types/main';
 import {compileTemplate} from './utils/compiler';
@@ -59,17 +59,17 @@ export class FaviconsPlugin {
    * Tries to guess the name from the package.json
    */
   static getAppName(compilerWorkingDirectory): string {
-    const packageJson: string = path.resolve(compilerWorkingDirectory, 'package.json');
+    const packageJson: string = pathResolve(compilerWorkingDirectory, 'package.json');
 
-    if(!fs.existsSync(packageJson)) {
-      const parentPackageJson: string = path.resolve(compilerWorkingDirectory, '../package.json');
+    if(!existsSync(packageJson)) {
+      const parentPackageJson: string = pathResolve(compilerWorkingDirectory, '../package.json');
 
-      if(!fs.existsSync(parentPackageJson)) {
+      if(!existsSync(parentPackageJson)) {
         return 'Webpack App';
       }
     }
 
-    return JSON.parse(fs.readFileSync(packageJson).toString()).name;
+    return JSON.parse(readFileSync(packageJson).toString()).name;
   }
 
   apply(compiler) {

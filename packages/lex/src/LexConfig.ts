@@ -2,11 +2,12 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
+import {extname as pathExtname, resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {relativeFilePath} from './utils/file';
-import {log} from './utils/log';
+import {relativeFilePath} from './utils/file.js';
+import {log} from './utils/log.js';
 
 const cwd: string = process.cwd();
 
@@ -25,7 +26,7 @@ export interface LexConfigType {
   outputHash?: boolean;
   outputPath?: string;
   packageManager?: 'npm' | 'yarn';
-  preset?: 'web' | 'node' | 'lambda';
+  preset?: 'web' | 'node' | 'lambda' | 'mobile';
   sourceFullPath?: string;
   sourcePath?: string;
   targetEnvironment?: 'node' | 'web';
@@ -42,12 +43,12 @@ export class LexConfig {
     esbuild: {},
     env: null,
     jest: {},
-    outputFullPath: path.resolve(cwd, './dist'),
+    outputFullPath: pathResolve(cwd, './dist'),
     outputHash: false,
     outputPath: './dist',
     packageManager: 'npm',
     preset: 'web',
-    sourceFullPath: path.resolve(cwd, './src'),
+    sourceFullPath: pathResolve(cwd, './src'),
     sourcePath: './src',
     targetEnvironment: 'web',
     useGraphQl: false,
@@ -63,8 +64,8 @@ export class LexConfig {
     const {entryJs} = LexConfig.config;
 
     if(entryJs === 'index.js' && value) {
-      const indexPath: string = path.resolve(cwd, sourceFullPath, 'index.tsx');
-      const hasIndexTsx: boolean = fs.existsSync(indexPath);
+      const indexPath: string = pathResolve(cwd, sourceFullPath, 'index.tsx');
+      const hasIndexTsx: boolean = existsSync(indexPath);
 
       if(hasIndexTsx) {
         LexConfig.config.entryJs = 'index.tsx';
@@ -86,12 +87,12 @@ export class LexConfig {
 
     // Destination Path
     if(outputPath !== undefined && outputFullPath === undefined) {
-      updatedConfig.outputFullPath = path.resolve(cwd, outputPath);
+      updatedConfig.outputFullPath = pathResolve(cwd, outputPath);
     }
 
     // Source code path
     if(sourcePath !== undefined && sourceFullPath === undefined) {
-      updatedConfig.sourceFullPath = path.resolve(cwd, sourcePath);
+      updatedConfig.sourceFullPath = pathResolve(cwd, sourcePath);
     }
 
     LexConfig.config = {...LexConfig.config, ...updatedConfig};
@@ -106,13 +107,13 @@ export class LexConfig {
     // Custom output dir
     if(outputPath !== undefined) {
       params.outputPath = outputPath;
-      params.outputFullPath = path.resolve(cwd, outputPath);
+      params.outputFullPath = pathResolve(cwd, outputPath);
     }
 
     // Custom source dir
     if(sourcePath !== undefined) {
       params.sourcePath = sourcePath;
-      params.sourceFullPath = path.resolve(cwd, sourcePath);
+      params.sourceFullPath = pathResolve(cwd, sourcePath);
     }
 
     // Determine if we're using Typescript or Flow
@@ -139,18 +140,18 @@ export class LexConfig {
     const {cliName = 'Lex', lexConfig, lexConfigName, quiet, typescript} = cmd;
     const configName: string = lexConfigName || 'lex.config.js';
     const defaultConfigPath: string = isRoot
-      ? path.resolve(cwd, `./${configName}`)
+      ? pathResolve(cwd, `./${configName}`)
       : relativeFilePath(configName, cwd);
     const configPath: string = lexConfig || defaultConfigPath;
-    const configExists: boolean = fs.existsSync(configPath);
+    const configExists: boolean = existsSync(configPath);
 
     // If user has a Lex config file, lets use it.
     if(configExists) {
       log(`Using ${cliName} configuration file: ${configPath}`, 'note', quiet);
-      const ext: string = path.extname(configPath);
+      const ext: string = pathExtname(configPath);
 
       if(ext === '.json') {
-        const configContent: string = fs.readFileSync(configPath, 'utf8');
+        const configContent: string = readFileSync(configPath, 'utf8');
 
         if(configContent) {
           let configJson: LexConfigType;
@@ -166,7 +167,7 @@ export class LexConfig {
           log(`\n${cliName} Error: Config file malformed, ${configPath}`, 'error', quiet);
         }
       } else if(ext === '.js') {
-        const lexCustomConfig = require(configPath);
+        const lexCustomConfig = readFileSync(configPath).toJSON() as LexConfigType;
         LexConfig.addConfigParams(cmd, lexCustomConfig);
       } else {
         log(`\n${cliName} Error: Config file must be a JS or JSON file.`, 'error', quiet);
@@ -182,10 +183,11 @@ export class LexConfig {
 
   static checkTypescriptConfig() {
     // Make sure tsconfig.json exists
-    const tsconfigPath: string = path.resolve(cwd, './tsconfig.json');
+    const tsconfigPath: string = pathResolve(cwd, './tsconfig.json');
 
-    if(!fs.existsSync(tsconfigPath)) {
-      fs.writeFileSync(tsconfigPath, fs.readFileSync(path.resolve(__dirname, '../../../tsconfig.base.json')));
+    if(!existsSync(tsconfigPath)) {
+      const dirName = fileURLToPath(new URL('.', import.meta.url));
+      writeFileSync(tsconfigPath, readFileSync(pathResolve(dirName, '../../../tsconfig.base.json')));
     }
   }
 }

@@ -2,15 +2,15 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import * as fs from 'fs-extra';
-import startCase from 'lodash/startCase';
-import * as path from 'path';
+import {writeFileSync} from 'fs';
+import startCase from 'lodash/startCase.js';
+import {relative as pathRelative} from 'path';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner} from '../utils/app';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
-export const config = (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
+export const config = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
   const validTypes: string[] = ['app', 'jest', 'webpack'];
 
@@ -32,14 +32,11 @@ export const config = (type: string, cmd: any, callback: any = () => ({})): Prom
     case 'app':
       configOptions = LexConfig.config;
       break;
-    case 'esbuild':
-      configOptions = require('../../esbuildOptions');
-      break;
     case 'jest':
-      configOptions = require('../../jest.config.lex');
+      configOptions = import('../../jest.config.lex');
       break;
     case 'webpack':
-      configOptions = require('../../webpack.config');
+      configOptions = import('../../webpack.config');
       break;
   }
 
@@ -54,10 +51,10 @@ export const config = (type: string, cmd: any, callback: any = () => ({})): Prom
     spinner.start('Creating JSON output...');
 
     // Save json locally
-    fs.writeFileSync(json, jsonOutput);
+    writeFileSync(json, jsonOutput);
 
     // Success spinner
-    spinner.succeed(`Successfully saved JSON output to ${path.relative(process.cwd(), json)}`);
+    spinner.succeed(`Successfully saved JSON output to ${pathRelative(process.cwd(), json)}`);
   }
 
   callback(0);

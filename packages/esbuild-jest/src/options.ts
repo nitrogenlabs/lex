@@ -7,6 +7,7 @@ export interface Options {
   readonly loaders?: {
     [ext: string]: Loader
   };
+  readonly presets?: string[];
   readonly target?: string;
   readonly format?: string;
 }

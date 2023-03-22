@@ -1,10 +1,11 @@
-import {default as execa} from 'execa';
-import * as path from 'path';
+import {execa} from 'execa';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner} from '../utils/app';
-import {relativeFilePath} from '../utils/file';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner} from '../utils/app.js';
+import {relativeNodePath} from '../utils/file.js';
+import {log} from '../utils/log.js';
 
 export const lint = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {
@@ -60,8 +61,9 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   // Configure jest
-  const nodePath: string = path.resolve(__dirname, '../../node_modules');
-  const eslintPath: string = relativeFilePath('jest-cli/bin/jest.js', nodePath);
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirPath: string = pathResolve(dirName, '../..');
+  const eslintPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
   const eslintOptions: string[] = [];
 
   if(noEslintrc) {

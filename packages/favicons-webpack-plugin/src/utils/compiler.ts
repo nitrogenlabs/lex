@@ -3,15 +3,15 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import evaluate from 'eval';
-import path from 'path';
+import {relative as pathRelative, resolve as pathResolve} from 'path';
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
 
 /**
  * Returns the child compiler name e.g. 'html-webpack-plugin for "index.html"'
  */
 const getCompilerName = (context: string, filename: string): string => {
-  const absolutePath: string = path.resolve(context, filename);
-  const relativePath: string = path.relative(context, absolutePath);
+  const absolutePath: string = pathResolve(context, filename);
+  const relativePath: string = pathRelative(context, absolutePath);
   return `favicons-webpack-plugin for "${(absolutePath.length < relativePath.length ? absolutePath : relativePath)}"`;
 };
 

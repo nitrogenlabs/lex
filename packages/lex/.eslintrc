@@ -3,6 +3,7 @@
     "styleguidejs/typescript"
   ],
   "rules": {
+    "import/extensions": 0,
     "no-useless-escape": 0
   }
 }

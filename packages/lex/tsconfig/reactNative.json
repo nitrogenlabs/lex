@@ -4,14 +4,15 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "inlineSourceMap": true,
-    "jsx": "react-jsx",
+    "jsx": "react-native",
     "lib": [
-      "dom",
-      "esnext"
+      "es2019"
     ],
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
+    "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -23,14 +24,7 @@
     "target": "esnext",
     "types": [
       "jest",
-      "node"
+      "react-native"
     ]
-  },
-  "exclude": [
-    "./lib",
-    "./node_modules"
-  ],
-  "include": [
-    "./src"
-  ]
+  }
 }

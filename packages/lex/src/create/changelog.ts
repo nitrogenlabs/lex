@@ -2,16 +2,16 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
-import * as fs from 'fs-extra';
-import capitalize from 'lodash/capitalize';
-import isEmpty from 'lodash/isEmpty';
-import merge from 'lodash/merge';
+import {execa} from 'execa';
+import {writeFileSync} from 'fs';
+import capitalize from 'lodash/capitalize.js';
+import isEmpty from 'lodash/isEmpty.js';
+import merge from 'lodash/merge.js';
 import {DateTime} from 'luxon';
-import path from 'path';
+import {join as pathJoin} from 'path';
 
-import {createSpinner} from '../utils/app';
-import {log} from '../utils/log';
+import {createSpinner} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const createChangelog = async ({cliName, config, outputFile = 'changelog.tmp.md', quiet}): Promise<number> => {
   // Spinner
@@ -142,8 +142,8 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       return updatedContent;
     }, '# Changes\n');
 
-    const logFile: string = path.join(process.cwd(), outputFile);
-    fs.writeFileSync(logFile, formatLog);
+    const logFile: string = pathJoin(process.cwd(), outputFile);
+    writeFileSync(logFile, formatLog);
     spinner.succeed('Git change log complete!');
 
     // Kill process

@@ -1,4 +1,4 @@
-import {default as execa} from 'execa';
+import {execa} from 'execa';
 import * as path from 'path';
 
 import {StarfireConfig} from '../StarfireConfig';

@@ -2,13 +2,14 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import {execa} from 'execa';
+import {renameSync, writeFileSync} from 'fs';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, setPackageJson} from '../utils/app';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner, getPackageJson, setPackageJson} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const init = async (
   appName: string,
@@ -25,9 +26,10 @@ export const init = async (
   // Download app module into temporary directory
   log(`${cliName} is downloading the app module...`, 'info', quiet);
   spinner.start('Downloading app...');
-  const tmpPath: string = path.resolve(cwd, './.lexTmp');
-  const appPath: string = path.resolve(cwd, `./${appName}`);
-  const dnpPath: string = path.resolve(__dirname, '../../node_modules/download-npm-package/bin/cli.js');
+  const tmpPath: string = pathResolve(cwd, './.lexTmp');
+  const appPath: string = pathResolve(cwd, `./${appName}`);
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dnpPath: string = pathResolve(dirName, '../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
   LexConfig.parseConfig(cmd);
@@ -65,7 +67,7 @@ export const init = async (
 
   // Move into configured directory
   try {
-    fs.renameSync(`${tmpPath}/${appModule}`, appPath);
+    renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
     log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
     callback(error.status);
@@ -91,7 +93,7 @@ export const init = async (
 
     // Update README
     const readmePath: string = `${appPath}/README.md`;
-    fs.writeFileSync(readmePath, `# ${appName}`);
+    writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     callback(error.status);

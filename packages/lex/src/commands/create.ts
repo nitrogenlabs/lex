@@ -2,13 +2,14 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import {existsSync, readFileSync, renameSync, writeFileSync} from 'fs';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {createChangelog} from '../create/changelog';
-import {LexConfig} from '../LexConfig';
-import {copyFolderRecursiveSync, getFilenames, removeFiles, updateTemplateName} from '../utils/app';
-import {log} from '../utils/log';
+import {createChangelog} from '../create/changelog.js';
+import {LexConfig} from '../LexConfig.js';
+import {copyFolderRecursiveSync, getFilenames, removeFiles, updateTemplateName} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;
@@ -25,6 +26,7 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
   }
 
   const {config} = LexConfig;
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
 
   switch(type) {
     case 'changelog': {
@@ -43,23 +45,23 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
         });
         const storePath: string = `${cwd}/${nameCaps}Store`;
 
-        if(!fs.existsSync(storePath)) {
+        if(!existsSync(storePath)) {
           // Copy store files
-          copyFolderRecursiveSync(path.resolve(__dirname, templatePath, './.SampleStore'), cwd);
+          copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleStore'), cwd);
 
           // Rename directory
-          fs.renameSync(`${cwd}/.SampleStore`, storePath);
+          renameSync(`${cwd}/.SampleStore`, storePath);
 
           // Rename test
           const storeTestPath: string = `${storePath}/${nameCaps}Store.test${templateExt}`;
-          fs.renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
+          renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
 
           // Search and replace store name
           updateTemplateName(storeTestPath, outputName, nameCaps);
 
           // Rename source file
           const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
-          fs.renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
+          renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
 
           // Search and replace store name
           updateTemplateName(storeFilePath, outputName, nameCaps);
@@ -80,16 +82,16 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       await removeFiles('tsconfig.json', true);
 
       // Get tsconfig template
-      const templatePath: string = path.resolve(__dirname, '../../tsconfig.template.json');
-      let data: string = fs.readFileSync(templatePath, 'utf8');
+      const templatePath: string = pathResolve(dirName, '../../tsconfig.template.json');
+      let data: string = readFileSync(templatePath, 'utf8');
 
       // Update Lex tsconfig template with source and output directories
       data = data.replace(/.\/src/g, sourcePath);
       data = data.replace(/.\/dist/g, outputPath);
 
       // Save new tsconfig to app
-      const destPath: string = path.resolve(cwd, './tsconfig.json');
-      fs.writeFileSync(destPath, data, 'utf8');
+      const destPath: string = pathResolve(cwd, './tsconfig.json');
+      writeFileSync(destPath, data, 'utf8');
       break;
     }
     case 'view': {
@@ -103,30 +105,30 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       const viewPath: string = `${cwd}/${nameCaps}View`;
 
       try {
-        if(!fs.existsSync(viewPath)) {
+        if(!existsSync(viewPath)) {
           // Copy view files
-          copyFolderRecursiveSync(path.resolve(__dirname, templatePath, './.SampleView'), cwd);
+          copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleView'), cwd);
 
           // Rename directory
-          fs.renameSync(`${cwd}/.SampleView`, viewPath);
+          renameSync(`${cwd}/.SampleView`, viewPath);
 
           // Rename CSS
           const viewStylePath: string = `${viewPath}/${outputName}View.css`;
-          fs.renameSync(`${viewPath}/sampleView.css`, viewStylePath);
+          renameSync(`${viewPath}/sampleView.css`, viewStylePath);
 
           // Search and replace view name
           updateTemplateName(viewStylePath, outputName, nameCaps);
 
           // Rename test
           const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
-          fs.renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
+          renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
 
           // Search and replace view name
           updateTemplateName(viewTestPath, outputName, nameCaps);
 
           // Rename source file
           const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
-          fs.renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
+          renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
 
           // Search and replace view name
           updateTemplateName(viewFilePath, outputName, nameCaps);
@@ -147,7 +149,7 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       await removeFiles('.vscode', true);
 
       // Copy vscode configuration
-      copyFolderRecursiveSync(path.resolve(__dirname, '../../.vscode'), cwd);
+      copyFolderRecursiveSync(pathResolve(dirName, '../../.vscode'), cwd);
       break;
     }
   }

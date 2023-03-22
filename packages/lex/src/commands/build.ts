@@ -4,13 +4,14 @@
  */
 import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {build as esBuild} from 'esbuild';
-import {default as execa} from 'execa';
-import * as path from 'path';
+import {execa} from 'execa';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import {LexConfig} from '../LexConfig';
-import {checkLinkedModules, createSpinner, removeFiles} from '../utils/app';
-import {log} from '../utils/log';
-import {relativeFilePath} from '../utils/file';
+import {LexConfig} from '../LexConfig.js';
+import {checkLinkedModules, createSpinner, removeFiles} from '../utils/app.js';
+import {relativeNodePath} from '../utils/file.js';
+import {log} from '../utils/log.js';
 
 export const buildWithEsBuild = async (spinner, cmd, callback) => {
   const {
@@ -52,7 +53,7 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
       platform: 'node',
       plugins,
       sourcemap: 'inline',
-      target: targetEnvironment === 'node' ? 'node16' : 'es2016',
+      target: targetEnvironment === 'node' ? 'node18' : 'es2016',
       watch
     });
 
@@ -90,7 +91,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     outputJsonpFunction,
     outputLibrary,
     outputLibraryTarget,
-    outputPathinfo,
+    outputPathInfo,
     outputPublicPath,
     outputSourceMapFilename,
     quiet = false,
@@ -102,10 +103,11 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
 
   if(config) {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
-    const fullConfigPath: string = isRelativeConfig ? path.resolve(process.cwd(), config) : config;
+    const fullConfigPath: string = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
     webpackConfig = fullConfigPath;
   } else {
-    webpackConfig = path.resolve(__dirname, '../../webpack.config.js');
+    const dirName = fileURLToPath(new URL('.', import.meta.url));
+    webpackConfig = pathResolve(dirName, '../../webpack.config.js');
   }
 
   const webpackOptions: string[] = [
@@ -139,8 +141,8 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     webpackOptions.push('--output-library-target', outputLibraryTarget);
   }
 
-  if(outputPathinfo) {
-    webpackOptions.push('--output-path-info', outputPathinfo);
+  if(outputPathInfo) {
+    webpackOptions.push('--output-path-info', outputPathInfo);
   }
 
   if(outputPublicPath) {
@@ -161,8 +163,9 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
 
   // Compile using webpack
   try {
-    const nodePath: string = path.resolve(__dirname, '../../node_modules');
-    const webpackPath: string = relativeFilePath('webpack-cli/bin/cli.js', nodePath);
+    const dirName = fileURLToPath(new URL('.', import.meta.url));
+    const nodePath: string = pathResolve(dirName, '../../node_modules');
+    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', nodePath);
     await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
 
     // Stop spinner

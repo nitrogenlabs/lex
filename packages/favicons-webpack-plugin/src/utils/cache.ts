@@ -3,17 +3,11 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import crypto, {Hash} from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import {existsSync} from 'fs';
+import {resolve as pathResolve} from 'path';
 
+import packageJson from '../../package.json' assert {type: 'json'};
 import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main';
-
-/**
- * @file this file is responsible for the persitance disk caching
- * it offers helpers to prevent recompilation of the favicons on
- * every build
- */
-const {version: pluginVersion} = require('../../package.json');
 
 /**
  * Generates a md5 hash for the given options
@@ -42,7 +36,7 @@ export const emitCacheInformationFile = (
     hash: fileHash,
     optionHash: generateHashForOptions(options),
     result: iconResult,
-    version: pluginVersion
+    version: packageJson.version
   }));
 };
 
@@ -60,7 +54,7 @@ export const isCacheValid = (
     // Verify that the options are the same
     optionHash === generateHashForOptions(options) &&
     // Verify that the favicons version of the cache matches this version
-    version === pluginVersion;
+    version === version;
 };
 
 /**
@@ -79,9 +73,9 @@ export const loadIconsFromDiskCache = (
   }
 
   const {_compiler: loaderCompiler} = loader;
-  const resolvedCacheFile: string = path.resolve(loaderCompiler.parentCompilation.compiler.outputPath, cacheFile);
+  const resolvedCacheFile: string = pathResolve(loaderCompiler.parentCompilation.compiler.outputPath, cacheFile);
   console.log('resolvedCacheFile', resolvedCacheFile);
-  const exists: boolean = fs.existsSync(resolvedCacheFile);
+  const exists: boolean = existsSync(resolvedCacheFile);
   console.log('exists', exists);
 
   if(!exists) {

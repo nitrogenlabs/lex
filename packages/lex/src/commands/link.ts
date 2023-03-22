@@ -2,9 +2,9 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {LexConfig} from '../LexConfig';
-import {checkLinkedModules} from '../utils/app';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {checkLinkedModules} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const linked = (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;

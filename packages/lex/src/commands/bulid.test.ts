@@ -1,4 +1,4 @@
-import {build} from './build';
+import {build} from './build.js';
 
 describe('build', () => {
   it('should', async () => {

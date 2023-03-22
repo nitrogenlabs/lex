@@ -25,7 +25,7 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   },
   "scripts": {
     "build": "NODE_ENV=production && rm -rf dist && yarn compile",
@@ -35,6 +35,9 @@
     "lint": "eslint ./src --ext .ts,.tsx",
     "prepublishOnly": "npm run prepare:release",
     "prepare:release": "npm i && npm run build && npm test",
+    "publish:major": "npm version major && npm publish",
+    "publish:minor": "npm version minor && npm publish",
+    "publish:patch": "npm version patch && npm publish",
     "test": "NODE_ENV=test && jest",
     "update": "yarn upgradeInteractive --latest",
     "watch": "lex compile -t -w"
@@ -59,7 +62,7 @@
     "eslint-config-styleguidejs": "1.0.16",
     "eslint-friendly-formatter": "^4.0.1",
     "esutils": "^2.0.3",
-    "execa": "^4.0.0",
+    "execa": "7.1.1",
     "find-file-up": "^2.0.1",
     "find-parent-dir": "^0.3.0",
     "find-project-root": "^1.1.1",

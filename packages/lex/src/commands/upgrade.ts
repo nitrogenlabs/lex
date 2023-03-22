@@ -3,15 +3,14 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import compareVersions from 'compare-versions';
-import {default as execa} from 'execa';
+import {execa} from 'execa';
 import latestVersion from 'latest-version';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner} from '../utils/app';
-import {log} from '../utils/log';
-import {parseVersion} from './versions';
-
-const packageConfig = require('../../package.json');
+import packageJson from '../../package.json' assert {type: 'json'};
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner} from '../utils/app.js';
+import {log} from '../utils/log.js';
+import {parseVersion} from './versions.js';
 
 export const upgrade = (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
@@ -27,7 +26,7 @@ export const upgrade = (cmd: any, callback: any = process.exit): Promise<number>
 
   return latestVersion('@nlabs/lex')
     .then(async (latest: string) => {
-      const current: string = parseVersion(packageConfig.version);
+      const current: string = parseVersion(packageJson.version);
       const versionDiff: number = compareVersions(latest, current);
 
       if(versionDiff === 0) {

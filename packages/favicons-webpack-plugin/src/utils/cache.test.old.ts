@@ -6,8 +6,7 @@ import fs from 'fs';
 
 import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main';
 import {emitCacheInformationFile, generateHashForOptions, isCacheValid, loadIconsFromDiskCache} from './cache';
-
-const {version: pluginVersion} = require('../../package.json');
+import packageJson from '../../package.json' assert {type: 'json'};
 
 describe('utils::cache', () => {
   const options: FaviconsPluginOptions = {logo: ''};
@@ -23,14 +22,14 @@ describe('utils::cache', () => {
     it('should not cache if persistentCache is false', () => {
       const loader = {emitFile: jest.fn()};
       const options: FaviconsPluginOptions = {logo: '', persistentCache: false};
-      emitCacheInformationFile(loader, options, null, null, null);
+      emitCacheInformationFile(loader, options, '', '', null);
       expect(loader.emitFile).not.toHaveBeenCalled();
     });
 
     it('should cache if persistentCache is true', () => {
       const loader = {emitFile: jest.fn()};
       const options: FaviconsPluginOptions = {logo: '', persistentCache: true};
-      emitCacheInformationFile(loader, options, null, null, null);
+      emitCacheInformationFile(loader, options, '', '', null);
       expect(loader.emitFile).toHaveBeenCalled();
     });
   });
@@ -39,7 +38,7 @@ describe('utils::cache', () => {
     it('should return true if hash is cached', () => {
       const fileHash: string = 'hashExample';
       const optionHash: string = generateHashForOptions(options);
-      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: pluginVersion};
+      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: packageJson.version};
       const isValid: boolean = isCacheValid(cache, fileHash, options);
       expect(isValid).toBe(true);
     });
@@ -47,7 +46,7 @@ describe('utils::cache', () => {
     it('should return false if fileHash does not match', () => {
       const fileHash: string = 'hashExample';
       const optionHash: string = generateHashForOptions(options);
-      const cache: FaviconsPluginCache = {hash: 'noMatch', optionHash, version: pluginVersion};
+      const cache: FaviconsPluginCache = {hash: 'noMatch', optionHash, version: packageJson.version};
       const isValid: boolean = isCacheValid(cache, fileHash, options);
       expect(isValid).toBe(false);
     });
@@ -55,7 +54,7 @@ describe('utils::cache', () => {
     it('should return false if optionHash does not match', () => {
       const fileHash: string = 'hashExample';
       const optionHash: string = 'noMatch';
-      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: pluginVersion};
+      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: packageJson.version};
       const isValid: boolean = isCacheValid(cache, fileHash, options);
       expect(isValid).toBe(false);
     });
@@ -73,7 +72,7 @@ describe('utils::cache', () => {
     it('should return null if not using cache', () => {
       const options: FaviconsPluginOptions = {logo: '', persistentCache: false};
       const callback = jest.fn();
-      loadIconsFromDiskCache(null, options, null, null, callback);
+      loadIconsFromDiskCache(null, options, '', '', callback);
       expect(callback).toHaveBeenCalledWith(null);
     });
 
@@ -81,7 +80,7 @@ describe('utils::cache', () => {
       const loader = {_compiler: {parentCompilation: {compiler: {outputPath: 'noMatch'}}}};
       const options: FaviconsPluginOptions = {logo: '', persistentCache: true};
       const callback = jest.fn();
-      loadIconsFromDiskCache(loader, options, '', null, callback);
+      loadIconsFromDiskCache(loader, options, '', '', callback);
       expect(callback).toHaveBeenCalledWith(null);
     });
 
@@ -91,7 +90,7 @@ describe('utils::cache', () => {
       const callback = jest.fn();
       const fileHash: string = 'hashExample';
       const optionHash: string = generateHashForOptions(options);
-      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: pluginVersion};
+      const cache: FaviconsPluginCache = {hash: fileHash, optionHash, version: packageJson.version};
 
       // Mock fs
       const existsSync = jest.fn();

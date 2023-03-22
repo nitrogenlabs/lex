@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import generateFavicons from 'favicons';
+import {favicons} from 'favicons';
 import loaderUtils from 'loader-utils';
 
 import {emitCacheInformationFile, loadIconsFromDiskCache} from './cache';
@@ -22,38 +22,36 @@ const generateIcons = (loader, imageFileStream, pathPrefix, query, callback) => 
   const publicPath: string = getPublicPath(loaderCompilation);
   const {appName, background, icons} = query;
 
-  generateFavicons(imageFileStream, {
+  favicons(imageFileStream, {
     appName,
     background,
     icons,
     path: '',
     start_url: ''
-  }, (error, result) => {
-    if(error) {
-      return callback(error);
-    }
+  })
+    .then(({html, images, files}) => {
+      const htmlFiles = html
+        .filter((entry) => entry.indexOf('manifest') === -1)
+        .map((entry) => entry.replace(/(href=[""])/g, `$1${publicPath}${pathPrefix}`));
+      const loaderResult = {files: [] as string[], html: htmlFiles, outputFilePrefix: pathPrefix};
 
-    const html = result.html
-      .filter((entry) => entry.indexOf('manifest') === -1)
-      .map((entry) => entry.replace(/(href=[""])/g, `$1${publicPath}${pathPrefix}`));
-    const loaderResult = {files: [], html, outputFilePrefix: pathPrefix};
+      images.forEach((image) => {
+        loaderResult.files.push(`${pathPrefix}${image.name}`);
+        loader.emitFile(pathPrefix + image.name, image.contents);
+      });
 
-    result.images.forEach((image) => {
-      loaderResult.files.push(pathPrefix + image.name);
-      loader.emitFile(pathPrefix + image.name, image.contents);
-    });
+      files.forEach((file) => {
+        loaderResult.files.push(`${pathPrefix}${file.name}`);
+        loader.emitFile(pathPrefix + file.name, file.contents);
+      });
 
-    result.files.forEach((file) => {
-      loaderResult.files.push(pathPrefix + file.name);
-      loader.emitFile(pathPrefix + file.name, file.contents);
-    });
-
-    return callback(null, loaderResult);
-  });
+      return callback(null, loaderResult);
+    })
+    .catch((faviconError) => callback(faviconError));
 };
 
 module.exports = (loaderContext: any, content) => {
-  loaderContext.cacheable && loaderContext.cacheable();
+  loaderContext?.cacheable();
 
   if(!loaderContext.emitFile) {
     throw new Error('FaviconsPlugin Error: emitFile is required from module system');

@@ -3,26 +3,40 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import findFileUp from 'find-file-up';
-import {existsSync} from 'fs-extra';
-import {resolve} from 'path';
+import {existsSync} from 'fs';
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
 // Get file paths relative to Lex
-export const relativeFilePath = (filename: string, nodePath: string = './', backUp: number = 0) => {
+export const relativeFilePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
   const nestDepth: number = 10;
 
   if(backUp) {
-    const filePath: string = findFileUp.sync(filename, nodePath, nestDepth);
+    const filePath: string = findFileUp.sync(filename, dirPath, nestDepth);
     const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
-    return resolve(filePath, previousPath);
+    return pathResolve(filePath, previousPath);
   }
 
-  return findFileUp.sync(filename, nodePath, nestDepth);
+  return findFileUp.sync(filename, dirPath, nestDepth);
+};
+
+export const relativeNodePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
+  const nestDepth: number = 10;
+
+  if(backUp) {
+    const filePath: string = findFileUp.sync(`node_modules/${filename}`, dirPath, nestDepth);
+    const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
+    return pathResolve(filePath, previousPath);
+  }
+
+  return findFileUp.sync(`node_modules/${filename}`, dirPath, nestDepth);
 };
 
 // Get file paths relative to Lex
 export const getNodePath = (moduleName: string): string => {
   const modulePath: string = `node_modules/${moduleName}`;
-  const repoPath: string = findFileUp.sync(modulePath, __dirname);
+  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const repoPath: string = findFileUp.sync(modulePath, dirName);
 
   if(repoPath && existsSync(repoPath)) {
     return repoPath;

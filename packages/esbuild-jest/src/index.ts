@@ -1,6 +1,6 @@
-import {extname, resolve} from 'path';
 import {Format, Loader, TransformOptions, transformSync} from 'esbuild';
-import rimraf from 'rimraf';
+import {extname, resolve} from 'path';
+import {rimrafSync} from 'rimraf';
 
 import {Options} from './options';
 import {getExt, loaders} from './utils/file';
@@ -48,7 +48,7 @@ const createTransformer = (options?: Options) => ({
     }
 
     const outputFile = resolve(process.cwd(), './out.js');
-    rimraf.sync(outputFile);
+    rimrafSync(outputFile, {});
 
     return {code, map};
   }

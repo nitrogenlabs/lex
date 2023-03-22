@@ -2,11 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {default as execa} from 'execa';
+import {execa} from 'execa';
 
-import {LexConfig} from '../LexConfig';
-import {createSpinner, getPackageJson, removeConflictModules, removeModules} from '../utils/app';
-import {log} from '../utils/log';
+import {LexConfig} from '../LexConfig.js';
+import {createSpinner, getPackageJson, removeConflictModules, removeModules} from '../utils/app.js';
+import {log} from '../utils/log.js';
 
 export const migrate = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;

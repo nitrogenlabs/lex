@@ -17,7 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noStrictGenericChecks": true,
     "noUnusedLocals": false,
     "pretty": true,
     "removeComments": true,
