@@ -17,7 +17,7 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
   log(`${cliName} creating ${type}...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd, false);
+  await LexConfig.parseConfig(cmd, false);
   const {outputPath, sourcePath, useTypescript} = LexConfig.config;
 
   if(useTypescript) {

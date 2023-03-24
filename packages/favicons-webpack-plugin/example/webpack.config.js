@@ -1,4 +1,4 @@
-const path = require('path');
+import {join as pathJoin} from 'path';
 
 module.exports = {
   context: __dirname,
@@ -6,6 +6,6 @@ module.exports = {
   entry: './src/entry.js',
   output: {
     filename: 'bundle.js',
-    path: path.join(__dirname, 'dist')
+    path: pathJoin(__dirname, 'dist')
   }
 };

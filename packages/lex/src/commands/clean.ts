@@ -16,7 +16,7 @@ export const clean = async (cmd: any, callback: any = () => ({})): Promise<numbe
   log(`${cliName} cleaning directory...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   // Start cleaning spinner
   spinner.start('Cleaning files...');

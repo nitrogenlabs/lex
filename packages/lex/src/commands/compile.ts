@@ -44,7 +44,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   log(`${cliName} compiling...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   // Compile type
   const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
@@ -75,7 +75,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--inlineSourceMap',
         '--jsx', 'react-jsx',
         '--lib', ['ES5', 'ES6', 'ES2015', 'ES7', 'ES2016', 'ES2017', 'ES2018', 'ESNext', 'DOM'],
-        '--module', 'commonjs',
+        '--module', 'esnext',
         '--moduleResolution', 'node',
         '--noImplicitReturns',
         '--noImplicitThis',
@@ -129,8 +129,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync(`${sourceFullPath}/**/**.ts*`, globOptions);
-  const jsFiles: string[] = globSync(`${sourceFullPath}/**/**.js`, globOptions);
+  const tsFiles: string[] = globSync(`${sourceFullPath}/**/**/!(*.spec|*.test).ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${sourceFullPath}/**/**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   // ESBuild options

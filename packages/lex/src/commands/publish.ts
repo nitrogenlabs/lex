@@ -17,7 +17,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;

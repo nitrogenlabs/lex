@@ -32,7 +32,7 @@ export const init = async (
   const dnpPath: string = pathResolve(dirName, '../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
   const {packageManager: configPackageManager, useTypescript: configTypescript} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager;
   const useTypescript: boolean = typescript !== undefined ? typescript : configTypescript;

@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import compareVersions from 'compare-versions';
+import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
 import latestVersion from 'latest-version';
 
@@ -12,7 +12,7 @@ import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
 import {parseVersion} from './versions.js';
 
-export const upgrade = (cmd: any, callback: any = process.exit): Promise<number> => {
+export const upgrade = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
 
   // Display status
@@ -22,7 +22,7 @@ export const upgrade = (cmd: any, callback: any = process.exit): Promise<number>
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   return latestVersion('@nlabs/lex')
     .then(async (latest: string) => {

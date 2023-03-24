@@ -203,7 +203,7 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
   log(`${cliName} building...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {outputFullPath, useTypescript} = LexConfig.config;
 

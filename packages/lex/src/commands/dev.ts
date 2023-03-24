@@ -21,7 +21,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   log(`${cliName} start development server...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {outputFullPath, useTypescript} = LexConfig.config;
 

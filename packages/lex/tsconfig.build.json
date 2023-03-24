@@ -6,7 +6,7 @@
     "lib": [
       "es2020"
     ],
-    "module": "commonjs",
+    "module": "esnext",
     "outDir": "./dist",
     "skipLibCheck": true,
     "target": "es2020"

@@ -2,9 +2,12 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-const path = require('path');
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-module.exports = {
+const dirName = fileURLToPath(new URL('.', import.meta.url));
+
+export default {
   collectCoverage: true,
   coveragePathIgnorePatterns: [
     '/node_modules/',
@@ -50,11 +53,11 @@ module.exports = {
   },
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$',
-    path.resolve(__dirname, './packages/execa-mock/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
-    path.resolve(__dirname, './packages/favicons-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
-    path.resolve(__dirname, './packages/lex/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
-    path.resolve(__dirname, './packages/starfire/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
-    path.resolve(__dirname, './packages/static-site-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$')
+    pathResolve(dirName, './packages/execa-mock/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    pathResolve(dirName, './packages/favicons-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    pathResolve(dirName, './packages/lex/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    pathResolve(dirName, './packages/starfire/node_modules[/\\\\].+\\.(js|ts|tsx)$'),
+    pathResolve(dirName, './packages/static-site-webpack-plugin/node_modules[/\\\\].+\\.(js|ts|tsx)$')
   ],
   verbose: true
 };

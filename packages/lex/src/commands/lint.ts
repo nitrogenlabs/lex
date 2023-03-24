@@ -51,7 +51,7 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {useTypescript} = LexConfig.config;
 

@@ -55,7 +55,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {useTypescript} = LexConfig.config;
 
@@ -70,7 +70,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   const jestPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
   const jestConfigFile: string = config || pathResolve(dirName, '../../jest.config.lex.js');
   const jestSetupFile: string = setup || '';
-  const jestOptions: string[] = ['--config', jestConfigFile];
+  const jestOptions: string[] = ['--config', jestConfigFile, '--no-cache'];
 
   if(bail) {
     jestOptions.push('--bail');

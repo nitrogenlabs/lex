@@ -6,14 +6,14 @@ import {LexConfig} from '../LexConfig.js';
 import {checkLinkedModules} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const linked = (cmd: any, callback: any = () => ({})): Promise<number> => {
+export const linked = async (cmd: any, callback: any = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display status
   log(`${cliName} checking for linked modules...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   // Check for linked modules
   checkLinkedModules();

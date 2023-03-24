@@ -24,7 +24,7 @@ export const config = async (type: string, cmd: any, callback: any = () => ({}))
   log(`${cliName} generating configuration for ${startCase(type)}...`, 'info', quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   let configOptions;
 

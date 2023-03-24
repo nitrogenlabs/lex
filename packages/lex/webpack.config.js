@@ -2,28 +2,41 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-const {StaticSitePlugin} = require('@nlabs/webpack-plugin-static-site');
-const CompressionWebpackPlugin = require('compression-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const DotenvPlugin = require('dotenv-webpack');
-const {ESBuildMinifyPlugin} = require('esbuild-loader');
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
-const fs = require('fs');
-const glob = require('glob');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
-const isEmpty = require('lodash/isEmpty');
-const path = require('path');
-const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
-const webpack = require('webpack');
-const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
-const {merge} = require('webpack-merge');
-const {WebpackPluginServe} = require('webpack-plugin-serve');
+import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
+import autoprefixer from 'autoprefixer';
+import CompressionWebpackPlugin from 'compression-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import cssnano from 'cssnano';
+import DotenvPlugin from 'dotenv-webpack';
+import {EsbuildPlugin} from 'esbuild-loader';
+import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
+import {existsSync} from 'fs';
+import {sync as globSync} from 'glob';
+import HtmlWebPackPlugin from 'html-webpack-plugin';
+import isEmpty from 'lodash/isEmpty.js';
+import {resolve as pathResolve} from 'path';
+import postcssBrowserReporter from 'postcss-browser-reporter';
+import postcssCustomProperties from 'postcss-custom-properties';
+import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
+import postcssFor from 'postcss-for';
+import postcssImport from 'postcss-import';
+import postcssNesting from 'postcss-nesting';
+import postcssPercentage from 'postcss-percentage';
+import postcssPresetEnv from 'postcss-preset-env';
+import postcssUrl from 'postcss-url';
+import SVGSpritemapPlugin from 'svg-spritemap-webpack-plugin';
+import {fileURLToPath} from 'url';
+import {default as webpack} from 'webpack';
+import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
+import {merge} from 'webpack-merge';
+import {WebpackPluginServe} from 'webpack-plugin-serve';
 
-const {getNodePath, relativeFilePath} = require('./dist/utils/file');
+import {relativeFilePath, relativeNodePath} from './dist/utils/file.js';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
+const dirName = fileURLToPath(new URL('.', import.meta.url));
 
 const {
   isStatic,
@@ -47,7 +60,7 @@ const plugins = [
     dependencies: true,
     percentBy: null
   }),
-  new DotenvPlugin({path: path.resolve(process.cwd(), '.env'), systemvars: false})
+  new DotenvPlugin({path: pathResolve(process.cwd(), '.env'), systemvars: false})
 ];
 
 const isWeb = (preset || targetEnvironment) === 'web';
@@ -58,7 +71,7 @@ if(isWeb) {
     new CompressionWebpackPlugin({algorithm: 'gzip'}),
     new ProvidePlugin({
       process: 'process/browser',
-      React: path.resolve(__dirname, './node_modules/react')
+      React: pathResolve(dirName, './node_modules/react')
     })
   );
 }
@@ -73,7 +86,7 @@ const globOptions = {
 
 const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
 
-if(glob.sync(svgPaths, globOptions).length) {
+if(globSync(svgPaths, globOptions).length) {
   plugins.push(new SVGSpritemapPlugin(svgPaths, {
     input: {
       allowDuplicates: false
@@ -95,17 +108,17 @@ const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
-if(fs.existsSync(imagePath)) {
+if(existsSync(imagePath)) {
   staticPaths.push({from: imagePath, to: './images/'});
   watchIgnorePaths.push(imagePath);
 }
 
-if(fs.existsSync(fontPath)) {
+if(existsSync(fontPath)) {
   staticPaths.push({from: fontPath, to: './fonts/'});
   watchIgnorePaths.push(fontPath);
 }
 
-if(fs.existsSync(docPath)) {
+if(existsSync(docPath)) {
   staticPaths.push({from: docPath, to: './docs/'});
 }
 
@@ -113,7 +126,7 @@ if(staticPaths.length) {
   plugins.push(new CopyWebpackPlugin({patterns: staticPaths}));
 }
 
-if(fs.existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
+if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
   plugins.push(new HtmlWebPackPlugin({
     filename: './index.html',
     minify: isProduction,
@@ -134,26 +147,26 @@ if(outputFile) {
 }
 
 // Loader paths
-const esbuildLoaderPath = relativeFilePath('node_modules/esbuild-loader', __dirname);
-const cssLoaderPath = relativeFilePath('node_modules/css-loader', __dirname);
-const fileLoaderPath = relativeFilePath('node_modules/file-loader', __dirname);
-const graphqlLoaderPath = relativeFilePath('node_modules/graphql-tag/loader', __dirname);
-const htmlLoaderPath = relativeFilePath('node_modules/html-loader', __dirname);
-const jsonLoaderPath = relativeFilePath('node_modules/json-loader', __dirname);
-const postcssLoaderPath = relativeFilePath('node_modules/postcss-loader', __dirname);
-const sourceMapLoaderPath = relativeFilePath('node_modules/source-map-loader', __dirname);
-const styleLoaderPath = relativeFilePath('node_modules/style-loader', __dirname);
-const webpackPath = relativeFilePath('node_modules/webpack', __dirname);
+const esbuildLoaderPath = relativeNodePath('esbuild-loader', dirName);
+const cssLoaderPath = relativeNodePath('css-loader', dirName);
+const fileLoaderPath = relativeNodePath('file-loader', dirName);
+const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
+const htmlLoaderPath = relativeNodePath('html-loader', dirName);
+const jsonLoaderPath = relativeNodePath('json-loader', dirName);
+const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
+const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
+const styleLoaderPath = relativeNodePath('style-loader', dirName);
+const webpackPath = relativeNodePath('webpack', dirName);
 
 // Aliases
 const aliasPaths = {
-  '@nlabs/arkhamjs': relativeFilePath('node_modules/@nlabs/arkhamjs', process.cwd()),
-  '@nlabs/arkhamjs-utils-react': relativeFilePath('node_modules/@nlabs/arkhamjs-utils-react', process.cwd()),
-  'core-js': getNodePath('core-js'),
-  process: relativeFilePath('node_modules/process', process.cwd()),
-  react: relativeFilePath('node_modules/react', process.cwd()),
-  'react-dom': relativeFilePath('node_modules/react-dom', process.cwd()),
-  'regenerator-runtime': getNodePath('regenerator-runtime')
+  '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
+  '@nlabs/arkhamjs-utils-react': relativeNodePath('@nlabs/arkhamjs-utils-react', process.cwd()),
+  'core-js': relativeNodePath('core-js', dirName),
+  process: relativeNodePath('process', dirName),
+  react: relativeNodePath('react', process.cwd()),
+  'react-dom': relativeNodePath('react-dom', process.cwd()),
+  'regenerator-runtime': relativeNodePath('regenerator-runtime', dirName)
 };
 const aliasKeys = Object.keys(aliasPaths);
 const alias = aliasKeys.reduce((aliases, key) => {
@@ -165,7 +178,7 @@ const alias = aliasKeys.reduce((aliases, key) => {
 }, {});
 
 // Webpack config
-module.exports = (webpackEnv, webpackOptions) => {
+export default (webpackEnv, webpackOptions) => {
   const {bundleAnalyzer, watch} = webpackOptions;
   const webpackConfig = {
     bail: true,
@@ -235,27 +248,27 @@ module.exports = (webpackEnv, webpackOptions) => {
               options: {
                 postcssOptions: {
                   plugins: [
-                    require(relativeFilePath('node_modules/postcss-import', __dirname))({addDependencyTo: webpack}),
-                    require(relativeFilePath('node_modules/postcss-url', __dirname)),
-                    require(relativeFilePath('node_modules/postcss-for', __dirname)),
-                    require(relativeFilePath('node_modules/postcss-percentage', __dirname))({
+                    postcssImport({addDependencyTo: webpack}),
+                    postcssUrl,
+                    postcssFor,
+                    postcssPercentage({
                       floor: true,
                       precision: 9,
                       trimTrailingZero: true
                     }),
-                    require(relativeFilePath('node_modules/postcss-custom-properties', __dirname))({
+                    postcssCustomProperties({
                       preserve: false,
                       strict: false,
                       warnings: false
                     }),
-                    require(relativeFilePath('node_modules/autoprefixer', __dirname)),
-                    require(relativeFilePath('node_modules/postcss-nesting', __dirname)),
-                    require(relativeFilePath('node_modules/postcss-flexbugs-fixes', __dirname)),
-                    require(relativeFilePath('node_modules/postcss-preset-env', __dirname))({
+                    autoprefixer,
+                    postcssNesting,
+                    postcssFlexbugsFixes,
+                    postcssPresetEnv({
                       stage: 0
                     }),
-                    require(relativeFilePath('node_modules/cssnano', __dirname))({autoprefixer: false}),
-                    require(relativeFilePath('node_modules/postcss-browser-reporter', __dirname))
+                    cssnano({autoprefixer: false}),
+                    postcssBrowserReporter
                   ]
                 }
               }
@@ -291,7 +304,7 @@ module.exports = (webpackEnv, webpackOptions) => {
     },
     optimization: (isProduction && isWeb) ? {
       minimizer: [
-        new ESBuildMinifyPlugin({
+        new EsbuildPlugin({
           css: true,
           target: targetEnvironment
         })
@@ -322,15 +335,15 @@ module.exports = (webpackEnv, webpackOptions) => {
       alias,
       extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
       fallback: {
-        assert: require.resolve('assert/'),
-        crypto: require.resolve('crypto-browserify'),
-        http: require.resolve('stream-http'),
-        https: require.resolve('https-browserify'),
-        os: require.resolve('os-browserify/browser'),
-        path: require.resolve('path-browserify'),
-        process: require.resolve('process/browser'),
-        stream: require.resolve('stream-browserify'),
-        util: require.resolve('util/')
+        assert: relativeNodePath('assert', dirName),
+        crypto: relativeNodePath('crypto-browserify', dirName),
+        http: relativeNodePath('stream-http', dirName),
+        https: relativeNodePath('https-browserify', dirName),
+        os: relativeNodePath('os-browserify/browser.js', dirName),
+        path: relativeNodePath('path-browserify', dirName),
+        process: relativeNodePath('process/browser.js', dirName),
+        stream: relativeNodePath('stream-browserify', dirName),
+        util: relativeNodePath('util', dirName)
       },
       mainFiles: ['index'],
       modules: [sourceFullPath, 'node_modules'],
@@ -348,7 +361,7 @@ module.exports = (webpackEnv, webpackOptions) => {
       webpack: webpackPath
     };
     webpackConfig.optimization = {minimize: false};
-    webpackConfig.entry.wps = relativeFilePath('node_modules/webpack-plugin-serve/client.js', __dirname);
+    webpackConfig.entry.wps = relativeNodePath('webpack-plugin-serve/client.js', dirName);
     webpackConfig.stats = {errorDetails: true};
     webpackConfig.plugins.push(
       new WebpackPluginServe({
@@ -418,7 +431,7 @@ module.exports = (webpackEnv, webpackOptions) => {
   // Create site ico files
     const siteLogo = `${sourceFullPath}/images/logo.png`;
 
-    if(fs.existsSync(siteLogo)) {
+    if(existsSync(siteLogo)) {
       plugins.push(new FaviconsWebpackPlugin({
         icons: {
           android: true,

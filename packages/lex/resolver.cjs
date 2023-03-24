@@ -2,12 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {existsSync} from 'fs';
-import {extname as pathExtname, resolve as pathResolve} from 'path';
-import resolveSync from 'resolve/sync';
-import {fileURLToPath} from 'url';
+const {existsSync} = require('fs');
+const {extname: pathExtname, resolve: pathResolve} = require('path');
+const resolveSync = require('resolve/sync');
 
-const getFullPath = (basedir: string, name: string, extensions: string[]): string => {
+const getFullPath = (basedir, name, extensions) => {
   let fileName = name;
 
   extensions.some((ext) => {
@@ -35,7 +34,7 @@ const getFullPath = (basedir: string, name: string, extensions: string[]): strin
   return fileName;
 };
 
-const resolver = (value, options) => {
+module.exports = (value, options) => {
   let fileName = value;
 
   if(fileName === '') {
@@ -76,8 +75,7 @@ const resolver = (value, options) => {
   }
 
   try {
-    const dirName = fileURLToPath(new URL('.', import.meta.url));
-    return resolveSync(fileName, {basedir: `${dirName}/../`, extensions});
+    return resolveSync(fileName, {basedir: `${__dirname}/../`, extensions});
   } catch(error) {
     try {
       return resolveSync(fileName, {basedir: process.cwd(), extensions});
@@ -86,5 +84,3 @@ const resolver = (value, options) => {
     }
   }
 };
-
-export default resolver;

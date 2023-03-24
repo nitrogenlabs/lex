@@ -1,16 +1,15 @@
-const {resolve} = require('path');
+import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-const {getNodePath} = require('./dist/utils/file');
+import {getNodePath} from './dist/utils/file.js';
 
 const rootDir = process.cwd();
 const {jest, sourceFullPath, targetEnvironment, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
-const nodePath = resolve(__dirname, './node_modules');
-const setupFiles = [
-  getNodePath('core-js'),
-  getNodePath('regenerator-runtime/runtime.js')
-];
+const dirName = fileURLToPath(new URL('.', import.meta.url));
+const nodePath = pathResolve(dirName, './node_modules');
+
 let testEnvironment = 'node';
 let testEnvironmentOptions = {};
 
@@ -31,7 +30,7 @@ if(useTypescript) {
   transformIgnorePatterns = ['[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$'];
 }
 
-module.exports = {
+export default {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/dist', '/lib', '__snapshots__', '.d.ts'],
@@ -41,16 +40,19 @@ module.exports = {
     nodePath
   ],
   moduleFileExtensions,
-  moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': resolve(__dirname, './emptyModule')},
+  moduleNameMapper: {'\\.(css|jpg|png|svg|txt)$': pathResolve(dirName, './emptyModule')},
   modulePaths: [
     rootDir,
     `${rootDir}/node_modules`,
     nodePath,
     sourceFullPath
   ],
-  resolver: resolve(__dirname, './dist/resolver.js'),
+  resolver: pathResolve(dirName, './resolver.cjs'),
   rootDir,
-  setupFiles,
+  setupFiles: [
+    getNodePath('core-js'),
+    getNodePath('regenerator-runtime/runtime.js')
+  ],
   testEnvironment,
   testEnvironmentOptions,
   testPathIgnorePatterns: [
@@ -60,7 +62,9 @@ module.exports = {
   testRegex,
   testRunner: getNodePath('jest-circus/runner.js'),
   transform: {
-    '^.+\\.tsx?$': [
+    // '\\.[jt]sx?$': 'babel-jest',
+    // '^.+\\.tsx?$': [
+    '\\.[jt]sx?$': [
       getNodePath('@nlabs/esbuild-jest/dist/index.js'),
       {
         loaders: {

@@ -12,8 +12,7 @@ export interface BabelTransformOptions {
   readonly options?: any;
 }
 
-export const babelTransform = ({sourceText, sourcePath, options = {}}: BabelTransformOptions) => {
-  const {presets: babelPresets = []} = options;
+export const babelTransform = (babelPresets: any) => {
   const presets = [
     [
       presetEnv, {
@@ -36,7 +35,7 @@ export const babelTransform = ({sourceText, sourcePath, options = {}}: BabelTran
     presets.push(presetTypescript);
   }
 
-  const {process} = createTransformer({
+  return createTransformer({
     parserOpts: {
       plugins: ['jsx', 'typescript']
     },
@@ -45,8 +44,19 @@ export const babelTransform = ({sourceText, sourcePath, options = {}}: BabelTran
       pluginRuntime
     ],
     presets
-  });
+  }) as any;
+};
 
-  const babelResult = process(sourceText, sourcePath, options) as {code: string};
-  return babelResult.code;
+export const transformerSync = ({sourceText, sourcePath, options = {}}: BabelTransformOptions) => {
+  const {transformerConfig = {}} = options;
+  const {presets = []} = transformerConfig;
+  const {process} = babelTransform(presets);
+  return process(sourceText, sourcePath, options);
+};
+
+export const transformerAsync = async ({sourceText, sourcePath, options = {}}: BabelTransformOptions) => {
+  const {transformerConfig = {}} = options;
+  const {presets = []} = transformerConfig;
+  const {processAsync} = babelTransform(presets);
+  return processAsync(sourceText, sourcePath, options);
 };

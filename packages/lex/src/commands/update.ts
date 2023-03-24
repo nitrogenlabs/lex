@@ -18,7 +18,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(cmd);
 
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
@@ -29,8 +29,8 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
       '--packageManager', packageManager,
       '--pre', '0',
       '--target', 'latest',
-      cmd.interactive ? '-i' : '',
-      '-u'
+      cmd.interactive ? '--interactive' : '',
+      '--upgrade'
     ]
     : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
 
@@ -45,7 +45,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
     });
 
     if(packageManager === 'npm') {
-      await execa('npm', ['i'], {
+      await execa('npm', ['i', '--force'], {
         encoding: 'utf-8',
         stdio: 'inherit'
       });

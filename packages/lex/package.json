@@ -39,7 +39,7 @@
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "publish:major": "npm version major && npm publish",
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish",
@@ -49,6 +49,9 @@
     "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
   },
   "dependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-typescript": "^7.21.0",
     "@luckycatfactory/esbuild-graphql-loader": "^3.8.1",
     "@nlabs/esbuild-jest": "^1.37.8",
     "@nlabs/gothamjs": "^0.8.2",
@@ -56,6 +59,8 @@
     "acorn": "^8.8.2",
     "acorn-dynamic-import": "^4.0.0",
     "assert": "^2.0.0",
+    "autoprefixer": "^10.4.14",
+    "babel-jest": "^29.5.0",
     "boxen": "7.0.2",
     "caniuse-lite": "1.0.30001469",
     "chalk": "^5.2.0",
