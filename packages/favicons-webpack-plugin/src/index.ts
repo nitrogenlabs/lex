@@ -3,7 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {existsSync, readFileSync} from 'fs';
-import isPlainObject from 'lodash/isPlainObject';
+import isPlainObject from 'lodash/isPlainObject.js';
 import {resolve as pathResolve} from 'path';
 
 import {FaviconsPluginOptions} from './types/main';

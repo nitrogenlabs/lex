@@ -28,7 +28,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
+    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
     "build:docs": "node ./scripts/build/build-docs.js",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
@@ -39,7 +39,7 @@
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish",
     "test": "NODE_ENV=test && jest",
-    "update": "yarn upgradeInteractive --latest",
+    "update": "npm-check-updates -i",
     "watch": "lex compile -t -w"
   },
   "dependencies": {

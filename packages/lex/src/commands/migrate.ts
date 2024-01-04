@@ -54,7 +54,7 @@ export const migrate = async (cmd: any, callback: any = process.exit): Promise<n
     spinner.fail('Failed to remove modules.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

@@ -1,8 +1,8 @@
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-import {Util} from '../../common/Util';
-import {options} from './options';
-import {PrinterCSS} from './PrinterCSS';
+import {Util} from '../../common/Util.js';
+import {options} from './options.js';
+import {PrinterCSS} from './PrinterCSS.js';
 
 const {getLast, lineColumnToIndex} = Util;
 

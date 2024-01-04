@@ -1,34 +1,12 @@
 {
-  "private": true,
-  "license": "MIT",
-  "scripts": {
-    "build": "yarn workspaces run build",
-    "lint": "yarn workspaces run lint",
-    "clean": "yarn workspaces run clean && yarn clean:root",
-    "clean:root": "rm -rf *.log node_modules *.lock package-lock.json",
-    "publish:major": "yarn workspaces run publish:major && npm run publish:tags",
-    "publish:minor": "yarn workspaces run publish:minor && npm run publish:tags",
-    "publish:patch": "yarn workspaces run publish:patch && npm run publish:tags",
-    "publish:tags": "git push --tags && git push origin HEAD",
-    "test": "jest --clearCache && jest",
-    "update": "yarn upgradeInteractive --latest"
-  },
-  "devDependencies": {
-    "@jest/core": "^29.5.0",
-    "@jest/reporters": "^29.5.0",
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.5",
-    "jest-cli": "^29.5.0",
-    "jest-transform-graphql": "^2.1.0",
-    "typescript": "^5.0.2",
-    "v8-to-istanbul": "^9.1.0"
-  },
+  "name": "lex",
   "workspaces": [
-    "packages/esbuild-jest",
     "packages/execa-mock",
     "packages/favicons-webpack-plugin",
     "packages/lex",
     "packages/static-site-webpack-plugin"
   ],
-  "dependencies": {}
+  "devDependencies": {
+    "npm-check-updates": "^16.14.12"
+  }
 }

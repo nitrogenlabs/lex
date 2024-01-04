@@ -40,18 +40,18 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
 
   try {
     await execa(updateApp, updateOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 
     if(packageManager === 'npm') {
       await execa('npm', ['i', '--force'], {
-        encoding: 'utf-8',
+        encoding: 'utf8',
         stdio: 'inherit'
       });
 
       await execa('npm', ['audit', 'fix'], {
-        encoding: 'utf-8',
+        encoding: 'utf8',
         stdio: 'inherit'
       });
     }
@@ -70,7 +70,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
     spinner.fail('Failed to updated packages.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

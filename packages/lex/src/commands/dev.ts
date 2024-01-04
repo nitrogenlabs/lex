@@ -4,7 +4,7 @@
  */
 import {execa} from 'execa';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {createSpinner, removeFiles} from '../utils/app.js';
@@ -58,7 +58,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   }
 
   // Get custom webpack configuration file
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
   const webpackConfig: string = config || pathResolve(dirName, '../../webpack.config.js');
 
   // Compile using webpack
@@ -76,7 +76,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     const dirPath: string = pathResolve(dirName, '../..');
     const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
     await execa(webpackPath, webpackOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       env: {
         LEX_QUIET: quiet,
         WEBPACK_DEV_OPEN: open
@@ -97,7 +97,7 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
     spinner.fail('There was an error while running Webpack.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

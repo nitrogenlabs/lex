@@ -11,7 +11,7 @@
   "css.validate": false,
   "editor.autoClosingBrackets": "never",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
@@ -29,7 +29,6 @@
   "emmet.syntaxProfiles": {
     "postcss": "css"
   },
-  "eslint.packageManager": "npm",
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
   "explorer.confirmDragAndDrop": false,
@@ -52,5 +51,11 @@
   "typescriptHero.imports.multiLineTrailingComma": false,
   "typescriptHero.imports.multiLineWrapThreshold": 120,
   "typescriptHero.imports.organizeOnSave": true,
-  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+  "jest.disabledWorkspaceFolders": [
+    "execa-mock",
+    "favicons-webpack-plugin"
+  ],
+  "jest.jestCommandLine": "jest",
+  "jest.rootPath": "./"
 }

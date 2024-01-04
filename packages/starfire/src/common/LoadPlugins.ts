@@ -1,12 +1,12 @@
 import fs from 'fs';
 import globby from 'globby';
-import uniqBy from 'lodash/uniqBy';
+import uniqBy from 'lodash/uniqBy.js';
 import path from 'path';
 import resolve from 'resolve';
 
-import partition from '../utils/partition';
-import * as internalPlugins from './internalPlugins';
-import {findParentDir} from './thirdParty';
+import partition from '../utils/partition.js';
+import * as internalPlugins from './internalPlugins.js';
+import {findParentDir} from './thirdParty.js';
 
 const findPluginsInNodeModules = (nodeModulesDir) => {
   const pluginPackageJsonPaths = globby.sync(

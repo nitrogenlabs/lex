@@ -4,9 +4,9 @@
  */
 import cheerio from 'cheerio';
 import evaluate from 'eval';
-import isArray from 'lodash/isArray';
-import isEmpty from 'lodash/isEmpty';
-import isPlainObject from 'lodash/isPlainObject';
+import isArray from 'lodash/isArray.js';
+import isEmpty from 'lodash/isEmpty.js';
+import isPlainObject from 'lodash/isPlainObject.js';
 import path from 'path';
 import url from 'url';
 import RawSource from 'webpack-sources/lib/RawSource';

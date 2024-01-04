@@ -4,7 +4,7 @@
  */
 import {existsSync, readFileSync, renameSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {createChangelog} from '../create/changelog.js';
 import {LexConfig} from '../LexConfig.js';
@@ -26,7 +26,7 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
   }
 
   const {config} = LexConfig;
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
 
   switch(type) {
     case 'changelog': {

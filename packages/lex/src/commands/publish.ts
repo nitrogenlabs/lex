@@ -101,8 +101,8 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
       log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   } else {
     nextVersion = prevVersion;
@@ -127,7 +127,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
     spinner.fail('Publishing to npm has failed.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

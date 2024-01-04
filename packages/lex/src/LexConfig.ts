@@ -4,7 +4,7 @@
  */
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {extname as pathExtname, resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
@@ -35,25 +35,29 @@ export interface LexConfigType {
   webpack?: any;
 }
 
+export const defaultConfigValues: LexConfigType = {
+  configFiles: [],
+  entryHTML: 'index.html',
+  entryJs: 'index.js',
+  esbuild: {},
+  env: null,
+  jest: {},
+  outputFullPath: pathResolve(cwd, './dist'),
+  outputHash: false,
+  outputPath: './dist',
+  packageManager: 'npm',
+  preset: 'web',
+  sourceFullPath: pathResolve(cwd, './src'),
+  sourcePath: './src',
+  targetEnvironment: 'web',
+  useGraphQl: false,
+  useTypescript: false,
+  webpack: {}
+};
+
 export class LexConfig {
   static config: LexConfigType = {
-    configFiles: [],
-    entryHTML: 'index.html',
-    entryJs: 'index.js',
-    esbuild: {},
-    env: null,
-    jest: {},
-    outputFullPath: pathResolve(cwd, './dist'),
-    outputHash: false,
-    outputPath: './dist',
-    packageManager: 'npm',
-    preset: 'web',
-    sourceFullPath: pathResolve(cwd, './src'),
-    sourcePath: './src',
-    targetEnvironment: 'web',
-    useGraphQl: false,
-    useTypescript: false,
-    webpack: {}
+    ...defaultConfigValues
   };
 
   static set useTypescript(value: boolean) {
@@ -182,11 +186,10 @@ export class LexConfig {
   }
 
   static checkTypescriptConfig() {
-    // Make sure tsconfig.json exists
     const tsconfigPath: string = pathResolve(cwd, './tsconfig.json');
 
     if(!existsSync(tsconfigPath)) {
-      const dirName = fileURLToPath(new URL('.', import.meta.url));
+      const dirName = new URL('.', import.meta.url).pathname;
       writeFileSync(tsconfigPath, readFileSync(pathResolve(dirName, '../../../tsconfig.base.json')));
     }
   }

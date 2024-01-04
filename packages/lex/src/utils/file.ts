@@ -5,7 +5,7 @@
 import findFileUp from 'find-file-up';
 import {existsSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 // Get file paths relative to Lex
 export const relativeFilePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
@@ -25,7 +25,7 @@ export const relativeNodePath = (filename: string, dirPath: string = './', backU
 
   if(backUp) {
     const filePath: string = findFileUp.sync(`node_modules/${filename}`, dirPath, nestDepth);
-    const previousPath: string = Array(backUp).fill(null).map(() => '../').join('');
+    const previousPath: string = Array(nestDepth).fill(null).map(() => '../').join('');
     return pathResolve(filePath, previousPath);
   }
 
@@ -34,8 +34,8 @@ export const relativeNodePath = (filename: string, dirPath: string = './', backU
 
 // Get file paths relative to Lex
 export const getNodePath = (moduleName: string): string => {
+  const dirName = new URL('.', import.meta.url).pathname;
   const modulePath: string = `node_modules/${moduleName}`;
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
   const repoPath: string = findFileUp.sync(modulePath, dirName);
 
   if(repoPath && existsSync(repoPath)) {

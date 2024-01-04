@@ -5,7 +5,7 @@
 import {execa} from 'execa';
 import {renameSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../utils/app.js';
@@ -28,7 +28,7 @@ export const init = async (
   spinner.start('Downloading app...');
   const tmpPath: string = pathResolve(cwd, './.lexTmp');
   const appPath: string = pathResolve(cwd, `./${appName}`);
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
   const dnpPath: string = pathResolve(dirName, '../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
@@ -61,8 +61,8 @@ export const init = async (
     spinner.fail('Downloaded of app failed.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 
   // Move into configured directory
@@ -70,8 +70,8 @@ export const init = async (
     renameSync(`${tmpPath}/${appModule}`, appPath);
   } catch(error) {
     log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 
   // Configure package.json
@@ -96,8 +96,8 @@ export const init = async (
     writeFileSync(readmePath, `# ${appName}`);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 
   if(install) {
@@ -109,7 +109,7 @@ export const init = async (
     // Install dependencies
     try {
       await execa(packageManager, ['install'], {
-        encoding: 'utf-8',
+        encoding: 'utf8',
         stdio: 'inherit'
       });
 
@@ -123,8 +123,8 @@ export const init = async (
       spinner.fail('Failed to install dependencies.');
 
       // Kill process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 

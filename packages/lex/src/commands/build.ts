@@ -6,27 +6,39 @@ import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {build as esBuild} from 'esbuild';
 import {execa} from 'execa';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {checkLinkedModules, createSpinner, removeFiles} from '../utils/app.js';
 import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
-export const buildWithEsBuild = async (spinner, cmd, callback) => {
+export interface BuildOptions {
+  readonly bundler?: 'webpack' | 'esbuild';
+  readonly cliName?: string;
+  readonly outputPath?: string;
+  readonly quiet?: boolean;
+  readonly remove?: boolean;
+  readonly sourcePath?: string;
+  readonly variables?: string;
+  readonly watch?: boolean;
+}
+
+export type BuildCallback = (status: number) => void;
+
+export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
     outputPath,
     quiet,
     sourcePath,
-    watch
-  } = cmd;
+    watch = false
+  } = commandOptions;
   const {
     targetEnvironment,
     useGraphQl,
     useTypescript
   } = LexConfig.config;
-
   const loader: any = {
     '.js': 'js'
   };
@@ -36,7 +48,6 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
     loader['.tsx'] = 'tsx';
   }
 
-  // Plugins
   const plugins = [];
 
   if(useGraphQl) {
@@ -54,119 +65,171 @@ export const buildWithEsBuild = async (spinner, cmd, callback) => {
       plugins,
       sourcemap: 'inline',
       target: targetEnvironment === 'node' ? 'node18' : 'es2016',
-      watch
+      watch: watch as never
     });
 
-    // Stop spinner
     spinner.succeed('Build completed successfully!');
   } catch(error) {
-    // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     if(!quiet) {
       console.error(error);
     }
 
-    // Stop spinner
     spinner.fail('Code build failed.');
 
-    // Kill Process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 
-  // Stop process
   callback(0);
   return 0;
 };
 
 export const buildWithWebpack = async (spinner, cmd, callback) => {
   const {
-    buildDelimiter,
+    analyze,
     cliName = 'Lex',
     config,
+    configName,
+    defineProcessEnvNodeEnv,
+    devtool,
+    disableInterpret,
+    entry,
+    env,
+    failOnWarnings,
+    json,
+    merge,
     mode,
-    outputChunkFilename,
-    outputFilename,
-    outputJsonpFunction,
-    outputLibrary,
-    outputLibraryTarget,
-    outputPathInfo,
-    outputPublicPath,
-    outputSourceMapFilename,
+    name,
+    nodeEnv,
+    noDevtool,
+    noStats,
+    noTarget,
+    noWatch,
+    noWatchOptionsStdin,
+    outputPath,
     quiet = false,
-    watch
+    stats,
+    target,
+    watch,
+    watchOptionsStdin
   } = cmd;
 
   // Get custom webpack configuration
   let webpackConfig: string;
+  const dirName = new URL('.', import.meta.url).pathname;
 
   if(config) {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
-    const fullConfigPath: string = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
-    webpackConfig = fullConfigPath;
+    webpackConfig = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
   } else {
-    const dirName = fileURLToPath(new URL('.', import.meta.url));
     webpackConfig = pathResolve(dirName, '../../webpack.config.js');
   }
 
   const webpackOptions: string[] = [
     '--color',
     '--progress',
-    '--stats-error-details',
     '--config', webpackConfig
   ];
+
+  if(analyze) {
+    webpackOptions.push('--analyze');
+  }
+
+  if(configName) {
+    webpackOptions.push('--config-name', configName);
+  }
+
+  if(defineProcessEnvNodeEnv) {
+    webpackOptions.push('--define-process-env-node-env', defineProcessEnvNodeEnv);
+  }
+
+  if(devtool) {
+    webpackOptions.push('--devtool', devtool);
+  }
+
+  if(disableInterpret) {
+    webpackOptions.push('--disable-interpret');
+  }
+
+  if(entry) {
+    webpackOptions.push('--entry', entry);
+  }
+
+  if(env) {
+    webpackOptions.push('--env', env);
+  }
+
+  if(failOnWarnings) {
+    webpackOptions.push('--fail-on-warnings');
+  }
+
+  if(json) {
+    webpackOptions.push('--json', json);
+  }
 
   if(mode) {
     webpackOptions.push('--mode', mode);
   }
 
-  if(outputChunkFilename) {
-    webpackOptions.push('--output-chunk-filename', outputChunkFilename);
+  if(merge) {
+    webpackOptions.push('--merge');
   }
 
-  if(outputFilename) {
-    webpackOptions.push('--output-filename', outputFilename);
+  if(name) {
+    webpackOptions.push('--name', name);
   }
 
-  if(outputJsonpFunction) {
-    webpackOptions.push('--output-jsonp-function', outputJsonpFunction);
+  if(noDevtool) {
+    webpackOptions.push('--no-devtool');
   }
 
-  if(outputLibrary) {
-    webpackOptions.push('--output-library', outputLibrary);
+  if(noStats) {
+    webpackOptions.push('--no-stats');
   }
 
-  if(outputLibraryTarget) {
-    webpackOptions.push('--output-library-target', outputLibraryTarget);
+  if(noTarget) {
+    webpackOptions.push('--no-target');
   }
 
-  if(outputPathInfo) {
-    webpackOptions.push('--output-path-info', outputPathInfo);
+  if(noWatch) {
+    webpackOptions.push('--no-watch');
   }
 
-  if(outputPublicPath) {
-    webpackOptions.push('--output-public-path', outputPublicPath);
+  if(noWatchOptionsStdin) {
+    webpackOptions.push('--no-watch-options-stdin');
   }
 
-  if(outputSourceMapFilename) {
-    webpackOptions.push('--output-source-map-filename', outputSourceMapFilename);
+  if(nodeEnv) {
+    webpackOptions.push('--node-env', nodeEnv);
   }
 
-  if(buildDelimiter) {
-    webpackOptions.push('--build-delimiter', buildDelimiter);
+  if(outputPath) {
+    webpackOptions.push('--output-path', outputPath);
+  }
+
+  if(stats) {
+    webpackOptions.push('--stats', stats);
+  }
+
+  if(target) {
+    webpackOptions.push('--target', target);
   }
 
   if(watch) {
     webpackOptions.push('--watch');
   }
 
+  if(watchOptionsStdin) {
+    webpackOptions.push('--watch-options-stdin', watchOptionsStdin);
+  }
+
   // Compile using webpack
   try {
-    const dirName = fileURLToPath(new URL('.', import.meta.url));
     const nodePath: string = pathResolve(dirName, '../../node_modules');
     const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', nodePath);
-    await execa(webpackPath, webpackOptions, {encoding: 'utf-8', stdio: 'inherit'});
+    await execa(webpackPath, webpackOptions, {encoding: 'utf8', stdio: 'inherit'});
 
     // Stop spinner
     spinner.succeed('Build completed successfully!');
@@ -182,8 +245,8 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     spinner.fail('Build failed.');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };
 
@@ -192,8 +255,8 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
     bundler = 'webpack',
     cliName = 'Lex',
     quiet = false,
-    remove,
-    variables
+    remove = false,
+    variables = '{}'
   } = cmd;
 
   // Spinner
@@ -248,3 +311,4 @@ export const build = async (cmd: any, callback: any = () => ({})): Promise<numbe
   return buildWithWebpack(spinner, cmd, callback);
 };
 
+export default build;

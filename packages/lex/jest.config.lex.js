@@ -1,5 +1,5 @@
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {getNodePath} from './dist/utils/file.js';
 
@@ -7,14 +7,14 @@ const rootDir = process.cwd();
 const {jest, sourceFullPath, targetEnvironment, useTypescript} = JSON.parse(process.env.LEX_CONFIG || '{}');
 
 // Polyfill path
-const dirName = fileURLToPath(new URL('.', import.meta.url));
+const dirName = new URL('.', import.meta.url).pathname;
 const nodePath = pathResolve(dirName, './node_modules');
 
 let testEnvironment = 'node';
 let testEnvironmentOptions = {};
 
 if(targetEnvironment === 'web') {
-  testEnvironment = 'jsdom';
+  testEnvironment =  'jsdom';
   testEnvironmentOptions = {
     url: 'http://localhost'
   };
@@ -65,24 +65,24 @@ export default {
     // '\\.[jt]sx?$': 'babel-jest',
     // '^.+\\.tsx?$': [
     '\\.[jt]sx?$': [
-      getNodePath('@nlabs/esbuild-jest/dist/index.js'),
-      {
-        loaders: {
-          '.js': 'js',
-          '.ts': 'ts',
-          '.test.ts': 'ts',
-          '.spec.ts': 'ts',
-          '.tsx': 'tsx',
-          '.test.tsx': 'tsx',
-          '.spec.tsx': 'tsx'
-        },
-        presets: [
-          'react',
-          'react-native',
-          'typescript'
-        ],
-        sourcemap: true
-      }
+      'ts-jest'
+      // {
+      //   loaders: {
+      //     '.js': 'js',
+      //     '.ts': 'ts',
+      //     '.test.ts': 'ts',
+      //     '.spec.ts': 'ts',
+      //     '.tsx': 'tsx',
+      //     '.test.tsx': 'tsx',
+      //     '.spec.tsx': 'tsx'
+      //   },
+      //   presets: [
+      //     'react',
+      //     'react-native',
+      //     'typescript'
+      //   ],
+      //   sourcemap: true
+      // }
     ],
     '\\.(gql|graphql)$': 'jest-transform-graphql'
   },

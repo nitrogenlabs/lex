@@ -6,7 +6,7 @@ import {execa} from 'execa';
 import {existsSync, lstatSync, readdirSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {checkLinkedModules, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../utils/app.js';
@@ -48,7 +48,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   // Compile type
   const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
   const nodePath: string = pathResolve(dirName, '../../node_modules');
 
   // Check for linked modules
@@ -101,7 +101,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
     // Type checking
     try {
-      await execa(typescriptPath, typescriptOptions, {encoding: 'utf-8'});
+      await execa(typescriptPath, typescriptOptions, {encoding: 'utf8'});
 
       // Stop spinner
       spinner.succeed('Successfully completed type checking!');
@@ -117,8 +117,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Type checking failed.');
 
       // Kill Process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 
@@ -159,7 +159,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   if(cssFiles.length) {
     const postcssPath: string = relativeNodePath('postcss-cli/index.js', nodePath);
-    const dirName = fileURLToPath(new URL('.', import.meta.url));
     const postcssOptions: string[] = [
       `${sourceFullPath}/**/**.css`,
       '--base',
@@ -171,7 +170,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     ];
 
     try {
-      await execa(postcssPath, postcssOptions, {encoding: 'utf-8'});
+      await execa(postcssPath, postcssOptions, {encoding: 'utf8'});
       spinner.succeed(`Successfully formatted ${cssFiles.length} css files!`);
     } catch(error) {
       // Display error message
@@ -181,8 +180,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed formatting css.');
 
       // Kill Process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 
@@ -204,8 +203,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move images to output directory.');
 
       // Kill Process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 
@@ -227,8 +226,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move fonts to output directory.');
 
       // Kill Process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 
@@ -246,8 +245,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       spinner.fail('Failed to move docs to output directory.');
 
       // Kill Process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     }
   }
 
@@ -255,7 +254,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   spinner.start(watch ? 'Watching for changes...' : 'Compiling with ESBuild...');
 
   try {
-    await execa(esbuildPath, esbuildOptions, {encoding: 'utf-8'});
+    await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
 
     // Stop spinner
     spinner.succeed('Compile completed successfully!');
@@ -271,8 +270,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     spinner.fail('Code compiling failed.');
 
     // Kill Process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 
   // Stop process

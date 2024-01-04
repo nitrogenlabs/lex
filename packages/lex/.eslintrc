@@ -4,6 +4,7 @@
   ],
   "rules": {
     "import/extensions": 0,
+    "jest/valid-expect": 0,
     "no-useless-escape": 0
   }
 }

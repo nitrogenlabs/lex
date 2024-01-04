@@ -3,11 +3,14 @@
   "compilerOptions": {
     "baseUrl": "./packages"
   },
-  "exclude": [
-    "./lib",
-    "./node_modules"
-  ],
   "include": [
-    "./src"
+    "./packages/**/*",
+    "jest.config.*",
+  ],
+  "exclude": [
+    "*.d.ts",
+    "./packages/**/*.d.ts",
+    "./packages/**/dist/*",
+    "./packages/**/dist/**/*"
   ]
 }

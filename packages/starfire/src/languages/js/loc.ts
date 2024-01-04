@@ -1,6 +1,6 @@
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-import {getLast} from '../../utils/getLast';
+import {getLast} from '../../utils/getLast.js';
 
 export const locStart = (node, opts: any = {}) => {
   // Handle nodes with decorators. They should start at the first decorator

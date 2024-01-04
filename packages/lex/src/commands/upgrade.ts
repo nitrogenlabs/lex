@@ -59,7 +59,7 @@ export const upgrade = async (cmd: any, callback: any = process.exit): Promise<n
       spinner.fail('Failed to updated packages.');
 
       // Kill process
-      callback(error.status);
-      return error.status;
+      callback(1);
+      return 1;
     });
 };

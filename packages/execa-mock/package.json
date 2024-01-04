@@ -30,19 +30,19 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
+    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "publish:major": "npm version major && npm publish",
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish",
     "reset": "rm -rf node_modules packages-lock.json",
-    "test": "yarn lint && NODE_ENV=test && yarn env && jest",
-    "update": "yarn upgradeInteractive --latest",
-    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
+    "test": "npm run lint && NODE_ENV=test && npm run env && jest",
+    "update": "npm-check-updates -i",
+    "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },
   "dependencies": {
     "cross-spawn": "^7.0.3",
@@ -53,12 +53,12 @@
     "strip-eof": "^2.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.5",
-    "eslint": "^8.36.0",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.4",
+    "eslint": "^8.56.0",
     "eslint-config-styleguidejs": "^3.2.1",
-    "ts-jest": "^29.0.5",
-    "typescript": "^5.0.2"
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
   },
   "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8"
 }

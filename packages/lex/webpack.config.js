@@ -25,7 +25,7 @@ import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
 import SVGSpritemapPlugin from 'svg-spritemap-webpack-plugin';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 import {default as webpack} from 'webpack';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 import {merge} from 'webpack-merge';
@@ -36,7 +36,7 @@ import {relativeFilePath, relativeNodePath} from './dist/utils/file.js';
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
-const dirName = fileURLToPath(new URL('.', import.meta.url));
+const dirName = new URL('.', import.meta.url).pathname;
 
 const {
   isStatic,

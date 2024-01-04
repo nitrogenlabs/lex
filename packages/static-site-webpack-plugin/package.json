@@ -4,18 +4,18 @@
   "description": "Minimal, static site generator powered by webpack",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && yarn compile",
-    "clean": "rm -rf dist node_modules yarn.lock package-lock.json *.log coverage",
+    "build": "NODE_ENV=production && rm -rf dist && npm run compile",
+    "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "publish:major": "npm version major && npm publish",
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish",
-    "reset": "rm -rf node_modules yarn.lock",
-    "test": "yarn lint && NODE_ENV=test && jest",
-    "update": "yarn upgradeInteractive --latest",
-    "watch": "NODE_ENV=development rm -rf dist && yarn compile -w"
+    "reset": "rm -rf node_modules package-lock.json",
+    "test": "npm run lint && NODE_ENV=test && jest",
+    "update": "npm-check-updates -i",
+    "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },
   "repository": {
     "type": "git",
@@ -47,20 +47,20 @@
     "cheerio": "^1.0.0-rc.10",
     "eval": "^0.1.8",
     "lodash": "^4.17.21",
-    "url": "^0.11.0",
+    "url": "^0.11.3",
     "webpack-sources": "^3.2.3"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
+    "@types/jest": "^29.5.11",
     "compression-webpack-plugin": "^10.0.0",
     "ejs": "^3.1.9",
-    "eslint": "^8.36.0",
+    "eslint": "^8.56.0",
     "eslint-config-styleguidejs": "^3.2.1",
-    "glob": "^9.3.1",
-    "rimraf": "^4.4.0",
-    "typescript": "^5.0.2",
-    "webpack": "^5.76.3",
-    "webpack-stats-plugin": "^1.1.1"
+    "glob": "^10.3.10",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-stats-plugin": "^1.1.3"
   },
   "peerDependencies": {
     "webpack": "^4.0.0"

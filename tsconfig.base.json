@@ -3,24 +3,24 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "jsx": "react-jsx",
     "lib": [
       "dom",
-      "esnext"
+      "ESNext"
     ],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "pretty": true,
-    "removeComments": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "target": "esnext",
+    "target": "ESNext",
     "types": [
       "jest",
       "node"
@@ -28,9 +28,13 @@
   },
   "exclude": [
     "./lib",
-    "./node_modules"
+    "./node_modules",
+    "*.d.ts",
+    "./packages/**/*.d.ts",
+    "./packages/**/dist/*",
+    "./packages/**/dist/**/*"
   ],
   "include": [
-    "./src"
+    "./"
   ]
 }

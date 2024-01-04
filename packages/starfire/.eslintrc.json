@@ -4,6 +4,7 @@
   ],
   "rules": {
     "id-length": 0,
+    "import/extensions": 0,
     "no-nested-ternary": 0
   }
 }

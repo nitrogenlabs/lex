@@ -1,6 +1,10 @@
+/**
+ * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 import {execa} from 'execa';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {createSpinner} from '../utils/app.js';
@@ -9,40 +13,41 @@ import {log} from '../utils/log.js';
 
 export const lint = async (cmd: any, callback: any = process.exit): Promise<number> => {
   const {
-    noEslintrc = true,
-    cliName = 'Lex',
-    env,
-    ext,
-    global,
-    parser,
-    parserOptions,
-    resolvePluginsRelativeTo,
-    rulesdir,
-    plugin,
-    rule,
-    fix,
-    fixDryRun,
-    fixType,
-    ignorePath,
-    noIgnore,
-    ignorePattern,
-    stdin,
-    stdinFilename,
-    quiet,
-    maxWarnings,
-    outputFile,
-    format,
-    color,
-    noColor,
-    noInlineConfig,
-    reportUnusedDisableDirectives,
     cache,
     cacheFile,
     cacheLocation,
-    init,
-    envInfo,
+    cliName = 'Lex',
+    color,
+    config,
     debug,
-    printConfig
+    env,
+    envInfo,
+    ext = '.js',
+    fix,
+    fixDryRun,
+    fixType,
+    format,
+    global,
+    ignorePath,
+    ignorePattern,
+    init,
+    maxWarnings,
+    noColor,
+    noEslintrc = true,
+    noIgnore,
+    noInlineConfig,
+    outputFile,
+    parser,
+    parserOptions,
+    plugin,
+    printConfig,
+    quiet,
+    reportUnusedDisableDirectives,
+    resolvePluginsRelativeTo,
+    rule,
+    rulesdir,
+    stdin,
+    stdinFilename
   } = cmd;
 
   log(`${cliName} linting...`, 'info', quiet);
@@ -54,28 +59,42 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   await LexConfig.parseConfig(cmd);
 
   const {useTypescript} = LexConfig.config;
+  let extensions = ext;
 
   if(useTypescript) {
-    // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
+    extensions = '.ts,.tsx';
   }
 
   // Configure jest
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
-  const eslintPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
-  const eslintOptions: string[] = [];
+  const eslintPath: string = relativeNodePath('eslint/bin/eslint.js', dirPath);
+  const eslintOptions: string[] = ['./src'];
 
   if(noEslintrc) {
-    eslintOptions.push('--bail');
+    eslintOptions.push('--no-eslintrc');
+  }
+
+  if(config) {
+    eslintOptions.push('--config', config);
+  } else {
+    let configPath: string;
+
+    if(useTypescript) {
+      configPath = relativeNodePath('eslint-config-styleguidejs/typescript.js', dirPath);
+    } else {
+      configPath = relativeNodePath('eslint-config-styleguidejs/react.js', dirPath);
+    }
+    eslintOptions.push('--config', configPath);
   }
 
   if(env) {
     eslintOptions.push('--env', env);
   }
 
-  if(ext) {
-    eslintOptions.push('--ext', ext);
+  if(extensions) {
+    eslintOptions.push('--ext', extensions);
   }
 
   if(global) {
@@ -201,11 +220,11 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   // Test app using jest
   try {
     await execa(eslintPath, eslintOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 
-    spinner.succeed('Testing completed!');
+    spinner.succeed('Linting completed!');
 
     // Kill process
     callback(0);
@@ -218,7 +237,7 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
     spinner.fail('Testing failed!');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

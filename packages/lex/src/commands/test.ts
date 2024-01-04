@@ -1,6 +1,6 @@
 import {execa} from 'execa';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
+import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 import {createSpinner} from '../utils/app.js';
@@ -65,7 +65,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   // Configure jest
-  const dirName = fileURLToPath(new URL('.', import.meta.url));
+  const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
   const jestPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
   const jestConfigFile: string = config || pathResolve(dirName, '../../jest.config.lex.js');
@@ -219,7 +219,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   // Test app using jest
   try {
     await execa(jestPath, jestOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 
@@ -236,7 +236,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
     spinner.fail('Testing failed!');
 
     // Kill process
-    callback(error.status);
-    return error.status;
+    callback(1);
+    return 1;
   }
 };

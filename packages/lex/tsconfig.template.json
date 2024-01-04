@@ -2,18 +2,18 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
+    "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "jsx": "react-jsx",
     "lib": [
       "es6",
       "es7",
-      "esnext",
+      "ESNext",
       "dom"
     ],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -21,7 +21,7 @@
     "pretty": true,
     "removeComments": true,
     "skipLibCheck": true,
-    "target": "es5",
+    "target": "ESNext",
     "types": [
       "jest",
       "node"

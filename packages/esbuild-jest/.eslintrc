@@ -1,9 +1,0 @@
-{
-  "extends": [
-    "styleguidejs/typescript"
-  ],
-  "rules": {
-    "import/extensions": 0,
-    "no-nested-ternary": 0
-  }
-}
