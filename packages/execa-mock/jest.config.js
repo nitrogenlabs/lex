@@ -9,5 +9,5 @@ module.exports = {
   ...base,
   displayName: pack.name,
   rootDir: '../..',
-  testMatch: ['<rootDir>/packages/static-site-webpack-plugin/**/*.test.ts']
+  testMatch: ['<rootDir>/packages/execa-mock/**/*.test.ts']
 };

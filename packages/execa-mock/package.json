@@ -40,7 +40,7 @@
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish",
     "reset": "rm -rf node_modules packages-lock.json",
-    "test": "npm run lint && NODE_ENV=test && npm run env && jest",
+    "test": "NODE_ENV=test && npm run lint && npm run env && jest",
     "update": "npm-check-updates -i",
     "watch": "NODE_ENV=development rm -rf dist && npm run compile -w"
   },

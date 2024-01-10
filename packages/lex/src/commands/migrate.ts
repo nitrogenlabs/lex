@@ -36,7 +36,7 @@ export const migrate = async (cmd: any, callback: any = process.exit): Promise<n
   // Install new list of packages
   try {
     await execa(packageManager, ['install'], {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 

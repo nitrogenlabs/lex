@@ -49,7 +49,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   // Compile type
   const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
   const dirName = new URL('.', import.meta.url).pathname;
-  const nodePath: string = pathResolve(dirName, '../../node_modules');
+  const dirPath: string = pathResolve(dirName, '../..');
 
   // Check for linked modules
   checkLinkedModules();
@@ -65,7 +65,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     LexConfig.checkTypescriptConfig();
 
     // Check static types with typescript
-    const typescriptPath: string = relativeNodePath('typescript/bin/tsc', nodePath);
+    const typescriptPath: string = relativeNodePath('typescript/bin/tsc', dirPath);
     const typescriptOptions: string[] = config ?
       ['-p', config] :
       [
@@ -134,7 +134,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   // ESBuild options
-  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', nodePath);
+  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--color=true',
@@ -158,7 +158,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
 
   if(cssFiles.length) {
-    const postcssPath: string = relativeNodePath('postcss-cli/index.js', nodePath);
+    const postcssPath: string = relativeNodePath('postcss-cli/index.js', dirPath);
     const postcssOptions: string[] = [
       `${sourceFullPath}/**/**.css`,
       '--base',

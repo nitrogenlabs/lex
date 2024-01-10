@@ -7,7 +7,7 @@ import crossSpawn from 'cross-spawn';
 import _getStream from 'get-stream';
 import {isStream} from 'is-stream';
 import {npmRunPathEnv} from 'npm-run-path';
-import onExit from 'signal-exit';
+import {onExit} from 'signal-exit';
 import stripEof from 'strip-eof';
 import util from 'util';
 

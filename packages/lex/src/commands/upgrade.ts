@@ -40,7 +40,7 @@ export const upgrade = async (cmd: any, callback: any = process.exit): Promise<n
       const upgradeOptions: string[] = ['install', '-g', `${cliPackage}@latest`];
 
       await execa('npm', upgradeOptions, {
-        encoding: 'utf-8',
+        encoding: 'utf8',
         stdio: 'inherit'
       });
 

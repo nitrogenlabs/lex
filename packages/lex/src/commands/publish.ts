@@ -110,7 +110,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
 
   try {
     await execa(packageManager, publishOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 

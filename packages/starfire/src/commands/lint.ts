@@ -1,8 +1,8 @@
 import {execa} from 'execa';
 import * as path from 'path';
 
-import {StarfireConfig} from '../StarfireConfig';
-import {createSpinner} from '../utils';
+import {StarfireConfig} from '../StarfireConfig.js';
+import {createSpinner} from '../utils/index.js';
 
 export const lint = async (cmd) => {
   const {
@@ -46,7 +46,7 @@ export const lint = async (cmd) => {
   console.log('eslintOptions', eslintOptions);
   try {
     await execa(eslintPath, eslintOptions, {
-      encoding: 'utf-8',
+      encoding: 'utf8',
       stdio: 'inherit'
     });
 

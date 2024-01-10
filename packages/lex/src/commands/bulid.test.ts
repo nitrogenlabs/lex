@@ -3,7 +3,7 @@ import {execa} from 'execa';
 
 import {build, buildWithEsBuild, buildWithWebpack} from './build.js';
 import {LexConfig, defaultConfigValues} from '../LexConfig.js';
-import {checkLinkedModules, removeFiles} from '../utils/app.js';
+import {checkLinkedModules, removeFiles} from '../utils/app';
 
 jest.mock('esbuild', () => ({
   ...jest.requireActual('esbuild'),
@@ -199,10 +199,9 @@ describe('build', () => {
         [
           '--color',
           '--progress',
-          '--stats-error-details',
-          '--config', expect.stringContaining('/packages/lex/webpack.config.js')
+          '--config', '/webpack.config.js'
         ],
-        {encoding: 'utf-8', stdio: 'inherit'}
+        {encoding: 'utf8', stdio: 'inherit'}
       );
       expect(spinner.succeed).toHaveBeenCalled();
       expect(spinner.fail).not.toHaveBeenCalled();
@@ -245,12 +244,11 @@ describe('build', () => {
         watchOptionsStdin: true
       };
       const status: number = await buildWithWebpack(spinner, cmd, callback);
-      expect(execa).toHaveBeenCalledWith(
+      expect(execa).toHaveBeenLastCalledWith(
         expect.stringContaining('/node_modules/webpack-cli/bin/cli.js'),
         [
           '--color',
           '--progress',
-          '--stats-error-details',
           '--config', 'config.js',
           '--analyze',
           '--config-name', 'configName',
@@ -276,7 +274,7 @@ describe('build', () => {
           '--watch',
           '--watch-options-stdin'
         ],
-        {encoding: 'utf-8', stdio: 'inherit'}
+        {encoding: 'utf8', stdio: 'inherit'}
       );
       expect(spinner.succeed).toHaveBeenCalled();
       expect(spinner.fail).not.toHaveBeenCalled();

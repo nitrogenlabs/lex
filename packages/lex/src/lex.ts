@@ -55,7 +55,7 @@ program.command('build')
   .option('--typescript', 'Transpile as Typescript.', false)
   .option('--variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .option('--watch', 'Watch for changes.', false)
-  .option('--watch-options-stdin <value>', 'Stop watching when stdin stream has ended.', false)
+  .option('--watch-options-stdin', 'Stop watching when stdin stream has ended.', false)
   .action((cmd) => build(cmd, process.exit).then(() => {}));
 
 program.command('clean')

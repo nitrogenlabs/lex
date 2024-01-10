@@ -35,6 +35,7 @@
     "./packages/**/dist/**/*"
   ],
   "include": [
-    "./"
+    "./",
+    "./packages/**/*",
   ]
 }

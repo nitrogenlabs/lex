@@ -2,8 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import base from '../../jest.config.base';
-import pack from './package.json' assert { type: 'json' };
+const base = require('../../jest.config.base');
+const pack = require('./package.json');
 
 module.exports = {
   ...base,

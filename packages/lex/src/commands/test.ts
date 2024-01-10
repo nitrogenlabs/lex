@@ -204,7 +204,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
 
   if(jestSetupFile !== '') {
     const cwd: string = process.cwd();
-    jestOptions.push(`--setupTestFrameworkScriptFile=${pathResolve(cwd, jestSetupFile)}`);
+    jestOptions.push(`--setupFilesAfterEnv=${pathResolve(cwd, jestSetupFile)}`);
   }
 
   // Update snapshots

@@ -222,13 +222,12 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(watchOptionsStdin) {
-    webpackOptions.push('--watch-options-stdin', watchOptionsStdin);
+    webpackOptions.push('--watch-options-stdin');
   }
 
   // Compile using webpack
   try {
-    const nodePath: string = pathResolve(dirName, '../../node_modules');
-    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', nodePath);
+    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', '../..');
     await execa(webpackPath, webpackOptions, {encoding: 'utf8', stdio: 'inherit'});
 
     // Stop spinner

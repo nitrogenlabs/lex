@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import cheerio from 'cheerio';
+import {load} from 'cheerio';
 import evaluate from 'eval';
 import isArray from 'lodash/isArray.js';
 import isEmpty from 'lodash/isEmpty.js';
@@ -170,7 +170,7 @@ export class StaticSitePlugin {
 
   static relativePathsFromHtml(options) {
     const {source: html, path: currentPath} = options;
-    const dom = cheerio.load(html);
+    const dom = load(html);
     const linkHrefs: string[] = dom('a[href]').map((index: number, el) => dom(el).attr('href')).get();
     const iframeSrcs: string[] = dom('iframe[src]').map((index: number, el) => dom(el).attr('src')).get();
 

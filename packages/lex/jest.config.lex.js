@@ -47,6 +47,7 @@ export default {
     nodePath,
     sourceFullPath
   ],
+  // preset: 'ts-jest/presets/js-with-ts-esm',
   resolver: pathResolve(dirName, './resolver.cjs'),
   rootDir,
   setupFiles: [
@@ -62,27 +63,21 @@ export default {
   testRegex,
   testRunner: getNodePath('jest-circus/runner.js'),
   transform: {
-    // '\\.[jt]sx?$': 'babel-jest',
-    // '^.+\\.tsx?$': [
     '\\.[jt]sx?$': [
-      'ts-jest'
-      // {
-      //   loaders: {
-      //     '.js': 'js',
-      //     '.ts': 'ts',
-      //     '.test.ts': 'ts',
-      //     '.spec.ts': 'ts',
-      //     '.tsx': 'tsx',
-      //     '.test.tsx': 'tsx',
-      //     '.spec.tsx': 'tsx'
-      //   },
-      //   presets: [
-      //     'react',
-      //     'react-native',
-      //     'typescript'
-      //   ],
-      //   sourcemap: true
-      // }
+      'ts-jest',
+      {
+        diagnostics: {
+          ignoreCodes: [1343]
+        },
+        astTransformers: {
+          before: [
+            {
+              path: getNodePath('ts-jest-mock-import-meta'),
+              options: {metaObjectReplacement: {url: 'https://www.url.com'}}
+            }
+          ]
+        }
+      }
     ],
     '\\.(gql|graphql)$': 'jest-transform-graphql'
   },
