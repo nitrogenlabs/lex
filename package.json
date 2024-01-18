@@ -2,6 +2,9 @@
   "name": "lex",
   "scripts": {
     "build": "npm run build --workspaces",
+    "publish:major": "npm run publish:major --workspaces",
+    "publish:minor": "npm run publish:minor --workspaces",
+    "publish:patch": "npm run publish:patch --workspaces",
     "test": "npm run test --workspaces"
   },
   "workspaces": [
