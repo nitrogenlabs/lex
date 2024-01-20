@@ -73,8 +73,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--baseUrl', sourceFullPath,
         '--declaration',
         '--inlineSourceMap',
-        '--jsx', 'react-jsx',
-        '--lib', ['ES5', 'ES6', 'ES2015', 'ES7', 'ES2016', 'ES2017', 'ES2018', 'ESNext', 'DOM'],
+        '--lib', ['ESNext', 'DOM'],
         '--module', 'esnext',
         '--moduleResolution', 'node',
         '--noImplicitReturns',
@@ -84,15 +83,15 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--resolveJsonModule',
         '--rootDir', sourceFullPath,
         '--sourceRoot', sourceFullPath,
-        '--target', 'ES5',
+        '--target', 'ES2018',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
 
-    const delcarationPresets = [
+    const declarationPresets = [
       'web'
     ];
 
-    if(delcarationPresets.includes(preset)) {
+    if(declarationPresets.includes(preset)) {
       typescriptOptions.push('--emitDeclarationOnly');
     }
 
@@ -108,10 +107,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     } catch(error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-
-      if(!quiet) {
-        console.error(error);
-      }
 
       // Stop spinner
       spinner.fail('Type checking failed.');
@@ -143,7 +138,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     '--outdir=lib',
     '--platform=node',
     '--sourcemap=inline',
-    '--target=node18'
+    '--target=node20'
   ];
 
   if(useTypescript) {

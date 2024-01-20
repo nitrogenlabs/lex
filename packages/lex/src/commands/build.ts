@@ -226,8 +226,10 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   // Compile using webpack
+  const dirPath: string = pathResolve(dirName, '../..');
+
   try {
-    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', '../..');
+    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
     await execa(webpackPath, webpackOptions, {encoding: 'utf8', stdio: 'inherit'});
 
     // Stop spinner

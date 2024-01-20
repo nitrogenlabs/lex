@@ -24,7 +24,7 @@ import postcssNesting from 'postcss-nesting';
 import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
-import SVGSpritemapPlugin from 'svg-spritemap-webpack-plugin';
+import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
 import {URL} from 'url';
 import {default as webpack} from 'webpack';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
@@ -87,7 +87,7 @@ const globOptions = {
 const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
 
 if(globSync(svgPaths, globOptions).length) {
-  plugins.push(new SVGSpritemapPlugin(svgPaths, {
+  plugins.push(new SVGSpriteMapPlugin(svgPaths, {
     input: {
       allowDuplicates: false
     },
@@ -346,7 +346,7 @@ export default (webpackEnv, webpackOptions) => {
         util: relativeNodePath('util', dirName)
       },
       mainFiles: ['index'],
-      modules: [sourceFullPath, 'node_modules'],
+      modules: [sourceFullPath, 'node_modules', relativeNodePath('', dirName)],
       unsafeCache: {
         node_modules: true
       }
@@ -428,7 +428,7 @@ export default (webpackEnv, webpackOptions) => {
       };
     }
   } else {
-  // Create site ico files
+    // Create site ico files
     const siteLogo = `${sourceFullPath}/images/logo.png`;
 
     if(existsSync(siteLogo)) {

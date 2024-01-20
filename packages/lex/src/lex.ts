@@ -69,7 +69,7 @@ program.command('config <type>')
   .action((type, cmd) => config(type, cmd, process.exit).then(() => {}));
 
 program.command('compile')
-  .option('--config <path>', 'Transpiler configuration file path (ie. .flowconfig or tsconfig.json).')
+  .option('--config <path>', 'Transpiler configuration file path (ie. tsconfig.json).')
   .option('--environment <name>', 'Target environment. "node" or "web". Default: "node".')
   .option('--lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('--outputPath <path>', 'Output path')

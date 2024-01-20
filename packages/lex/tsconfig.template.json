@@ -5,10 +5,8 @@
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,
-    "jsx": "react-jsx",
+    "jsx": "react",
     "lib": [
-      "es6",
-      "es7",
       "ESNext",
       "dom"
     ],
