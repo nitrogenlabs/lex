@@ -106,11 +106,11 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(parserOptions) {
-    eslintOptions.push('--parser-options', parserOptions);
+    eslintOptions.push('--parserOptions', parserOptions);
   }
 
   if(resolvePluginsRelativeTo) {
-    eslintOptions.push('--resolve-plugins-relative-to', resolvePluginsRelativeTo);
+    eslintOptions.push('--resolvePluginsRelativeTo', resolvePluginsRelativeTo);
   }
 
   if(rulesdir) {
@@ -130,23 +130,23 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(fixDryRun) {
-    eslintOptions.push('--fix-dry-run');
+    eslintOptions.push('--fixDryRun');
   }
 
   if(fixType) {
-    eslintOptions.push('--fix-type', fixType);
+    eslintOptions.push('--fixType', fixType);
   }
 
   if(ignorePath) {
-    eslintOptions.push('--ignore-path', ignorePath);
+    eslintOptions.push('--ignorePath', ignorePath);
   }
 
   if(noIgnore) {
-    eslintOptions.push('--no-ignore');
+    eslintOptions.push('--noIgnore');
   }
 
   if(ignorePattern) {
-    eslintOptions.push('--ignore-pattern', ignorePattern);
+    eslintOptions.push('--ignorePattern', ignorePattern);
   }
 
   if(stdin) {
@@ -154,15 +154,15 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(stdinFilename) {
-    eslintOptions.push('--stdin-filename', stdinFilename);
+    eslintOptions.push('--stdinFilename', stdinFilename);
   }
 
   if(maxWarnings) {
-    eslintOptions.push('--max-warnings', maxWarnings);
+    eslintOptions.push('--maxWarnings', maxWarnings);
   }
 
   if(outputFile) {
-    eslintOptions.push('--output-file', outputFile);
+    eslintOptions.push('--outputFile', outputFile);
   }
 
   if(format) {
@@ -174,31 +174,19 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(noColor) {
-    eslintOptions.push('--no-color');
+    eslintOptions.push('--noColor');
   }
 
   if(noInlineConfig) {
-    eslintOptions.push('--no-inline-config', noInlineConfig);
+    eslintOptions.push('--noInlineConfig', noInlineConfig);
   }
 
   if(reportUnusedDisableDirectives) {
-    eslintOptions.push('--report-unused-disable-directives');
-  }
-
-  if(cache) {
-    eslintOptions.push('--cache');
-  }
-
-  if(cacheFile) {
-    eslintOptions.push('--cache-file', cacheFile);
+    eslintOptions.push('--reportUnusedDisableDirectives');
   }
 
   if(cacheLocation) {
-    eslintOptions.push('--cache-location', cacheLocation);
-  }
-
-  if(cacheLocation) {
-    eslintOptions.push('--cache-location', cacheLocation);
+    eslintOptions.push('--cacheLocation', cacheLocation);
   }
 
   if(init) {
@@ -214,7 +202,7 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(printConfig) {
-    eslintOptions.push('--print-config', printConfig);
+    eslintOptions.push('--printConfig', printConfig);
   }
 
   // Test app using jest

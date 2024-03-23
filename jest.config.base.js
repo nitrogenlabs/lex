@@ -3,9 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 const { resolve: pathResolve } = require("path");
-// const { fileURLToPath } = require("url");
 
-const dirName = __dirname; // fileURLToPath(new URL(".", import.meta.url));
+const dirName = __dirname;
 
 module.exports = {
   collectCoverage: true,
@@ -25,23 +24,10 @@ module.exports = {
   moduleDirectories: ["./node_modules"],
   moduleFileExtensions: ["js", "ts", "tsx", "json"],
   modulePaths: ["node_modules"],
+  setupFilesAfterEnv: ["../../jest.setup.js"],
   testEnvironment: "node",
   transform: {
-    "^.+\\.[jt]sx?$": [
-      "ts-jest",
-      // `${__dirname}/node_modules/@nlabs/esbuild-jest/dist/index.js`,
-      // {
-      //   loaders: {
-      //     ".js": "js",
-      //     ".ts": "ts",
-      //     ".test.ts": "ts",
-      //     ".tsx": "tsx",
-      //     ".test.tsx": "tsx",
-      //   },
-      //   presets: ["react", "react-native", "typescript"],
-      //   sourcemap: true,
-      // },
-    ],
+    "^.+\\.[jt]sx?$": ["ts-jest"],
     "\\.(gql|graphql)$": "jest-transform-graphql",
   },
   transformIgnorePatterns: [

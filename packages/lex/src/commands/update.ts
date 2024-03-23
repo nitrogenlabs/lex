@@ -22,8 +22,9 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
 
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
-  const updateApp: string = packageManager === 'npm' ? 'npx' : 'yarn';
-  const updateOptions: string[] = packageManager === 'npm'
+  const isNpm: boolean = packageManager === 'npm';
+  const updateApp: string = isNpm ? 'npx' : 'yarn';
+  const updateOptions: string[] = isNpm
     ? ['npm-check-updates',
       '--concurrency', '10',
       '--packageManager', packageManager,
@@ -44,7 +45,7 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
       stdio: 'inherit'
     });
 
-    if(packageManager === 'npm') {
+    if(isNpm) {
       await execa('npm', ['i', '--force'], {
         encoding: 'utf8',
         stdio: 'inherit'

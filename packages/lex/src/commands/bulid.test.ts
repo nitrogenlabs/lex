@@ -199,7 +199,7 @@ describe('build', () => {
         [
           '--color',
           '--progress',
-          '--config', '/webpack.config.js'
+          '--config', expect.stringContaining('/webpack.config.js')
         ],
         {encoding: 'utf8', stdio: 'inherit'}
       );
@@ -251,28 +251,28 @@ describe('build', () => {
           '--progress',
           '--config', 'config.js',
           '--analyze',
-          '--config-name', 'configName',
-          '--define-process-env-node-env', 'development',
+          '--configName', 'configName',
+          '--defineProcessEnvNodeEnv', 'development',
           '--devtool', 'devtool',
-          '--disable-interpret',
+          '--disableInterpret',
           '--entry', 'entry',
           '--env', 'env',
-          '--fail-on-warnings',
+          '--failOnWarnings',
           '--json', 'json',
           '--mode', 'mode',
           '--merge',
           '--name', 'name',
-          '--no-devtool',
-          '--no-stats',
-          '--no-target',
-          '--no-watch',
-          '--no-watch-options-stdin',
-          '--node-env', 'nodeEnv',
-          '--output-path', 'outputPath',
+          '--noDevtool',
+          '--noStats',
+          '--noTarget',
+          '--noWatch',
+          '--noWatchOptionsStdin',
+          '--nodeEnv', 'nodeEnv',
+          '--outputPath', 'outputPath',
           '--stats', 'stats',
           '--target', 'target',
           '--watch',
-          '--watch-options-stdin'
+          '--watchOptionsStdin'
         ],
         {encoding: 'utf8', stdio: 'inherit'}
       );

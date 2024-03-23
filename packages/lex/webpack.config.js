@@ -333,7 +333,7 @@ export default (webpackEnv, webpackOptions) => {
     recordsPath: relativeFilePath('webpack.records.json', process.cwd()),
     resolve: {
       alias,
-      extensions: ['*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
+      extensions: ['.*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
       fallback: {
         assert: relativeNodePath('assert', dirName),
         crypto: relativeNodePath('crypto-browserify', dirName),

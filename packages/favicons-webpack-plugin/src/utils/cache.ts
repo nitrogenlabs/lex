@@ -74,9 +74,7 @@ export const loadIconsFromDiskCache = (
 
   const {_compiler: loaderCompiler} = loader;
   const resolvedCacheFile: string = pathResolve(loaderCompiler.parentCompilation.compiler.outputPath, cacheFile);
-  console.log('resolvedCacheFile', resolvedCacheFile);
   const exists: boolean = existsSync(resolvedCacheFile);
-  console.log('exists', exists);
 
   if(!exists) {
     return callback(null);
@@ -91,11 +89,9 @@ export const loadIconsFromDiskCache = (
     //   return callback(null);
     // }
 
-    console.log('callback::true');
     // return callback(null, cache.result);
     return callback(true);
   } catch(readError) {
-    console.log('callback::readError');
     return callback(readError);
   }
 };

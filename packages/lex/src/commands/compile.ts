@@ -35,7 +35,15 @@ export const hasFileType = (startPath: string, ext: string[]): boolean => {
 };
 
 export const compile = async (cmd: any, callback: any = () => ({})): Promise<number> => {
-  const {cliName = 'Lex', config, quiet, remove, watch} = cmd;
+  const {
+    cliName = 'Lex',
+    config,
+    outputPath,
+    quiet,
+    remove,
+    sourcePath,
+    watch
+  } = cmd;
 
   // Spinner
   const spinner = createSpinner(quiet);
@@ -48,6 +56,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   // Compile type
   const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
+  const outputDir: string = outputPath || outputFullPath;
+  const sourceDir: string = sourcePath || sourceFullPath;
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
 
@@ -56,7 +66,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   // Clean output directory before we start adding in new files
   if(remove) {
-    await removeFiles(outputFullPath);
+    await removeFiles(outputDir);
   }
 
   // Add tsconfig file if none exists
@@ -70,7 +80,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       ['-p', config] :
       [
         '--allowSyntheticDefaultImports',
-        '--baseUrl', sourceFullPath,
+        '--baseUrl', sourceDir,
         '--declaration',
         '--inlineSourceMap',
         '--lib', ['ESNext', 'DOM'],
@@ -78,22 +88,22 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--moduleResolution', 'node',
         '--noImplicitReturns',
         '--noImplicitThis',
-        '--outDir', outputFullPath,
+        '--outDir', outputDir,
         '--removeComments',
         '--resolveJsonModule',
-        '--rootDir', sourceFullPath,
-        '--sourceRoot', sourceFullPath,
+        // '--rootDir', sourceDir,
+        '--sourceRoot', sourceDir,
         '--target', 'ES2018',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
 
-    const declarationPresets = [
-      'web'
-    ];
+    // const declarationPresets = [
+    //   'web'
+    // ];
 
-    if(declarationPresets.includes(preset)) {
-      typescriptOptions.push('--emitDeclarationOnly');
-    }
+    // if(declarationPresets.includes(preset)) {
+    //   typescriptOptions.push('--emitDeclarationOnly');
+    // }
 
     // Start type checking spinner
     spinner.start('Static type checking with Typescript...');
@@ -119,13 +129,13 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   // Source files
   const globOptions = {
-    cwd: sourceFullPath,
+    cwd: sourceDir,
     dot: false,
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync(`${sourceFullPath}/**/**/!(*.spec|*.test).ts*`, globOptions);
-  const jsFiles: string[] = globSync(`${sourceFullPath}/**/**/!(*.spec|*.test).js`, globOptions);
+  const tsFiles: string[] = globSync(`${process.cwd()}/${sourceDir}/**/!(*.spec|*.test).ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${process.cwd()}/${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   // ESBuild options
@@ -134,16 +144,11 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     ...sourceFiles,
     '--color=true',
     '--format=cjs',
-    '--loader:.js=js',
-    '--outdir=lib',
+    `--outdir=${outputDir}`,
     '--platform=node',
     '--sourcemap=inline',
     '--target=node20'
   ];
-
-  if(useTypescript) {
-    esbuildOptions.push('--loader:.ts=ts', '--loader:.tsx=tsx');
-  }
 
   if(watch) {
     esbuildOptions.push('--watch');
@@ -155,11 +160,11 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(cssFiles.length) {
     const postcssPath: string = relativeNodePath('postcss-cli/index.js', dirPath);
     const postcssOptions: string[] = [
-      `${sourceFullPath}/**/**.css`,
+      `${sourceDir}/**/**.css`,
       '--base',
-      sourceFullPath,
+      sourceDir,
       '--dir',
-      outputFullPath,
+      outputDir,
       '--config',
       pathResolve(dirName, '../../.postcssrc.js')
     ];

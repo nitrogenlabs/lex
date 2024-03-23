@@ -138,11 +138,11 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(configName) {
-    webpackOptions.push('--config-name', configName);
+    webpackOptions.push('--configName', configName);
   }
 
   if(defineProcessEnvNodeEnv) {
-    webpackOptions.push('--define-process-env-node-env', defineProcessEnvNodeEnv);
+    webpackOptions.push('--defineProcessEnvNodeEnv', defineProcessEnvNodeEnv);
   }
 
   if(devtool) {
@@ -150,7 +150,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(disableInterpret) {
-    webpackOptions.push('--disable-interpret');
+    webpackOptions.push('--disableInterpret');
   }
 
   if(entry) {
@@ -162,7 +162,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(failOnWarnings) {
-    webpackOptions.push('--fail-on-warnings');
+    webpackOptions.push('--failOnWarnings');
   }
 
   if(json) {
@@ -182,31 +182,31 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(noDevtool) {
-    webpackOptions.push('--no-devtool');
+    webpackOptions.push('--noDevtool');
   }
 
   if(noStats) {
-    webpackOptions.push('--no-stats');
+    webpackOptions.push('--noStats');
   }
 
   if(noTarget) {
-    webpackOptions.push('--no-target');
+    webpackOptions.push('--noTarget');
   }
 
   if(noWatch) {
-    webpackOptions.push('--no-watch');
+    webpackOptions.push('--noWatch');
   }
 
   if(noWatchOptionsStdin) {
-    webpackOptions.push('--no-watch-options-stdin');
+    webpackOptions.push('--noWatchOptionsStdin');
   }
 
   if(nodeEnv) {
-    webpackOptions.push('--node-env', nodeEnv);
+    webpackOptions.push('--nodeEnv', nodeEnv);
   }
 
   if(outputPath) {
-    webpackOptions.push('--output-path', outputPath);
+    webpackOptions.push('--outputPath', outputPath);
   }
 
   if(stats) {
@@ -222,7 +222,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   if(watchOptionsStdin) {
-    webpackOptions.push('--watch-options-stdin');
+    webpackOptions.push('--watchOptionsStdin');
   }
 
   // Compile using webpack
