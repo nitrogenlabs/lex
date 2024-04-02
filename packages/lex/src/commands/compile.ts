@@ -57,7 +57,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   // Compile type
   const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
   const outputDir: string = outputPath || outputFullPath;
-  const sourceDir: string = sourcePath || sourceFullPath;
+  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath;
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
 
@@ -134,8 +134,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync(`${process.cwd()}/${sourceDir}/**/!(*.spec|*.test).ts*`, globOptions);
-  const jsFiles: string[] = globSync(`${process.cwd()}/${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
+  const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   // ESBuild options
