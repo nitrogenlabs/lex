@@ -5,6 +5,8 @@
 import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {build as esBuild} from 'esbuild';
 import {execa} from 'execa';
+import {readFileSync} from 'fs';
+import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
@@ -32,13 +34,16 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     outputPath,
     quiet,
     sourcePath,
-    watch = false
+    watch
   } = commandOptions;
   const {
+    outputFullPath,
+    sourceFullPath,
     targetEnvironment,
     useGraphQl,
     useTypescript
   } = LexConfig.config;
+  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath;
   const loader: any = {
     '.js': 'js'
   };
@@ -54,19 +59,54 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     plugins.push(graphqlLoaderPlugin());
   }
 
+  // Source files
+  const globOptions = {
+    cwd: sourceDir,
+    dot: false,
+    nodir: true,
+    nosort: true
+  };
+  const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
+  const sourceFiles: string[] = [...tsFiles, ...jsFiles];
+
+  // NPM Packages
+  const packageJsonData = readFileSync(pathResolve(process.cwd(), './package.json'));
+  const packageJson = JSON.parse(packageJsonData.toString());
+  const external = [
+    ...Object.keys(packageJson.dependencies || {}),
+    ...Object.keys(packageJson.peerDependencies || {})
+  ];
+
+  // ESBuild options
+  const dirName = new URL('.', import.meta.url).pathname;
+  const dirPath: string = pathResolve(dirName, '../..');
+  const outputDir: string = outputPath || outputFullPath;
+  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
+  const esbuildOptions: string[] = [
+    ...sourceFiles,
+    '--bundle',
+    '--color=true',
+    '--format=cjs',
+    `--outdir=${outputDir}`,
+    '--platform=node',
+    '--sourcemap=inline',
+    `--target=${targetEnvironment === 'node' ? 'node20' : 'es2018'}`
+  ];
+
+  if(external.length) {
+    esbuildOptions.push(`--external:${external.join(',')}`);
+  }
+
+  if(plugins.length) {
+    esbuildOptions.push(`--plugins=${plugins.join(',')}`);
+  }
+  if(watch) {
+    esbuildOptions.push('--watch');
+  }
+
   try {
-    await esBuild({
-      bundle: true,
-      color: true,
-      entryPoints: [sourcePath],
-      loader,
-      outdir: outputPath,
-      platform: 'node',
-      plugins,
-      sourcemap: 'inline',
-      target: targetEnvironment === 'node' ? 'node18' : 'es2016',
-      watch: watch as never
-    });
+    await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
 
     spinner.succeed('Build completed successfully!');
   } catch(error) {

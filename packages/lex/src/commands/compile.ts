@@ -55,7 +55,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   await LexConfig.parseConfig(cmd);
 
   // Compile type
-  const {outputFullPath, preset, sourceFullPath, useTypescript} = LexConfig.config;
+  const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
   const outputDir: string = outputPath || outputFullPath;
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath;
   const dirName = new URL('.', import.meta.url).pathname;
@@ -82,7 +82,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--allowSyntheticDefaultImports',
         '--baseUrl', sourceDir,
         '--declaration',
-        '--inlineSourceMap',
+        '--emitDeclarationOnly',
         '--lib', ['ESNext', 'DOM'],
         '--module', 'esnext',
         '--moduleResolution', 'node',
@@ -91,19 +91,9 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--outDir', outputDir,
         '--removeComments',
         '--resolveJsonModule',
-        // '--rootDir', sourceDir,
-        '--sourceRoot', sourceDir,
-        '--target', 'ES2018',
+        '--target', 'ESNext',
         '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
       ];
-
-    // const declarationPresets = [
-    //   'web'
-    // ];
-
-    // if(declarationPresets.includes(preset)) {
-    //   typescriptOptions.push('--emitDeclarationOnly');
-    // }
 
     // Start type checking spinner
     spinner.start('Static type checking with Typescript...');
