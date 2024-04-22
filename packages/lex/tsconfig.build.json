@@ -6,10 +6,11 @@
     "lib": [
       "es2020"
     ],
-    "module": "esnext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "skipLibCheck": true,
-    "target": "es2020"
+    "target": "ESNext"
   },
   "include": [
     "./src"

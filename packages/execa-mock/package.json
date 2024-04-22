@@ -27,7 +27,7 @@
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "NODE_ENV=production && rm -rf dist && npm run compile",
@@ -54,11 +54,11 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.29",
-    "eslint": "^8.57.0",
+    "@types/node": "^20.12.7",
+    "eslint": "^9.1.0",
     "eslint-config-styleguidejs": "^3.2.1",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.5"
   },
   "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8"
 }

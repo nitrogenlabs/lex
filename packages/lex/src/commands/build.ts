@@ -3,7 +3,6 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
-import {build as esBuild} from 'esbuild';
 import {execa} from 'execa';
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
@@ -18,6 +17,7 @@ import {log} from '../utils/log.js';
 export interface BuildOptions {
   readonly bundler?: 'webpack' | 'esbuild';
   readonly cliName?: string;
+  readonly format?: string;
   readonly outputPath?: string;
   readonly quiet?: boolean;
   readonly remove?: boolean;
@@ -31,6 +31,7 @@ export type BuildCallback = (status: number) => void;
 export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
+    format = 'cjs',
     outputPath,
     quiet,
     sourcePath,
@@ -87,9 +88,10 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     ...sourceFiles,
     '--bundle',
     '--color=true',
-    '--format=cjs',
+    `--format=${format}`,
     `--outdir=${outputDir}`,
     '--platform=node',
+    '--format=cjs',
     '--sourcemap=inline',
     `--target=${targetEnvironment === 'node' ? 'node20' : 'es2018'}`
   ];
