@@ -6,8 +6,7 @@
     "lib": [
       "es2020"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
     "outDir": "./dist",
     "skipLibCheck": true,
     "target": "ESNext"

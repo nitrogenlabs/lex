@@ -4,8 +4,11 @@
  */
 import {execa} from 'execa';
 
+import {resolve as pathResolve} from 'path';
+
 import {LexConfig} from '../LexConfig.js';
 import {createSpinner} from '../utils/app.js';
+import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
 export const update = async (cmd: any, callback: any = process.exit): Promise<number> => {
@@ -24,8 +27,11 @@ export const update = async (cmd: any, callback: any = process.exit): Promise<nu
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const isNpm: boolean = packageManager === 'npm';
   const updateApp: string = isNpm ? 'npx' : 'yarn';
+  const dirName = new URL('.', import.meta.url).pathname;
+  const dirPath: string = pathResolve(dirName, '../..');
+  const npmCheckUpdatesPath: string = relativeNodePath('npm-check-updates', dirPath);
   const updateOptions: string[] = isNpm
-    ? ['npm-check-updates',
+    ? [npmCheckUpdatesPath,
       '--concurrency', '10',
       '--packageManager', packageManager,
       '--pre', '0',
