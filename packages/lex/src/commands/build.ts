@@ -3,10 +3,15 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import graphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
+
 import {execa} from 'execa';
+
 import {readFileSync} from 'fs';
+
 import {sync as globSync} from 'glob';
+
 import {resolve as pathResolve} from 'path';
+
 import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
@@ -57,7 +62,7 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
   const plugins = [];
 
   if(useGraphQl) {
-    plugins.push(graphqlLoaderPlugin());
+    plugins.push((graphqlLoaderPlugin as any)());
   }
 
   // Source files
