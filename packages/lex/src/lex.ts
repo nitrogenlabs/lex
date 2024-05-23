@@ -22,7 +22,6 @@ import {update} from './commands/update.js';
 import {upgrade} from './commands/upgrade.js';
 import {versions} from './commands/versions.js';
 
-// Commands
 program.command('build')
   .option('--analyze', 'It invokes webpack-bundle-analyzer plugin to get bundle information.', false)
   .addOption(new Option('--bundler <name>', 'Bundler to use ("webpack" or "esbuild"). Default: "webpack".').choices(['webpack', 'esbuild']).default('webpack'))
@@ -204,7 +203,7 @@ program.command('test')
   .option('--verbose', 'Display individual test results with the test suite hierarchy.')
   .option('--watch <path>', 'Watch files for changes and rerun tests related to changed files.')
   .option('--watchAll', 'Watch files for changes and rerun all tests when something changes.')
-  .action((cmd) => test(cmd, process.exit).then(() => {}));
+  .action((options, cmd) => test(options, cmd.args, process.exit).then(() => {}));
 
 program.command('update')
   .option('--interactive', 'Choose which packages to update.')
@@ -222,7 +221,6 @@ program.command('versions')
   .option('--json', 'Print the version as a JSON object.')
   .action((cmd) => versions(cmd, process.exit).then(() => {}));
 
-// Initialize
 program
   .version(packageJson.version)
   .parse(process.argv);

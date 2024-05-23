@@ -1,5 +1,7 @@
 import {execa} from 'execa';
+
 import {resolve as pathResolve} from 'path';
+
 import {URL} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
@@ -7,7 +9,7 @@ import {createSpinner} from '../utils/app.js';
 import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
-export const test = async (cmd: any, callback: any = process.exit): Promise<number> => {
+export const test = async (options: any, args: string[], callback: any = process.exit): Promise<number> => {
   const {
     bail,
     changedFilesWithAncestor,
@@ -47,7 +49,7 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
     verbose,
     watch,
     watchAll
-  } = cmd;
+  } = options;
 
   log(`${cliName} testing...`, 'info', quiet);
 
@@ -55,9 +57,9 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  await LexConfig.parseConfig(cmd);
+  await LexConfig.parseConfig(options);
 
-  const {useTypescript} = LexConfig.config;
+  const {jest, useTypescript} = LexConfig.config;
 
   if(useTypescript) {
     // Make sure tsconfig.json exists
@@ -216,7 +218,10 @@ export const test = async (cmd: any, callback: any = process.exit): Promise<numb
     jestOptions.push('--watch', watch);
   }
 
-  // Test app using jest
+  if(args) {
+    jestOptions.push(...args);
+  }
+
   try {
     await execa(jestPath, jestOptions, {
       encoding: 'utf8',
