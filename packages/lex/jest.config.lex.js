@@ -1,5 +1,5 @@
+import { createDefaultPreset } from "ts-jest";
 import { resolve as pathResolve } from "path";
-
 import { URL } from "url";
 
 import { getNodePath } from "./dist/utils/file.js";
@@ -9,7 +9,6 @@ const { jest, sourceFullPath, targetEnvironment, useTypescript } = JSON.parse(
   process.env.LEX_CONFIG || "{}"
 );
 
-// Polyfill path
 const dirName = new URL(".", import.meta.url).pathname;
 const nodePath = pathResolve(dirName, "./node_modules");
 
@@ -50,7 +49,6 @@ export default {
     "\\.(css|jpg|png|svg|txt)$": pathResolve(dirName, "./emptyModule"),
   },
   modulePaths: [rootDir, `${rootDir}/node_modules`, nodePath, sourceFullPath],
-  // preset: 'ts-jest/presets/js-with-ts-esm',
   resolver: pathResolve(dirName, "./resolver.cjs"),
   rootDir,
   setupFiles: [
@@ -63,24 +61,7 @@ export default {
   testRegex,
   testRunner: getNodePath("jest-circus/runner.js"),
   transform: {
-    "\\.[jt]sx?$": [
-      "ts-jest",
-      {
-        diagnostics: {
-          ignoreCodes: [1343],
-        },
-        astTransformers: {
-          before: [
-            {
-              path: getNodePath("ts-jest-mock-import-meta"),
-              options: {
-                metaObjectReplacement: { url: "https://www.url.com" },
-              },
-            },
-          ],
-        },
-      },
-    ],
+    ...createDefaultPreset().transform,
     "\\.(gql|graphql)$": "jest-transform-graphql",
   },
   transformIgnorePatterns,

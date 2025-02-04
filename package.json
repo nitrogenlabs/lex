@@ -15,7 +15,6 @@
     "packages/static-site-webpack-plugin"
   ],
   "devDependencies": {
-    "npm-check-updates": "^16.14.12",
-    "ts-jest-mock-import-meta": "^1.1.0"
+    "npm-check-updates": "^16.14.12"
   }
 }
