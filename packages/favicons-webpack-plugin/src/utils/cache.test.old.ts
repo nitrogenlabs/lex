@@ -4,9 +4,9 @@
  */
 import fs from 'fs';
 
+import packageJson from '../../package.json';
 import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main';
 import {emitCacheInformationFile, generateHashForOptions, isCacheValid, loadIconsFromDiskCache} from './cache';
-import packageJson from '../../package.json' assert {type: 'json'};
 
 describe('utils::cache', () => {
   const options: FaviconsPluginOptions = {logo: ''};
@@ -107,4 +107,3 @@ describe('utils::cache', () => {
     });
   });
 });
-

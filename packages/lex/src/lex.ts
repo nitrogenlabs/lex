@@ -4,8 +4,9 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {Option, program} from 'commander';
+import {readFileSync} from 'fs';
+import {fileURLToPath} from 'url';
 
-import packageJson from '../package.json' assert {type: 'json'};
 import {build} from './commands/build.js';
 import {clean} from './commands/clean.js';
 import {compile} from './commands/compile.js';
@@ -21,6 +22,9 @@ import {test} from './commands/test.js';
 import {update} from './commands/update.js';
 import {upgrade} from './commands/upgrade.js';
 import {versions} from './commands/versions.js';
+
+const packagePath = fileURLToPath(new URL('../package.json', import.meta.url));
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 program.command('build')
   .option('--analyze', 'It invokes webpack-bundle-analyzer plugin to get bundle information.', false)

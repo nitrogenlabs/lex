@@ -3,11 +3,14 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import crypto, {Hash} from 'crypto';
-import {existsSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 
-import packageJson from '../../package.json' assert {type: 'json'};
 import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main';
+
+const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 /**
  * Generates a md5 hash for the given options

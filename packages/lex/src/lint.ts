@@ -4,9 +4,13 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {program} from 'commander';
+import {readFileSync} from 'fs';
+import {fileURLToPath} from 'url';
 
-import packageJson from '../package.json' assert {type: 'json'};
 import {lint} from './commands/lint.js';
+
+const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 program
   .option('--cache', 'Only check changed files. Default: false.', false)

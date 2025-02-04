@@ -2,9 +2,13 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-// @ts-ignore
-import packageJson from '../../package.json' assert {type:'json'};
+import {readFileSync} from 'fs';
+import {fileURLToPath} from 'url';
+
 import {log} from '../utils/log.js';
+
+const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '');
 
