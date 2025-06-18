@@ -11,7 +11,19 @@ import {createSpinner, removeFiles} from '../utils/app.js';
 import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
-export const dev = async (cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface DevOptions {
+  readonly bundleAnalyzer?: boolean;
+  readonly cliName?: string;
+  readonly config?: string;
+  readonly open?: boolean;
+  readonly quiet?: boolean;
+  readonly remove?: boolean;
+  readonly variables?: string;
+}
+
+export type DevCallback = (status: number) => void;
+
+export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
   const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
 
   // Spinner
@@ -73,8 +85,9 @@ export const dev = async (cmd: any, callback: any = () => ({})): Promise<number>
   }
 
   try {
-    const dirPath: string = pathResolve(dirName, '../..');
-    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
+    const dirPath = pathResolve(dirName, '../..');
+    const webpackPath = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
+    // @ts-ignore
     await execa(webpackPath, webpackOptions, {
       encoding: 'utf8',
       env: {

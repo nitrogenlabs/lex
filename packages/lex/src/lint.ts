@@ -20,7 +20,6 @@ program
   .option('--debug', 'Output debugging information.', false)
   .option('--env-info', 'Output execution environment information. Default: false.', false)
   .option('--env <name>', 'Specify environments.')
-  .option('--ext <type>', 'Specify JavaScript file extensions. Default: .js.')
   .option('--fix', 'Automatically fix problems.', false)
   .option('--fix-dry-run', 'Automatically fix problems without saving the changes to the file system.', false)
   .option('--fix-type <type>', 'Specify the types of fixes to apply (problem, suggestion, layout).')

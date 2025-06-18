@@ -10,7 +10,15 @@ import {LexConfig} from '../LexConfig.js';
 import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const config = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface ConfigOptions {
+  readonly cliName?: string;
+  readonly json?: string;
+  readonly quiet?: boolean;
+}
+
+export type ConfigCallback = (status: number) => void;
+
+export const config = async (type: string, cmd: ConfigOptions, callback: ConfigCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
   const validTypes: string[] = ['app', 'jest', 'webpack'];
 
@@ -33,10 +41,10 @@ export const config = async (type: string, cmd: any, callback: any = () => ({}))
       configOptions = LexConfig.config;
       break;
     case 'jest':
-      configOptions = import('../../jest.config.lex');
+      configOptions = import('../../jest.config.lex.js');
       break;
     case 'webpack':
-      configOptions = import('../../webpack.config');
+      configOptions = import('../../webpack.config.js');
       break;
   }
 

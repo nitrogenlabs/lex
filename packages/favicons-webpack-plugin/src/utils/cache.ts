@@ -7,10 +7,28 @@ import {existsSync, readFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
 import {fileURLToPath} from 'url';
 
-import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main';
+import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main.js';
 
 const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+
+interface WebpackLoader {
+  emitFile: (file: string, content: string) => void;
+  _compiler: {
+    parentCompilation: {
+      compiler: {
+        outputPath: string;
+      };
+    };
+  };
+}
+
+interface IconResult {
+  files: string[];
+  html: string[];
+  outputFilePrefix: string;
+  images?: unknown[];
+}
 
 /**
  * Generates a md5 hash for the given options
@@ -25,11 +43,11 @@ export const generateHashForOptions = (options: FaviconsPluginOptions): string =
  * Stores the given iconResult together with the control hashes as JSON file
  */
 export const emitCacheInformationFile = (
-  loader,
+  loader: WebpackLoader,
   options: FaviconsPluginOptions,
   cacheFile: string,
   fileHash: string,
-  iconResult: any
+  iconResult: IconResult
 ) => {
   if(!options.persistentCache) {
     return;
@@ -64,11 +82,11 @@ export const isCacheValid = (
  * Try to load the file from the disc cache
  */
 export const loadIconsFromDiskCache = (
-  loader,
+  loader: WebpackLoader,
   options: FaviconsPluginOptions,
   cacheFile: string,
   fileHash: string,
-  callback
+  callback: (error: Error | null, result?: IconResult) => void
 ): void => {
   // Stop if cache is disabled
   if(!options.persistentCache) {
@@ -93,8 +111,8 @@ export const loadIconsFromDiskCache = (
     // }
 
     // return callback(null, cache.result);
-    return callback(true);
+    return callback(null, undefined);
   } catch(readError) {
-    return callback(readError);
+    return callback(readError as Error);
   }
 };

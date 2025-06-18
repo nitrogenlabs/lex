@@ -6,7 +6,15 @@ import {LexConfig} from '../LexConfig.js';
 import {createSpinner, removeFiles, removeModules} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const clean = async (cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface CleanOptions {
+  readonly cliName?: string;
+  readonly quiet?: boolean;
+  readonly snapshots?: boolean;
+}
+
+export type CleanCallback = (status: number) => void;
+
+export const clean = async (cmd: CleanOptions, callback: CleanCallback = (status: number) => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;
 
   // Spinner

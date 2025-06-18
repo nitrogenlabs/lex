@@ -9,7 +9,20 @@ import {LexConfig} from '../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const publish = async (cmd, callback: any = process.exit): Promise<number> => {
+export interface PublishOptions {
+  readonly bump?: string;
+  readonly cliName?: string;
+  readonly newVersion?: string;
+  readonly otp?: string;
+  readonly packageManager?: string;
+  readonly private?: boolean;
+  readonly quiet?: boolean;
+  readonly tag?: string;
+}
+
+export type PublishCallback = typeof process.exit;
+
+export const publish = async (cmd: PublishOptions, callback: PublishCallback = process.exit): Promise<number> => {
   const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
   log(`${cliName} publishing npm module...`, 'info', quiet);
 
@@ -60,7 +73,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
     nextVersion = newVersion;
   } else if(bump) {
     // Determine next version
-    const formatBump: ReleaseType = bump.toString()
+    const formatBump = bump.toString()
       .trim()
       .toLowerCase();
 
@@ -78,7 +91,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
       }
 
       if(validReleases.includes(formatBump)) {
-        nextVersion = semver.inc(packageVersion, formatBump);
+        nextVersion = semver.inc(packageVersion, formatBump as ReleaseType);
       } else if(validPreReleases.includes(formatBump)) {
         nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
       } else {
@@ -100,7 +113,7 @@ export const publish = async (cmd, callback: any = process.exit): Promise<number
       // Save updated version
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
     } catch(error) {
-      log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, quiet);
+      log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, 'error', quiet);
       callback(1);
       return 1;
     }

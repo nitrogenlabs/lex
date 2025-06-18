@@ -4,7 +4,7 @@
  */
 import evaluate from 'eval';
 import {relative as pathRelative, resolve as pathResolve} from 'path';
-import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
+import {Compilation, Compiler,EntryPlugin} from 'webpack';
 
 /**
  * Returns the child compiler name e.g. 'html-webpack-plugin for "index.html"'
@@ -29,7 +29,8 @@ export const compileTemplate = (options, context, compilation) => {
   const childCompiler = compilation.createChildCompiler(compilerName, outputOptions);
   childCompiler.context = context;
   const queryOptions: string = JSON.stringify({appName, background, icons, outputFilePrefix, persistentCache});
-  new SingleEntryPlugin(context, `!!${require.resolve('./favicons')}?${queryOptions}!${logo}`).apply(childCompiler);
+  const entry = `!!${require.resolve('./favicons')}?${queryOptions}!${logo}`;
+  new EntryPlugin(context, entry).apply(childCompiler);
 
   // Fix for "Uncaught TypeError: __webpack_require__(...) is not a function"
   // Hot module replacement requires that every child compiler has its own

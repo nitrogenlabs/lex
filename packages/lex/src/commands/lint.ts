@@ -11,7 +11,47 @@ import {createSpinner} from '../utils/app.js';
 import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
-export const lint = async (cmd: any, callback: any = process.exit): Promise<number> => {
+export interface LintOptions {
+  readonly cache?: boolean;
+  readonly cacheFile?: string;
+  readonly cacheLocation?: string;
+  readonly cliName?: string;
+  readonly color?: boolean;
+  readonly config?: string;
+  readonly debug?: boolean;
+  readonly env?: string;
+  readonly envInfo?: boolean;
+  readonly ext?: string;
+  readonly fix?: boolean;
+  readonly fixDryRun?: boolean;
+  readonly fixType?: string;
+  readonly format?: string;
+  readonly global?: string;
+  readonly ignorePath?: string;
+  readonly ignorePattern?: string;
+  readonly init?: boolean;
+  readonly maxWarnings?: string;
+  readonly noColor?: boolean;
+  readonly noEslintrc?: boolean;
+  readonly noIgnore?: boolean;
+  readonly noInlineConfig?: boolean;
+  readonly outputFile?: string;
+  readonly parser?: string;
+  readonly parserOptions?: string;
+  readonly plugin?: string;
+  readonly printConfig?: string;
+  readonly quiet?: boolean;
+  readonly reportUnusedDisableDirectives?: boolean;
+  readonly resolvePluginsRelativeTo?: string;
+  readonly rule?: string;
+  readonly rulesdir?: string;
+  readonly stdin?: boolean;
+  readonly stdinFilename?: string;
+}
+
+export type LintCallback = typeof process.exit;
+
+export const lint = async (cmd: LintOptions, callback: LintCallback = process.exit): Promise<number> => {
   const {
     cache,
     cacheFile,
@@ -91,10 +131,6 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
 
   if(env) {
     eslintOptions.push('--env', env);
-  }
-
-  if(extensions) {
-    eslintOptions.push('--ext', extensions);
   }
 
   if(global) {
@@ -178,7 +214,7 @@ export const lint = async (cmd: any, callback: any = process.exit): Promise<numb
   }
 
   if(noInlineConfig) {
-    eslintOptions.push('--noInlineConfig', noInlineConfig);
+    eslintOptions.push('--noInlineConfig', noInlineConfig ? 'true' : 'false');
   }
 
   if(reportUnusedDisableDirectives) {

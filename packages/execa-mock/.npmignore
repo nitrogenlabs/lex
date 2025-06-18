@@ -2,7 +2,7 @@ coverage
 node_modules
 src
 tests
-.eslintec
+.eslintrc.json
 .travis.yml
 lex.config.js
 tsconfig.json

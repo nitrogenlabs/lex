@@ -3,7 +3,6 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-
 import {resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../LexConfig.js';
@@ -11,7 +10,17 @@ import {createSpinner} from '../utils/app.js';
 import {relativeNodePath} from '../utils/file.js';
 import {log} from '../utils/log.js';
 
-export const update = async (cmd: any, callback: any = process.exit): Promise<number> => {
+export interface UpdateOptions {
+  readonly cliName?: string;
+  readonly interactive?: boolean;
+  readonly packageManager?: string;
+  readonly quiet?: boolean;
+  readonly registry?: string;
+}
+
+export type UpdateCallback = typeof process.exit;
+
+export const update = async (cmd: UpdateOptions, callback: UpdateCallback = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet, registry} = cmd;
 
   // Display status

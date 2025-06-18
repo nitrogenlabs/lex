@@ -6,7 +6,14 @@ import {LexConfig} from '../LexConfig.js';
 import {checkLinkedModules} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const linked = async (cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface LinkOptions {
+  readonly cliName?: string;
+  readonly quiet?: boolean;
+}
+
+export type LinkCallback = (status: number) => void;
+
+export const linked = async (cmd: LinkOptions, callback: LinkCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display status

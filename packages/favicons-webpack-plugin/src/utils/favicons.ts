@@ -5,10 +5,38 @@
 import {favicons} from 'favicons';
 import loaderUtils from 'loader-utils';
 
-import {emitCacheInformationFile, loadIconsFromDiskCache} from './cache';
+import {emitCacheInformationFile, loadIconsFromDiskCache} from './cache.js';
 
-const getPublicPath = (compilation): string => {
-  let publicPath: string = compilation.outputOptions.publicPath || '';
+import type {FaviconsPluginOptions} from '../types/main.ts';
+import type {FaviconOptions} from 'favicons';
+import type {LoaderContext as WebpackLoaderContext, Compilation, Compiler} from 'webpack';
+
+interface LoaderContext extends WebpackLoaderContext<Buffer> {
+  _compilation: Compilation;
+  _compiler: Compiler;
+  rootContext: string;
+}
+
+interface LoaderQuery {
+  appName?: string;
+  background?: string;
+  context?: string;
+  icons?: FaviconOptions['icons'];
+  outputFilePrefix?: string;
+  regExp?: RegExp;
+}
+
+interface GenerateIconsCallback {
+  (error: Error | null, result?: {
+    files: string[];
+    html: string[];
+    outputFilePrefix: string;
+    images?: unknown[];  // Make images optional since we don't use it in the cache
+  }): void;
+}
+
+const getPublicPath = (compilation: Compilation): string => {
+  let publicPath: string = (compilation.outputOptions.publicPath as string) || '';
 
   if(publicPath.length && publicPath.substr(-1) !== '/') {
     publicPath += '/';
@@ -17,7 +45,13 @@ const getPublicPath = (compilation): string => {
   return publicPath;
 };
 
-const generateIcons = (loader, imageFileStream, pathPrefix, query, callback) => {
+const generateIcons = (
+  loader: LoaderContext,
+  imageFileStream: Buffer,
+  pathPrefix: string,
+  query: LoaderQuery,
+  callback: GenerateIconsCallback
+) => {
   const {_compilation: loaderCompilation} = loader;
   const publicPath: string = getPublicPath(loaderCompilation);
   const {appName, background, icons} = query;
@@ -50,7 +84,7 @@ const generateIcons = (loader, imageFileStream, pathPrefix, query, callback) => 
     .catch((faviconError) => callback(faviconError));
 };
 
-module.exports = (loaderContext: any, content) => {
+module.exports = (loaderContext, content: Buffer) => {
   loaderContext?.cacheable();
 
   if(!loaderContext.emitFile) {
@@ -62,13 +96,13 @@ module.exports = (loaderContext: any, content) => {
   }
 
   const callback = loaderContext.async();
-  const query: any = loaderUtils.parseQuery(loaderContext.query);
+  const query = loaderUtils.parseQuery(loaderContext.query as string) as LoaderQuery;
   const {context = loaderContext.rootContext, outputFilePrefix, regExp} = query;
   const pathPrefix = loaderUtils.interpolateName(loaderContext, outputFilePrefix, {content, context, regExp});
   const fileHash = loaderUtils.interpolateName(loaderContext, '[hash]', {content, context, regExp});
   const cacheFile = `${pathPrefix}.cache`;
 
-  loadIconsFromDiskCache(loaderContext, query, cacheFile, fileHash, (loadError: Error, cachedResult) => {
+  loadIconsFromDiskCache(loaderContext, query as FaviconsPluginOptions, cacheFile, fileHash, (loadError: Error, cachedResult) => {
     if(loadError) {
       callback(loadError);
     } else if(cachedResult) {
@@ -81,7 +115,7 @@ module.exports = (loaderContext: any, content) => {
           return null;
         }
 
-        emitCacheInformationFile(loaderContext, query, cacheFile, fileHash, iconResult);
+        emitCacheInformationFile(loaderContext, query as FaviconsPluginOptions, cacheFile, fileHash, iconResult);
         callback(null, `module.exports = ${JSON.stringify(iconResult)}`);
         return null;
       });

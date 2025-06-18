@@ -14,18 +14,16 @@ import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
 export const createChangelog = async ({cliName, config, outputFile = 'changelog.tmp.md', quiet}): Promise<number> => {
-  // Spinner
   const spinner = createSpinner(quiet);
 
-  // Configure git cli options
   const gitOptions: string[] = [
     'log',
     '-3',
     '--pretty=format:{"authorName": "%an", "authorEmail": "%ae", "hashShort": "%h", "hashFull": "%H", "tag": "%D", "date": %ct, "subject": "%s","comments": "%b"}[lex_break]'
   ];
 
-  // Run git
   try {
+    // @ts-ignore
     const git = await execa('git', gitOptions, {encoding: 'utf-8'});
 
     const {stdout} = git;
@@ -65,7 +63,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       const subjectLines: string[] = comments.split('[lex_break]');
       const topics = {};
 
-      // eslint-disable-next-line no-plusplus
+
       for(let idx: number = 0, len: number = subjectLines.length; idx < len; idx++) {
         const nextLine: string = subjectLines[idx];
         const formatLine: string = nextLine.trim();

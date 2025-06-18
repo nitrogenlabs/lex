@@ -26,6 +26,7 @@ export const log = (message: string, type: string = 'info', quiet = false) => {
         break;
     }
 
+    // eslint-disable-next-line no-console
     console.log(color(message));
   }
 };

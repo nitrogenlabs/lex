@@ -8,7 +8,15 @@ import {LexConfig} from '../LexConfig.js';
 import {createSpinner, getPackageJson, removeConflictModules, removeModules} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const migrate = async (cmd: any, callback: any = process.exit): Promise<number> => {
+export interface MigrateOptions {
+  readonly cliName?: string;
+  readonly packageManager?: string;
+  readonly quiet?: boolean;
+}
+
+export type MigrateCallback = typeof process.exit;
+
+export const migrate = async (cmd: MigrateOptions, callback: MigrateCallback = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet} = cmd;
 
   const cwd: string = process.cwd();

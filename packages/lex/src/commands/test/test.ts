@@ -1,15 +1,61 @@
+/**
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
 import {execa} from 'execa';
-
+import {writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-
 import {URL} from 'url';
 
-import {LexConfig} from '../LexConfig.js';
-import {createSpinner} from '../utils/app.js';
-import {relativeNodePath} from '../utils/file.js';
-import {log} from '../utils/log.js';
+import {LexConfig} from '../../LexConfig.js';
+import {createSpinner} from '../../utils/app.js';
+import {relativeNodePath} from '../../utils/file.js';
+import {log} from '../../utils/log.js';
 
-export const test = async (options: any, args: string[], callback: any = process.exit): Promise<number> => {
+export interface TestOptions {
+  readonly bail?: boolean;
+  readonly changedFilesWithAncestor?: boolean;
+  readonly changedSince?: string;
+  readonly ci?: boolean;
+  readonly cliName?: string;
+  readonly collectCoverageFrom?: string;
+  readonly colors?: boolean;
+  readonly config?: string;
+  readonly debug?: boolean;
+  readonly detectOpenHandles?: boolean;
+  readonly env?: string;
+  readonly errorOnDeprecated?: boolean;
+  readonly expand?: boolean;
+  readonly forceExit?: boolean;
+  readonly json?: boolean;
+  readonly lastCommit?: boolean;
+  readonly listTests?: boolean;
+  readonly logHeapUsage?: boolean;
+  readonly maxWorkers?: string;
+  readonly noStackTrace?: boolean;
+  readonly notify?: boolean;
+  readonly onlyChanged?: boolean;
+  readonly outputFile?: string;
+  readonly passWithNoTests?: boolean;
+  readonly quiet?: boolean;
+  readonly removeCache?: boolean;
+  readonly runInBand?: boolean;
+  readonly setup?: string;
+  readonly showConfig?: boolean;
+  readonly silent?: boolean;
+  readonly testLocationInResults?: boolean;
+  readonly testNamePattern?: string;
+  readonly testPathPattern?: string;
+  readonly update?: boolean;
+  readonly useStderr?: boolean;
+  readonly verbose?: boolean;
+  readonly watch?: string;
+  readonly watchAll?: boolean;
+}
+
+export type TestCallback = typeof process.exit;
+
+export const test = async (options: TestOptions, args: string[], callback: TestCallback = process.exit): Promise<number> => {
   const {
     bail,
     changedFilesWithAncestor,
@@ -59,7 +105,7 @@ export const test = async (options: any, args: string[], callback: any = process
   // Get custom configuration
   await LexConfig.parseConfig(options);
 
-  const {jest, useTypescript} = LexConfig.config;
+  const {useTypescript} = LexConfig.config;
 
   if(useTypescript) {
     // Make sure tsconfig.json exists
@@ -68,11 +114,13 @@ export const test = async (options: any, args: string[], callback: any = process
 
   // Configure jest
   const dirName = new URL('.', import.meta.url).pathname;
-  const dirPath: string = pathResolve(dirName, '../..');
+  const dirPath: string = pathResolve(dirName, '../../..');
   const jestPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
-  const jestConfigFile: string = config || pathResolve(dirName, '../../jest.config.lex.js');
+  const jestConfigFile: string = config || pathResolve(dirName, '../../../jest.config.lex.js');
   const jestSetupFile: string = setup || '';
-  const jestOptions: string[] = ['--config', jestConfigFile, '--no-cache'];
+  const jestOptions: string[] = ['--no-cache'];
+
+  jestOptions.push('--config', jestConfigFile);
 
   if(bail) {
     jestOptions.push('--bail');
@@ -245,3 +293,5 @@ export const test = async (options: any, args: string[], callback: any = process
     return 1;
   }
 };
+
+export default test;

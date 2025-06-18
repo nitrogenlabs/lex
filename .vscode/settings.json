@@ -10,9 +10,6 @@
   ],
   "css.validate": false,
   "editor.autoClosingBrackets": "never",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
   "editor.rulers": [
@@ -29,33 +26,73 @@
   "emmet.syntaxProfiles": {
     "postcss": "css"
   },
-  "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
+  "eslint.run": "onSave",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "explorer.confirmDragAndDrop": false,
   "explorer.decorations.badges": false,
-  "files.trimTrailingWhitespace": true,
-  "flow.runOnAllFiles": true,
+  "files.trimTrailingWhitespace": false,
   "html.format.indentInnerHtml": true,
   "html.format.indentHandlebars": true,
   "html.format.extraLiners": "",
   "html.format.enable": false,
-  "html.format.endWithNewline": true,
-  "javascript.format.enable": false,
+  "javascript.format.enable": true,
   "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "javascript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
-  "javascript.validate.enable": false,
+  "javascript.validate.enable": true,
   "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
-  "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": false,
-  "typescriptHero.imports.multiLineTrailingComma": false,
-  "typescriptHero.imports.multiLineWrapThreshold": 120,
-  "typescriptHero.imports.organizeOnSave": true,
   "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "jest.disabledWorkspaceFolders": [
     "execa-mock",
     "favicons-webpack-plugin"
   ],
   "jest.jestCommandLine": "jest",
-  "jest.rootPath": "./"
+  "jest.rootPath": "./",
+  "eslint.quiet": true,
+  "eslint.probe": [
+    "astro",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "markdown",
+    "json",
+    "jsonc"
+  ],
+  "eslint.lintTask.enable": true,
+  "eslint.format.enable": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "editor.formatOnType": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "eslint.workingDirectories": [
+    {
+      "mode": "location"
+    }
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

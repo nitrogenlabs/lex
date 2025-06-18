@@ -1,24 +1,15 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "esModuleInterop": true,
-    "lib": [
-      "es2020"
-    ],
-    "module": "ESNext",
+    "moduleResolution": "node16",
     "outDir": "./dist",
-    "skipLibCheck": true,
-    "target": "ESNext"
+    "rootDir": "./src"
   },
   "include": [
-    "./src"
+    "src/**/*"
   ],
   "exclude": [
-    "**/*.test.*",
-    "./dist",
-    "./website",
-    "./node_modules",
-    "./test"
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

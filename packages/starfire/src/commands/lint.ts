@@ -33,9 +33,7 @@ export const lint = async (cmd) => {
     sourceDir,
     '--no-eslintrc',
     '--config',
-    eslintConfig,
-    '--ext',
-    eslintExt
+    eslintConfig
   ];
 
   if(cmd.fix) {

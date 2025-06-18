@@ -1,20 +1,15 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "emitDeclarationOnly": false,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node16",
     "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": [
-    "./src/**/*"
+    "src/**/*"
   ],
   "exclude": [
-    "**/*.test.*",
-    "./dist",
-    "./website",
-    "./node_modules",
-    "./test"
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

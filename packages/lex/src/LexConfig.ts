@@ -11,14 +11,40 @@ import {log} from './utils/log.js';
 
 const cwd: string = process.cwd();
 
+export interface EsbuildConfig {
+  entryPoints?: string[];
+  outdir?: string;
+  platform?: 'node' | 'browser';
+  target?: string;
+  format?: 'cjs' | 'esm';
+  [key: string]: unknown;
+}
+
+export interface JestConfig {
+  roots?: string[];
+  testEnvironment?: string;
+  transform?: Record<string, [string, Record<string, unknown>]>;
+  [key: string]: unknown;
+}
+
+export interface WebpackConfig {
+  entry?: string | string[];
+  output?: Record<string, unknown>;
+  module?: Record<string, unknown>;
+  plugins?: unknown[];
+  [key: string]: unknown;
+}
+
 export interface LexConfigType {
+  aiApiKey?: string;
+  aiDefaultModel?: string;
   configFiles?: string[];
   entryHTML?: string;
   entryJs?: string;
-  esbuild?: any;
+  esbuild?: EsbuildConfig;
   env?: object;
   gitUrl?: string;
-  jest?: any;
+  jest?: JestConfig;
   libraryName?: string;
   libraryTarget?: string;
   outputFile?: string;
@@ -32,10 +58,11 @@ export interface LexConfigType {
   targetEnvironment?: 'node' | 'web';
   useGraphQl?: boolean;
   useTypescript?: boolean;
-  webpack?: any;
+  webpack?: WebpackConfig;
 }
 
 export const defaultConfigValues: LexConfigType = {
+  aiDefaultModel: 'gpt-4o',
   configFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',

@@ -6,8 +6,8 @@ import {existsSync, readFileSync} from 'fs';
 import isPlainObject from 'lodash/isPlainObject.js';
 import {resolve as pathResolve} from 'path';
 
-import {FaviconsPluginOptions} from './types/main';
-import {compileTemplate} from './utils/compiler';
+import {FaviconsPluginOptions} from './types/main.js';
+import {compileTemplate} from './utils/compiler.js';
 
 const defaultOptions = {
   background: '#fff',

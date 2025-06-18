@@ -1,6 +1,7 @@
 {
   "name": "@nlabs/favicons-webpack-plugin",
-  "version": "1.41.0",
+  "type": "module",
+  "version": "1.41.1",
   "description": "Let webpack generate all your favicons and icons for you",
   "main": "./lib/index.js",
   "files": [
@@ -14,7 +15,7 @@
     "build": "NODE_ENV=production && rm -rf dist && npm run compile",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
-    "lint": "eslint ./src --ext .ts,.tsx",
+    "lint": "eslint ./src",
     "prepublishOnly": "npm run build",
     "publish:major": "npm version major && npm publish",
     "publish:minor": "npm version minor && npm publish",
@@ -55,38 +56,38 @@
   "dependencies": {
     "eval": "^0.1.8",
     "favicons": "^7.2.0",
-    "loader-utils": "^3.2.1",
+    "loader-utils": "^3.3.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.4",
-    "@babel/preset-env": "^7.24.4",
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
     "@types/denodeify": "^1.2.35",
-    "@types/favicons": "^7.0.0",
+    "@types/favicons": "^7.0.2",
     "@types/html-webpack-plugin": "^3.2.9",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.14",
     "@types/loader-utils": "^2.0.6",
     "@types/memory-fs": "^0.3.7",
-    "@types/node": "^20.12.7",
+    "@types/node": "^24.0.1",
     "@types/rimraf": "^4.0.5",
     "@types/webpack": "^5.28.5",
-    "babel-loader": "^9.1.3",
+    "babel-loader": "^10.0.0",
     "denodeify": "^1.2.1",
-    "dir-compare": "^4.2.0",
+    "dir-compare": "^5.0.0",
     "es6-promisify": "^7.0.0",
-    "eslint": "^9.1.0",
-    "eslint-config-styleguidejs": "^3.2.1",
-    "express": "^4.19.2",
-    "html-webpack-plugin": "^5.6.0",
+    "eslint": "9.28.0",
+    "eslint-config-styleguidejs": "^3.2.2",
+    "express": "^5.1.0",
+    "html-webpack-plugin": "^5.6.3",
     "memory-fs": "^0.5.0",
     "mkdirp": "^3.0.1",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.4.5",
-    "webpack": "5.91.0",
-    "webpack-dev-middleware": "^7.2.1"
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "webpack": "5.99.9",
+    "webpack-dev-middleware": "^7.4.2"
   },
   "peerDependencies": {
-    "webpack": "^4.0.0"
+    "webpack": "5.97.1"
   },
   "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8"
 }

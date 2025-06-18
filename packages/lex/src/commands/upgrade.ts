@@ -9,14 +9,22 @@ import latestVersion from 'latest-version';
 import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
+import {parseVersion} from './versions.js';
 import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
-import {parseVersion} from './versions.js';
 
 const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
-export const upgrade = async (cmd: any, callback: any = process.exit): Promise<number> => {
+export interface UpgradeOptions {
+  readonly cliName?: string;
+  readonly cliPackage?: string;
+  readonly quiet?: boolean;
+}
+
+export type UpgradeCallback = typeof process.exit;
+
+export const upgrade = async (cmd: UpgradeOptions, callback: UpgradeCallback = process.exit): Promise<number> => {
   const {cliName = 'Lex', cliPackage = '@nlabs/lex', quiet} = cmd;
 
   // Display status

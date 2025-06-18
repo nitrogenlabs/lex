@@ -3,6 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
+import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -25,6 +26,7 @@ import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
 import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import {URL} from 'url';
 import {default as webpack} from 'webpack';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
@@ -60,7 +62,10 @@ const plugins = [
     dependencies: true,
     percentBy: null
   }),
-  new DotenvPlugin({path: pathResolve(process.cwd(), '.env'), systemvars: false})
+  new DotenvPlugin({
+    path: pathResolve(process.cwd(), '.env'),
+    systemvars: false
+  })
 ];
 
 const isWeb = (preset || targetEnvironment) === 'web';
@@ -87,23 +92,29 @@ const globOptions = {
 const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
 
 if(globSync(svgPaths, globOptions).length) {
-  plugins.push(new SVGSpriteMapPlugin(svgPaths, {
-    input: {
-      allowDuplicates: false
-    },
-    output: {
-      chunk: {keep: true},
-      filename: './icons/icons.svg'
-    },
-    sprite: {
-      prefix: false
-    }
-  }));
+  plugins.push(
+    new SVGSpriteMapPlugin(svgPaths, {
+      input: {
+        allowDuplicates: false
+      },
+      output: {
+        chunk: {keep: true},
+        filename: './icons/icons.svg'
+      },
+      sprite: {
+        prefix: false
+      }
+    })
+  );
 }
 
 // If there is are static directories, make sure we copy the files over
 const staticPaths = [];
-const watchIgnorePaths = [`${sourceFullPath}/**/**.gif`, `${sourceFullPath}/**/**.jpg`, `${sourceFullPath}/**/**.png`];
+const watchIgnorePaths = [
+  `${sourceFullPath}/**/**.gif`,
+  `${sourceFullPath}/**/**.jpg`,
+  `${sourceFullPath}/**/**.png`
+];
 const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
@@ -127,13 +138,15 @@ if(staticPaths.length) {
 }
 
 if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
-  plugins.push(new HtmlWebPackPlugin({
-    filename: './index.html',
-    minify: isProduction,
-    scriptLoading: 'defer',
-    showErrors: !isProduction,
-    template: `${sourceFullPath}/${lexConfig.entryHTML}`
-  }));
+  plugins.push(
+    new HtmlWebPackPlugin({
+      filename: './index.html',
+      minify: isProduction,
+      scriptLoading: 'defer',
+      showErrors: !isProduction,
+      template: `${sourceFullPath}/${lexConfig.entryHTML}`
+    })
+  );
 }
 
 let outputFilename = outputFile;
@@ -144,6 +157,13 @@ if(outputFile) {
   outputFilename = '[name].[hash].js';
 } else {
   outputFilename = '[name].js';
+}
+
+const resolvePlugins = [];
+if(existsSync(`${sourceFullPath}/tsconfig.json`)) {
+  resolvePlugins.push(new TsconfigPathsPlugin({
+    configFile: `${sourceFullPath}/../tsconfig.json`
+  }));
 }
 
 // Loader paths
@@ -161,7 +181,10 @@ const webpackPath = relativeNodePath('webpack', dirName);
 // Aliases
 const aliasPaths = {
   '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
-  '@nlabs/arkhamjs-utils-react': relativeNodePath('@nlabs/arkhamjs-utils-react', process.cwd()),
+  '@nlabs/arkhamjs-utils-react': relativeNodePath(
+    '@nlabs/arkhamjs-utils-react',
+    process.cwd()
+  ),
   'core-js': relativeNodePath('core-js', dirName),
   process: relativeNodePath('process', dirName),
   react: relativeNodePath('react', process.cwd()),
@@ -183,7 +206,9 @@ export default (webpackEnv, webpackOptions) => {
   const webpackConfig = {
     bail: true,
     cache: !isProduction,
-    devtool: isProduction ? 'inline-cheap-module-source-map' : 'eval-cheap-module-source-map',
+    devtool: isProduction
+      ? 'inline-cheap-module-source-map'
+      : 'eval-cheap-module-source-map',
     entry: {
       index: `${sourceFullPath}/${lexConfig.entryJs}`
     },
@@ -249,26 +274,32 @@ export default (webpackEnv, webpackOptions) => {
                 postcssOptions: {
                   plugins: [
                     postcssImport({addDependencyTo: webpack}),
-                    postcssUrl,
-                    postcssFor,
+                    postcssUrl(),
+                    postcssFor(),
                     postcssPercentage({
                       floor: true,
                       precision: 9,
                       trimTrailingZero: true
                     }),
                     postcssCustomProperties({
+                      extensions: ['.css'],
+                      inject: {
+                        insertAt: 'top'
+                      },
+                      minimize: true,
                       preserve: false,
                       strict: false,
                       warnings: false
                     }),
-                    autoprefixer,
-                    postcssNesting,
-                    postcssFlexbugsFixes,
+                    tailwindcss(),
+                    autoprefixer(),
+                    postcssNesting(),
+                    postcssFlexbugsFixes(),
                     postcssPresetEnv({
                       stage: 0
                     }),
                     cssnano({autoprefixer: false}),
-                    postcssBrowserReporter
+                    postcssBrowserReporter()
                   ]
                 }
               }
@@ -302,26 +333,29 @@ export default (webpackEnv, webpackOptions) => {
         }
       ]
     },
-    optimization: (isProduction && isWeb) ? {
-      minimizer: [
-        new EsbuildPlugin({
-          css: true,
-          target: targetEnvironment
-        })
-      ],
-      runtimeChunk: 'single',
-      splitChunks: {
-        cacheGroups: {
-          vendor: {
-            chunks: 'all',
-            minSize: 0,
-            name: 'vendors',
-            test: /[\\/]node_modules[\\/]/
-          }
+    optimization:
+      isProduction && isWeb
+        ? {
+          minimizer: [
+            new EsbuildPlugin({
+              css: true,
+              target: targetEnvironment
+            })
+          ],
+          runtimeChunk: 'single',
+          splitChunks: {
+            cacheGroups: {
+              vendor: {
+                chunks: 'all',
+                minSize: 0,
+                name: 'vendors',
+                test: /[\\/]node_modules[\\/]/
+              }
+            }
+          },
+          usedExports: true
         }
-      },
-      usedExports: true
-    } : {},
+        : {},
     output: {
       filename: outputFilename,
       library: libraryName,
@@ -333,9 +367,20 @@ export default (webpackEnv, webpackOptions) => {
     recordsPath: relativeFilePath('webpack.records.json', process.cwd()),
     resolve: {
       alias,
-      extensions: ['.*', '.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
+      extensions: [
+        '.*',
+        '.mjs',
+        '.js',
+        '.ts',
+        '.tsx',
+        '.jsx',
+        '.json',
+        '.gql',
+        '.graphql'
+      ],
       fallback: {
         assert: relativeNodePath('assert', dirName),
+        buffer: relativeNodePath('buffer', dirName),
         crypto: relativeNodePath('crypto-browserify', dirName),
         http: relativeNodePath('stream-http', dirName),
         https: relativeNodePath('https-browserify', dirName),
@@ -343,10 +388,12 @@ export default (webpackEnv, webpackOptions) => {
         path: relativeNodePath('path-browserify', dirName),
         process: relativeNodePath('process/browser.js', dirName),
         stream: relativeNodePath('stream-browserify', dirName),
-        util: relativeNodePath('util', dirName)
+        util: relativeNodePath('util', dirName),
+        vm: relativeNodePath('vm-browserify', dirName)
       },
       mainFiles: ['index'],
       modules: [sourceFullPath, 'node_modules', relativeNodePath('', dirName)],
+      plugins: resolvePlugins,
       unsafeCache: {
         node_modules: true
       }
@@ -361,7 +408,10 @@ export default (webpackEnv, webpackOptions) => {
       webpack: webpackPath
     };
     webpackConfig.optimization = {minimize: false};
-    webpackConfig.entry.wps = relativeNodePath('webpack-plugin-serve/client.js', dirName);
+    webpackConfig.entry.wps = relativeNodePath(
+      'webpack-plugin-serve/client.js',
+      dirName
+    );
     webpackConfig.stats = {errorDetails: true};
     webpackConfig.plugins.push(
       new WebpackPluginServe({
@@ -370,7 +420,7 @@ export default (webpackEnv, webpackOptions) => {
         },
         historyFallback: {
           disableDotRule: true,
-          htmlAcceptHeaders: ['text/html','*/*'],
+          htmlAcceptHeaders: ['text/html', '*/*'],
           index: '/index.html',
           logger: console.log.bind(console),
           rewrites: [
@@ -400,23 +450,27 @@ export default (webpackEnv, webpackOptions) => {
         },
         hmr: false,
         log: {level: 'trace'},
-        middleware: (app) => app.use(async (ctx, next) => {
-          if(ctx.path.match(/^\/wps/)) {
-            const {accept, Accept, ...remainingHeaders} = ctx.request.header;
-            ctx.request.header = remainingHeaders;
-          }
-          await next();
-        }),
+        middleware: (app) =>
+          app.use(async (ctx, next) => {
+            if(ctx.path.match(/^\/wps/)) {
+              const {accept, Accept, ...remainingHeaders} =
+                ctx.request.header;
+              ctx.request.header = remainingHeaders;
+            }
+            await next();
+          }),
         open: process.env.WEBPACK_DEV_OPEN === 'true',
         port: 7001,
         progress: 'minimal',
         static: [outputFullPath],
         status: true
-      }),
+      })
     );
 
     if(bundleAnalyzer) {
-      webpackConfig.plugins.push(new BundleAnalyzerPlugin({openAnalyzer: false}));
+      webpackConfig.plugins.push(
+        new BundleAnalyzerPlugin({openAnalyzer: false})
+      );
     }
 
     if(watch) {
@@ -432,25 +486,30 @@ export default (webpackEnv, webpackOptions) => {
     const siteLogo = `${sourceFullPath}/images/logo.png`;
 
     if(existsSync(siteLogo)) {
-      plugins.push(new FaviconsWebpackPlugin({
-        icons: {
-          android: true,
-          appleIcon: true,
-          appleStartup: false,
-          coast: false,
-          favicons: true,
-          firefox: false,
-          opengraph: true,
-          twitter: true,
-          windows: false,
-          yandex: false
-        },
-        logo: siteLogo
-      }));
+      plugins.push(
+        new FaviconsWebpackPlugin({
+          icons: {
+            android: true,
+            appleIcon: true,
+            appleStartup: false,
+            coast: false,
+            favicons: true,
+            firefox: false,
+            opengraph: true,
+            twitter: true,
+            windows: false,
+            yandex: false
+          },
+          logo: siteLogo
+        })
+      );
     }
 
     if(isStatic) {
-      webpackConfig.plugins.push(new StaticSitePlugin(), new webpack.HashedModuleIdsPlugin());
+      webpackConfig.plugins.push(
+        new StaticSitePlugin(),
+        new webpack.HashedModuleIdsPlugin()
+      );
     }
   }
 

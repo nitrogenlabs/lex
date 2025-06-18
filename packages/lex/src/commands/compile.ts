@@ -83,7 +83,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--baseUrl', sourceDir,
         '--declaration',
         '--emitDeclarationOnly',
-        '--lib', ['ESNext', 'DOM'],
+        '--lib', 'ESNext,DOM',
         '--module', 'esnext',
         '--moduleResolution', 'node',
         '--noImplicitReturns',
@@ -92,7 +92,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
         '--removeComments',
         '--resolveJsonModule',
         '--target', 'ESNext',
-        '--typeRoots', ['node_modules/@types', 'node_modules/json-d-ts']
+        '--typeRoots', 'node_modules/@types,node_modules/json-d-ts'
       ];
 
     // Start type checking spinner
@@ -156,7 +156,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       '--dir',
       outputDir,
       '--config',
-      pathResolve(dirName, '../../.postcssrc.js')
+      pathResolve(dirName, '../../postcss.config.js')
     ];
 
     try {

@@ -11,11 +11,21 @@ import {LexConfig} from '../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
+export interface InitOptions {
+  readonly cliName?: string;
+  readonly install?: boolean;
+  readonly packageManager?: string;
+  readonly quiet?: boolean;
+  readonly typescript?: boolean;
+}
+
+export type InitCallback = (status: number) => void;
+
 export const init = async (
   appName: string,
   packageName: string,
-  cmd: any,
-  callback: any = () => ({})
+  cmd: InitOptions,
+  callback: InitCallback = () => ({})
 ): Promise<number> => {
   const {cliName = 'Lex', install, packageManager: cmdPackageManager, quiet, typescript} = cmd;
   const cwd: string = process.cwd();

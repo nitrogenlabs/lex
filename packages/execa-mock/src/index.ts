@@ -11,42 +11,110 @@ import {onExit} from 'signal-exit';
 import stripEof from 'strip-eof';
 import util from 'util';
 
+interface MockResult {
+  stdout?: string;
+  stderr?: string;
+  code?: number;
+}
+
+interface ParsedOptions extends ExecaOptions {
+  cleanup: boolean;
+  encoding: string;
+  maxBuffer: number;
+  preferLocal: boolean;
+  reject: boolean;
+  stripEof: boolean;
+  __winShell?: boolean;
+  windowsVerbatimArguments?: boolean;
+  shell?: string;
+}
+
+interface ParsedCommand {
+  args?: string[];
+  command?: string;
+  file?: string;
+  options: ParsedOptions;
+  original?: string;
+}
+
+interface ExecaOptions extends Record<string, unknown> {
+  cleanup?: boolean;
+  encoding?: string;
+  input?: string | NodeJS.ReadableStream;
+  maxBuffer?: number;
+  preferLocal?: boolean;
+  reject?: boolean;
+  stripEof?: boolean;
+}
+
+interface ExecaError extends Error {
+  code?: number;
+  killed?: boolean;
+  stdout?: string | null;
+  stderr?: string | null;
+  failed?: boolean;
+  signal?: string | null;
+  cmd: string;
+}
+
+interface ProcessResult {
+  code: number;
+  err?: ExecaError;
+  signal: string | null;
+}
+
 const TEN_MEGABYTES = 1000 * 1000 * 10;
-let mockResults: any[] = [];
+let mockResults: MockResult[] = [];
 
 const getMockCommand = () => {
   const {stdout = '', stderr = '', code = 0} = mockResults.shift() || {};
   return `echo "${stdout.replace('"', '\\"')}"; (>&2 echo ${stderr.replace('"', '\\"')}); exit ${code};`;
 };
 
-const handleArgs = (cmd, args, opts) => {
-  let parsed: any = {options: {}};
+const handleArgs = (cmd: string, args: string[], opts: Record<string, unknown>) => {
+  let parsed: ParsedCommand = {
+    args: [],
+    command: cmd,
+    options: {
+      cleanup: true,
+      encoding: 'utf8',
+      maxBuffer: TEN_MEGABYTES,
+      preferLocal: true,
+      reject: true,
+      stripEof: true
+    },
+    original: cmd
+  };
 
   if(opts && opts.__winShell === true) {
     delete opts.__winShell;
-    parsed = {args, command: cmd, file: cmd, options: opts, original: cmd};
+    parsed = {
+      args,
+      command: cmd,
+      file: cmd,
+      options: {
+        cleanup: true,
+        encoding: 'utf8',
+        maxBuffer: TEN_MEGABYTES,
+        preferLocal: true,
+        reject: true,
+        stripEof: true,
+        ...opts
+      } as ParsedOptions,
+      original: cmd
+    };
   } else {
     parsed = crossSpawn._parse(cmd, args, opts);
   }
-
-  const updatedOpts = {
-    cleanup: true,
-    encoding: 'utf8',
-    maxBuffer: TEN_MEGABYTES,
-    preferLocal: true,
-    reject: true,
-    stripEof: true,
-    ...parsed.options
-  };
 
   if(opts.preferLocal) {
     opts.env = npmRunPathEnv(opts);
   }
 
-  return {args: parsed.args, cmd: parsed.command, opts: updatedOpts};
+  return {args: parsed.args, cmd: parsed.command, opts: parsed.options};
 };
 
-const handleInput = (spawned, opts) => {
+const handleInput = (spawned: childProcess.ChildProcess, opts: ExecaOptions) => {
   const {input} = opts;
 
   if(input === null || input === undefined) {
@@ -54,9 +122,9 @@ const handleInput = (spawned, opts) => {
   }
 
   if(isStream(input)) {
-    input.pipe(spawned.stdin);
+    input.pipe(spawned.stdin as NodeJS.WritableStream);
   } else {
-    spawned.stdin.end(input);
+    spawned.stdin?.end(input);
   }
 };
 
@@ -87,13 +155,7 @@ const getStream = (process, stream, encoding, maxBuffer) => {
     return null;
   }
 
-  let ret;
-
-  if(encoding) {
-    ret = _getStream(process[stream], {encoding, maxBuffer});
-  } else {
-    ret = _getStream.buffer(process[stream], {maxBuffer});
-  }
+  const ret = _getStream(process[stream], {maxBuffer});
 
   return ret.catch((err) => {
     err.stream = stream;
@@ -125,7 +187,7 @@ module.exports = jest.fn((cmd, args, opts) => {
 
   let spawned;
   try {
-    spawned = childProcess.exec(parsed.cmd, parsed.opts);
+    spawned = childProcess.exec(parsed?.cmd || '', parsed.opts);
   } catch(err) {
     return Promise.reject(err);
   }
@@ -142,9 +204,9 @@ module.exports = jest.fn((cmd, args, opts) => {
     getStream(spawned, 'stdout', encoding, maxBuffer),
     getStream(spawned, 'stderr', encoding, maxBuffer)
   ]).then((arr) => {
-    const result: any = arr[0];
-    const stdout: any = arr[1];
-    const stderr: any = arr[2];
+    const result = arr[0] as ProcessResult;
+    const stdout = arr[1];
+    const stderr = arr[2];
     const {code, err, signal} = result;
 
     if(removeExitHandler) {
@@ -152,27 +214,26 @@ module.exports = jest.fn((cmd, args, opts) => {
     }
 
     if(err || code !== 0 || signal !== null) {
+      let error: ExecaError;
       if(!err) {
-        const newError: any = new Error(`Command failed: ${joinedCmd}\n${stderr}${stdout}`);
-        newError.code = code;
+        error = new Error(`Command failed: ${joinedCmd}\n${stderr}${stdout}`) as ExecaError;
+        error.code = code;
+      } else {
+        error = err as ExecaError;
       }
 
-      // TODO: missing some timeout logic for killed
-      // https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-      // err.killed = spawned.killed || killed;
-      err.killed = err.killed || spawned.killed;
-
-      err.stdout = stdout;
-      err.stderr = stderr;
-      err.failed = true;
-      err.signal = signal || null;
-      err.cmd = joinedCmd;
+      error.killed = error.killed || spawned.killed;
+      error.stdout = stdout;
+      error.stderr = stderr;
+      error.failed = true;
+      error.signal = signal || null;
+      error.cmd = joinedCmd;
 
       if(!parsed.opts.reject) {
-        return err;
+        return error;
       }
 
-      throw err;
+      throw error;
     }
 
     return {
@@ -212,7 +273,7 @@ module.exports.sync = jest.fn((cmd, args, opts) => {
     throw new TypeError('The `input` option cannot be a stream in sync mode');
   }
 
-  const result = childProcess.exec(parsed.cmd, parsed.opts);
+  const result = childProcess.exec(parsed?.cmd || '', parsed.opts);
 
   result.stdout = handleOutput(parsed.opts, result.stdout);
   result.stderr = handleOutput(parsed.opts, result.stderr);

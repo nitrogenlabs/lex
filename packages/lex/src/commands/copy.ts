@@ -7,7 +7,14 @@ import {existsSync, lstatSync} from 'fs';
 import {copyFileSync, copyFolderRecursiveSync} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const copy = (from: string, to: string, cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface CopyOptions {
+  readonly cliName?: string;
+  readonly quiet?: boolean;
+}
+
+export type CopyCallback = (status: number) => void;
+
+export const copy = (from: string, to: string, cmd: CopyOptions, callback: CopyCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display message

@@ -11,7 +11,16 @@ import {LexConfig} from '../LexConfig.js';
 import {copyFolderRecursiveSync, getFilenames, removeFiles, updateTemplateName} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const create = async (type: string, cmd: any, callback: any = () => ({})): Promise<number> => {
+export interface CreateOptions {
+  readonly cliName?: string;
+  readonly outputFile?: string;
+  readonly outputName?: string;
+  readonly quiet?: boolean;
+}
+
+export type CreateCallback = (status: number) => void;
+
+export const create = async (type: string, cmd: CreateOptions, callback: CreateCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;
   const cwd: string = process.cwd();
   log(`${cliName} creating ${type}...`, 'info', quiet);
@@ -36,13 +45,17 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
     }
     case 'store': {
       try {
-        const {nameCaps, templateExt, templatePath} = getFilenames({
+        const result = getFilenames({
           cliName,
           name: outputName,
           quiet,
           type,
           useTypescript
         });
+
+        if (!result) return 1;
+
+        const {nameCaps, templateExt, templatePath} = result;
         const storePath: string = `${cwd}/${nameCaps}Store`;
 
         if(!existsSync(storePath)) {
@@ -95,13 +108,17 @@ export const create = async (type: string, cmd: any, callback: any = () => ({}))
       break;
     }
     case 'view': {
-      const {nameCaps, templatePath, templateReact} = getFilenames({
+      const result = getFilenames({
         cliName,
         name: outputName,
         quiet,
         type,
         useTypescript
       });
+
+      if (!result) return 1;
+
+      const {nameCaps, templatePath, templateReact} = result;
       const viewPath: string = `${cwd}/${nameCaps}View`;
 
       try {

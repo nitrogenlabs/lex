@@ -11,11 +11,28 @@ import {basename as pathBasename, join as pathJoin, relative as pathRelative, re
 import {rimrafSync} from 'rimraf';
 
 import {log} from './log.js';
+
 import type {LexConfigType} from '../LexConfig.js';
 
 export const cwd: string = process.cwd();
 
-export const getFilenames = (props: any) => {
+export interface GetFilenamesProps {
+  readonly callback?: (status: number) => void;
+  readonly cliName?: string;
+  readonly name?: string;
+  readonly quiet?: boolean;
+  readonly type?: string;
+  readonly useTypescript?: boolean;
+}
+
+interface FilenamesResult {
+  nameCaps: string;
+  templateExt: string;
+  templatePath: string;
+  templateReact: string;
+}
+
+export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
 
   // Set filename
@@ -25,7 +42,7 @@ export const getFilenames = (props: any) => {
   if(!name) {
     if(itemTypes.includes(type)) {
       log(`\n${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
-      return callback(1);
+      return callback?.(1);
     }
   } else {
     nameCaps = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
@@ -57,7 +74,13 @@ export const getFilenames = (props: any) => {
   };
 };
 
-export const createSpinner = (quiet = false): any => {
+export interface Spinner {
+  fail: (text?: string) => void;
+  start: (text?: string) => void;
+  succeed: (text?: string) => void;
+}
+
+export const createSpinner = (quiet = false): Spinner => {
   if(quiet) {
     return {
       fail: () => {},

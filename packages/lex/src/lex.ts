@@ -7,7 +7,8 @@ import {Option, program} from 'commander';
 import {readFileSync} from 'fs';
 import {fileURLToPath} from 'url';
 
-import {build} from './commands/build.js';
+import {ai} from './commands/ai/ai.js';
+import {build} from './commands/build/build.js';
 import {clean} from './commands/clean.js';
 import {compile} from './commands/compile.js';
 import {config} from './commands/config.js';
@@ -18,7 +19,7 @@ import {linked} from './commands/link.js';
 import {lint} from './commands/lint.js';
 import {migrate} from './commands/migrate.js';
 import {publish} from './commands/publish.js';
-import {test} from './commands/test.js';
+import {test} from './commands/test/test.js';
 import {update} from './commands/update.js';
 import {upgrade} from './commands/upgrade.js';
 import {versions} from './commands/versions.js';
@@ -27,6 +28,8 @@ const packagePath = fileURLToPath(new URL('../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 program.command('build')
+  .option('--aiAssist', 'Enable AI assistance for fixing build errors.', false)
+  .option('--aiAnalyze', 'Enable AI analysis for build optimization suggestions.', false)
   .option('--analyze', 'It invokes webpack-bundle-analyzer plugin to get bundle information.', false)
   .addOption(new Option('--bundler <name>', 'Bundler to use ("webpack" or "esbuild"). Default: "webpack".').choices(['webpack', 'esbuild']).default('webpack'))
   .option('--config <path>', 'Custom Webpack configuration file path (ie. webpack.config.js).')
@@ -124,7 +127,6 @@ program.command('lint')
   .option('--debug', 'Output debugging information.', false)
   .option('--envInfo', 'Output execution environment information. Default: false.', false)
   .option('--env <name>', 'Specify environments.')
-  .option('--ext <type>', 'Specify JavaScript file extensions. Default: .js.')
   .option('--fix', 'Automatically fix problems.', false)
   .option('--fixDryRun', 'Automatically fix problems without saving the changes to the file system.', false)
   .option('--fixType <type>', 'Specify the types of fixes to apply (problem, suggestion, layout).')
@@ -220,6 +222,16 @@ program.command('upgrade')
   .addOption(new Option('--package-manager <manager>', 'Which package manager to use. Default: npm').choices(['npm', 'yarn']).default('npm'))
   .option('--quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => upgrade(cmd, process.exit).then(() => {}));
+
+program.command('ai')
+  .option('--context', 'Include project context in the AI prompt.', true)
+  .option('--file <path>', 'Specific file to operate on.')
+  .option('--lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
+  .option('--model <model>', 'AI model to use. Default: gpt-4o.')
+  .option('--prompt <text>', 'The prompt to send to the AI.')
+  .option('--quiet', 'No Lex notifications printed in the console.')
+  .addOption(new Option('--task <task>', 'Type of AI task to perform.').choices(['generate', 'explain', 'test', 'optimize', 'help']).default('help'))
+  .action((cmd) => ai(cmd).then(() => {}));
 
 program.command('versions')
   .option('--json', 'Print the version as a JSON object.')
