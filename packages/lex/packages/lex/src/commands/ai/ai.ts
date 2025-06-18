@@ -29,7 +29,7 @@ const getFileContext = (filePath: string): string => {
   try {
     const content = readFileSync(filePath, 'utf-8');
     return `File: ${filePath}\n\n${content}`;
-  } catch (error) {
+  } catch(error) {
     return `Error reading file: ${filePath}`;
   }
 };
@@ -41,14 +41,14 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
   const {file, task, context} = options;
 
   // If context is disabled or no specific context is needed
-  if (context === false) {
+  if(context === false) {
     return '';
   }
 
   let projectContext = '';
 
   // Get context from specific file if provided
-  if (file) {
+  if(file) {
     projectContext += getFileContext(file);
   }
 
@@ -66,7 +66,7 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
 
     case 'test':
       // Add test configuration and similar test files
-      if (file) {
+      if(file) {
         const testConfig = getFileContext('jest.config.js');
         projectContext += `\n\nTest configuration:\n${testConfig}`;
       }
@@ -105,7 +105,7 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
   let fullPrompt = `${taskInstruction}\n\n${prompt}`;
 
   // Add project context if available
-  if (projectContext) {
+  if(projectContext) {
     fullPrompt += `\n\n===CONTEXT===\n${projectContext}`;
   }
 
@@ -170,7 +170,7 @@ export const ai = async (options: AIOptions): Promise<number> => {
 
   // Verify API key
   const apiKey = process.env.OPENAI_API_KEY || LexConfig.config.aiApiKey;
-  if (!apiKey) {
+  if(!apiKey) {
     spinner.fail('OpenAI API key not found. Set OPENAI_API_KEY environment variable or add aiApiKey to your Lex configuration.');
     return 1;
   }
@@ -203,11 +203,11 @@ export const ai = async (options: AIOptions): Promise<number> => {
     displayResponse(response, options);
 
     return 0;
-  } catch (error) {
+  } catch(error) {
     spinner.fail(`AI request failed: ${error.message}`);
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
-    if (!quiet) {
+    if(!quiet) {
       console.error(error);
     }
 

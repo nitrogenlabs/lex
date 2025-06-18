@@ -75,6 +75,15 @@ export default tseslint.config([
       'indent': ['error', 2, {
         'SwitchCase': 1
       }],
+      'keyword-spacing': ['error', {
+        'overrides': {
+          'if': { 'after': false },
+          'for': { 'after': false },
+          'while': { 'after': false },
+          'switch': { 'after': false },
+          'catch': { 'after': false }
+        }
+      }],
       'no-unused-vars': ['warn', {
         'argsIgnorePattern': '^_',
         'varsIgnorePattern': '^_',

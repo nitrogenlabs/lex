@@ -26,7 +26,7 @@ export const addBlockOrNotComment = (node, comment) => {
 
 // There are often comments before the else clause of if statements like
 //
-//   if (1) { ... }
+//   if(1) { ... }
 //   // comment
 //   else { ... }
 //
@@ -35,7 +35,7 @@ export const addBlockOrNotComment = (node, comment) => {
 // of the block and make it leadingComment of the first element of the block
 // or dangling comment of the block if there is nothing inside
 //
-//   if (1) { ... }
+//   if(1) { ... }
 //   else {
 //     // comment
 //     ...
@@ -58,7 +58,7 @@ const handleIfStatementComments = (
 
   // We unfortunately have no way using the AST or location of nodes to know
   // if the comment is positioned before the condition parenthesis:
-  //   if (a /* comment */) {}
+  //   if(a /* comment */) {}
   // The only workaround I found is to look at the next character to see if
   // it is a ).
   const nextCharacter = privateUtil.getNextNonSpaceNonCommentCharacter(
@@ -98,7 +98,7 @@ const handleIfStatementComments = (
 
   // For comments positioned after the condition parenthesis in an if statement
   // before the consequent without brackets on, such as
-  // if (a) /* comment */ true,
+  // if(a) /* comment */ true,
   // we look at the next character to see if the following node
   // is the consequent for the if statement
   if(enclosingNode.consequent === followingNode) {
@@ -127,7 +127,7 @@ const handleWhileComments = (
 
   // We unfortunately have no way using the AST or location of nodes to know
   // if the comment is positioned before the condition parenthesis:
-  //   while (a /* comment */) {}
+  //   while(a /* comment */) {}
   // The only workaround I found is to look at the next character to see if
   // it is a ).
   const nextCharacter = privateUtil.getNextNonSpaceNonCommentCharacter(

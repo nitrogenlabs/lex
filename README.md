@@ -58,3 +58,43 @@ $ lex dev -o
 - **useGraphQl** - *(optional)* Whether to use GraphQL.
 - **useTypescript** - *(optional)* Use Typescript for the project. Default: false.
 - **webpack** - *(optional)* Options to pass to Webpack.
+
+## AI-Enhanced Test Command
+
+We've integrated AI capabilities into the Lex test command to improve testing efficiency and quality:
+
+### Features
+
+- **Test Generation** (`--generate`): Automatically identifies source files without corresponding test files and generates comprehensive test cases with proper fixtures and mocks.
+
+- **Test Analysis** (`--analyze`): Analyzes test coverage and results to provide suggestions for improving test coverage, recommended test cases, and best practices.
+
+- **Test Debugging** (`--debugTests`): When tests fail, provides intelligent debugging assistance with root cause analysis and suggested fixes.
+
+### Usage Examples
+
+```bash
+# Generate tests for untested files
+lex test --generate
+
+# Analyze test coverage and get improvement suggestions
+lex test --collectCoverage --analyze
+
+# Debug failing tests with AI assistance
+lex test --debugTests
+
+# Full AI-powered testing workflow
+lex test --generate --analyze --debugTests
+```
+
+> **Note:** For backward compatibility, the previous option names (`--generate`, `--analyze`, `--debugTests`) are still supported but considered deprecated.
+
+### Implementation
+
+The AI features leverage the existing AI module to:
+
+1. Find untested source files and generate appropriate test cases
+2. Process Jest output to provide analysis and optimization suggestions
+3. Debug test failures with contextual recommendations
+
+For detailed documentation, see `packages/lex/src/commands/test/test.docs.md`.

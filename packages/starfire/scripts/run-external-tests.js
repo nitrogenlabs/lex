@@ -14,7 +14,7 @@ function tryFormat(file) {
       // Use file extension detection otherwise:
       filePath: file
     });
-  } catch (error) {
+  } catch(error) {
     return error;
   }
   return null;
@@ -23,7 +23,7 @@ function tryFormat(file) {
 function runExternalTests(patterns) {
   const testFiles = globby.sync(patterns);
 
-  if (testFiles.length === 0) {
+  if(testFiles.length === 0) {
     throw new Error(`No matching files. Patterns tried: ${patterns.join(" ")}`);
   }
 
@@ -36,9 +36,9 @@ function runExternalTests(patterns) {
   testFiles.forEach(file => {
     const error = tryFormat(file);
 
-    if (error instanceof SyntaxError) {
+    if(error instanceof SyntaxError) {
       results.skipped.push({ file, error });
-    } else if (error) {
+    } else if(error) {
       results.bad.push({ file, error });
     } else {
       results.good.push({ file });
@@ -55,7 +55,7 @@ function runExternalTests(patterns) {
 }
 
 function run(argv) {
-  if (argv.length === 0) {
+  if(argv.length === 0) {
     console.error(
       [
         "You must provide at least one file or glob for test files!",
@@ -72,7 +72,7 @@ function run(argv) {
 
   try {
     results = runExternalTests(argv);
-  } catch (error) {
+  } catch(error) {
     console.error(`Failed to run external tests.\n${error}`);
     return 1;
   }
@@ -83,7 +83,7 @@ function run(argv) {
   return 0;
 }
 
-if (require.main === module) {
+if(require.main === module) {
   const exitCode = run(process.argv.slice(2));
   process.exit(exitCode);
 }

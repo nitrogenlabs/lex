@@ -3,7 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import {writeFileSync} from 'fs';
+import {readFileSync} from 'fs';
+import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
@@ -11,8 +12,13 @@ import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+import {ai} from '../ai/index.js';
 
 export interface TestOptions {
+  readonly analyze?: boolean;
+  readonly aiDebug?: boolean;
+  readonly aiGenerate?: boolean;
+  readonly aiAnalyze?: boolean;
   readonly bail?: boolean;
   readonly changedFilesWithAncestor?: boolean;
   readonly changedSince?: string;
@@ -22,11 +28,13 @@ export interface TestOptions {
   readonly colors?: boolean;
   readonly config?: string;
   readonly debug?: boolean;
+  readonly debugTests?: boolean;
   readonly detectOpenHandles?: boolean;
   readonly env?: string;
   readonly errorOnDeprecated?: boolean;
   readonly expand?: boolean;
   readonly forceExit?: boolean;
+  readonly generate?: boolean;
   readonly json?: boolean;
   readonly lastCommit?: boolean;
   readonly listTests?: boolean;
@@ -55,8 +63,62 @@ export interface TestOptions {
 
 export type TestCallback = typeof process.exit;
 
+/**
+ * Gets test file patterns based on the test path pattern
+ */
+export const getTestFilePatterns = (testPathPattern?: string): string[] => {
+  const defaultPatterns = ['**/*.test.*', '**/*.spec.*'];
+
+  if(!testPathPattern) {
+    return defaultPatterns;
+  }
+
+  return [testPathPattern];
+};
+
+/**
+ * Find source files that could benefit from tests
+ */
+const findUncoveredSourceFiles = (): string[] => {
+  const sourceFiles = globSync('src/**/*.{ts,tsx,js,jsx}', {
+    cwd: process.cwd(),
+    ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*']
+  });
+
+  const testFiles = globSync('**/*.{test,spec}.{ts,tsx,js,jsx}', {
+    cwd: process.cwd(),
+    ignore: ['**/node_modules/**', '**/dist/**']
+  });
+
+  // Simple heuristic to find source files without corresponding test files
+  return sourceFiles.filter(sourceFile => {
+    const baseName = sourceFile.replace(/\.[^/.]+$/, '');
+    return !testFiles.some(testFile => testFile.includes(baseName));
+  });
+};
+
+/**
+ * Process test results from Jest
+ */
+const processTestResults = (outputFile?: string): any => {
+  if(!outputFile) {
+    return null;
+  }
+
+  try {
+    const content = readFileSync(outputFile, 'utf-8');
+    return JSON.parse(content);
+  } catch(error) {
+    return null;
+  }
+};
+
 export const test = async (options: TestOptions, args: string[], callback: TestCallback = process.exit): Promise<number> => {
   const {
+    analyze = false,
+    aiAnalyze = false,
+    aiDebug = false,
+    aiGenerate = false,
     bail,
     changedFilesWithAncestor,
     changedSince,
@@ -65,12 +127,14 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     collectCoverageFrom,
     colors,
     config,
-    debug,
+    debug = false,
+    debugTests = false,
     detectOpenHandles,
     env,
     errorOnDeprecated,
     expand,
     forceExit,
+    generate = false,
     json,
     lastCommit,
     listTests,
@@ -97,6 +161,11 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     watchAll
   } = options;
 
+  // Combine old and new options for backwards compatibility
+  const useGenerate = generate || aiGenerate;
+  const useAnalyze = analyze || aiAnalyze;
+  const useDebug = debugTests || aiDebug;
+
   log(`${cliName} testing...`, 'info', quiet);
 
   // Spinner
@@ -110,6 +179,37 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   if(useTypescript) {
     // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
+  }
+
+  // AI test generation before running tests
+  if(useGenerate) {
+    spinner.start('AI is analyzing code to generate test cases...');
+
+    try {
+      const uncoveredFiles = findUncoveredSourceFiles();
+
+      if(uncoveredFiles.length > 0) {
+        // Select the first file without tests to generate tests for
+        const targetFile = uncoveredFiles[0];
+
+        await ai({
+          prompt: `Generate Jest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
+          task: 'test',
+          file: targetFile,
+          context: true,
+          quiet
+        });
+
+        spinner.succeed(`AI test generation suggestions provided for ${targetFile}`);
+      } else {
+        spinner.succeed('All source files appear to have corresponding test files');
+      }
+    } catch(aiError) {
+      spinner.fail('Could not generate AI test suggestions');
+      if(!quiet) {
+        console.error('AI test generation error:', aiError);
+      }
+    }
   }
 
   // Configure jest
@@ -203,7 +303,12 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push('--onlyChanged');
   }
 
-  if(outputFile) {
+  // Add JSON output file for AI analysis if needed
+  let tempOutputFile = outputFile;
+  if((useAnalyze || useDebug) && !outputFile) {
+    tempOutputFile = '.lex-test-results.json';
+    jestOptions.push('--json', '--outputFile', tempOutputFile);
+  } else if(outputFile) {
     jestOptions.push('--outputFile', outputFile);
   }
 
@@ -278,6 +383,40 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
 
     spinner.succeed('Testing completed!');
 
+    // AI coverage analysis
+    if(useAnalyze) {
+      spinner.start('AI is analyzing test coverage and suggesting improvements...');
+
+      try {
+        const testResults = processTestResults(tempOutputFile);
+        const filePatterns = getTestFilePatterns(testPathPattern);
+
+        await ai({
+          prompt: `Analyze these Jest test results and suggest test coverage improvements:
+          
+${JSON.stringify(testResults, null, 2)}
+
+Test patterns: ${filePatterns.join(', ')}
+
+Please provide:
+1. Analysis of current coverage gaps
+2. Suggestions for improving test cases
+3. Recommendations for additional integration test scenarios
+4. Best practices for increasing test effectiveness`,
+          task: 'optimize',
+          context: true,
+          quiet
+        });
+
+        spinner.succeed('AI test analysis complete');
+      } catch(aiError) {
+        spinner.fail('Could not generate AI test analysis');
+        if(!quiet) {
+          console.error('AI analysis error:', aiError);
+        }
+      }
+    }
+
     // Kill process
     callback(0);
     return 0;
@@ -287,6 +426,39 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
 
     // Stop spinner
     spinner.fail('Testing failed!');
+
+    // AI debug assistance for failed tests
+    if(useDebug) {
+      spinner.start('AI is analyzing test failures...');
+
+      try {
+        const testResults = processTestResults(tempOutputFile);
+
+        await ai({
+          prompt: `Debug these failed Jest tests and suggest fixes:
+          
+${JSON.stringify(error.message, null, 2)}
+
+Test results: ${JSON.stringify(testResults, null, 2)}
+
+Please provide:
+1. Analysis of why the tests are failing
+2. Specific suggestions to fix each failing test
+3. Any potential issues with test fixtures or mocks
+4. Code examples for solutions`,
+          task: 'help',
+          context: true,
+          quiet
+        });
+
+        spinner.succeed('AI debugging assistance complete');
+      } catch(aiError) {
+        spinner.fail('Could not generate AI debugging assistance');
+        if(!quiet) {
+          console.error('AI debugging error:', aiError);
+        }
+      }
+    }
 
     // Kill process
     callback(1);

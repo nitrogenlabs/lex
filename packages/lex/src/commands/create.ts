@@ -53,7 +53,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
           useTypescript
         });
 
-        if (!result) return 1;
+        if(!result) return 1;
 
         const {nameCaps, templateExt, templatePath} = result;
         const storePath: string = `${cwd}/${nameCaps}Store`;
@@ -116,7 +116,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
         useTypescript
       });
 
-      if (!result) return 1;
+      if(!result) return 1;
 
       const {nameCaps, templatePath, templateReact} = result;
       const viewPath: string = `${cwd}/${nameCaps}View`;

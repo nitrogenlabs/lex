@@ -18,7 +18,7 @@ function tryParse(file, content) {
     esproposal_export_star_as: true
   });
 
-  if (ast.errors.length > 0) {
+  if(ast.errors.length > 0) {
     const line = ast.errors[0].loc.start.line;
     const column = ast.errors[0].loc.start.column;
     const message = ast.errors[0].message;
@@ -34,7 +34,7 @@ function syncTests(syncDir) {
   );
   const filesToCopy = globby.sync(path.join(syncDir, "**/*.js"));
 
-  if (filesToCopy.length === 0) {
+  if(filesToCopy.length === 0) {
     throw new Error(
       [
         "Couldn't find any files to copy.",
@@ -56,7 +56,7 @@ function syncTests(syncDir) {
     const content = fs.readFileSync(file, "utf8");
     const parseError = tryParse(file, content);
 
-    if (parseError) {
+    if(parseError) {
       skipped.push(parseError);
       return;
     }
@@ -75,7 +75,7 @@ function syncTests(syncDir) {
 }
 
 function run(argv) {
-  if (argv.length !== 1) {
+  if(argv.length !== 1) {
     console.error(
       [
         "You must provide the path to a flow tests directory to sync from!",
@@ -90,12 +90,12 @@ function run(argv) {
 
   try {
     skipped = syncTests(syncDir);
-  } catch (error) {
+  } catch(error) {
     console.error(`Failed to sync.\n${error}`);
     return 1;
   }
 
-  if (skipped.length > 0) {
+  if(skipped.length > 0) {
     console.log(
       [
         "Some files were skipped due to syntax errors.",
@@ -123,7 +123,7 @@ function run(argv) {
   return 0;
 }
 
-if (require.main === module) {
+if(require.main === module) {
   const exitCode = run(process.argv.slice(2));
   process.exit(exitCode);
 }

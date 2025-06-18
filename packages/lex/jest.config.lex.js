@@ -14,7 +14,7 @@ const nodePath = pathResolve(dirName, './node_modules');
 let testEnvironment = 'node';
 let testEnvironmentOptions = {};
 
-if (targetEnvironment === 'web') {
+if(targetEnvironment === 'web') {
   testEnvironment = 'jsdom';
   testEnvironmentOptions = {
     url: 'http://localhost'
@@ -27,7 +27,7 @@ let transformIgnorePatterns = [
   // '[/\\\\]node_modules[/\\\\].+\\.(js)$'
 ];
 
-if (useTypescript) {
+if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
   testRegex = '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)?$';
   transformIgnorePatterns = [
@@ -96,13 +96,13 @@ const baseConfig = {
 
 // Deep merge function
 const deepMerge = (target, source) => {
-  if (!source) return target;
+  if(!source) return target;
   const output = { ...target };
 
   Object.keys(source).forEach(key => {
-    if (source[key] instanceof Object && key in target && target[key] instanceof Object && !Array.isArray(source[key]) && !Array.isArray(target[key])) {
+    if(source[key] instanceof Object && key in target && target[key] instanceof Object && !Array.isArray(source[key]) && !Array.isArray(target[key])) {
       output[key] = {...target[key], ...source[key]};
-    } else if (Array.isArray(source[key]) && Array.isArray(target[key])) {
+    } else if(Array.isArray(source[key]) && Array.isArray(target[key])) {
       // Merge arrays
       output[key] = [...target[key], ...source[key]];
     } else {
