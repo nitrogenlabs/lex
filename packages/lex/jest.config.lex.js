@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 import { URL } from 'url';
 
@@ -10,6 +11,21 @@ const { jest, sourceFullPath, targetEnvironment, useTypescript } = JSON.parse(
 
 const dirName = new URL('.', import.meta.url).pathname;
 const nodePath = pathResolve(dirName, './node_modules');
+
+// Check if setup files exist
+const lexSetupFile = pathResolve(dirName, './jest.setup.js');
+const projectSetupFile = pathResolve(rootDir, './jest.setup.js');
+const setupFilesAfterEnv = [];
+
+// Add Lex's setup file if it exists
+if(existsSync(lexSetupFile)) {
+  setupFilesAfterEnv.push(lexSetupFile);
+}
+
+// Add project's setup file if it exists
+if(existsSync(projectSetupFile)) {
+  setupFilesAfterEnv.push(projectSetupFile);
+}
 
 let testEnvironment = 'node';
 let testEnvironmentOptions = {};
@@ -69,10 +85,8 @@ const baseConfig = {
     getNodePath('core-js'),
     getNodePath('regenerator-runtime/runtime.js')
   ],
-  setupFilesAfterEnv: [
-    pathResolve(dirName, './jest.setup.js'),
-    '<rootDir>/jest.setup.js'
-  ],
+  // Only add setupFilesAfterEnv if there are entries
+  ...(setupFilesAfterEnv.length > 0 ? { setupFilesAfterEnv } : {}),
   testEnvironment,
   testEnvironmentOptions,
   testPathIgnorePatterns: ['/node_modules/', `${nodePath}/`],

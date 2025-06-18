@@ -5,6 +5,13 @@
   "license": "MIT",
   "type": "module",
   "bin": "./dist/lex.js",
+  "main": "./dist/lex.js",
+  "exports": {
+    ".": {
+      "import": "./dist/lex.js",
+      "require": "./index.cjs"
+    }
+  },
   "keywords": [
     "arkhamjs",
     "lex",
