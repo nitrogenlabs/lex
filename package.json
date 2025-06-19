@@ -7,7 +7,8 @@
     "publish:minor": "npm run publish:minor --workspaces",
     "publish:patch": "npm run publish:patch --workspaces",
     "test": "npm run test --workspaces",
-    "update": "npm run update --workspaces"
+    "update": "npm run update --workspaces",
+    "lint:direct": "find src -type f \\( -name \"*.js\" -o -name \"*.jsx\" -o -name \"*.ts\" -o -name \"*.tsx\" \\) | xargs npx eslint --debug"
   },
   "workspaces": [
     "packages/execa-mock",
@@ -23,5 +24,6 @@
     "eslint-plugin-import": "^2.31.0",
     "npm-check-updates": "^17.1.14",
     "typescript-eslint": "^8.24.0"
-  }
+  },
+  "type": "module"
 }

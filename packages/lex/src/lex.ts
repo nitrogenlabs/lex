@@ -16,7 +16,7 @@ import {create} from './commands/create.js';
 import {dev} from './commands/dev.js';
 import {init} from './commands/init.js';
 import {linked} from './commands/link.js';
-import {lint} from './commands/lint.js';
+import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate.js';
 import {publish} from './commands/publish.js';
 import {test} from './commands/test/test.js';
@@ -125,11 +125,11 @@ program.command('lint')
   .option('--config <path>', 'Use this configuration, overriding .eslintrc.* config options if present.')
   .option('--debug', 'Output debugging information.', false)
   .option('--envInfo', 'Output execution environment information. Default: false.', false)
-  .option('--env <name>', 'Specify environments.')
+  .option('--env <n>', 'Specify environments.')
   .option('--fix', 'Automatically fix problems.', false)
   .option('--fixDryRun', 'Automatically fix problems without saving the changes to the file system.', false)
   .option('--fixType <type>', 'Specify the types of fixes to apply (problem, suggestion, layout).')
-  .option('--format <name>', 'Use a specific output format. Default: stylish.')
+  .option('--format <n>', 'Use a specific output format. Default: stylish.')
   .option('--global <variables>', 'Define global variables.')
   .option('--ignorePath <path>', 'Specify path of ignore file.')
   .option('--ignorePattern <pattern>', 'Pattern of files to ignore (in addition to those in .eslintignore).')
@@ -140,7 +140,7 @@ program.command('lint')
   .option('--noIgnore', 'Disable use of ignore files and patterns.', false)
   .option('--noInlineConfig', 'Prevent comments from changing config or rules.', false)
   .option('--outputFile <path>', 'Specify file to write report to.')
-  .option('--parser <name>', 'Specify the parser to be used.')
+  .option('--parser <n>', 'Specify the parser to be used.')
   .option('--parserOptions <options>', 'Specify parser options.')
   .option('--plugin <plugins>', 'Specify plugins.')
   .option('--printConfig <path>', 'Print the configuration for the given file.')
@@ -150,7 +150,7 @@ program.command('lint')
   .option('--rule <path>', 'Specify rules.')
   .option('--rulesdir <path>', 'Use additional rules from this directory.')
   .option('--stdin', 'Lint code provided on <STDIN> - Default: false.', false)
-  .option('--stdinFilename <name>', 'Specify filename to process STDIN as.')
+  .option('--stdinFilename <n>', 'Specify filename to process STDIN as.')
   .action((cmd) => lint(cmd, process.exit).then(() => {}));
 
 program.command('migrate')
