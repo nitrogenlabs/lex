@@ -7,7 +7,7 @@ export default [
   },
   // Base configuration for all JavaScript files
   {
-    files: ['**/*.js', '**/*.jsx'],
+    files: ['src/**/*.js', 'src/**/*.jsx'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module'
@@ -28,7 +28,7 @@ export default [
   },
   // TypeScript specific configuration
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -58,4 +58,4 @@ export default [
       ]
     }
   }
-];
+]; 

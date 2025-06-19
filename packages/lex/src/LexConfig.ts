@@ -35,9 +35,16 @@ export interface WebpackConfig {
   [key: string]: unknown;
 }
 
+export interface AIConfig {
+  provider?: 'cursor' | 'copilot' | 'openai' | 'anthropic' | 'none';
+  apiKey?: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
 export interface LexConfigType {
-  aiApiKey?: string;
-  aiDefaultModel?: string;
+  ai?: AIConfig;
   configFiles?: string[];
   entryHTML?: string;
   entryJs?: string;
@@ -62,7 +69,13 @@ export interface LexConfigType {
 }
 
 export const defaultConfigValues: LexConfigType = {
-  aiDefaultModel: 'gpt-4o',
+  ai: {
+    provider: 'none',
+    model: 'gpt-4o',
+    maxTokens: 4000,
+    temperature: 0.1
+  },
+  aiDefaultModel: 'gpt-4o', // Legacy support
   configFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',
@@ -189,7 +202,7 @@ export class LexConfig {
 
           try {
             configJson = JSON.parse(configContent)?.default || {};
-          } catch(error) {
+          } catch(_error) {
             configJson = {};
           }
 

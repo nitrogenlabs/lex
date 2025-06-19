@@ -37,6 +37,12 @@ $ lex dev -o
 
 ## Configuration
 
+- **ai** - *(optional)* AI configuration options.
+  - **provider** - *(optional)* AI provider to use. Options: 'cursor', 'copilot', 'openai', 'anthropic', 'none'. Default: 'none'.
+  - **apiKey** - *(optional)* API key for the AI provider.
+  - **model** - *(optional)* Model to use for the AI provider.
+  - **maxTokens** - *(optional)* Maximum tokens for AI completions.
+  - **temperature** - *(optional)* Temperature for AI generation.
 - **configFiles** - *(optional)* - Array of configuration files to load. Defaults to `['package.json', 'lex.config.js']`.
 - **entryHTML** - *(optional)* Path to the HTML file to use as the entry point for the app.
 - **entryJs** - *(optional)* Path to the JS file to use as the entry point for the app.
@@ -59,11 +65,24 @@ $ lex dev -o
 - **useTypescript** - *(optional)* Use Typescript for the project. Default: false.
 - **webpack** - *(optional)* Options to pass to Webpack.
 
-## AI-Enhanced Test Command
+## AI-Enhanced Features
+
+Lex now integrates AI capabilities across multiple commands to improve development efficiency and code quality:
+
+### AI-Powered Linting
+
+The lint command now supports AI-powered fixes for issues that standard ESLint can't automatically resolve:
+
+```bash
+# Run linting with AI-powered fixes
+lex lint --aifix
+```
+
+### AI-Enhanced Test Command
 
 We've integrated AI capabilities into the Lex test command to improve testing efficiency and quality:
 
-### Features
+#### Test Features
 
 - **Test Generation** (`--generate`): Automatically identifies source files without corresponding test files and generates comprehensive test cases with proper fixtures and mocks.
 
@@ -71,7 +90,7 @@ We've integrated AI capabilities into the Lex test command to improve testing ef
 
 - **Test Debugging** (`--debugTests`): When tests fail, provides intelligent debugging assistance with root cause analysis and suggested fixes.
 
-### Usage Examples
+#### Test Usage Examples
 
 ```bash
 # Generate tests for untested files
@@ -87,14 +106,26 @@ lex test --debugTests
 lex test --generate --analyze --debugTests
 ```
 
-> **Note:** For backward compatibility, the previous option names (`--generate`, `--analyze`, `--debugTests`) are still supported but considered deprecated.
+### AI Provider Configuration
 
-### Implementation
+Lex supports multiple AI providers:
 
-The AI features leverage the existing AI module to:
+1. **Cursor IDE** - Integration with Cursor's AI capabilities
+2. **GitHub Copilot** - Integration with GitHub's Copilot AI
 
-1. Find untested source files and generate appropriate test cases
-2. Process Jest output to provide analysis and optimization suggestions
-3. Debug test failures with contextual recommendations
+You can configure your preferred AI provider in your `lex.config.js` file:
 
-For detailed documentation, see `packages/lex/src/commands/test/test.docs.md`.
+```javascript
+export default {
+  // Other configuration...
+  ai: {
+    provider: 'cursor', // 'cursor', 'copilot', or 'none'
+    apiKey: 'your-api-key', // Optional if using environment variables
+    model: 'cursor-code'
+  }
+}
+```
+
+If no AI provider is configured when you run an AI-powered command, Lex will prompt you to choose a provider.
+
+For detailed documentation on AI features, see `packages/lex/docs/ai-configuration.md`.

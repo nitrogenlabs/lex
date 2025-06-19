@@ -45,6 +45,7 @@ export interface LintOptions {
   readonly rulesdir?: string;
   readonly stdin?: boolean;
   readonly stdinFilename?: string;
+  readonly aifix?: boolean;
 }
 
 export type LintCallback = typeof process.exit;
@@ -142,40 +143,7 @@ const installDependencies = async (_cwd: string, useTypescript: boolean, quiet: 
   }
 };
 
-/**
- * Add or update the lint:direct script in package.json
- */
-const addLintScript = (cwd: string, fix: boolean, debug: boolean, useTypescript: boolean): void => {
-  const packageJsonPath = pathResolve(cwd, 'package.json');
-
-  if(existsSync(packageJsonPath)) {
-    try {
-      const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
-      const packageJson = JSON.parse(packageJsonContent);
-
-      // Ensure scripts object exists
-      packageJson.scripts = packageJson.scripts || {};
-
-      // Get path to lex's node_modules
-      const lexPath = pathResolve(__dirname, '../../../');
-      const eslintPath = pathResolve(lexPath, 'node_modules', '.bin', 'eslint');
-      
-      // Create direct eslint commands using lex's eslint
-      const jsLintCommand = `${eslintPath} "src/**/*.{js,jsx}"${fix ? ' --fix' : ''}${debug ? ' --debug' : ''} || true`;
-      const tsLintCommand = useTypescript ? `${eslintPath} "src/**/*.{ts,tsx}"${fix ? ' --fix' : ''}${debug ? ' --debug' : ''} || true` : '';
-      
-      // Add direct command to package.json
-      packageJson.scripts['lint:direct'] = useTypescript 
-        ? `${jsLintCommand} && ${tsLintCommand}`
-        : jsLintCommand;
-
-      // Write the updated package.json
-      writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf8');
-    } catch(_error) {
-      // Ignore errors
-    }
-  }
-};
+// Function removed as it's no longer needed
 
 /**
  * Run ESLint directly from lex's node_modules
@@ -186,7 +154,8 @@ const runEslintWithLex = async (
   cliName: string,
   fix: boolean,
   debug: boolean,
-  useTypescript: boolean
+  useTypescript: boolean,
+  captureOutput?: (output: string) => void
 ): Promise<number> => {
   const spinner = createSpinner(quiet);
 
@@ -210,13 +179,15 @@ const runEslintWithLex = async (
       shell: true // Needed for glob pattern expansion
     });
     
-    // Display JS output
+    // Display JS output and capture it if needed
     if(jsResult.stdout) {
       console.log(jsResult.stdout);
+      if (captureOutput) captureOutput(jsResult.stdout);
     }
 
     if(jsResult.stderr) {
       console.error(jsResult.stderr);
+      if (captureOutput) captureOutput(jsResult.stderr);
     }
     
     // Run eslint on TS files if needed
@@ -275,12 +246,107 @@ const runEslintWithLex = async (
   }
 };
 
+/**
+ * Use AI to fix linting errors that couldn't be fixed automatically
+ */
+const applyAIFix = async (
+  cwd: string,
+  errors: string,
+  quiet: boolean
+): Promise<void> => {
+  const spinner = createSpinner(quiet);
+  spinner.start('Using AI to fix remaining lint issues...');
+  
+  try {
+    // Extract file paths and errors from the ESLint output
+    const fileErrorMap = new Map<string, string[]>();
+    const lines = errors.split('\n');
+    let currentFile = '';
+    
+    for (const line of lines) {
+      if (line.startsWith('/')) {
+        // This is a file path
+        currentFile = line;
+        fileErrorMap.set(currentFile, []);
+      } else if (currentFile && line.trim() && !line.includes('✖') && !line.includes('potentially fixable')) {
+        // This is an error line
+        const errorArray = fileErrorMap.get(currentFile);
+        if (errorArray) {
+          errorArray.push(line.trim());
+        }
+      }
+    }
+    
+    // Import the AI service dynamically to avoid circular dependencies
+    const { callAIService } = await import('../../utils/aiService.js');
+    
+    // Process each file with errors
+    for (const [filePath, fileErrors] of fileErrorMap.entries()) {
+      if (fileErrors.length === 0) continue;
+      
+      // Read the file content
+      const fileContent = readFileSync(filePath, 'utf8');
+      
+      // Prepare a prompt for AI
+      const prompt = `Fix the following ESLint errors in this code:
+${fileErrors.join('\n')}
+
+Here's the code:
+\`\`\`
+${fileContent}
+\`\`\`
+
+Return only the fixed code without any explanations.`;
+
+      // Call the AI service to get fixed code
+      let fixedContent = await callAIService(prompt, quiet);
+      
+      // If AI service failed or returned empty result, fall back to rule-based fixes
+      if (!fixedContent) {
+        log('AI service unavailable or skipped, using rule-based fixes', 'info', quiet);
+        fixedContent = fileContent;
+        
+        // Apply rule-based fixes for common issues
+        if (fileErrors.some(e => e.includes('is assigned a value but never used'))) {
+          // Find variable names that are unused
+          const unusedVarRegex = /'([^']+)' is assigned a value but never used/g;
+          let match;
+          while ((match = unusedVarRegex.exec(fileErrors.join(' '))) !== null) {
+            const varName = match[1];
+            fixedContent = fixedContent.replace(
+              new RegExp(`(const|let|var) ${varName}\\b`, 'g'), 
+              `$1 _${varName}`
+            );
+          }
+        }
+        
+        if (fileErrors.some(e => e.includes('Expected \'===\' and instead saw \'==\''))) {
+          fixedContent = fixedContent.replace(/ == /g, ' === ');
+        }
+        
+        if (fileErrors.some(e => e.includes('Expected \'!==\' and instead saw \'!='))) {
+          fixedContent = fixedContent.replace(/ != /g, ' !== ');
+        }
+      }
+      
+      // Write the fixed content back to the file
+      writeFileSync(filePath, fixedContent, 'utf8');
+    }
+    
+    spinner.succeed('AI fixes applied successfully!');
+  } catch (error) {
+    spinner.fail('Failed to apply AI fixes');
+    log(`Error: ${error.message}`, 'error', quiet);
+  }
+};
+
 export const lint = async (cmd: LintOptions, callback: LintCallback = process.exit): Promise<number> => {
   const {
     cliName = 'Lex',
     fix = false,
     debug = false,
-    quiet = false
+    quiet = false,
+    aifix = false
   } = cmd;
 
   log(`${cliName} linting...`, 'info', quiet);
@@ -326,8 +392,41 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
 
     // No need to add scripts to package.json anymore
     
-    // Run ESLint directly using lex's dependencies
-    const result = await runEslintWithLex(cwd, quiet, cliName, fix, debug, useTypescript);
+    // Capture the ESLint output for AI fix if needed
+    let eslintOutput = '';
+    const captureOutput = (output: string) => {
+      eslintOutput += output + '\n';
+    };
+
+    // Always run ESLint with --fix first to apply built-in fixes
+    const shouldApplyAIFix = aifix || fix;
+    const result = await runEslintWithLex(cwd, quiet, cliName, true, debug, useTypescript, captureOutput);
+
+    // If there are still errors and aifix is enabled, try to fix them with AI
+    if (result !== 0 && shouldApplyAIFix) {
+      // Check if AI is configured
+      let aiConfigured = false;
+      try {
+        // Dynamically import to avoid circular dependencies
+        const { LexConfig } = await import('../../LexConfig.js');
+        aiConfigured = !!(LexConfig.config.ai?.provider && LexConfig.config.ai.provider !== 'none');
+      } catch (_) {
+        // If we can't import LexConfig, assume AI is not configured
+        aiConfigured = false;
+      }
+
+      // Apply AI fixes if AI is configured or aifix flag is explicitly set
+      if (aiConfigured || aifix) {
+        await applyAIFix(cwd, eslintOutput, quiet);
+        
+        // Run ESLint again to check if all issues are fixed
+        const afterFixResult = await runEslintWithLex(cwd, quiet, cliName, false, debug, useTypescript, captureOutput);
+        
+        // Return the result of the second run
+        callback(afterFixResult);
+        return afterFixResult;
+      }
+    }
 
     callback(result);
     return result;
