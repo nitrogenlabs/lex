@@ -268,24 +268,8 @@ const runEslintWithLex = async (
       }
     }
     
-    // If we found a config, use it; otherwise, we'll create a temporary one later
-    const foundLexConfig = !!lexConfigPath && existsSync(lexConfigPath);
-    
-    if (debug) {
-      log(`Current directory: ${__dirname}`, 'info', quiet);
-      log(`Project config path: ${projectConfigPath}`, 'info', quiet);
-      log(`Project config exists: ${hasProjectConfig}`, 'info', quiet);
-      log(`Found Lex config: ${lexConfigPath}`, 'info', quiet);
-      log(`Lex config exists: ${!!lexConfigPath && existsSync(lexConfigPath)}`, 'info', quiet);
-    }
-    
-    // If we found a config, use it; otherwise, we'll create a temporary one later
-    const foundLexConfig = !!lexConfigPath && existsSync(lexConfigPath);
+    // Determine which config file to use
     const configPath = hasProjectConfig ? projectConfigPath : (lexConfigPath || projectConfigPath);
-    
-    if (!hasProjectConfig && foundLexConfig) {
-      log('No ESLint configuration found in project. Using Lex\'s default configuration.', 'info', quiet);
-    }
     
     // Use npx to run eslint - this will use the one from lex if available
     // or download a temporary one if needed
@@ -510,18 +494,63 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     if (existsSync(pathResolve(cwd, '.eslintrc.json'))) {
       unlinkSync(pathResolve(cwd, '.eslintrc.json'));
     }
+    
+    // Try to find Lex's ESLint config if needed
+    let lexConfigPath = '';
+    let shouldCreateTempConfig = false;
+    
+    if (!hasEslintConfig) {
+      // Try different potential locations for the Lex config
+      const possiblePaths = [
+        // From src/commands/lint/lint.ts to root
+        pathResolve(__dirname, '../../../../eslint.config.js'),
+        // From packages/lex/src/commands/lint/lint.ts to packages/lex
+        pathResolve(__dirname, '../../../eslint.config.js'),
+        // From packages/lex/src/commands/lint/lint.ts to root
+        pathResolve(__dirname, '../../../../../eslint.config.js'),
+        // Absolute path if Lex is installed globally
+        pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+      ];
+      
+      // Find the first existing config
+      for (const path of possiblePaths) {
+        if (existsSync(path)) {
+          lexConfigPath = path;
+          break;
+        }
+      }
+      
+      if (debug) {
+        log(`Current directory: ${__dirname}`, 'info', quiet);
+        log(`Project config path: ${projectConfigPath}`, 'info', quiet);
+        log(`Project config exists: ${hasEslintConfig}`, 'info', quiet);
+        log(`Found Lex config: ${lexConfigPath}`, 'info', quiet);
+        log(`Lex config exists: ${!!lexConfigPath && existsSync(lexConfigPath)}`, 'info', quiet);
+      }
+      
+      // If we found Lex's config, use it
+      if (lexConfigPath && existsSync(lexConfigPath)) {
+        log('No ESLint configuration found in project. Using Lex\'s default configuration.', 'info', quiet);
+      } else {
+        // Otherwise, we need to create a temporary config
+        shouldCreateTempConfig = true;
+      }
+    }
 
     // If user specified a config file, use that
     if (config) {
       const userConfigPath = pathResolve(cwd, config);
       if (existsSync(userConfigPath)) {
         log(`Using specified ESLint configuration: ${config}`, 'info', quiet);
+        // User-specified config takes precedence
+        shouldCreateTempConfig = false;
       } else {
         log(`Specified ESLint configuration not found: ${config}. Using Lex's default configuration.`, 'warn', quiet);
       }
     }
-    // Otherwise, if no ESLint config exists in the project and we couldn't find Lex's config
-    else if (!hasEslintConfig && !foundLexConfig) {
+    
+    // Create a temporary config if needed
+    if (shouldCreateTempConfig) {
       log('No ESLint configuration found. Creating a temporary configuration...', 'info', quiet);
       const configResult = createDefaultESLintConfig(useTypescript, cwd);
       tempConfigPath = configResult.configPath;
