@@ -4,10 +4,15 @@
  */
 import {execa} from 'execa';
 import {existsSync, writeFileSync, readFileSync, unlinkSync} from 'fs';
-import {resolve as pathResolve} from 'path';
+import {resolve as pathResolve, dirname} from 'path';
+import {fileURLToPath} from 'url';
 
 import {createSpinner} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
+
+// Create __dirname equivalent for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export interface LintOptions {
   readonly cache?: boolean;
@@ -72,8 +77,57 @@ const createDefaultESLintConfig = (useTypescript: boolean, cwd: string): ConfigR
     }
   }
 
-  // Create a simple config that works for JavaScript files
-  const eslintConfig = `// ESLint configuration
+  // Try to find Lex's eslint.config.js to copy
+  // Try different potential locations for the Lex config
+  const possiblePaths = [
+    // From src/commands/lint/lint.ts to root
+    pathResolve(__dirname, '../../../../eslint.config.js'),
+    // From packages/lex/src/commands/lint/lint.ts to packages/lex
+    pathResolve(__dirname, '../../../eslint.config.js'),
+    // From packages/lex/src/commands/lint/lint.ts to root
+    pathResolve(__dirname, '../../../../../eslint.config.js'),
+    // Absolute path if Lex is installed globally
+    pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+  ];
+  
+  let foundConfig = '';
+  for (const path of possiblePaths) {
+    if (existsSync(path)) {
+      foundConfig = path;
+      break;
+    }
+  }
+  
+  let eslintConfig;
+  
+  if (foundConfig) {
+    // Copy Lex's config file
+    try {
+      eslintConfig = readFileSync(foundConfig, 'utf8');
+    } catch (_error) {
+      // Fall back to default config if we can't read Lex's config
+      eslintConfig = createBasicESLintConfig(useTypescript);
+    }
+  } else {
+    // Create a simple config if Lex's config doesn't exist
+    eslintConfig = createBasicESLintConfig(useTypescript);
+  }
+
+  // Write the config
+  writeFileSync(configPath, eslintConfig, 'utf8');
+
+  // Return both the config path and the original config
+  return {
+    configPath,
+    originalConfig
+  };
+};
+
+/**
+ * Create a basic ESLint config as a fallback
+ */
+const createBasicESLintConfig = (useTypescript: boolean): string => {
+  let config = `// ESLint configuration
 export default [
   {
     ignores: ['**/node_modules/**', '**/dist/**', '**/build/**']
@@ -89,20 +143,48 @@ export default [
       'indent': ['error', 2],
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
-      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
+      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_', 'caughtErrors': 'all', 'caughtErrorsIgnorePattern': '^_' }],
       'eqeqeq': ['error', 'always']
     }
+  }`;
+  
+  // Add TypeScript configuration if needed
+  if (useTypescript) {
+    config += `,
+  // Config for TypeScript files
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: {
+        importSource: '@typescript-eslint/parser'
+      },
+      parserOptions: {
+        project: './tsconfig.json'
+      }
+    },
+    plugins: {
+      '@typescript-eslint': {
+        importSource: '@typescript-eslint/eslint-plugin'
+      }
+    },
+    rules: {
+      'indent': ['error', 2],
+      'quotes': ['error', 'single'],
+      'semi': ['error', 'always'],
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_', 'caughtErrors': 'all', 'caughtErrorsIgnorePattern': '^_' }],
+      'eqeqeq': ['error', 'always']
+    }
+  }`;
   }
+  
+  // Close the array
+  config += `
 ];`;
 
-  // Write the config
-  writeFileSync(configPath, eslintConfig, 'utf8');
-
-  // Return both the config path and the original config
-  return {
-    configPath,
-    originalConfig
-  };
+  return config;
 };
 
 /**
@@ -160,6 +242,48 @@ const runEslintWithLex = async (
   const spinner = createSpinner(quiet);
 
   try {
+    // Determine which ESLint config to use
+    // First check if the project has its own eslint.config.js
+    const projectConfigPath = pathResolve(cwd, 'eslint.config.js');
+    const hasProjectConfig = existsSync(projectConfigPath);
+    
+    // If not, try to find Lex's default config
+    // Try different potential locations for the Lex config
+    const possiblePaths = [
+      // From src/commands/lint/lint.ts to root
+      pathResolve(__dirname, '../../../../eslint.config.js'),
+      // From packages/lex/src/commands/lint/lint.ts to packages/lex
+      pathResolve(__dirname, '../../../eslint.config.js'),
+      // From packages/lex/src/commands/lint/lint.ts to root
+      pathResolve(__dirname, '../../../../../eslint.config.js'),
+      // Absolute path if Lex is installed globally
+      pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+    ];
+    
+    let lexConfigPath = '';
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        lexConfigPath = path;
+        break;
+      }
+    }
+    
+    if (debug) {
+      log(`Current directory: ${__dirname}`, 'info', quiet);
+      log(`Project config path: ${projectConfigPath}`, 'info', quiet);
+      log(`Project config exists: ${hasProjectConfig}`, 'info', quiet);
+      log(`Found Lex config: ${lexConfigPath}`, 'info', quiet);
+      log(`Lex config exists: ${!!lexConfigPath && existsSync(lexConfigPath)}`, 'info', quiet);
+    }
+    
+    // If we found a config, use it; otherwise, we'll create a temporary one later
+    const foundLexConfig = !!lexConfigPath && existsSync(lexConfigPath);
+    const configPath = hasProjectConfig ? projectConfigPath : (lexConfigPath || projectConfigPath);
+    
+    if (!hasProjectConfig && foundLexConfig) {
+      log('No ESLint configuration found in project. Using Lex\'s default configuration.', 'info', quiet);
+    }
+    
     // Use npx to run eslint - this will use the one from lex if available
     // or download a temporary one if needed
     
@@ -168,7 +292,7 @@ const runEslintWithLex = async (
       '-p', 'eslint',
       'eslint',
       'src/**/*.{js,jsx}',
-      '--config', pathResolve(cwd, 'eslint.config.js'), // Use the config we created
+      '--config', configPath, // Use the determined config
       ...(fix ? ['--fix'] : []),
       ...(debug ? ['--debug'] : []),
       '--no-error-on-unmatched-pattern' // Don't error if no files are found
@@ -199,7 +323,7 @@ const runEslintWithLex = async (
         '-p', '@typescript-eslint/eslint-plugin',
         'eslint',
         'src/**/*.{ts,tsx}',
-        '--config', pathResolve(cwd, 'eslint.config.js'), // Use the config we created
+        '--config', configPath, // Use the determined config
         ...(fix ? ['--fix'] : []),
         ...(debug ? ['--debug'] : []),
         '--no-error-on-unmatched-pattern' // Don't error if no files are found
@@ -346,7 +470,8 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     fix = false,
     debug = false,
     quiet = false,
-    aifix = false
+    aifix = false,
+    config = null
   } = cmd;
 
   log(`${cliName} linting...`, 'info', quiet);
@@ -370,7 +495,8 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     await installDependencies(cwd, useTypescript, quiet);
 
     // Check for ESLint configuration files
-    const hasEslintConfig = existsSync(pathResolve(cwd, 'eslint.config.js')) ||
+    const projectConfigPath = pathResolve(cwd, 'eslint.config.js');
+    const hasEslintConfig = existsSync(projectConfigPath) ||
                           existsSync(pathResolve(cwd, '.eslintrc.js')) ||
                           existsSync(pathResolve(cwd, '.eslintrc.json')) ||
                           existsSync(pathResolve(cwd, '.eslintrc.yml')) ||
@@ -382,9 +508,18 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
       unlinkSync(pathResolve(cwd, '.eslintrc.json'));
     }
 
-    // Create a default config if none exists
-    if(!hasEslintConfig) {
-      log('No ESLint configuration found. Creating a default configuration...', 'info', quiet);
+    // If user specified a config file, use that
+    if (config) {
+      const userConfigPath = pathResolve(cwd, config);
+      if (existsSync(userConfigPath)) {
+        log(`Using specified ESLint configuration: ${config}`, 'info', quiet);
+      } else {
+        log(`Specified ESLint configuration not found: ${config}. Using Lex's default configuration.`, 'warn', quiet);
+      }
+    }
+    // Otherwise, if no ESLint config exists in the project and we couldn't find Lex's config
+    else if (!hasEslintConfig && !foundLexConfig) {
+      log('No ESLint configuration found. Creating a temporary configuration...', 'info', quiet);
       const configResult = createDefaultESLintConfig(useTypescript, cwd);
       tempConfigPath = configResult.configPath;
       originalConfig = configResult.originalConfig;
