@@ -268,6 +268,9 @@ const runEslintWithLex = async (
       }
     }
     
+    // If we found a config, use it; otherwise, we'll create a temporary one later
+    const foundLexConfig = !!lexConfigPath && existsSync(lexConfigPath);
+    
     if (debug) {
       log(`Current directory: ${__dirname}`, 'info', quiet);
       log(`Project config path: ${projectConfigPath}`, 'info', quiet);
