@@ -39,16 +39,12 @@ if(targetEnvironment === 'web') {
 
 let moduleFileExtensions = ['js', 'json'];
 let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
-let transformIgnorePatterns = [
-  // '[/\\\\]node_modules[/\\\\].+\\.(js)$'
-];
+let transformIgnorePatterns = [];
 
 if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
   testRegex = '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)?$';
-  transformIgnorePatterns = [
-    // '[/\\\\]node_modules[/\\\\].+\\.(js|ts|tsx)$'
-  ];
+  transformIgnorePatterns = [];
 }
 
 // Create a base config
@@ -64,11 +60,6 @@ const baseConfig = {
   ],
   coverageReporters: ['html', 'text'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
-  },
   moduleDirectories: ['node_modules', nodePath],
   moduleFileExtensions,
   moduleNameMapper: {
@@ -94,7 +85,7 @@ const baseConfig = {
   testRunner: getNodePath('jest-circus/runner.js'),
   transform: {
     ...(useTypescript ? {
-      '\\.[jt]sx?$': [getNodePath('ts-jest/dist/index.js'), {
+      '\\.tsx?$': [getNodePath('ts-jest/dist/index.js'), {
         useESM: true
       }]
     } : {

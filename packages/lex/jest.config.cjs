@@ -25,12 +25,12 @@ module.exports = {
   rootDir: './',
   testMatch: ['<rootDir>/**/*.test.ts*'],
   transform: {
-    '^.+\\.[tj]sx?$': ['ts-jest', {
+    '^.+\\.ts$|^.+\\.tsx$': ['ts-jest', {
       useESM: true,
       tsconfig: {
         module: 'ESNext',
         target: 'ESNext',
-        isolatedModules: true
+        allowJs: true
       }
     }],
     '\\.(gql|graphql)$': 'jest-transform-graphql'
