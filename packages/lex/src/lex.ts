@@ -9,20 +9,20 @@ import {fileURLToPath} from 'url';
 
 import {ai} from './commands/ai/ai.js';
 import {build} from './commands/build/build.js';
-import {clean} from './commands/clean.js';
-import {compile} from './commands/compile.js';
-import {config} from './commands/config.js';
-import {create} from './commands/create.js';
-import {dev} from './commands/dev.js';
-import {init} from './commands/init.js';
-import {linked} from './commands/link.js';
+import {clean} from './commands/clean/clean.js';
+import {compile} from './commands/compile/compile.js';
+import {config} from './commands/config/config.js';
+import {create} from './commands/create/create.js';
+import {dev} from './commands/dev/dev.js';
+import {init} from './commands/init/init.js';
+import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
-import {migrate} from './commands/migrate.js';
-import {publish} from './commands/publish.js';
+import {migrate} from './commands/migrate/migrate.js';
+import {publish} from './commands/publish/publish.js';
 import {test} from './commands/test/test.js';
-import {update} from './commands/update.js';
-import {upgrade} from './commands/upgrade.js';
-import {versions} from './commands/versions.js';
+import {update} from './commands/update/update.js';
+import {upgrade} from './commands/upgrade/upgrade.js';
+import {versions} from './commands/versions/versions.js';
 
 const packagePath = fileURLToPath(new URL('../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
@@ -76,7 +76,7 @@ program.command('config <type>')
 
 program.command('compile')
   .option('--config <path>', 'Transpiler configuration file path (ie. tsconfig.json).')
-  .option('--environment <name>', 'Target environment. "node" or "web". Default: "node".')
+  .option('--environment <n>', 'Target environment. "node" or "web". Default: "node".')
   .option('--lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('--outputPath <path>', 'Output path')
   .option('--remove', 'Removes all files from the output directory before compiling.')
@@ -88,7 +88,7 @@ program.command('compile')
 
 program.command('create <type>')
   .option('--outputFile <path>', 'Output filename.')
-  .option('--outputName <name>', 'Output name.')
+  .option('--outputName <n>', 'Output name.')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--typescript', 'Create Typescript version.')
   .action((type, cmd) => create(type, cmd, process.exit).then(() => {}));
@@ -103,7 +103,7 @@ program.command('dev')
   .option('--remove', 'Removes all files from the output directory before compiling.')
   .option('--sourcePath <path>', 'Source path')
   .option('--typescript', 'Transpile as Typescript.')
-  .option('--variables <name>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
+  .option('--variables <n>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
   .option('--watch', 'Watch for changes.')
   .action((cmd) => dev(cmd, process.exit).then(() => {}));
 
@@ -119,7 +119,6 @@ program.command('linked')
   .action((cmd) => linked(cmd, process.exit).then(() => {}));
 
 program.command('lint')
-  .option('--aifix', 'Use AI to automatically fix problems that standard --fix cannot resolve.', false)
   .option('--cache', 'Only check changed files. Default: false.', false)
   .option('--cacheLocation <path>', 'Path to the cache file or directory.')
   .option('--color', 'Force enabling of color.', false)

@@ -3,12 +3,12 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {existsSync} from 'node:fs';
 
 import {test, TestCallback} from './test.js';
-import {ai} from '../ai/index.js';
+import {ai} from '../ai/ai.js';
 
 // Mock dependencies
 jest.mock('execa');

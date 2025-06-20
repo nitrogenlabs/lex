@@ -12,7 +12,7 @@ import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
-import {ai} from '../ai/index.js';
+import {ai} from '../ai/ai.js';
 
 export interface TestOptions {
   readonly analyze?: boolean;
@@ -108,7 +108,7 @@ const processTestResults = (outputFile?: string): any => {
   try {
     const content = readFileSync(outputFile, 'utf-8');
     return JSON.parse(content);
-  } catch(error) {
+  } catch(_error) {
     return null;
   }
 };
