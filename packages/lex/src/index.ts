@@ -1,0 +1,42 @@
+/**
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
+
+// Export types from types.ts
+export * from './types.js';
+
+// Export classes and values from LexConfig
+export {
+  LexConfig,
+  defaultConfigValues
+} from './LexConfig.js';
+
+// Export Config as both a type and a namespace with create method for backward compatibility
+export const Config = {
+  create: (config: any) => config
+};
+
+// Export utility functions
+export * from './utils/aiService.js';
+export * from './utils/app.js';
+export * from './utils/file.js';
+export * from './utils/log.js';
+
+// Export commands
+export * from './commands/ai/ai.js';
+export * from './commands/build/build.js';
+export * from './commands/clean.js';
+export * from './commands/compile.js';
+export * from './commands/config.js';
+export * from './commands/create.js';
+export * from './commands/dev.js';
+export * from './commands/init.js';
+export * from './commands/link.js';
+export * from './commands/lint/lint.js';
+export * from './commands/migrate.js';
+export * from './commands/publish.js';
+export * from './commands/test/test.js';
+export * from './commands/update.js';
+export * from './commands/upgrade.js';
+export * from './commands/versions.js'; 

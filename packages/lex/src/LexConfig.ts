@@ -68,6 +68,8 @@ export interface LexConfigType {
   webpack?: WebpackConfig;
 }
 
+export type Config = LexConfigType;
+
 export const defaultConfigValues: LexConfigType = {
   ai: {
     provider: 'none',
@@ -75,7 +77,6 @@ export const defaultConfigValues: LexConfigType = {
     maxTokens: 4000,
     temperature: 0.1
   },
-  aiDefaultModel: 'gpt-4o', // Legacy support
   configFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',

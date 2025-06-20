@@ -5,8 +5,6 @@
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import OpenAI from 'openai';
-import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
@@ -30,7 +28,7 @@ const getFileContext = (filePath: string): string => {
   try {
     const content = readFileSync(filePath, 'utf-8');
     return `File: ${filePath}\n\n${content}`;
-  } catch(error) {
+  } catch(_error) {
     return `Error reading file: ${filePath}`;
   }
 };
@@ -55,33 +53,33 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
 
   // Add additional context based on the task
   switch(task) {
-    case 'generate':
-      // Add project structure info for generation context
-      const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
-        cwd: process.cwd(),
-        ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
-        maxDepth: 3
-      });
-      projectContext += '\n\nProject structure:\n' + files.join('\n');
-      break;
+  case 'generate':
+    // Add project structure info for generation context
+    const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
+      cwd: process.cwd(),
+      ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
+      maxDepth: 3
+    });
+    projectContext += '\n\nProject structure:\n' + files.join('\n');
+    break;
 
-    case 'test':
-      // Add test configuration and similar test files
-      if(file) {
-        const testConfig = getFileContext('jest.config.js');
-        projectContext += `\n\nTest configuration:\n${testConfig}`;
-      }
-      break;
+  case 'test':
+    // Add test configuration and similar test files
+    if(file) {
+      const testConfig = getFileContext('jest.config.js');
+      projectContext += `\n\nTest configuration:\n${testConfig}`;
+    }
+    break;
 
-    case 'optimize':
-      // Add build configuration
-      const webpackConfig = getFileContext('webpack.config.js');
-      projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
-      break;
+  case 'optimize':
+    // Add build configuration
+    const webpackConfig = getFileContext('webpack.config.js');
+    projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
+    break;
 
-    default:
-      // No additional context
-      break;
+  default:
+    // No additional context
+    break;
   }
 
   return projectContext;
@@ -123,30 +121,30 @@ const displayResponse = (response: any, options: AIOptions): void => {
 
   // Display with appropriate formatting based on task
   switch(task) {
-    case 'generate':
-      log('\nGenerated Code:\n', 'success', quiet);
-      log(content, 'default', quiet);
-      break;
+  case 'generate':
+    log('\nGenerated Code:\n', 'success', quiet);
+    log(content, 'default', quiet);
+    break;
 
-    case 'explain':
-      log('\nCode Explanation:\n', 'success', quiet);
-      log(content, 'default', quiet);
-      break;
+  case 'explain':
+    log('\nCode Explanation:\n', 'success', quiet);
+    log(content, 'default', quiet);
+    break;
 
-    case 'test':
-      log('\nGenerated Tests:\n', 'success', quiet);
-      log(content, 'default', quiet);
-      break;
+  case 'test':
+    log('\nGenerated Tests:\n', 'success', quiet);
+    log(content, 'default', quiet);
+    break;
 
-    case 'optimize':
-      log('\nOptimization Suggestions:\n', 'success', quiet);
-      log(content, 'default', quiet);
-      break;
+  case 'optimize':
+    log('\nOptimization Suggestions:\n', 'success', quiet);
+    log(content, 'default', quiet);
+    break;
 
-    default:
-      log('\nAI Response:\n', 'success', quiet);
-      log(content, 'default', quiet);
-      break;
+  default:
+    log('\nAI Response:\n', 'success', quiet);
+    log(content, 'default', quiet);
+    break;
   }
 };
 
@@ -158,7 +156,6 @@ export const ai = async (options: AIOptions): Promise<number> => {
     cliName = 'Lex',
     lexConfig,
     model = 'gpt-4o',
-    prompt = '',
     quiet = false,
     task = 'help'
   } = options;
@@ -176,9 +173,9 @@ export const ai = async (options: AIOptions): Promise<number> => {
   spinner.start(`Processing ${task} request...`);
 
   // Verify API key
-  const apiKey = process.env.OPENAI_API_KEY || LexConfig.config.aiApiKey;
+  const apiKey = process.env.OPENAI_API_KEY || LexConfig.config.ai?.apiKey;
   if(!apiKey) {
-    spinner.fail('OpenAI API key not found. Set OPENAI_API_KEY environment variable or add aiApiKey to your Lex configuration.');
+    spinner.fail('OpenAI API key not found. Set OPENAI_API_KEY environment variable or add ai.apiKey to your Lex configuration.');
     return 1;
   }
 

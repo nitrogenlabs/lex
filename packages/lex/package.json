@@ -5,13 +5,14 @@
   "license": "MIT",
   "type": "module",
   "bin": "./dist/lex.js",
-  "main": "./dist/lex.js",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/lex.js",
+      "import": "./dist/index.js",
       "require": "./index.cjs"
     }
   },
+  "types": "./dist/index.d.ts",
   "keywords": [
     "arkhamjs",
     "lex",
@@ -35,9 +36,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf dist && esbuild $(find src -name '*.ts' -not -name '*.test.ts' -not -name '*.spec.ts') --platform=node --outdir=./dist --sourcemap=inline --target=node22 --format=esm --packages=external",
+    "build": "NODE_ENV=production && rm -rf dist && esbuild $(find src -name '*.ts' -not -name '*.test.ts' -not -name '*.spec.ts') --platform=node --outdir=./dist --sourcemap=inline --target=node22 --format=esm --packages=external && npm run declarations",
     "build:all": "npm run build && npm run build:ai",
     "build:ai": "NODE_ENV=production && esbuild packages/lex/src/commands/ai/*.ts --platform=node --outdir=./dist/commands/ai --sourcemap=inline --target=node22 --format=esm --packages=external",
+    "declarations": "tsc --declaration --emitDeclarationOnly --outDir dist",
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
