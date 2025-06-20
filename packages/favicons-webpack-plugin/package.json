@@ -87,7 +87,7 @@
     "webpack-dev-middleware": "^7.4.2"
   },
   "peerDependencies": {
-    "webpack": "5.97.1"
+    "webpack": "^5.97.1"
   },
   "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8"
 }

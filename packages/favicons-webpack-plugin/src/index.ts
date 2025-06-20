@@ -5,6 +5,7 @@
 import {existsSync, readFileSync} from 'fs';
 import isPlainObject from 'lodash/isPlainObject.js';
 import {resolve as pathResolve} from 'path';
+import type {Compiler} from 'webpack';
 
 import {FaviconsPluginOptions} from './types/main.js';
 import {compileTemplate} from './utils/compiler.js';
@@ -42,7 +43,7 @@ export class FaviconsPlugin {
       } else {
         const icons = Object.keys(defaultOptions.icons).reduce(
           (list, iconName: string) => {
-            list[iconName] = optionIcons[iconName] || false;
+            list[iconName] = optionIcons[iconName] !== undefined ? optionIcons[iconName] : defaultOptions.icons[iconName];
             return list;
           },
           {}
@@ -58,7 +59,7 @@ export class FaviconsPlugin {
   /**
    * Tries to guess the name from the package.json
    */
-  static getAppName(compilerWorkingDirectory): string {
+  static getAppName(compilerWorkingDirectory: string): string {
     const packageJson: string = pathResolve(compilerWorkingDirectory, 'package.json');
 
     if(!existsSync(packageJson)) {
@@ -67,65 +68,60 @@ export class FaviconsPlugin {
       if(!existsSync(parentPackageJson)) {
         return 'Webpack App';
       }
+
+      return JSON.parse(readFileSync(parentPackageJson).toString()).name;
     }
 
     return JSON.parse(readFileSync(packageJson).toString()).name;
   }
 
-  apply(compiler) {
+  apply(compiler: Compiler): void {
     const {emitStats, inject, title} = this.options;
 
-    console.log('FaviconsPlugin::apply::1::title', title, FaviconsPlugin.getAppName(compiler.context));
     if(!title) {
       this.options = {...this.options, title: FaviconsPlugin.getAppName(compiler.context)};
     }
-    console.log('FaviconsPlugin::apply::2');
-    // Generate the favicons (webpack 4 compliant + back compat)
+
+    // Generate the favicons
     let compilationResult;
 
-    compiler.hooks.make.tapAsync.bind(compiler.hooks.make, 'FaviconsPluginMake')((compilation, callback) => {
+    compiler.hooks.make.tapAsync('FaviconsPluginMake', (compilation, callback) => {
       compileTemplate(this.options, compiler.context, compilation)
         .then((result) => {
-          console.log('FaviconsPlugin::apply::2a');
           compilationResult = result;
           callback();
         })
         .catch(callback);
     });
 
-    console.log('FaviconsPlugin::apply::3::inject', inject);
     // Hook into the html-webpack-plugin processing and add the html
     if(inject) {
-      const addFaviconsToHtml = (htmlPluginData, callback): void => {
-        if(htmlPluginData.plugin.options.favicons === true) {
-          htmlPluginData.html = htmlPluginData.html
-            .replace(/(<\/head>)/i, `${compilationResult.stats.html.join('')}$&`);
-        }
-
-        callback(null, htmlPluginData);
-      };
-
-      compiler.hooks.compilation.tap('FaviconsPlugin', (cmpp) => {
-        console.log('FaviconsPlugin::apply::3a');
-        if(cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
-          cmpp.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('favicons-webpack-plugin', addFaviconsToHtml);
-        } else {
-          throw new Error('FaviconsPlugin Error: HTMLWebpackPlugin has not been included.');
+      compiler.hooks.compilation.tap('FaviconsPlugin', (compilation) => {
+        // HtmlWebpackPlugin 4.x
+        try {
+          const HtmlWebpackPlugin = require('html-webpack-plugin');
+          const hooks = HtmlWebpackPlugin.getHooks(compilation);
+          
+          hooks.beforeEmit.tapAsync('favicons-webpack-plugin', (data, cb) => {
+            if(data.plugin.options.favicons === true) {
+              data.html = data.html.replace(/(<\/head>)/i, `${compilationResult.stats.html.join('')}$&`);
+            }
+            cb(null, data);
+          });
+        } catch (_error) {
+          // For older versions or when HtmlWebpackPlugin is not available
+          // This is a fallback that will show a more helpful error
+          throw new Error('FaviconsPlugin Error: This version requires html-webpack-plugin 4.x or higher.');
         }
       });
     }
 
-    console.log('FaviconsPlugin::apply::4::emitStats', emitStats);
-    // Remove the stats from the output if they are not required (webpack 4 compliant + back compat)
+    // Remove the stats from the output if they are not required
     if(!emitStats) {
-      console.log('FaviconsPlugin::apply::4a');
-      compiler.hooks.emit.tapAsync.bind(compiler.hooks.emit, 'FaviconsPluginEmit')((compilation, callback) => {
-        console.log('FaviconsPlugin::apply::4b');
+      compiler.hooks.emit.tapAsync('FaviconsPluginEmit', (compilation, callback) => {
         delete compilation.assets[compilationResult.outputName];
         callback();
       });
     }
-
-    console.log('FaviconsPlugin::apply::5');
   }
 }

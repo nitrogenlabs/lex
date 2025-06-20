@@ -17,7 +17,11 @@ export interface FaviconsPluginOptions {
 export interface FaviconsPluginCache {
   readonly hash: string;
   readonly optionHash: string;
-  readonly result?: string;
+  readonly result?: {
+    files: string[];
+    html: string[];
+    outputFilePrefix: string;
+  };
   readonly version: string;
 }
 

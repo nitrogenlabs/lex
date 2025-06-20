@@ -4,7 +4,8 @@
  */
 import evaluate from 'eval';
 import {relative as pathRelative, resolve as pathResolve} from 'path';
-import {Compilation, Compiler,EntryPlugin} from 'webpack';
+import type {Compilation} from 'webpack';
+import {EntryPlugin as WebpackEntryPlugin} from 'webpack';
 
 /**
  * Returns the child compiler name e.g. 'html-webpack-plugin for "index.html"'
@@ -15,7 +16,7 @@ const getCompilerName = (context: string, filename: string): string => {
   return `favicons-webpack-plugin for "${(absolutePath.length < relativePath.length ? absolutePath : relativePath)}"`;
 };
 
-export const compileTemplate = (options, context, compilation) => {
+export const compileTemplate = (options, context, compilation: Compilation) => {
   // The entry file is just an empty helper as the dynamic template
   // require is added in "loader.js"
   const {background, icons, logo, prefix: outputFilePrefix, persistentCache, statsFilename, title: appName} = options;
@@ -30,7 +31,7 @@ export const compileTemplate = (options, context, compilation) => {
   childCompiler.context = context;
   const queryOptions: string = JSON.stringify({appName, background, icons, outputFilePrefix, persistentCache});
   const entry = `!!${require.resolve('./favicons')}?${queryOptions}!${logo}`;
-  new EntryPlugin(context, entry).apply(childCompiler);
+  new WebpackEntryPlugin(context, entry).apply(childCompiler);
 
   // Fix for "Uncaught TypeError: __webpack_require__(...) is not a function"
   // Hot module replacement requires that every child compiler has its own
@@ -93,7 +94,7 @@ export const compileTemplate = (options, context, compilation) => {
         return reject(new Error(`FaviconsPlugin Error:\n${errorDetails}`));
       }
 
-      return resolve({outputName, stats: JSON.parse(assets[outputName].source())});
+      return resolve({outputName, stats: JSON.parse(assets[outputName].source() as string)});
     });
   });
 };

@@ -4,17 +4,37 @@
  */
 import {favicons} from 'favicons';
 import loaderUtils from 'loader-utils';
+import path from 'path';
 
 import {emitCacheInformationFile, loadIconsFromDiskCache} from './cache.js';
 
-import type {FaviconsPluginOptions} from '../types/main.ts';
-import type {FaviconOptions} from 'favicons';
+import type {FaviconsPluginOptions} from '../types/main.js';
+import type {FaviconOptions, FaviconResponse} from 'favicons';
 import type {LoaderContext as WebpackLoaderContext, Compilation, Compiler} from 'webpack';
 
+// Extended loader context that matches what webpack and loader-utils expect
 interface LoaderContext extends WebpackLoaderContext<Buffer> {
   _compilation: Compilation;
-  _compiler: Compiler;
+  _compiler: Compiler & {
+    parentCompilation?: {
+      compiler: {
+        outputPath: string;
+      };
+    };
+  };
   rootContext: string;
+}
+
+// Interface for the webpack loader
+interface WebpackLoader {
+  emitFile: (file: string, content: string) => void;
+  _compiler: {
+    parentCompilation: {
+      compiler: {
+        outputPath: string;
+      };
+    };
+  };
 }
 
 interface LoaderQuery {
@@ -26,13 +46,15 @@ interface LoaderQuery {
   regExp?: RegExp;
 }
 
+export interface IconResult {
+  files: string[];
+  html: string[];
+  outputFilePrefix: string;
+  images?: unknown[];  // Make images optional since we don't use it in the cache
+}
+
 interface GenerateIconsCallback {
-  (error: Error | null, result?: {
-    files: string[];
-    html: string[];
-    outputFilePrefix: string;
-    images?: unknown[];  // Make images optional since we don't use it in the cache
-  }): void;
+  (error: Error | null, result?: IconResult): void;
 }
 
 const getPublicPath = (compilation: Compilation): string => {
@@ -63,11 +85,11 @@ const generateIcons = (
     path: '',
     start_url: ''
   })
-    .then(({html, images, files}) => {
+    .then(({html, images, files}: FaviconResponse) => {
       const htmlFiles = html
         .filter((entry) => entry.indexOf('manifest') === -1)
         .map((entry) => entry.replace(/(href=[""])/g, `$1${publicPath}${pathPrefix}`));
-      const loaderResult = {files: [] as string[], html: htmlFiles, outputFilePrefix: pathPrefix};
+      const loaderResult: IconResult = {files: [] as string[], html: htmlFiles, outputFilePrefix: pathPrefix};
 
       images.forEach((image) => {
         loaderResult.files.push(`${pathPrefix}${image.name}`);
@@ -84,38 +106,51 @@ const generateIcons = (
     .catch((faviconError) => callback(faviconError));
 };
 
-module.exports = (loaderContext, content: Buffer) => {
-  loaderContext?.cacheable();
+// Create a compatible loader context for cache functions
+const createWebpackLoader = (loaderContext: LoaderContext): WebpackLoader => ({
+  emitFile: loaderContext.emitFile.bind(loaderContext),
+  _compiler: {
+    parentCompilation: {
+      compiler: {
+        outputPath: path.dirname(loaderContext.resourcePath)
+      }
+    }
+  }
+});
 
-  if(!loaderContext.emitFile) {
+module.exports = function(this: LoaderContext, content: Buffer) {
+  this?.cacheable();
+
+  if(!this.emitFile) {
     throw new Error('FaviconsPlugin Error: emitFile is required from module system');
   }
 
-  if(!loaderContext.async) {
+  if(!this.async) {
     throw new Error('FaviconsPlugin Error: async is required');
   }
 
-  const callback = loaderContext.async();
-  const query = loaderUtils.parseQuery(loaderContext.query as string) as LoaderQuery;
-  const {context = loaderContext.rootContext, outputFilePrefix, regExp} = query;
-  const pathPrefix = loaderUtils.interpolateName(loaderContext, outputFilePrefix, {content, context, regExp});
-  const fileHash = loaderUtils.interpolateName(loaderContext, '[hash]', {content, context, regExp});
+  const callback = this.async();
+  const query = loaderUtils.parseQuery(this.query as string) as LoaderQuery;
+  const {context = this.rootContext, outputFilePrefix, regExp} = query;
+  const pathPrefix = loaderUtils.interpolateName(this as any, outputFilePrefix, {content, context, regExp});
+  const fileHash = loaderUtils.interpolateName(this as any, '[hash]', {content, context, regExp});
   const cacheFile = `${pathPrefix}.cache`;
+  const webpackLoader = createWebpackLoader(this);
 
-  loadIconsFromDiskCache(loaderContext, query as FaviconsPluginOptions, cacheFile, fileHash, (loadError: Error, cachedResult) => {
+  loadIconsFromDiskCache(webpackLoader, query as FaviconsPluginOptions, cacheFile, fileHash, (loadError: Error, cachedResult) => {
     if(loadError) {
       callback(loadError);
     } else if(cachedResult) {
       callback(null, `module.exports = ${JSON.stringify(cachedResult)}`);
     } else {
       // Generate icons
-      generateIcons(loaderContext, content, pathPrefix, query, (generateError: Error, iconResult) => {
+      generateIcons(this, content, pathPrefix, query, (generateError: Error, iconResult) => {
         if(generateError) {
           callback(generateError);
           return null;
         }
 
-        emitCacheInformationFile(loaderContext, query as FaviconsPluginOptions, cacheFile, fileHash, iconResult);
+        emitCacheInformationFile(webpackLoader, query as FaviconsPluginOptions, cacheFile, fileHash, iconResult);
         callback(null, `module.exports = ${JSON.stringify(iconResult)}`);
         return null;
       });

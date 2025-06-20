@@ -1,12 +1,12 @@
-import {FaviconsPlugin} from './index';
+import {FaviconsPlugin} from './index.js';
 
 
 describe('FaviconsPlugin', () => {
   describe('#getAppName', () => {
-    it('should unknown app name', () => {
-      const key = 'example';
-      const results = FaviconsPlugin.getAppName(key);
-      expect(results).toBe('example_app');
+    it('should return default app name when package.json is not found', () => {
+      const nonExistentPath = '/path/that/does/not/exist';
+      const results = FaviconsPlugin.getAppName(nonExistentPath);
+      expect(results).toBe('Webpack App');
     });
   });
 });

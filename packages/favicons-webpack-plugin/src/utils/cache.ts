@@ -8,6 +8,7 @@ import {resolve as pathResolve} from 'path';
 import {fileURLToPath} from 'url';
 
 import {FaviconsPluginCache, FaviconsPluginOptions} from '../types/main.js';
+import {IconResult} from './favicons.js';
 
 const packagePath = fileURLToPath(new URL('../../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
@@ -21,13 +22,6 @@ interface WebpackLoader {
       };
     };
   };
-}
-
-interface IconResult {
-  files: string[];
-  html: string[];
-  outputFilePrefix: string;
-  images?: unknown[];
 }
 
 /**
@@ -75,7 +69,7 @@ export const isCacheValid = (
     // Verify that the options are the same
     optionHash === generateHashForOptions(options) &&
     // Verify that the favicons version of the cache matches this version
-    version === version;
+    version === packageJson.version;
 };
 
 /**
@@ -102,16 +96,15 @@ export const loadIconsFromDiskCache = (
   }
 
   try {
-    // const content: Buffer = fs.readFileSync(resolvedCacheFile);
-    // const cache: FaviconsPluginCache = JSON.parse(content.toString());
+    const content: Buffer = readFileSync(resolvedCacheFile);
+    const cache: FaviconsPluginCache = JSON.parse(content.toString());
 
-    // // Bail out if the file or the option changed
-    // if(!isCacheValid(cache, fileHash, options)) {
-    //   return callback(null);
-    // }
+    // Bail out if the file or the option changed
+    if(!isCacheValid(cache, fileHash, options)) {
+      return callback(null);
+    }
 
-    // return callback(null, cache.result);
-    return callback(null, undefined);
+    return callback(null, cache.result as IconResult);
   } catch(readError) {
     return callback(readError as Error);
   }
