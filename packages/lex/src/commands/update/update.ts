@@ -89,4 +89,4 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
     callback(1);
     return 1;
   }
-}; 
+};

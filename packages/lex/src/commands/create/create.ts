@@ -38,13 +38,78 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
   const dirName = new URL('.', import.meta.url).pathname;
 
   switch(type) {
-  case 'changelog': {
-    const statusChangelog: number = await createChangelog({cliName, config, outputFile, quiet});
-    callback(statusChangelog);
-    return statusChangelog;
-  }
-  case 'store': {
-    try {
+    case 'changelog': {
+      const statusChangelog: number = await createChangelog({cliName, config, outputFile, quiet});
+      callback(statusChangelog);
+      return statusChangelog;
+    }
+    case 'store': {
+      try {
+        const result = getFilenames({
+          cliName,
+          name: outputName,
+          quiet,
+          type,
+          useTypescript
+        });
+
+        if(!result) {
+          return 1;
+        }
+
+        const {nameCaps, templateExt, templatePath} = result;
+        const storePath: string = `${cwd}/${nameCaps}Store`;
+
+        if(!existsSync(storePath)) {
+        // Copy store files
+          copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleStore'), cwd);
+
+          // Rename directory
+          renameSync(`${cwd}/.SampleStore`, storePath);
+
+          // Rename test
+          const storeTestPath: string = `${storePath}/${nameCaps}Store.test${templateExt}`;
+          renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
+
+          // Search and replace store name
+          updateTemplateName(storeTestPath, outputName, nameCaps);
+
+          // Rename source file
+          const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
+          renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
+
+          // Search and replace store name
+          updateTemplateName(storeFilePath, outputName, nameCaps);
+        } else {
+          log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
+      } catch(error) {
+        log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
+        callback(1);
+        return 1;
+      }
+      break;
+    }
+    case 'tsconfig': {
+    // Remove existing file
+      await removeFiles('tsconfig.json', true);
+
+      // Get tsconfig template
+      const templatePath: string = pathResolve(dirName, '../../../tsconfig.template.json');
+      let data: string = readFileSync(templatePath, 'utf8');
+
+      // Update Lex tsconfig template with source and output directories
+      data = data.replace(/.\/src/g, sourcePath);
+      data = data.replace(/.\/dist/g, outputPath);
+
+      // Save new tsconfig to app
+      const destPath: string = pathResolve(cwd, './tsconfig.json');
+      writeFileSync(destPath, data, 'utf8');
+      break;
+    }
+    case 'view': {
       const result = getFilenames({
         cliName,
         name: outputName,
@@ -53,124 +118,63 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
         useTypescript
       });
 
-      if(!result) return 1;
-
-      const {nameCaps, templateExt, templatePath} = result;
-      const storePath: string = `${cwd}/${nameCaps}Store`;
-
-      if(!existsSync(storePath)) {
-        // Copy store files
-        copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleStore'), cwd);
-
-        // Rename directory
-        renameSync(`${cwd}/.SampleStore`, storePath);
-
-        // Rename test
-        const storeTestPath: string = `${storePath}/${nameCaps}Store.test${templateExt}`;
-        renameSync(`${storePath}/SampleStore.test${templateExt}.txt`, storeTestPath);
-
-        // Search and replace store name
-        updateTemplateName(storeTestPath, outputName, nameCaps);
-
-        // Rename source file
-        const storeFilePath: string = `${storePath}/${nameCaps}Store${templateExt}`;
-        renameSync(`${storePath}/SampleStore${templateExt}.txt`, storeFilePath);
-
-        // Search and replace store name
-        updateTemplateName(storeFilePath, outputName, nameCaps);
-      } else {
-        log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${storePath} already exists.`, 'error', quiet);
-        callback(1);
+      if(!result) {
         return 1;
       }
-    } catch(error) {
-      log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-      callback(1);
-      return 1;
-    }
-    break;
-  }
-  case 'tsconfig': {
-    // Remove existing file
-    await removeFiles('tsconfig.json', true);
 
-    // Get tsconfig template
-    const templatePath: string = pathResolve(dirName, '../../../tsconfig.template.json');
-    let data: string = readFileSync(templatePath, 'utf8');
+      const {nameCaps, templatePath, templateReact} = result;
+      const viewPath: string = `${cwd}/${nameCaps}View`;
 
-    // Update Lex tsconfig template with source and output directories
-    data = data.replace(/.\/src/g, sourcePath);
-    data = data.replace(/.\/dist/g, outputPath);
-
-    // Save new tsconfig to app
-    const destPath: string = pathResolve(cwd, './tsconfig.json');
-    writeFileSync(destPath, data, 'utf8');
-    break;
-  }
-  case 'view': {
-    const result = getFilenames({
-      cliName,
-      name: outputName,
-      quiet,
-      type,
-      useTypescript
-    });
-
-    if(!result) return 1;
-
-    const {nameCaps, templatePath, templateReact} = result;
-    const viewPath: string = `${cwd}/${nameCaps}View`;
-
-    try {
-      if(!existsSync(viewPath)) {
+      try {
+        if(!existsSync(viewPath)) {
         // Copy view files
-        copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleView'), cwd);
+          copyFolderRecursiveSync(pathResolve(dirName, templatePath, './.SampleView'), cwd);
 
-        // Rename directory
-        renameSync(`${cwd}/.SampleView`, viewPath);
+          // Rename directory
+          renameSync(`${cwd}/.SampleView`, viewPath);
 
-        // Rename CSS
-        const viewStylePath: string = `${viewPath}/${outputName}View.css`;
-        renameSync(`${viewPath}/sampleView.css`, viewStylePath);
+          // Rename CSS
+          const viewStylePath: string = `${viewPath}/${outputName}View.css`;
+          renameSync(`${viewPath}/sampleView.css`, viewStylePath);
 
-        // Search and replace view name
-        updateTemplateName(viewStylePath, outputName, nameCaps);
+          // Search and replace view name
+          updateTemplateName(viewStylePath, outputName, nameCaps);
 
-        // Rename test
-        const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
-        renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
+          // Rename test
+          const viewTestPath: string = `${viewPath}/${nameCaps}View.test${templateReact}`;
+          renameSync(`${viewPath}/SampleView.test${templateReact}.txt`, viewTestPath);
 
-        // Search and replace view name
-        updateTemplateName(viewTestPath, outputName, nameCaps);
+          // Search and replace view name
+          updateTemplateName(viewTestPath, outputName, nameCaps);
 
-        // Rename source file
-        const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
-        renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
+          // Rename source file
+          const viewFilePath: string = `${viewPath}/${nameCaps}View${templateReact}`;
+          renameSync(`${viewPath}/SampleView${templateReact}.txt`, viewFilePath);
 
-        // Search and replace view name
-        updateTemplateName(viewFilePath, outputName, nameCaps);
-      } else {
-        log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
+          // Search and replace view name
+          updateTemplateName(viewFilePath, outputName, nameCaps);
+        } else {
+          log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${viewPath} already exists.`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
+      } catch(error) {
+        log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         callback(1);
         return 1;
       }
-    } catch(error) {
-      log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
-      callback(1);
-      return 1;
+      break;
     }
-    break;
-  }
-  case 'vscode': {
+    case 'vscode': {
     // Remove existing directory
-    await removeFiles('.vscode', true);
+      await removeFiles('.vscode', true);
 
-    // Copy vscode configuration
-    copyFolderRecursiveSync(pathResolve(dirName, '../../../.vscode'), cwd);
-    break;
-  }
+      // Copy vscode configuration
+      copyFolderRecursiveSync(pathResolve(dirName, '../../../.vscode'), cwd);
+      break;
+    }
   }
 
   callback(0);
   return 0;
-}; 
+};

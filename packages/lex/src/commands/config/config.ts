@@ -37,15 +37,15 @@ export const config = async (type: string, cmd: ConfigOptions, callback: ConfigC
   let configOptions;
 
   switch(type) {
-  case 'app':
-    configOptions = LexConfig.config;
-    break;
-  case 'jest':
-    configOptions = import('../../../jest.config.lex.js');
-    break;
-  case 'webpack':
-    configOptions = import('../../../webpack.config.js');
-    break;
+    case 'app':
+      configOptions = LexConfig.config;
+      break;
+    case 'jest':
+      configOptions = import('../../../jest.config.lex.js');
+      break;
+    case 'webpack':
+      configOptions = import('../../../webpack.config.js');
+      break;
   }
 
   // Output config to console
@@ -67,4 +67,4 @@ export const config = async (type: string, cmd: ConfigOptions, callback: ConfigC
 
   callback(0);
   return Promise.resolve(0);
-}; 
+};

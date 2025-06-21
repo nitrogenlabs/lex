@@ -26,4 +26,4 @@ export const linked = async (cmd: LinkOptions, callback: LinkCallback = () => ({
   checkLinkedModules();
   callback(0);
   return Promise.resolve(0);
-}; 
+};

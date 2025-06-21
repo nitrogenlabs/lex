@@ -16,8 +16,8 @@ describe('versions.options', () => {
 
   it('should allow empty options', () => {
     const options: VersionsCmd = {};
-    
+
     expect(options).toEqual({});
     expect(options.json).toBeUndefined();
   });
-}); 
+});

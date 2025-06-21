@@ -4,8 +4,8 @@
  */
 import {jest} from '@jest/globals';
 
-import {log} from '../../utils/log.js';
 import {jsonVersions, packages, parseVersion, versions} from './versions.js';
+import {log} from '../../utils/log.js';
 
 jest.mock('../../utils/log.js');
 
@@ -36,9 +36,9 @@ describe('versions.integration', () => {
       test1: '1.0.0',
       test2: '2.0.0'
     };
-    
+
     const result = jsonVersions(mockPackages);
-    
+
     expect(result).toEqual({
       test1: mockPackages.test1,
       test2: mockPackages.test2
@@ -47,7 +47,7 @@ describe('versions.integration', () => {
 
   it('should log versions in text format', async () => {
     await versions({}, mockExit);
-    
+
     expect(mockLog).toHaveBeenCalledWith('Versions:', 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Lex: ${packages.lex}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith('  ----------', 'note', false);
@@ -56,4 +56,4 @@ describe('versions.integration', () => {
     expect(mockLog).toHaveBeenCalledWith(`  Typescript: ${packages.typescript}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Webpack: ${packages.webpack}`, 'info', false);
   });
-}); 
+});

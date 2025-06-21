@@ -60,4 +60,4 @@ export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_statu
     callback(1);
     return 1;
   }
-}; 
+};

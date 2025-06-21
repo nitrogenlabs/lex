@@ -5,10 +5,12 @@
 import {existsSync, readFileSync} from 'fs';
 import isPlainObject from 'lodash/isPlainObject.js';
 import {resolve as pathResolve} from 'path';
-import type {Compiler} from 'webpack';
 
-import {FaviconsPluginOptions} from './types/main.js';
-import {compileTemplate} from './utils/compiler.js';
+
+import {FaviconsPluginOptions} from './types/main.ts';
+import {compileTemplate} from './utils/compiler.ts';
+
+import type {Compiler} from 'webpack';
 
 const defaultOptions = {
   background: '#fff',
@@ -101,14 +103,14 @@ export class FaviconsPlugin {
         try {
           const HtmlWebpackPlugin = require('html-webpack-plugin');
           const hooks = HtmlWebpackPlugin.getHooks(compilation);
-          
+
           hooks.beforeEmit.tapAsync('favicons-webpack-plugin', (data, cb) => {
             if(data.plugin.options.favicons === true) {
               data.html = data.html.replace(/(<\/head>)/i, `${compilationResult.stats.html.join('')}$&`);
             }
             cb(null, data);
           });
-        } catch (_error) {
+        } catch(_error) {
           // For older versions or when HtmlWebpackPlugin is not available
           // This is a fallback that will show a more helpful error
           throw new Error('FaviconsPlugin Error: This version requires html-webpack-plugin 4.x or higher.');

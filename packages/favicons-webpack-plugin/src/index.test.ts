@@ -1,4 +1,4 @@
-import {FaviconsPlugin} from './index.js';
+import {FaviconsPlugin} from './index.ts';
 
 
 describe('FaviconsPlugin', () => {

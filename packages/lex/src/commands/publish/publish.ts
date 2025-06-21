@@ -143,4 +143,4 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     callback(1);
     return 1;
   }
-}; 
+};

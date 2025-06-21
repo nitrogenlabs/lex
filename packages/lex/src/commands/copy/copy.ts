@@ -48,4 +48,4 @@ export const copy = (from: string, to: string, cmd: CopyOptions, callback: CopyC
 
   callback(0);
   return Promise.resolve(0);
-}; 
+};

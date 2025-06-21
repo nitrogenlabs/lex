@@ -89,22 +89,22 @@ const createDefaultESLintConfig = (useTypescript: boolean, cwd: string): ConfigR
     // Absolute path if Lex is installed globally
     pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
   ];
-  
+
   let foundConfig = '';
-  for (const path of possiblePaths) {
-    if (existsSync(path)) {
+  for(const path of possiblePaths) {
+    if(existsSync(path)) {
       foundConfig = path;
       break;
     }
   }
-  
+
   let eslintConfig;
-  
-  if (foundConfig) {
+
+  if(foundConfig) {
     // Copy Lex's config file
     try {
       eslintConfig = readFileSync(foundConfig, 'utf8');
-    } catch (_error) {
+    } catch(_error) {
       // Fall back to default config if we can't read Lex's config
       eslintConfig = createBasicESLintConfig(useTypescript);
     }
@@ -147,9 +147,9 @@ export default [
       'eqeqeq': ['error', 'always']
     }
   }`;
-  
+
   // Add TypeScript configuration if needed
-  if (useTypescript) {
+  if(useTypescript) {
     config += `,
   // Config for TypeScript files
   {
@@ -179,7 +179,7 @@ export default [
     }
   }`;
   }
-  
+
   // Close the array
   config += `
 ];`;
@@ -190,9 +190,7 @@ export default [
 /**
  * Check if TypeScript is being used by looking for tsconfig.json
  */
-const detectTypeScript = (cwd: string): boolean => {
-  return existsSync(pathResolve(cwd, 'tsconfig.json'));
-};
+const detectTypeScript = (cwd: string): boolean => existsSync(pathResolve(cwd, 'tsconfig.json'));
 
 /**
  * Ensure package.json has type: module for ESM support
@@ -246,7 +244,7 @@ const runEslintWithLex = async (
     // First check if the project has its own eslint.config.js
     const projectConfigPath = pathResolve(cwd, 'eslint.config.js');
     const hasProjectConfig = existsSync(projectConfigPath);
-    
+
     // If not, try to find Lex's default config
     // Try different potential locations for the Lex config
     const possiblePaths = [
@@ -259,21 +257,21 @@ const runEslintWithLex = async (
       // Absolute path if Lex is installed globally
       pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
     ];
-    
+
     let lexConfigPath = '';
-    for (const path of possiblePaths) {
-      if (existsSync(path)) {
+    for(const path of possiblePaths) {
+      if(existsSync(path)) {
         lexConfigPath = path;
         break;
       }
     }
-    
+
     // Determine which config file to use
     const configPath = hasProjectConfig ? projectConfigPath : (lexConfigPath || projectConfigPath);
-    
+
     // Use npx to run eslint - this will use the one from lex if available
     // or download a temporary one if needed
-    
+
     // Run eslint on JS files with config using npx with package specification
     const jsResult = await execa('npx', [
       '-p', 'eslint',
@@ -289,20 +287,24 @@ const runEslintWithLex = async (
       cwd,
       shell: true // Needed for glob pattern expansion
     });
-    
+
     // Display JS output and capture it if needed
     if(jsResult.stdout) {
       console.log(jsResult.stdout);
-      if (captureOutput) captureOutput(jsResult.stdout);
+      if(captureOutput) {
+        captureOutput(jsResult.stdout);
+      }
     }
 
     if(jsResult.stderr) {
       console.error(jsResult.stderr);
-      if (captureOutput) captureOutput(jsResult.stderr);
+      if(captureOutput) {
+        captureOutput(jsResult.stderr);
+      }
     }
-    
+
     // Run eslint on TS files if needed
-    let tsResult: any = { exitCode: 0, stdout: '', stderr: '' };
+    let tsResult: any = {exitCode: 0, stdout: '', stderr: ''};
     if(useTypescript) {
       tsResult = await execa('npx', [
         '-p', 'eslint',
@@ -320,7 +322,7 @@ const runEslintWithLex = async (
         cwd,
         shell: true // Needed for glob pattern expansion
       });
-      
+
       // Display TS output
       if(tsResult.stdout) {
         console.log(tsResult.stdout);
@@ -335,21 +337,19 @@ const runEslintWithLex = async (
     if(jsResult.exitCode === 0 && tsResult.exitCode === 0) {
       spinner.succeed('Linting completed!');
       return 0;
-    } else {
-      // Check for special cases - no files found
-      const noFilesFound = 
+    }
+    // Check for special cases - no files found
+    const noFilesFound =
         (jsResult.stderr?.includes('No such file or directory') || jsResult.stdout?.includes('No such file or directory')) &&
         (!useTypescript || tsResult.stderr?.includes('No such file or directory') || tsResult.stdout?.includes('No such file or directory'));
-      
-      if(noFilesFound) {
-        spinner.succeed('No files found to lint');
-        return 0;
-      } else {
-        spinner.fail('Linting failed!');
-        log(`\n${cliName} Error: ESLint found issues in your code.`, 'error', quiet);
-        return 1;
-      }
+
+    if(noFilesFound) {
+      spinner.succeed('No files found to lint');
+      return 0;
     }
+    spinner.fail('Linting failed!');
+    log(`\n${cliName} Error: ESLint found issues in your code.`, 'error', quiet);
+    return 1;
   } catch(error) {
     spinner.fail('Linting failed!');
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
@@ -367,37 +367,39 @@ const applyAIFix = async (
 ): Promise<void> => {
   const spinner = createSpinner(quiet);
   spinner.start('Using AI to fix remaining lint issues...');
-  
+
   try {
     // Extract file paths and errors from the ESLint output
     const fileErrorMap = new Map<string, string[]>();
     const lines = errors.split('\n');
     let currentFile = '';
-    
-    for (const line of lines) {
-      if (line.startsWith('/')) {
+
+    for(const line of lines) {
+      if(line.startsWith('/')) {
         // This is a file path
         currentFile = line;
         fileErrorMap.set(currentFile, []);
-      } else if (currentFile && line.trim() && !line.includes('✖') && !line.includes('potentially fixable')) {
+      } else if(currentFile && line.trim() && !line.includes('✖') && !line.includes('potentially fixable')) {
         // This is an error line
         const errorArray = fileErrorMap.get(currentFile);
-        if (errorArray) {
+        if(errorArray) {
           errorArray.push(line.trim());
         }
       }
     }
-    
+
     // Import the AI service dynamically to avoid circular dependencies
-    const { callAIService } = await import('../../utils/aiService.js');
-    
+    const {callAIService} = await import('../../utils/aiService.js');
+
     // Process each file with errors
-    for (const [filePath, fileErrors] of fileErrorMap.entries()) {
-      if (fileErrors.length === 0) continue;
-      
+    for(const [filePath, fileErrors] of fileErrorMap.entries()) {
+      if(fileErrors.length === 0) {
+        continue;
+      }
+
       // Read the file content
       const fileContent = readFileSync(filePath, 'utf8');
-      
+
       // Prepare a prompt for AI
       const prompt = `Fix the following ESLint errors in this code:
 ${fileErrors.join('\n')}
@@ -411,41 +413,41 @@ Return only the fixed code without any explanations.`;
 
       // Call the AI service to get fixed code
       let fixedContent = await callAIService(prompt, quiet);
-      
+
       // If AI service failed or returned empty result, fall back to rule-based fixes
-      if (!fixedContent) {
+      if(!fixedContent) {
         log('AI service unavailable or skipped, using rule-based fixes', 'info', quiet);
         fixedContent = fileContent;
-        
+
         // Apply rule-based fixes for common issues
-        if (fileErrors.some(e => e.includes('is assigned a value but never used'))) {
+        if(fileErrors.some((e) => e.includes('is assigned a value but never used'))) {
           // Find variable names that are unused
           const unusedVarRegex = /'([^']+)' is assigned a value but never used/g;
           let match;
-          while ((match = unusedVarRegex.exec(fileErrors.join(' '))) !== null) {
+          while((match = unusedVarRegex.exec(fileErrors.join(' '))) !== null) {
             const varName = match[1];
             fixedContent = fixedContent.replace(
-              new RegExp(`(const|let|var) ${varName}\\b`, 'g'), 
+              new RegExp(`(const|let|var) ${varName}\\b`, 'g'),
               `$1 _${varName}`
             );
           }
         }
-        
-        if (fileErrors.some(e => e.includes('Expected \'===\' and instead saw \'==\''))) {
+
+        if(fileErrors.some((e) => e.includes('Expected \'===\' and instead saw \'==\''))) {
           fixedContent = fixedContent.replace(/ == /g, ' === ');
         }
-        
-        if (fileErrors.some(e => e.includes('Expected \'!==\' and instead saw \'!='))) {
+
+        if(fileErrors.some((e) => e.includes('Expected \'!==\' and instead saw \'!='))) {
           fixedContent = fixedContent.replace(/ != /g, ' !== ');
         }
       }
-      
+
       // Write the fixed content back to the file
       writeFileSync(filePath, fixedContent, 'utf8');
     }
-    
+
     spinner.succeed('AI fixes applied successfully!');
-  } catch (error) {
+  } catch(error) {
     spinner.fail('Failed to apply AI fixes');
     log(`Error: ${error.message}`, 'error', quiet);
   }
@@ -489,17 +491,17 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
                           existsSync(pathResolve(cwd, '.eslintrc.yml')) ||
                           existsSync(pathResolve(cwd, '.eslintrc.yaml')) ||
                           existsSync(pathResolve(cwd, '.eslintrc'));
-                          
+
     // Remove any existing .eslintrc.json file to avoid conflicts with eslint.config.js
-    if (existsSync(pathResolve(cwd, '.eslintrc.json'))) {
+    if(existsSync(pathResolve(cwd, '.eslintrc.json'))) {
       unlinkSync(pathResolve(cwd, '.eslintrc.json'));
     }
-    
+
     // Try to find Lex's ESLint config if needed
     let lexConfigPath = '';
     let shouldCreateTempConfig = false;
-    
-    if (!hasEslintConfig) {
+
+    if(!hasEslintConfig) {
       // Try different potential locations for the Lex config
       const possiblePaths = [
         // From src/commands/lint/lint.ts to root
@@ -511,25 +513,25 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
         // Absolute path if Lex is installed globally
         pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
       ];
-      
+
       // Find the first existing config
-      for (const path of possiblePaths) {
-        if (existsSync(path)) {
+      for(const path of possiblePaths) {
+        if(existsSync(path)) {
           lexConfigPath = path;
           break;
         }
       }
-      
-      if (debug) {
+
+      if(debug) {
         log(`Current directory: ${__dirname}`, 'info', quiet);
         log(`Project config path: ${projectConfigPath}`, 'info', quiet);
         log(`Project config exists: ${hasEslintConfig}`, 'info', quiet);
         log(`Found Lex config: ${lexConfigPath}`, 'info', quiet);
         log(`Lex config exists: ${!!lexConfigPath && existsSync(lexConfigPath)}`, 'info', quiet);
       }
-      
+
       // If we found Lex's config, use it
-      if (lexConfigPath && existsSync(lexConfigPath)) {
+      if(lexConfigPath && existsSync(lexConfigPath)) {
         log('No ESLint configuration found in project. Using Lex\'s default configuration.', 'info', quiet);
       } else {
         // Otherwise, we need to create a temporary config
@@ -538,9 +540,9 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     }
 
     // If user specified a config file, use that
-    if (config) {
+    if(config) {
       const userConfigPath = pathResolve(cwd, config);
-      if (existsSync(userConfigPath)) {
+      if(existsSync(userConfigPath)) {
         log(`Using specified ESLint configuration: ${config}`, 'info', quiet);
         // User-specified config takes precedence
         shouldCreateTempConfig = false;
@@ -548,9 +550,9 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
         log(`Specified ESLint configuration not found: ${config}. Using Lex's default configuration.`, 'warn', quiet);
       }
     }
-    
+
     // Create a temporary config if needed
-    if (shouldCreateTempConfig) {
+    if(shouldCreateTempConfig) {
       log('No ESLint configuration found. Creating a temporary configuration...', 'info', quiet);
       const configResult = createDefaultESLintConfig(useTypescript, cwd);
       tempConfigPath = configResult.configPath;
@@ -558,11 +560,11 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     }
 
     // No need to add scripts to package.json anymore
-    
+
     // Capture the ESLint output for AI fix if needed
     let eslintOutput = '';
     const captureOutput = (output: string) => {
-      eslintOutput += output + '\n';
+      eslintOutput += `${output}\n`;
     };
 
     // Always run ESLint with --fix first to apply built-in fixes
@@ -570,25 +572,25 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     const result = await runEslintWithLex(cwd, quiet, cliName, true, debug, useTypescript, captureOutput);
 
     // If there are still errors and aifix is enabled, try to fix them with AI
-    if (result !== 0 && shouldApplyAIFix) {
+    if(result !== 0 && shouldApplyAIFix) {
       // Check if AI is configured
       let aiConfigured = false;
       try {
         // Dynamically import to avoid circular dependencies
-        const { LexConfig } = await import('../../LexConfig.js');
+        const {LexConfig} = await import('../../LexConfig.js');
         aiConfigured = !!(LexConfig.config.ai?.provider && LexConfig.config.ai.provider !== 'none');
-      } catch (_) {
+      } catch(_) {
         // If we can't import LexConfig, assume AI is not configured
         aiConfigured = false;
       }
 
       // Apply AI fixes if AI is configured or aifix flag is explicitly set
-      if (aiConfigured || aifix) {
+      if(aiConfigured || aifix) {
         await applyAIFix(cwd, eslintOutput, quiet);
-        
+
         // Run ESLint again to check if all issues are fixed
         const afterFixResult = await runEslintWithLex(cwd, quiet, cliName, false, debug, useTypescript, captureOutput);
-        
+
         // Return the result of the second run
         callback(afterFixResult);
         return afterFixResult;

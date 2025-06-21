@@ -11,4 +11,4 @@ export type {
   JestConfig,
   LexConfigType,
   WebpackConfig
-} from './LexConfig.js'; 
+} from './LexConfig.js';

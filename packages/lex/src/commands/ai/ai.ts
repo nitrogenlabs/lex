@@ -53,33 +53,33 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
 
   // Add additional context based on the task
   switch(task) {
-  case 'generate':
+    case 'generate':
     // Add project structure info for generation context
-    const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
-      cwd: process.cwd(),
-      ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
-      maxDepth: 3
-    });
-    projectContext += '\n\nProject structure:\n' + files.join('\n');
-    break;
+      const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
+        cwd: process.cwd(),
+        ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
+        maxDepth: 3
+      });
+      projectContext += `\n\nProject structure:\n${files.join('\n')}`;
+      break;
 
-  case 'test':
+    case 'test':
     // Add test configuration and similar test files
-    if(file) {
-      const testConfig = getFileContext('jest.config.js');
-      projectContext += `\n\nTest configuration:\n${testConfig}`;
-    }
-    break;
+      if(file) {
+        const testConfig = getFileContext('jest.config.js');
+        projectContext += `\n\nTest configuration:\n${testConfig}`;
+      }
+      break;
 
-  case 'optimize':
+    case 'optimize':
     // Add build configuration
-    const webpackConfig = getFileContext('webpack.config.js');
-    projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
-    break;
+      const webpackConfig = getFileContext('webpack.config.js');
+      projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
+      break;
 
-  default:
+    default:
     // No additional context
-    break;
+      break;
   }
 
   return projectContext;
@@ -92,11 +92,11 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
   const {task = 'help', prompt = ''} = options;
 
   const taskInstructions: Record<string, string> = {
-    'generate': 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
-    'explain': 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
-    'test': 'Generate comprehensive unit tests for the following code:',
-    'optimize': 'Analyze the following code/configuration and suggest optimization improvements:',
-    'help': 'Provide guidance on the following development question:'
+    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
+    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
+    test: 'Generate comprehensive unit tests for the following code:',
+    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
+    help: 'Provide guidance on the following development question:'
   };
 
   const taskInstruction = taskInstructions[task] || taskInstructions.help;
@@ -121,30 +121,30 @@ const displayResponse = (response: any, options: AIOptions): void => {
 
   // Display with appropriate formatting based on task
   switch(task) {
-  case 'generate':
-    log('\nGenerated Code:\n', 'success', quiet);
-    log(content, 'default', quiet);
-    break;
+    case 'generate':
+      log('\nGenerated Code:\n', 'success', quiet);
+      log(content, 'default', quiet);
+      break;
 
-  case 'explain':
-    log('\nCode Explanation:\n', 'success', quiet);
-    log(content, 'default', quiet);
-    break;
+    case 'explain':
+      log('\nCode Explanation:\n', 'success', quiet);
+      log(content, 'default', quiet);
+      break;
 
-  case 'test':
-    log('\nGenerated Tests:\n', 'success', quiet);
-    log(content, 'default', quiet);
-    break;
+    case 'test':
+      log('\nGenerated Tests:\n', 'success', quiet);
+      log(content, 'default', quiet);
+      break;
 
-  case 'optimize':
-    log('\nOptimization Suggestions:\n', 'success', quiet);
-    log(content, 'default', quiet);
-    break;
+    case 'optimize':
+      log('\nOptimization Suggestions:\n', 'success', quiet);
+      log(content, 'default', quiet);
+      break;
 
-  default:
-    log('\nAI Response:\n', 'success', quiet);
-    log(content, 'default', quiet);
-    break;
+    default:
+      log('\nAI Response:\n', 'success', quiet);
+      log(content, 'default', quiet);
+      break;
   }
 };
 

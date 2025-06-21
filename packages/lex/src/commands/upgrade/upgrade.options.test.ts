@@ -29,7 +29,7 @@ describe('upgrade.options', () => {
 
   it('should allow empty options', () => {
     const options: UpgradeOptions = {};
-    
+
     expect(options).toEqual({});
   });
-}); 
+});

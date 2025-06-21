@@ -34,6 +34,9 @@
   },
   "include": [
     "./packages/**/*",
+    "./src/**/*",
+    "./test-spacing.ts",
+    "./test-import.ts",
     "jest.config.*",
   ],
   "exclude": [

@@ -91,9 +91,9 @@ const findUncoveredSourceFiles = (): string[] => {
   });
 
   // Simple heuristic to find source files without corresponding test files
-  return sourceFiles.filter(sourceFile => {
+  return sourceFiles.filter((sourceFile) => {
     const baseName = sourceFile.replace(/\.[^/.]+$/, '');
-    return !testFiles.some(testFile => testFile.includes(baseName));
+    return !testFiles.some((testFile) => testFile.includes(baseName));
   });
 };
 

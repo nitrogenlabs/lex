@@ -20,10 +20,8 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "eslint": "^9.20.1",
-    "eslint-config-styleguidejs": "^3.2.2",
-    "eslint-plugin-import": "^2.31.0",
-    "npm-check-updates": "^17.1.14",
-    "typescript-eslint": "^8.24.0"
+    "eslint-config-styleguidejs": "^4.0.10",
+    "npm-check-updates": "^17.1.14"
   },
   "type": "module"
 }

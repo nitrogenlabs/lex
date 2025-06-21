@@ -43,7 +43,7 @@
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src --fix",
     "prepublishOnly": "npm run build",
     "publish:major": "npm version major && npm publish",
     "publish:minor": "npm version minor && npm publish",
@@ -85,7 +85,7 @@
     "esbuild": "0.25.5",
     "esbuild-loader": "4.3.0",
     "eslint": "9.28.0",
-    "eslint-config-styleguidejs": "^3.2.2",
+    "eslint-config-styleguidejs": "^4.0.10",
     "execa": "9.6.0",
     "exports-loader": "^5.0.0",
     "favicons-webpack-plugin": "^6.0.1",
@@ -170,9 +170,7 @@
     "@types/react": "^19.1.8",
     "@types/webpack": "^5.28.5",
     "babel-plugin-transform-import-meta": "^2.3.3",
-    "babel-plugin-transform-vite-meta-env": "^1.0.3",
-    "eslint": "^9.19.0",
-    "eslint-config-styleguidejs": "^3.2.2"
+    "babel-plugin-transform-vite-meta-env": "^1.0.3"
   },
   "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8"
 }

@@ -141,4 +141,4 @@ export const init = async (
   // Kill process
   callback(0);
   return 0;
-}; 
+};

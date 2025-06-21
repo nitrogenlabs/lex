@@ -35,7 +35,7 @@ describe('update.options', () => {
 
   it('should allow empty options', () => {
     const options: UpdateOptions = {};
-    
+
     expect(options).toEqual({});
   });
-}); 
+});

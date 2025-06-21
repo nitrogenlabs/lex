@@ -23,22 +23,22 @@ describe('versions.cli', () => {
 
   it('should display versions in text format by default', async () => {
     await versions({}, mockExit);
-    
+
     expect(mockConsoleLog).not.toHaveBeenCalled();
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
   it('should display versions in JSON format when json option is true', async () => {
     await versions({json: true}, mockExit);
-    
+
     expect(mockConsoleLog).toHaveBeenCalledWith(JSON.stringify(jsonVersions(packages)));
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
   it('should return 0 as exit code', async () => {
     const result = await versions({}, mockExit);
-    
+
     expect(result).toBe(0);
     expect(mockExit).toHaveBeenCalledWith(0);
   });
-}); 
+});

@@ -2,16 +2,16 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import { execa } from 'execa';
+import {execa} from 'execa';
 import fs from 'fs';
 import path from 'path';
-import { URL } from 'url';
+import {URL} from 'url';
 
-import { LexConfig } from '../../LexConfig.js';
+import {compile} from './compile.js';
+import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as logUtils from '../../utils/log.js';
-import { compile } from './compile.js';
 
 // Mock dependencies
 jest.mock('execa');
@@ -147,7 +147,7 @@ describe('compile options tests', () => {
 
     // Should use custom CLI name in logs
     const logCalls = (logUtils.log as jest.Mock).mock.calls;
-    expect(logCalls.some(call => call[0].includes('CustomCLI'))).toBeTruthy();
+    expect(logCalls.some((call) => call[0].includes('CustomCLI'))).toBeTruthy();
   });
 
   test('should use default CLI name if not provided', async () => {
@@ -160,7 +160,7 @@ describe('compile options tests', () => {
 
     // Should use default CLI name 'Lex' in logs
     const logCalls = (logUtils.log as jest.Mock).mock.calls;
-    expect(logCalls.some(call => call[0].includes('Lex'))).toBeTruthy();
+    expect(logCalls.some((call) => call[0].includes('Lex'))).toBeTruthy();
   });
 
   test('should use default callback if none provided', async () => {
@@ -216,10 +216,10 @@ describe('compile options tests', () => {
 
     // Should pass watch flag to esbuild
     const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const esbuildCall = execaCalls.find(call => 
+    const esbuildCall = execaCalls.find((call) =>
       call[0].includes('esbuild') && call[1].includes('--watch')
     );
-    
+
     expect(esbuildCall).toBeDefined();
   });
-}); 
+});

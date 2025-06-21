@@ -74,4 +74,4 @@ export const upgrade = async (cmd: UpgradeOptions, callback: UpgradeCallback = p
       callback(1);
       return 1;
     });
-}; 
+};

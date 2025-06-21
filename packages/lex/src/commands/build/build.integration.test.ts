@@ -55,7 +55,7 @@ describe('lex build integration', () => {
       expect(result.exitCode).toBe(0);
     } catch {
       // If webpack is not available or fails, that's expected in test environment
-      // eslint-disable-next-line no-console
+       
       console.log('Webpack build test skipped - webpack may not be available');
     }
   }, 35000);
@@ -77,7 +77,7 @@ describe('lex build integration', () => {
       expect(result.exitCode).toBe(0);
     } catch {
       // If esbuild is not available or fails, that's expected in test environment
-      // eslint-disable-next-line no-console
+       
       console.log('ESBuild build test skipped - esbuild may not be available');
     }
   }, 35000);
@@ -101,7 +101,7 @@ describe('lex build integration', () => {
 
       expect(result.exitCode).toBe(0);
     } catch {
-      // eslint-disable-next-line no-console
+       
       console.log('CLI options test skipped - build tools may not be available');
     }
   }, 35000);

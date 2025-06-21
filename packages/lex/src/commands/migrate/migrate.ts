@@ -65,4 +65,4 @@ export const migrate = async (cmd: MigrateOptions, callback: MigrateCallback = p
     callback(1);
     return 1;
   }
-}; 
+};

@@ -40,4 +40,4 @@ export * from './commands/publish/publish.js';
 export * from './commands/test/test.js';
 export * from './commands/update/update.js';
 export * from './commands/upgrade/upgrade.js';
-export * from './commands/versions/versions.js'; 
+export * from './commands/versions/versions.js';

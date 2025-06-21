@@ -2,11 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {execa} from 'execa';
 import {jest} from '@jest/globals';
+import {execa} from 'execa';
 
-import {LexConfig} from '../../LexConfig.js';
 import {update, UpdateCallback} from './update.js';
+import {LexConfig} from '../../LexConfig.js';
 
 jest.mock('execa');
 jest.mock('../../LexConfig.js');
@@ -32,7 +32,7 @@ describe('update.integration', () => {
     } as any;
 
     await update({}, mockExit);
-    
+
     expect(mockExeca).toHaveBeenCalledWith('yarn', expect.anything(), expect.any(Object));
     expect(mockExit).toHaveBeenCalledWith(0);
   });
@@ -43,7 +43,7 @@ describe('update.integration', () => {
     } as any;
 
     await update({packageManager: 'npm'}, mockExit);
-    
+
     expect(mockExeca).toHaveBeenCalledWith('npx', expect.anything(), expect.any(Object));
     expect(mockExit).toHaveBeenCalledWith(0);
   });
@@ -52,24 +52,24 @@ describe('update.integration', () => {
     mockLexConfig.config = {} as any;
 
     await update({}, mockExit);
-    
+
     expect(mockExeca).toHaveBeenCalledWith('npx', expect.anything(), expect.any(Object));
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
   it('should return 0 on success', async () => {
     const result = await update({}, mockExit);
-    
+
     expect(result).toBe(0);
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
   it('should return 1 on error', async () => {
     mockExeca.mockRejectedValueOnce(new Error('Failed to update'));
-    
+
     const result = await update({}, mockExit);
-    
+
     expect(result).toBe(1);
     expect(mockExit).toHaveBeenCalledWith(1);
   });
-}); 
+});

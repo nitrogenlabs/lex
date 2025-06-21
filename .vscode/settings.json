@@ -27,6 +27,11 @@
     "postcss": "css"
   },
   "eslint.enable": true,
+  "eslint.nodePath": "./node_modules",
+  "eslint.runtime": "./node_modules/eslint/bin/eslint.js",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js"
+  },
   "eslint.run": "onSave",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"

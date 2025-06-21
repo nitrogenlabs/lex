@@ -47,4 +47,4 @@ export const versions = (cmd: VersionsCmd, callback: (status: number) => void): 
   }
 
   return Promise.resolve(0);
-}; 
+};
