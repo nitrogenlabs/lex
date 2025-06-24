@@ -204,10 +204,10 @@ describe('lint integration tests', () => {
     );
   });
 
-  it('should apply AI fixes when aifix option is enabled and linting fails', async () => {
+  it('should apply AI fixes when fix option is enabled and linting fails', async () => {
     const options: LintOptions = {
       quiet: false,
-      aifix: true
+      fix: true
     };
 
     // First run fails, then succeeds after AI fix
@@ -246,8 +246,8 @@ describe('lint integration tests', () => {
 
   it('should apply rule-based fixes when AI service is unavailable', async () => {
     const options: LintOptions = {
-      quiet: false,
-      aifix: true
+      fix: true,
+      quiet: false
     };
 
     // First run fails, then succeeds after fallback fix

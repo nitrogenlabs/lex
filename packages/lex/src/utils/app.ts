@@ -118,7 +118,7 @@ export const copyFiles = async (files: string[], typeName: string, spinner, conf
     // Stop spinner
     spinner.fail(`Copying of ${typeName} files failed.`);
     log(`Error: ${error.message}`, 'error');
-    console.log(error);
+    log(error, 'error');
   }
 };
 
@@ -177,7 +177,7 @@ export const removeConflictModules = (moduleList: object) => {
   const updatedList: object = {...moduleList};
 
   Object.keys(updatedList).forEach((moduleName: string) => {
-    const regex: RegExp = new RegExp('^(?!@types\/).*(jest|webpack).*$', 'gi');
+    const regex: RegExp = new RegExp('^(?!@types/).*?(jest|webpack).*$', 'gi');
     if(regex.test(moduleName)) {
       delete updatedList[moduleName];
     }

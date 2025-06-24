@@ -159,13 +159,13 @@ describe('lint.options tests', () => {
     );
   });
 
-  it('should apply aifix option and run AI linting when specified', async () => {
+  it('should apply fix option and run AI linting when specified', async () => {
     jest.mock('../../utils/aiService.js', () => ({
       callAIService: jest.fn().mockResolvedValue('fixed code')
     }));
 
     const options: LintOptions = {
-      aifix: true,
+      fix: true,
       quiet: false
     };
 

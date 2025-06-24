@@ -11,7 +11,6 @@ The main function that handles ESLint execution with various configuration optio
 #### Parameters
 
 - `options`: An object containing the linting configuration options
-  - `aifix?: boolean` - Whether to apply AI-powered fixes to linting errors that couldn't be fixed automatically
   - `cache?: boolean` - Whether to use ESLint caching
   - `cacheFile?: string` - Path to the ESLint cache file
   - `cacheLocation?: string` - Directory to store the ESLint cache
@@ -95,7 +94,6 @@ export interface LintOptions {
   readonly rulesdir?: string;
   readonly stdin?: boolean;
   readonly stdinFilename?: string;
-  readonly aifix?: boolean;
 }
 ```
 
@@ -111,4 +109,67 @@ export type LintCallback = typeof process.exit;
 - **ESLint Configuration**: Provides a default ESLint configuration if none is found in the project.
 - **AI-Powered Fixes**: Can apply AI fixes to linting issues that can't be automatically fixed.
 - **Fallback Fixes**: When AI is unavailable, applies rule-based fixes for common issues.
-- **ESM Support**: Ensures package.json is configured for ESM support. 
+- **ESM Support**: Ensures package.json is configured for ESM support.
+
+## Usage
+
+```bash
+lex lint [options]
+```
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| --fix | Automatically fix problems (includes AI-powered fixes if configured) |
+| --config | Use this configuration, overriding .eslintrc.* config options if present |
+| --debug | Output debugging information |
+| --env | Specify environments |
+| --env-info | Output execution environment information |
+| --ext | Specify JavaScript file extensions |
+| --global | Define global variables |
+| --ignore-path | Specify path of ignore file |
+| --ignore-pattern | Pattern of files to ignore (in addition to those in .eslintignore) |
+| --init | Run config initialization wizard |
+| --no-eslintrc | Disable use of configuration from .eslintrc.* |
+| --parser | Specify the parser to be used |
+| --parser-options | Specify parser options |
+| --resolve-plugins-relative-to | A folder where plugins should be resolved from, CWD by default |
+| --rule | Specify rules |
+| --quiet | Report errors only |
+| -h, --help | Display help for command |
+
+## Examples
+
+```bash
+# Lint with automatic fixes (including AI-powered fixes if configured)
+lex lint --fix
+
+# Lint with a specific configuration
+lex lint --config my-config.js
+
+# Lint with quiet mode (only report errors)
+lex lint --quiet
+
+# Lint with cache enabled
+lex lint --cache
+```
+
+## AI-Powered Fixes
+
+When using the `--fix` flag, Lex will:
+1. Apply ESLint's built-in fixes
+2. If there are remaining errors and AI is configured, use AI to fix them
+
+To enable AI-powered fixes, add AI configuration to your `lex.config.js` file:
+
+```javascript
+export default {
+  // Your existing config
+  ai: {
+    provider: 'cursor' // or 'openai', 'anthropic', etc.
+  }
+};
+```
+
+For more details on AI-powered linting, see the [Linting with AI documentation](./README.md). 

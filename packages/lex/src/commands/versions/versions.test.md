@@ -23,4 +23,4 @@ Integration tests verify that the versions command correctly integrates with oth
 Options tests verify that the VersionsCmd interface works correctly:
 
 - Tests that the json option can be set correctly
-- Tests that empty options work correctly 
+- Tests that empty options work correctly

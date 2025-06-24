@@ -185,6 +185,14 @@ export const ai = async (options: AIOptions): Promise<number> => {
       apiKey
     });
 
+    // Get AI provider from config
+    const aiProvider = LexConfig.config.ai?.provider || 'openai';
+    const aiModel = options.model || LexConfig.config.ai?.model || 'gpt-4o';
+
+    if(aiProvider !== 'openai' && aiProvider !== 'none') {
+      log(`Provider '${aiProvider}' is not supported for direct API calls. Defaulting to OpenAI.`, 'warn', quiet);
+    }
+
     // Get context from project
     const projectContext = await getProjectContext(options);
 
@@ -193,11 +201,13 @@ export const ai = async (options: AIOptions): Promise<number> => {
 
     // Call AI service
     const response = await openai.chat.completions.create({
-      model,
+      model: aiModel,
       messages: [
         {role: 'system', content: 'You are a helpful development assistant integrated into the Lex CLI. Provide concise, practical answers.'},
         {role: 'user', content: aiPrompt}
-      ]
+      ],
+      max_tokens: LexConfig.config.ai?.maxTokens || 4000,
+      temperature: LexConfig.config.ai?.temperature !== undefined ? LexConfig.config.ai.temperature : 0.1
     });
 
     // Stop spinner

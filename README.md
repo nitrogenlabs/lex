@@ -171,8 +171,9 @@ lex lint [options]
 ```
 
 Options:
-- `--fix`: Automatically fix problems
-- `--aifix`: Use AI to fix problems that standard ESLint can't resolve
+- `--fix`: Automatically fix problems (including AI-powered fixes when configured)
+
+When AI is configured in your `lex.config.js`, the `--fix` option will automatically use AI to fix problems that standard ESLint can't resolve.
 
 ### `clean`
 
@@ -351,11 +352,51 @@ lex ai --task generate --prompt "Create a responsive data table with sorting and
 
 ### AI-Powered Linting
 
-Forget about tedious manual fixes! Lex's intelligent linting doesn't just find problems – it solves them for you, handling even the most complex refactoring challenges:
+Lex provides an advanced AI-powered linting capability that goes beyond traditional ESLint rules. When you use the `--fix` option with the lint command, Lex will:
 
-```bash
-# Let AI fix your code issues automatically
-lex lint --aifix
+1. Run standard ESLint with automatic fixes
+2. Analyze remaining errors that couldn't be fixed automatically
+3. Use AI (configurable in your lex.config.js) to intelligently fix complex issues
+
+This feature is especially helpful for:
+
+- Fixing complex logical errors
+- Improving code readability
+- Resolving edge cases that standard linting rules can't handle
+
+#### Usage:
+
+```shell
+# Run linting with AI fixes
+lex lint --fix
+
+# Or use the npm script if you've set it up
+npm run lint:ai
+```
+
+#### Configuration:
+
+Configure the AI provider in your `lex.config.js`:
+
+```js
+export default {
+  // Other configuration...
+  
+  ai: {
+    // AI provider: 'cursor', 'copilot', 'openai', 'anthropic', or 'none'
+    provider: 'cursor',
+    
+    // Optional API key for external providers (recommended to use environment variables)
+    // apiKey: process.env.OPENAI_API_KEY,
+    
+    // AI model to use
+    model: 'cursor-code',
+    
+    // Additional parameters
+    maxTokens: 4000,
+    temperature: 0.1
+  }
+};
 ```
 
 ### AI-Enhanced Testing

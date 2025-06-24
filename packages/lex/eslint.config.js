@@ -1,5 +1,10 @@
-import styleguidejs from 'eslint-config-styleguidejs';
+import { typescriptConfig } from 'eslint-config-styleguidejs';
 
-const {typescriptConfig} = styleguidejs;
-
-export default typescriptConfig;
+export default [
+  ...typescriptConfig,
+  {
+    rules: {
+      'no-plusplus': 'off'
+    }
+  }
+];

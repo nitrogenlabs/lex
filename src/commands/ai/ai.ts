@@ -5,8 +5,6 @@
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import OpenAI from 'openai';
-import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
@@ -62,7 +60,7 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
         ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
         maxDepth: 3
       });
-      projectContext += '\n\nProject structure:\n' + files.join('\n');
+      projectContext += `\n\nProject structure:\n${files.join('\n')}`;
       break;
 
     case 'test':
@@ -94,11 +92,11 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
   const {task = 'help', prompt = ''} = options;
 
   const taskInstructions: Record<string, string> = {
-    'generate': 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
-    'explain': 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
-    'test': 'Generate comprehensive unit tests for the following code:',
-    'optimize': 'Analyze the following code/configuration and suggest optimization improvements:',
-    'help': 'Provide guidance on the following development question:'
+    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
+    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
+    test: 'Generate comprehensive unit tests for the following code:',
+    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
+    help: 'Provide guidance on the following development question:'
   };
 
   const taskInstruction = taskInstructions[task] || taskInstructions.help;
@@ -210,9 +208,10 @@ export const ai = async (options: AIOptions): Promise<number> => {
     displayResponse(response, options);
 
     return 0;
-  } catch(error) {
-    spinner.fail(`AI request failed: ${error.message}`);
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+  } catch(error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    spinner.fail(`AI request failed: ${errorMessage}`);
+    log(`\n${cliName} Error: ${errorMessage}`, 'error', quiet);
 
     if(!quiet) {
       console.error(error);

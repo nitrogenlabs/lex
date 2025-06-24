@@ -3,6 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 
+import type {LexConfigType} from './LexConfig.js';
+
 // Export types from types.ts
 export * from './types.js';
 
@@ -14,7 +16,7 @@ export {
 
 // Export Config as both a type and a namespace with create method for backward compatibility
 export const Config = {
-  create: (config: any) => config
+  create: (config: LexConfigType) => config
 };
 
 // Export utility functions

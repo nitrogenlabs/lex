@@ -23,8 +23,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
   ];
 
   try {
-    // @ts-ignore
-    const git = await execa('git', gitOptions, {encoding: 'utf-8'});
+    const git = await execa('git', gitOptions, {encoding: 'utf8'});
 
     const {stdout} = git;
     const entries: string[] = stdout.split('[lex_break]').filter((item) => !!item);
@@ -67,7 +66,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       for(let idx: number = 0, len: number = subjectLines.length; idx < len; idx++) {
         const nextLine: string = subjectLines[idx];
         const formatLine: string = nextLine.trim();
-        const headerPattern: RegExp = /^(\w*)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$/;
+        const headerPattern: RegExp = /^(\w*)(?:\(([\w$.\- *]*)\))?: (.*)$/;
         const matches = formatLine.match(headerPattern);
 
         if(matches) {

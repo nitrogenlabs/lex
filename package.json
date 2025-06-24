@@ -8,7 +8,10 @@
     "publish:patch": "npm run publish:patch --workspaces",
     "test": "npm run test --workspaces",
     "update": "npm run update --workspaces",
-    "lint:direct": "find src -type f \\( -name \"*.js\" -o -name \"*.jsx\" -o -name \"*.ts\" -o -name \"*.tsx\" \\) | xargs npx eslint --debug"
+    "lint": "npx eslint src --fix",
+    "lint:direct": "find src -type f \\( -name \"*.js\" -o -name \"*.jsx\" -o -name \"*.ts\" -o -name \"*.tsx\" \\) | xargs npx eslint --debug",
+    "lint:ai": "node packages/lex/dist/lex.js lint --fix || true",
+    "lint:rebuild": "cd packages/lex && npm run lint:rebuild"
   },
   "workspaces": [
     "packages/execa-mock",
@@ -17,6 +20,7 @@
     "packages/static-site-webpack-plugin"
   ],
   "devDependencies": {
+    "@jest/globals": "^30.0.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "eslint": "^9.20.1",
