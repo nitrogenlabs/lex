@@ -149,13 +149,40 @@ const displayResponse = (response: any, options: AIOptions): void => {
 };
 
 /**
+ * Get the appropriate API key or authentication for the selected provider
+ */
+const getProviderAuth = (provider: string): string | undefined => {
+  // Check for generic AI_API_KEY first
+  if(process.env.AI_API_KEY) {
+    return process.env.AI_API_KEY;
+  }
+
+  // Check for provider-specific environment variables
+  switch(provider) {
+    case 'openai':
+      return process.env.OPENAI_API_KEY;
+    case 'anthropic':
+      return process.env.ANTHROPIC_API_KEY;
+    case 'cursor':
+      // Cursor uses its own authentication
+      return 'cursor-auth';
+    case 'copilot':
+      // GitHub Copilot uses GitHub authentication
+      return process.env.GITHUB_TOKEN;
+    default:
+      return undefined;
+  }
+};
+
+/**
  * The main AI command function
  */
 export const ai = async (options: AIOptions): Promise<number> => {
   const {
     cliName = 'Lex',
     lexConfig,
-    model = 'gpt-4o',
+    model,
+    prompt = '',
     quiet = false,
     task = 'help'
   } = options;
@@ -172,54 +199,115 @@ export const ai = async (options: AIOptions): Promise<number> => {
   const spinner = createSpinner(quiet);
   spinner.start(`Processing ${task} request...`);
 
-  // Verify API key
-  const apiKey = process.env.OPENAI_API_KEY || LexConfig.config.ai?.apiKey;
-  if(!apiKey) {
-    spinner.fail('OpenAI API key not found. Set OPENAI_API_KEY environment variable or add ai.apiKey to your Lex configuration.');
-    return 1;
-  }
-
   try {
-    // Initialize AI client
-    const openai = new OpenAI({
-      apiKey
-    });
-
-    // Get AI provider from config
+    // Check for AI provider in config
     const aiProvider = LexConfig.config.ai?.provider || 'openai';
-    const aiModel = options.model || LexConfig.config.ai?.model || 'gpt-4o';
+    // Get model from options, config, or default
+    const aiModel = model || LexConfig.config.ai?.model || 'gpt-4o';
+    
+    // Get authentication for the provider
+    const configApiKey = LexConfig.config.ai?.apiKey;
+    const envApiKey = getProviderAuth(aiProvider);
+    const apiKey = configApiKey || envApiKey;
 
-    if(aiProvider !== 'openai' && aiProvider !== 'none') {
-      log(`Provider '${aiProvider}' is not supported for direct API calls. Defaulting to OpenAI.`, 'warn', quiet);
+    // For providers that need direct API access
+    if(['openai', 'anthropic'].includes(aiProvider) && !apiKey) {
+      spinner.fail(`${aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)} API key not found. Set ${aiProvider.toUpperCase()}_API_KEY environment variable, AI_API_KEY, or add ai.apiKey to your Lex configuration.`);
+      return 1;
     }
-
-    // Get context from project
-    const projectContext = await getProjectContext(options);
-
-    // Construct AI prompt based on task
-    const aiPrompt = constructPrompt(options, projectContext);
-
-    // Call AI service
-    const response = await openai.chat.completions.create({
-      model: aiModel,
-      messages: [
-        {role: 'system', content: 'You are a helpful development assistant integrated into the Lex CLI. Provide concise, practical answers.'},
-        {role: 'user', content: aiPrompt}
-      ],
-      max_tokens: LexConfig.config.ai?.maxTokens || 4000,
-      temperature: LexConfig.config.ai?.temperature !== undefined ? LexConfig.config.ai.temperature : 0.1
-    });
-
-    // Stop spinner
-    spinner.succeed(`${task} request completed!`);
-
-    // Process and display response
-    displayResponse(response, options);
-
-    return 0;
-  } catch(error) {
-    spinner.fail(`AI request failed: ${error.message}`);
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    
+    if(aiProvider === 'cursor') {
+      // Handle Cursor provider
+      log('Using Cursor AI provider', 'info', quiet);
+      
+      // Import the AI service dynamically
+      const {callAIService} = await import('../../utils/aiService.js');
+      
+      // Get context from project
+      const projectContext = await getProjectContext(options);
+      
+      // Construct AI prompt based on task
+      const aiPrompt = constructPrompt(options, projectContext);
+      
+      // Call Cursor AI service
+      const response = await callAIService(aiPrompt, quiet);
+      
+      // Stop spinner
+      spinner.succeed(`${task} request completed!`);
+      
+      // Display response
+      log('\nAI Response:\n', 'success', quiet);
+      log(response, 'default', quiet);
+      
+      return 0;
+    } else if(aiProvider === 'copilot') {
+      // Handle GitHub Copilot
+      if(!process.env.GITHUB_TOKEN) {
+        spinner.fail('GitHub token not found. Set GITHUB_TOKEN environment variable for Copilot access.');
+        return 1;
+      }
+      
+      log('Using GitHub Copilot', 'info', quiet);
+      
+      // Import the AI service dynamically
+      const {callAIService} = await import('../../utils/aiService.js');
+      
+      // Get context from project
+      const projectContext = await getProjectContext(options);
+      
+      // Construct AI prompt based on task
+      const aiPrompt = constructPrompt(options, projectContext);
+      
+      // Call AI service with Copilot provider
+      const response = await callAIService(aiPrompt, quiet);
+      
+      // Stop spinner
+      spinner.succeed(`${task} request completed!`);
+      
+      // Display response
+      log('\nAI Response:\n', 'success', quiet);
+      log(response, 'default', quiet);
+      
+      return 0;
+    } else {
+      // Handle OpenAI/Anthropic provider (default)
+      if(!apiKey) {
+        spinner.fail(`API key not found for ${aiProvider} provider.`);
+        return 1;
+      }
+      
+      // Initialize AI client
+      const openai = new OpenAI({
+        apiKey: apiKey // Now guaranteed to be string
+      });
+      
+      // Get context from project
+      const projectContext = await getProjectContext(options);
+      
+      // Construct AI prompt based on task
+      const aiPrompt = constructPrompt(options, projectContext);
+      
+      // Call AI service
+      const response = await openai.chat.completions.create({
+        model: aiModel,
+        messages: [
+          {role: 'system', content: 'You are a helpful development assistant integrated into the Lex CLI. Provide concise, practical answers.'},
+          {role: 'user', content: aiPrompt}
+        ]
+      });
+      
+      // Stop spinner
+      spinner.succeed(`${task} request completed!`);
+      
+      // Process and display response
+      displayResponse(response, options);
+      
+      return 0;
+    }
+  } catch(error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    spinner.fail(`AI request failed: ${errorMessage}`);
+    log(`\n${cliName} Error: ${errorMessage}`, 'error', quiet);
 
     if(!quiet) {
       console.error(error);

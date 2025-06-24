@@ -175,6 +175,57 @@ Options:
 
 When AI is configured in your `lex.config.js`, the `--fix` option will automatically use AI to fix problems that standard ESLint can't resolve.
 
+### AI-Powered Linting
+
+Lex provides an advanced AI-powered linting capability that goes beyond traditional ESLint rules. When you use the `--fix` option with the lint command, Lex will:
+
+1. Run standard ESLint with automatic fixes
+2. Analyze remaining errors that couldn't be fixed automatically
+3. Use AI (configurable in your lex.config.js) to intelligently fix complex issues
+
+This feature is especially helpful for:
+
+- Fixing complex logical errors
+- Improving code readability
+- Resolving edge cases that standard linting rules can't handle
+
+#### Usage:
+
+```shell
+# Run linting with AI fixes
+lex lint --fix
+
+# Or use the npm script if you've set it up
+npm run lint:ai
+```
+
+#### Configuration:
+
+Configure the AI provider in your `lex.config.js`:
+
+```js
+export default {
+  // Other configuration...
+  
+  ai: {
+    // AI provider: 'cursor', 'copilot', 'openai', 'anthropic', or 'none'
+    provider: 'cursor',
+    
+    // Optional API key for external providers (recommended to use environment variables)
+    // apiKey: process.env.OPENAI_API_KEY,
+    
+    // AI model to use
+    model: 'cursor-code',
+    
+    // Additional parameters
+    maxTokens: 4000,
+    temperature: 0.1
+  }
+};
+```
+
+For detailed documentation on the lint command, see `packages/lex/src/commands/lint/lint.docs.md`.
+
 ### `clean`
 
 Cleans build artifacts and cache files. [Detailed documentation](packages/lex/src/commands/clean/clean.docs.md)
@@ -350,54 +401,7 @@ The dedicated `ai` command provides your personal AI development assistant right
 lex ai --task generate --prompt "Create a responsive data table with sorting and filtering"
 ```
 
-### AI-Powered Linting
-
-Lex provides an advanced AI-powered linting capability that goes beyond traditional ESLint rules. When you use the `--fix` option with the lint command, Lex will:
-
-1. Run standard ESLint with automatic fixes
-2. Analyze remaining errors that couldn't be fixed automatically
-3. Use AI (configurable in your lex.config.js) to intelligently fix complex issues
-
-This feature is especially helpful for:
-
-- Fixing complex logical errors
-- Improving code readability
-- Resolving edge cases that standard linting rules can't handle
-
-#### Usage:
-
-```shell
-# Run linting with AI fixes
-lex lint --fix
-
-# Or use the npm script if you've set it up
-npm run lint:ai
-```
-
-#### Configuration:
-
-Configure the AI provider in your `lex.config.js`:
-
-```js
-export default {
-  // Other configuration...
-  
-  ai: {
-    // AI provider: 'cursor', 'copilot', 'openai', 'anthropic', or 'none'
-    provider: 'cursor',
-    
-    // Optional API key for external providers (recommended to use environment variables)
-    // apiKey: process.env.OPENAI_API_KEY,
-    
-    // AI model to use
-    model: 'cursor-code',
-    
-    // Additional parameters
-    maxTokens: 4000,
-    temperature: 0.1
-  }
-};
-```
+For detailed documentation on the AI command, see `packages/lex/src/commands/ai/ai.docs.md`.
 
 ### AI-Enhanced Testing
 

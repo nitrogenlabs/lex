@@ -172,4 +172,4 @@ export default {
 };
 ```
 
-For more details on AI-powered linting, see the [Linting with AI documentation](./README.md). 
+For more details on AI-powered linting, see the [Linting with AI documentation](../ai/ai.docs.md). 
