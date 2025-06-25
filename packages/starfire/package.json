@@ -68,7 +68,7 @@
     "find-project-root": "^1.1.1",
     "get-stream": "^5.1.0",
     "globby": "^11.0.0",
-    "graphql": "^14.6.0",
+    "graphql": "^16.11.0",
     "gray-matter": "^4.0.2",
     "html-tag-names": "^1.1.5",
     "ignore": "^5.1.4",
