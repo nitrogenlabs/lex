@@ -12,7 +12,7 @@ import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
-import {ai} from '../ai/ai.js';
+import {aiFunction} from '../ai/ai.js';
 
 export interface TestOptions {
   readonly analyze?: boolean;
@@ -63,9 +63,6 @@ export interface TestOptions {
 
 export type TestCallback = typeof process.exit;
 
-/**
- * Gets test file patterns based on the test path pattern
- */
 export const getTestFilePatterns = (testPathPattern?: string): string[] => {
   const defaultPatterns = ['**/*.test.*', '**/*.spec.*'];
 
@@ -76,9 +73,6 @@ export const getTestFilePatterns = (testPathPattern?: string): string[] => {
   return [testPathPattern];
 };
 
-/**
- * Find source files that could benefit from tests
- */
 const findUncoveredSourceFiles = (): string[] => {
   const sourceFiles = globSync('src/**/*.{ts,tsx,js,jsx}', {
     cwd: process.cwd(),
@@ -97,9 +91,6 @@ const findUncoveredSourceFiles = (): string[] => {
   });
 };
 
-/**
- * Process test results from Jest
- */
 const processTestResults = (outputFile?: string): any => {
   if(!outputFile) {
     return null;
@@ -161,27 +152,22 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     watchAll
   } = options;
 
-  // Combine old and new options for backwards compatibility
   const useGenerate = generate || aiGenerate;
   const useAnalyze = analyze || aiAnalyze;
   const useDebug = debugTests || aiDebug;
 
   log(`${cliName} testing...`, 'info', quiet);
 
-  // Spinner
   const spinner = createSpinner(quiet);
 
-  // Get custom configuration
   await LexConfig.parseConfig(options);
 
   const {useTypescript} = LexConfig.config;
 
   if(useTypescript) {
-    // Make sure tsconfig.json exists
     LexConfig.checkTypescriptConfig();
   }
 
-  // AI test generation before running tests
   if(useGenerate) {
     spinner.start('AI is analyzing code to generate test cases...');
 
@@ -189,10 +175,9 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
       const uncoveredFiles = findUncoveredSourceFiles();
 
       if(uncoveredFiles.length > 0) {
-        // Select the first file without tests to generate tests for
         const targetFile = uncoveredFiles[0];
 
-        await ai({
+        await aiFunction({
           prompt: `Generate Jest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
           task: 'test',
           file: targetFile,
@@ -212,7 +197,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     }
   }
 
-  // Configure jest
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../../..');
   const jestPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
@@ -250,7 +234,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push('--debug');
   }
 
-  // Detect open handles
   if(detectOpenHandles) {
     jestOptions.push('--detectOpenHandles');
   }
@@ -303,8 +286,8 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push('--onlyChanged');
   }
 
-  // Add JSON output file for AI analysis if needed
   let tempOutputFile = outputFile;
+
   if((useAnalyze || useDebug) && !outputFile) {
     tempOutputFile = '.lex-test-results.json';
     jestOptions.push('--json', '--outputFile', tempOutputFile);
@@ -352,7 +335,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push('--watchAll');
   }
 
-  // Clear cache
   if(removeCache) {
     jestOptions.push('--no-cache');
   }
@@ -362,7 +344,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push(`--setupFilesAfterEnv=${pathResolve(cwd, jestSetupFile)}`);
   }
 
-  // Update snapshots
   if(update) {
     jestOptions.push('--updateSnapshot');
   }
@@ -383,7 +364,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
 
     spinner.succeed('Testing completed!');
 
-    // AI coverage analysis
     if(useAnalyze) {
       spinner.start('AI is analyzing test coverage and suggesting improvements...');
 
@@ -391,7 +371,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
         const testResults = processTestResults(tempOutputFile);
         const filePatterns = getTestFilePatterns(testPathPattern);
 
-        await ai({
+        await aiFunction({
           prompt: `Analyze these Jest test results and suggest test coverage improvements:
           
 ${JSON.stringify(testResults, null, 2)}
@@ -417,24 +397,20 @@ Please provide:
       }
     }
 
-    // Kill process
     callback(0);
     return 0;
   } catch(error) {
-    // Display error message
     log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
 
-    // Stop spinner
     spinner.fail('Testing failed!');
 
-    // AI debug assistance for failed tests
     if(useDebug) {
       spinner.start('AI is analyzing test failures...');
 
       try {
         const testResults = processTestResults(tempOutputFile);
 
-        await ai({
+        await aiFunction({
           prompt: `Debug these failed Jest tests and suggest fixes:
           
 ${JSON.stringify(error.message, null, 2)}
@@ -460,7 +436,6 @@ Please provide:
       }
     }
 
-    // Kill process
     callback(1);
     return 1;
   }

@@ -7,7 +7,7 @@ import {Option, program} from 'commander';
 import {readFileSync} from 'fs';
 import {fileURLToPath} from 'url';
 
-import {ai} from './commands/ai/ai.js';
+import {aiFunction} from './commands/ai/ai.js';
 import {build} from './commands/build/build.js';
 import {clean} from './commands/clean/clean.js';
 import {compile} from './commands/compile/compile.js';
@@ -233,7 +233,7 @@ program.command('ai')
   .option('--prompt <text>', 'The prompt to send to the AI.')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .addOption(new Option('--task <task>', 'Type of AI task to perform.').choices(['generate', 'explain', 'test', 'optimize', 'help']).default('help'))
-  .action((cmd) => ai(cmd).then(() => {}));
+  .action((cmd) => aiFunction(cmd).then(() => {}));
 
 program.command('versions')
   .option('--json', 'Print the version as a JSON object.')

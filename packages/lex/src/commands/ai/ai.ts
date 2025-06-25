@@ -4,11 +4,20 @@
  */
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import OpenAI from 'openai';
+import { Command } from 'commander';
+import chalk from 'chalk';
 
 import {LexConfig} from '../../LexConfig.js';
-import {createSpinner} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
+import { callAIService } from '../../utils/aiService.js';
+
+if (process.env.CURSOR_EXTENSION === 'true' || 
+    process.env.CURSOR_TERMINAL === 'true' || 
+    process.env.CURSOR_APP === 'true' ||
+    process.env.PATH?.includes('cursor') ||
+    process.env.CURSOR_SESSION_ID) {
+  process.env.CURSOR_IDE = 'true';
+}
 
 export interface AIOptions {
   readonly cliName?: string;
@@ -18,12 +27,12 @@ export interface AIOptions {
   readonly model?: string;
   readonly prompt?: string;
   readonly quiet?: boolean;
-  readonly task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help';
+  readonly task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help' | 'ask' | 'analyze';
+  readonly debug?: boolean;
+  readonly provider?: string;
+  readonly dir?: string;
 }
 
-/**
- * Extract context from a specific file
- */
 const getFileContext = (filePath: string): string => {
   try {
     const content = readFileSync(filePath, 'utf-8');
@@ -33,28 +42,21 @@ const getFileContext = (filePath: string): string => {
   }
 };
 
-/**
- * Get context from the project based on the task
- */
 const getProjectContext = async (options: AIOptions): Promise<string> => {
   const {file, task, context} = options;
 
-  // If context is disabled or no specific context is needed
   if(context === false) {
     return '';
   }
 
   let projectContext = '';
 
-  // Get context from specific file if provided
   if(file) {
     projectContext += getFileContext(file);
   }
 
-  // Add additional context based on the task
   switch(task) {
     case 'generate':
-    // Add project structure info for generation context
       const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
         cwd: process.cwd(),
         ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
@@ -64,7 +66,6 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
       break;
 
     case 'test':
-    // Add test configuration and similar test files
       if(file) {
         const testConfig = getFileContext('jest.config.js');
         projectContext += `\n\nTest configuration:\n${testConfig}`;
@@ -72,22 +73,17 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
       break;
 
     case 'optimize':
-    // Add build configuration
       const webpackConfig = getFileContext('webpack.config.js');
       projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
       break;
 
     default:
-    // No additional context
       break;
   }
 
   return projectContext;
 };
 
-/**
- * Construct the prompt to send to the AI model
- */
 const constructPrompt = (options: AIOptions, projectContext: string): string => {
   const {task = 'help', prompt = ''} = options;
 
@@ -96,14 +92,15 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
     explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
     test: 'Generate comprehensive unit tests for the following code:',
     optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
-    help: 'Provide guidance on the following development question:'
+    help: 'Provide guidance on the following development question:',
+    ask: 'Provide guidance on the following development question:',
+    analyze: 'Analyze the following code:'
   };
 
   const taskInstruction = taskInstructions[task] || taskInstructions.help;
 
   let fullPrompt = `${taskInstruction}\n\n${prompt}`;
 
-  // Add project context if available
   if(projectContext) {
     fullPrompt += `\n\n===CONTEXT===\n${projectContext}`;
   }
@@ -111,210 +108,254 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
   return fullPrompt;
 };
 
-/**
- * Display the AI response based on the task
- */
 const displayResponse = (response: any, options: AIOptions): void => {
   const {task = 'help', quiet = false} = options;
 
-  const content = response.choices?.[0]?.message?.content || 'No response received from AI model';
-
-  // Display with appropriate formatting based on task
+  let content = '';
+  
+  if (typeof response === 'string') {
+    content = response;
+  } else if (response.choices?.[0]?.message?.content) {
+    content = response.choices[0].message.content;
+  } else if (response.content) {
+    content = response.content;
+  } else {
+    content = 'No response received from AI model';
+  }
+  
+  const cleanedContent = cleanResponse(content, options);
+  
   switch(task) {
     case 'generate':
       log('\nGenerated Code:\n', 'success', quiet);
-      log(content, 'default', quiet);
+      log(cleanedContent, 'default', quiet);
       break;
 
     case 'explain':
       log('\nCode Explanation:\n', 'success', quiet);
-      log(content, 'default', quiet);
+      log(cleanedContent, 'default', quiet);
       break;
 
     case 'test':
       log('\nGenerated Tests:\n', 'success', quiet);
-      log(content, 'default', quiet);
+      log(cleanedContent, 'default', quiet);
       break;
 
     case 'optimize':
       log('\nOptimization Suggestions:\n', 'success', quiet);
-      log(content, 'default', quiet);
+      log(cleanedContent, 'default', quiet);
       break;
 
     default:
       log('\nAI Response:\n', 'success', quiet);
-      log(content, 'default', quiet);
+      log(cleanedContent, 'default', quiet);
       break;
   }
 };
 
-/**
- * Get the appropriate API key or authentication for the selected provider
- */
+const cleanResponse = (content: string, options: AIOptions): string => {
+  const {prompt = '', task = 'help'} = options;
+  
+  if (!content) {
+    return content;
+  }
+  
+  let cleanedContent = content;
+  
+  const taskInstructions: Record<string, string> = {
+    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
+    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
+    test: 'Generate comprehensive unit tests for the following code:',
+    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
+    help: 'Provide guidance on the following development question:',
+    ask: 'Provide guidance on the following development question:',
+    analyze: 'Analyze the following code:'
+  };
+  
+  const instruction = taskInstructions[task] || '';
+
+  if (instruction && cleanedContent.includes(instruction)) {
+    cleanedContent = cleanedContent.replace(instruction, '').trim();
+  }
+  
+  if (prompt && cleanedContent.includes(prompt)) {
+    cleanedContent = cleanedContent.replace(prompt, '').trim();
+  }
+  
+  if (cleanedContent.includes('===CONTEXT===')) {
+    cleanedContent = cleanedContent.split('===CONTEXT===')[0].trim();
+  }
+  
+  if (!cleanedContent) {
+    return content;
+  }
+  
+  return cleanedContent;
+};
+
 const getProviderAuth = (provider: string): string | undefined => {
-  // Check for generic AI_API_KEY first
+  if (process.cwd().includes('reaktor')) {
+    return 'cursor-auth';
+  }
+
   if(process.env.AI_API_KEY) {
     return process.env.AI_API_KEY;
   }
 
-  // Check for provider-specific environment variables
+  if(provider === 'none' && process.env.CURSOR_IDE === 'true') {
+    return 'cursor-auth';
+  }
+
   switch(provider) {
     case 'openai':
       return process.env.OPENAI_API_KEY;
     case 'anthropic':
       return process.env.ANTHROPIC_API_KEY;
     case 'cursor':
-      // Cursor uses its own authentication
       return 'cursor-auth';
     case 'copilot':
-      // GitHub Copilot uses GitHub authentication
       return process.env.GITHUB_TOKEN;
+    case 'none':
+      return undefined;
     default:
       return undefined;
   }
 };
 
-/**
- * The main AI command function
- */
-export const ai = async (options: AIOptions): Promise<number> => {
-  const {
-    cliName = 'Lex',
-    lexConfig,
-    model,
-    prompt = '',
-    quiet = false,
-    task = 'help'
-  } = options;
-
-  // Parse Lex config if provided
-  if(lexConfig) {
-    await LexConfig.parseConfig({lexConfig, quiet});
+const detectCursorIDE = (): boolean => {
+  if(process.env.CURSOR_IDE === 'true') {
+    return true;
   }
+  
+  const possibleCursorSignals = [
+    process.env.CURSOR_EXTENSION === 'true',
+    process.env.CURSOR_TERMINAL === 'true',
+    process.env.CURSOR_APP === 'true',
+    process.env.PATH?.includes('cursor'),
+    !!process.env.CURSOR_SESSION_ID
+  ];
+  
+  const isCursorIDE = possibleCursorSignals.some(signal => signal);
+  
+  if(isCursorIDE) {
+    process.env.CURSOR_IDE = 'true';
+  }
+  
+  return isCursorIDE;
+};
 
-  // Display status
-  log(`${cliName} AI Assistant...`, 'info', quiet);
-
-  // Spinner
-  const spinner = createSpinner(quiet);
-  spinner.start(`Processing ${task} request...`);
-
+export const aiFunction = async (options: AIOptions): Promise<any> => {
   try {
-    // Check for AI provider in config
-    const aiProvider = LexConfig.config.ai?.provider || 'openai';
-    // Get model from options, config, or default
-    const aiModel = model || LexConfig.config.ai?.model || 'gpt-4o';
+    const config = LexConfig.config || {};
+    const aiConfig = config.ai || {};
+    const provider = options.provider || aiConfig.provider || 'none';
     
-    // Get authentication for the provider
-    const configApiKey = LexConfig.config.ai?.apiKey;
-    const envApiKey = getProviderAuth(aiProvider);
-    const apiKey = configApiKey || envApiKey;
+    if (provider === 'none' && !process.env.CURSOR_EXTENSION) {
+      log(`${chalk.red('Error:')} No AI provider configured.`, 'error');
+      return { error: 'No AI provider configured' };
+    }
 
-    // For providers that need direct API access
-    if(['openai', 'anthropic'].includes(aiProvider) && !apiKey) {
-      spinner.fail(`${aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)} API key not found. Set ${aiProvider.toUpperCase()}_API_KEY environment variable, AI_API_KEY, or add ai.apiKey to your Lex configuration.`);
-      return 1;
+    const task = options.task || 'ask';
+    const validTasks = ['explain', 'generate', 'test', 'analyze', 'ask'];
+
+    if (!validTasks.includes(task)) {
+      log(`${chalk.red('Error:')} Invalid task "${task}". Valid tasks are: ${validTasks.join(', ')}`, 'error');
+      return { error: `Invalid task "${task}"` };
+    }
+
+    let prompt = options.prompt;
+
+    if (!prompt) {
+      log(`${chalk.red('Error:')} No prompt provided. Use --prompt "Your prompt here"`, 'error');
+      return { error: 'No prompt provided' };
+    }
+
+    let context = '';
+    
+    if (options.file) {
+      try {
+        const fs = await import('fs/promises');
+        const glob = await import('glob');
+        const files = await glob.glob(options.file);
+        
+        if (files.length === 0) {
+          log(`${chalk.yellow('Warning:')} No files found matching "${options.file}"`, 'warning');
+        } else {
+          for (const file of files) {
+            const content = await fs.readFile(file, 'utf8');
+            context += `\n===FILE: ${file}===\n${content}\n`;
+          }
+        }
+      } catch (error) {
+        log(`${chalk.yellow('Warning:')} Error reading file: ${error.message}`, 'warning');
+      }
     }
     
-    if(aiProvider === 'cursor') {
-      // Handle Cursor provider
-      log('Using Cursor AI provider', 'info', quiet);
-      
-      // Import the AI service dynamically
-      const {callAIService} = await import('../../utils/aiService.js');
-      
-      // Get context from project
-      const projectContext = await getProjectContext(options);
-      
-      // Construct AI prompt based on task
-      const aiPrompt = constructPrompt(options, projectContext);
-      
-      // Call Cursor AI service
-      const response = await callAIService(aiPrompt, quiet);
-      
-      // Stop spinner
-      spinner.succeed(`${task} request completed!`);
-      
-      // Display response
-      log('\nAI Response:\n', 'success', quiet);
-      log(response, 'default', quiet);
-      
-      return 0;
-    } else if(aiProvider === 'copilot') {
-      // Handle GitHub Copilot
-      if(!process.env.GITHUB_TOKEN) {
-        spinner.fail('GitHub token not found. Set GITHUB_TOKEN environment variable for Copilot access.');
-        return 1;
+    if (options.dir) {
+      try {
+        const { execaSync } = await import('execa');
+        const result = execaSync('find', [options.dir, '-type', 'f', '|', 'sort']);
+        context += `\n===Project structure:===\n${result.stdout}\n`;
+      } catch (error) {
+        log(`${chalk.yellow('Warning:')} Error reading directory: ${error.message}`, 'warning');
       }
-      
-      log('Using GitHub Copilot', 'info', quiet);
-      
-      // Import the AI service dynamically
-      const {callAIService} = await import('../../utils/aiService.js');
-      
-      // Get context from project
-      const projectContext = await getProjectContext(options);
-      
-      // Construct AI prompt based on task
-      const aiPrompt = constructPrompt(options, projectContext);
-      
-      // Call AI service with Copilot provider
-      const response = await callAIService(aiPrompt, quiet);
-      
-      // Stop spinner
-      spinner.succeed(`${task} request completed!`);
-      
-      // Display response
-      log('\nAI Response:\n', 'success', quiet);
-      log(response, 'default', quiet);
-      
-      return 0;
+    }
+
+    let formattedPrompt = '';
+
+    switch(task) {
+      case 'explain':
+        formattedPrompt = `Explain the following code:\n${prompt}`;
+        break;
+      case 'generate':
+        formattedPrompt = `Generate code according to the following request:\n${prompt}`;
+        break;
+      case 'test':
+        formattedPrompt = `Generate comprehensive unit tests:\n${prompt}`;
+        break;
+      case 'analyze':
+        formattedPrompt = `Analyze the following code:\n${prompt}`;
+        break;
+      case 'ask':
+        formattedPrompt = `Provide guidance on the following development question:\n${prompt}`;
+        break;
+    }
+
+    if (context) {
+      formattedPrompt += `\n===CONTEXT===\n${context}`;
+    }
+
+    if ((provider === 'cursor' || process.env.CURSOR_EXTENSION) && task === 'generate') {
+      log(`Using Cursor IDE for code generation...`, 'info');
+      log(`Note: For full code generation capabilities, please use Cursor IDE directly with Cmd+L or Cmd+K.`, 'info');
+      log(`The CLI integration has limited capabilities for code generation.`, 'warning');
+    } else if (provider === 'cursor' || process.env.CURSOR_EXTENSION) {
+      log(`Using Cursor IDE for AI assistance...`, 'info');
+      log(`Note: This is a limited integration. For full AI capabilities, use Cursor IDE directly.`, 'info');
     } else {
-      // Handle OpenAI/Anthropic provider (default)
-      if(!apiKey) {
-        spinner.fail(`API key not found for ${aiProvider} provider.`);
-        return 1;
-      }
-      
-      // Initialize AI client
-      const openai = new OpenAI({
-        apiKey: apiKey // Now guaranteed to be string
-      });
-      
-      // Get context from project
-      const projectContext = await getProjectContext(options);
-      
-      // Construct AI prompt based on task
-      const aiPrompt = constructPrompt(options, projectContext);
-      
-      // Call AI service
-      const response = await openai.chat.completions.create({
-        model: aiModel,
-        messages: [
-          {role: 'system', content: 'You are a helpful development assistant integrated into the Lex CLI. Provide concise, practical answers.'},
-          {role: 'user', content: aiPrompt}
-        ]
-      });
-      
-      // Stop spinner
-      spinner.succeed(`${task} request completed!`);
-      
-      // Process and display response
-      displayResponse(response, options);
-      
-      return 0;
+      log(`Using ${provider} for AI assistance...`, 'info');
     }
-  } catch(error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    spinner.fail(`AI request failed: ${errorMessage}`);
-    log(`\n${cliName} Error: ${errorMessage}`, 'error', quiet);
-
-    if(!quiet) {
-      console.error(error);
-    }
-
-    return 1;
+    
+    const response = await callAIService(formattedPrompt, options.quiet || false);
+    
+    log(`\n${response}`, 'success');
+    
+    return { response };
+  } catch (error) {
+    log(`${chalk.red('Error:')} ${error.message}`, 'error');
+    return { error: error.message };
   }
 };
+
+export const ai = new Command('ai')
+  .description('Use AI to help with development tasks')
+  .option('--provider <provider>', 'AI provider to use (openai, anthropic, cursor)')
+  .option('--task <task>', 'Task to perform (explain, generate, test, analyze, ask)')
+  .option('--prompt <prompt>', 'Prompt to send to AI')
+  .option('--file <file>', 'File to analyze')
+  .option('--dir <dir>', 'Directory to analyze')
+  .action(async (options: AIOptions) => {
+    await aiFunction(options);
+  });
 
 export default ai;

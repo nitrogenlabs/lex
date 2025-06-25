@@ -3,18 +3,17 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import {URL} from 'url';
 
-import {getTestFilePatterns, test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as log from '../../utils/log.js';
-import * as ai from '../ai/ai.js';
+import * as aiModule from '../ai/ai.js';
+import {getTestFilePatterns, test, TestOptions} from './test.js';
 
-// Mock dependencies
 jest.mock('execa');
 jest.mock('fs');
 jest.mock('path');
@@ -23,9 +22,11 @@ jest.mock('../../LexConfig.js');
 jest.mock('../../utils/app.js');
 jest.mock('../../utils/file.js');
 jest.mock('../../utils/log.js');
-jest.mock('../ai/ai.js');
+jest.mock('../ai/ai.js', () => ({
+  aiFunction: jest.fn().mockResolvedValue({}),
+  ai: { action: jest.fn() }
+}));
 
-// Mock glob module
 jest.mock('glob', () => ({
   sync: jest.fn((pattern) => {
     if(pattern.includes('**/*.test.*') || pattern.includes('**/*.spec.*')) {
@@ -45,7 +46,6 @@ describe('test.cli tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock spinner
     mockSpinner = {
       start: jest.fn(),
       succeed: jest.fn(),
@@ -53,14 +53,12 @@ describe('test.cli tests', () => {
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 
-    // Mock LexConfig
     (LexConfig.parseConfig as jest.Mock).mockResolvedValue({});
     (LexConfig.config as any) = {
       useTypescript: true
     };
     (LexConfig.checkTypescriptConfig as jest.Mock).mockImplementation(() => {});
 
-    // Mock file system
     (fs.readFileSync as jest.Mock).mockImplementation((file) => {
       if(file.includes('.json')) {
         return '{"numFailedTests":0,"numPassedTests":5}';
@@ -68,27 +66,21 @@ describe('test.cli tests', () => {
       return 'test file content';
     });
 
-    // Mock URL
     (URL as jest.MockedClass<typeof URL>).mockImplementation(() => ({
       pathname: '/mock/path'
     } as unknown as URL));
 
-    // Mock path
     (path.resolve as jest.Mock).mockImplementation((...args) => args.join('/'));
 
-    // Mock file utils
     (file.relativeNodePath as jest.Mock).mockReturnValue('/node_modules/jest-cli/bin/jest.js');
 
-    // Mock execa
     (execa as unknown as jest.Mock).mockResolvedValue({
       stdout: 'test results',
       stderr: ''
     });
 
-    // Mock AI
-    (ai.ai as jest.Mock).mockResolvedValue({});
+    (aiModule.aiFunction as jest.Mock).mockResolvedValue({});
 
-    // Mock callback
     mockCallback = jest.fn();
   });
 
@@ -155,7 +147,7 @@ describe('test.cli tests', () => {
       await test(options, [], mockCallback as unknown as typeof process.exit);
 
       expect(mockSpinner.start).toHaveBeenCalledWith('AI is analyzing code to generate test cases...');
-      expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+      expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('Generate Jest unit tests'),
         task: 'test'
       }));
@@ -171,7 +163,7 @@ describe('test.cli tests', () => {
       await test(options, [], mockCallback as unknown as typeof process.exit);
 
       expect(mockSpinner.start).toHaveBeenCalledWith('AI is analyzing test coverage and suggesting improvements...');
-      expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+      expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('Analyze these Jest test results'),
         task: 'optimize'
       }));
@@ -191,7 +183,7 @@ describe('test.cli tests', () => {
       await test(options, [], mockCallback as unknown as typeof process.exit);
 
       expect(mockSpinner.start).toHaveBeenCalledWith('AI is analyzing test failures...');
-      expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+      expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('Debug these failed Jest tests'),
         task: 'help'
       }));
@@ -204,7 +196,7 @@ describe('test.cli tests', () => {
         generate: true
       };
 
-      (ai.ai as jest.Mock).mockRejectedValueOnce(new Error('AI error'));
+      (aiModule.aiFunction as jest.Mock).mockRejectedValueOnce(new Error('AI error'));
 
       await test(options, [], mockCallback as unknown as typeof process.exit);
 

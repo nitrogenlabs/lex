@@ -19,6 +19,7 @@ export const log = (message: string, type: string = 'info', quiet = false) => {
         color = chalk.greenBright;
         break;
       case 'warn':
+      case 'warning':
         color = chalk.yellow;
         break;
       default:

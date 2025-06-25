@@ -21,18 +21,88 @@ export const callCursorAI = async (prompt: string, options: AIConfig): Promise<s
     // In a real implementation, Cursor would handle this automatically
     log('AI fix requested via Cursor IDE', 'info');
 
-    // Since we're running inside Cursor IDE, the fixes will be applied
-    // through Cursor's AI features instead of external API calls
-    return prompt;
+    const taskMatch = prompt.match(/^(Generate code according to the following request|Explain the following code|Generate comprehensive unit tests|Analyze the following code|Provide guidance on the following development question):/);
+    const task = taskMatch ? taskMatch[1] : '';
+    const isGenerateTask = task.startsWith('Generate code');
+    
+    const questionMatch = prompt.match(/(?:Generate code according to the following request|Explain the following code|Generate comprehensive unit tests|Analyze the following code|Provide guidance on the following development question):\s*([\s\S]+?)(?:===CONTEXT===|$)/);
+    const question = questionMatch ? questionMatch[1].trim() : prompt;
+    
+    if (question.toLowerCase().includes('how many files') && prompt.includes('Project structure:')) {
+      const projectStructure = prompt.split('Project structure:')[1] || '';
+      const files = projectStructure.trim().split('\n');
+      return `Based on the project structure provided, there are ${files.length} files in the project.`;
+    }
+    
+    if (isGenerateTask) {
+      return `
+# Code Generation Request: "${question}"
+
+To generate code using Cursor's AI capabilities:
+
+1. **Open your project in Cursor IDE** (https://cursor.sh)
+2. Press **Cmd+L** (or Ctrl+L on Windows/Linux) to open the AI chat
+3. Type your request: "${question}"
+4. Cursor will generate the code directly in your editor
+
+The current CLI integration doesn't have direct access to Cursor's code generation capabilities.
+
+**Alternative options:**
+
+1. **Use OpenAI or Anthropic directly:**
+   Configure in lex.config.js:
+   \`\`\`js
+   export default {
+     ai: {
+       provider: 'openai',
+       apiKey: process.env.OPENAI_API_KEY,
+       model: 'gpt-4o'
+     }
+   }
+   \`\`\`
+
+2. **Use Cursor's command line tool:**
+   Install: \`npm install -g @cursor/cli\`
+   Run: \`cursor ai "${question}"\`
+`;
+    }
+    
+    return `
+To use Cursor's AI capabilities for "${question}", you need to:
+
+1. Open your project in Cursor IDE (https://cursor.sh)
+2. Use Cursor's built-in AI features by pressing Cmd+K or Cmd+L
+3. Or run the 'cursor' command directly from your terminal
+
+The current integration is limited and doesn't directly access Cursor's AI capabilities.
+
+For the best experience with AI code generation:
+- Use Cursor IDE directly
+- Or configure OpenAI or Anthropic as your provider in lex.config.js:
+
+\`\`\`js
+// lex.config.js
+export default {
+  ai: {
+    provider: 'openai', // or 'anthropic'
+    apiKey: process.env.OPENAI_API_KEY, // or ANTHROPIC_API_KEY
+    model: 'gpt-4o' // or 'claude-3-opus'
+  }
+}
+\`\`\`
+
+Then set your API key as an environment variable:
+\`\`\`
+export OPENAI_API_KEY=your_key_here
+\`\`\`
+`;
   } catch(error) {
     throw new Error(`Cursor AI error: ${error.message}`);
   }
 };
 
-// OpenAI API integration
 export const callOpenAIAI = async (prompt: string, options: AIConfig): Promise<string> => {
   try {
-    // OpenAI API implementation
     const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
     if(!apiKey) {
       throw new Error('OpenAI API key is required. Set it in lex.config.js or as OPENAI_API_KEY environment variable.');
@@ -67,10 +137,8 @@ export const callOpenAIAI = async (prompt: string, options: AIConfig): Promise<s
   }
 };
 
-// Anthropic API integration
 export const callAnthropicAI = async (prompt: string, options: AIConfig): Promise<string> => {
   try {
-    // Anthropic API implementation
     const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
     if(!apiKey) {
       throw new Error('Anthropic API key is required. Set it in lex.config.js or as ANTHROPIC_API_KEY environment variable.');
@@ -105,7 +173,6 @@ export const callAnthropicAI = async (prompt: string, options: AIConfig): Promis
   }
 };
 
-// GitHub Copilot API integration (conceptual - actual implementation may differ)
 export const callCopilotAI = async (prompt: string, options: AIConfig): Promise<string> => {
   try {
     log('GitHub Copilot AI fixes not directly supported. Using manual fix mode.', 'info');
@@ -115,7 +182,6 @@ export const callCopilotAI = async (prompt: string, options: AIConfig): Promise<
   }
 };
 
-// Prompt the user to choose an AI provider if none is configured
 export const promptForAIProvider = async (quiet = false): Promise<'cursor' | 'copilot' | 'openai' | 'anthropic' | 'none'> => {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -153,7 +219,6 @@ export const promptForAIProvider = async (quiet = false): Promise<'cursor' | 'co
   });
 };
 
-// Prompt the user for an API key if needed
 export const promptForAPIKey = async (provider: string, quiet = false): Promise<string> => {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -168,21 +233,34 @@ export const promptForAPIKey = async (provider: string, quiet = false): Promise<
   });
 };
 
-// Main function to call AI service
+export const getAIService = (provider: string, options: AIConfig): (prompt: string, options: AIConfig) => Promise<string> => {
+  switch(provider) {
+    case 'cursor':
+      return callCursorAI;
+    case 'openai':
+      return callOpenAIAI;
+    case 'anthropic':
+      return callAnthropicAI;
+    case 'copilot':
+      return callCopilotAI;
+    default:
+      return async () => 'No AI provider configured';
+  }
+};
+
 export const callAIService = async (prompt: string, quiet = false): Promise<string> => {
   const spinner = createSpinner(quiet);
   spinner.start('Calling AI service to fix code issues...');
 
   try {
-    // Get AI configuration from LexConfig
     const aiConfig = LexConfig.config.ai || {provider: 'none'};
 
-    // If running in Cursor IDE, default to cursor as provider
-    if(process.env.CURSOR_IDE === 'true' && aiConfig.provider === 'none') {
+    const isInCursorIDE = process.env.CURSOR_IDE === 'true';
+    if(isInCursorIDE && (aiConfig.provider === 'none' || !aiConfig.provider)) {
+      log('Detected Cursor IDE environment, using Cursor as AI provider', 'info', quiet);
       aiConfig.provider = 'cursor';
     }
 
-    // If no provider is configured, prompt the user to choose one
     if(aiConfig.provider === 'none') {
       const provider = await promptForAIProvider(quiet);
 
@@ -193,16 +271,13 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
 
       aiConfig.provider = provider;
 
-      // Prompt for API key if needed for external services
       if(provider !== 'cursor' && provider !== 'copilot' &&
          !process.env[`${provider.toUpperCase()}_API_KEY`]) {
         aiConfig.apiKey = await promptForAPIKey(provider, quiet);
       }
 
-      // Save the configuration for future use
       LexConfig.config.ai = aiConfig;
 
-      // Write the configuration to a file
       const configPath = pathResolve(process.cwd(), 'lex.config.js');
       if(existsSync(configPath)) {
         try {
@@ -213,13 +288,12 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
           );
           writeFileSync(configPath, updatedConfig);
         } catch(_error) {
-          // Ignore errors when trying to update config
         }
       }
     }
 
-    // Call the appropriate AI service based on the provider
     let result = '';
+
     switch(aiConfig.provider) {
       case 'cursor':
         result = await callCursorAI(prompt, aiConfig);

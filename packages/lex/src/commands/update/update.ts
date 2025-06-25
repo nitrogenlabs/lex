@@ -7,7 +7,6 @@ import {resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
-import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface UpdateOptions {
@@ -23,13 +22,10 @@ export type UpdateCallback = typeof process.exit;
 export const update = async (cmd: UpdateOptions, callback: UpdateCallback = process.exit): Promise<number> => {
   const {cliName = 'Lex', packageManager: cmdPackageManager, quiet, registry} = cmd;
 
-  // Display status
   log(`${cliName} updating packages...`, 'info', quiet);
 
-  // Spinner
   const spinner = createSpinner(quiet);
 
-  // Get custom configuration
   await LexConfig.parseConfig(cmd);
 
   const {packageManager: configPackageManager} = LexConfig.config;
@@ -38,14 +34,15 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const updateApp: string = isNpm ? 'npx' : 'yarn';
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
-  const npmCheckUpdatesPath: string = relativeNodePath('npm-check-updates', dirPath);
+  
   const updateOptions: string[] = isNpm
-    ? [npmCheckUpdatesPath,
+    ? [
+      'npm-check-updates',
       '--concurrency', '10',
       '--packageManager', packageManager,
       '--pre', '0',
       '--target', 'latest',
-      cmd.interactive ? '--interactive' : '',
+      ...(cmd.interactive ? ['--interactive'] : []),
       '--upgrade'
     ]
     : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
@@ -72,20 +69,15 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
       });
     }
 
-    // Stop loader
     spinner.succeed('Successfully updated packages!');
 
-    // Kill process
     callback(0);
     return 0;
   } catch(error) {
-    // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
-    // Stop spinner
     spinner.fail('Failed to updated packages.');
 
-    // Kill process
     callback(1);
     return 1;
   }

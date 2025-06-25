@@ -3,17 +3,17 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import {URL} from 'url';
 
-import {test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
-import * as ai from '../ai/ai.js';
+import * as log from '../../utils/log.js';
+import * as aiModule from '../ai/ai.js';
+import {getTestFilePatterns, test, TestOptions} from './test.js';
 
-// Mock dependencies
 jest.mock('execa');
 jest.mock('fs');
 jest.mock('path');
@@ -22,28 +22,19 @@ jest.mock('../../LexConfig.js');
 jest.mock('../../utils/app.js');
 jest.mock('../../utils/file.js');
 jest.mock('../../utils/log.js');
-jest.mock('../ai/ai.js');
+jest.mock('../ai/ai.js', () => ({
+  aiFunction: jest.fn().mockResolvedValue({}),
+  ai: { action: jest.fn() }
+}));
 
-// Mock glob module
 jest.mock('glob', () => ({
-  sync: jest.fn((_pattern, _options) => {
-    // For test files search
-    if(_pattern.includes('**/*.{test,spec}')) {
-      return [
-        'src/components/Button.test.tsx',
-        'src/utils/format.spec.js'
-      ];
+  sync: jest.fn((pattern) => {
+    if(pattern.includes('**/*.test.*') || pattern.includes('**/*.spec.*')) {
+      return ['src/file1.test.ts', 'src/file2.spec.ts'];
     }
-
-    // For source files
-    if(_pattern.includes('src/**/*.{ts,tsx,js,jsx}')) {
-      return [
-        'src/components/Button.tsx',
-        'src/components/Card.tsx', // Has no test
-        'src/utils/format.js'
-      ];
+    if(pattern.includes('src/**/*.{ts,tsx,js,jsx}')) {
+      return ['src/file1.ts', 'src/file2.tsx', 'src/file3.js', 'src/untested.ts'];
     }
-
     return [];
   })
 }));
@@ -56,7 +47,6 @@ describe('test integration tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock spinner
     mockSpinner = {
       start: jest.fn(),
       succeed: jest.fn(),
@@ -64,67 +54,40 @@ describe('test integration tests', () => {
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 
-    // Mock LexConfig
     (LexConfig.parseConfig as jest.Mock).mockResolvedValue({});
     (LexConfig.config as any) = {
-      useTypescript: true
+      useTypescript: true,
+      outputFullPath: '/mock/output',
+      sourceFullPath: '/mock/src',
+      targetEnvironment: 'node'
     };
     (LexConfig.checkTypescriptConfig as jest.Mock).mockImplementation(() => {});
 
-    // Mock file system
     (fs.readFileSync as jest.Mock).mockImplementation((file) => {
-      if(typeof file === 'string' && file.includes('.json')) {
-        return JSON.stringify({
-          numTotalTests: 10,
-          numPassedTests: 8,
-          numFailedTests: 2,
-          testResults: [
-            {
-              name: 'src/components/Button.test.tsx',
-              status: 'passed',
-              assertionResults: [
-                {status: 'passed', title: 'renders correctly'},
-                {status: 'passed', title: 'handles click events'}
-              ]
-            },
-            {
-              name: 'src/utils/format.spec.js',
-              status: 'failed',
-              assertionResults: [
-                {status: 'passed', title: 'formats dates correctly'},
-                {status: 'failed', title: 'handles null values', failureMessages: ['Expected null but received undefined']}
-              ]
-            }
-          ]
-        });
+      if(file.includes('.json')) {
+        return '{"numFailedTests":0,"numPassedTests":5,"testResults":[]}';
       }
-      return 'export const Component = () => <div>Test</div>;';
+      return 'test file content';
     });
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-    // Mock URL
     (URL as jest.MockedClass<typeof URL>).mockImplementation(() => ({
       pathname: '/mock/path'
     } as unknown as URL));
 
-    // Mock path
     (path.resolve as jest.Mock).mockImplementation((...args) => args.join('/'));
 
-    // Mock file utils
     (file.relativeNodePath as jest.Mock).mockImplementation((module) => `/node_modules/${module}`);
 
-    // Mock execa
     (execa as unknown as jest.Mock).mockResolvedValue({
       stdout: 'test results',
       stderr: ''
     });
 
-    // Mock AI
-    (ai.ai as jest.Mock).mockResolvedValue({});
+    (aiModule.aiFunction as jest.Mock).mockResolvedValue({});
 
-    // Mock callback
     mockCallback = jest.fn();
 
-    // Setup temp file path
     tempOutputFile = '.lex-test-results.json';
   });
 
@@ -141,7 +104,6 @@ describe('test integration tests', () => {
 
     expect(file.relativeNodePath).toHaveBeenCalledWith('jest-cli/bin/jest.js', expect.anything());
 
-    // Verify it passes the right options
     const execaCalls = (execa as unknown as jest.Mock).mock.calls;
     const jestCall = execaCalls[0];
     const jestArgs = jestCall[1];
@@ -163,13 +125,11 @@ describe('test integration tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    // Verify AI was called properly
-    expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+    expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
       prompt: expect.stringContaining('Generate Jest unit tests for this file'),
       task: 'test'
     }));
 
-    // Should show success message
     expect(mockSpinner.succeed).toHaveBeenCalledWith(expect.stringContaining('AI test generation suggestions provided'));
   });
 
@@ -181,14 +141,12 @@ describe('test integration tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    // Should create output file for analysis
     const jestArgs = (execa as unknown as jest.Mock).mock.calls[0][1];
     expect(jestArgs).toContain('--json');
     expect(jestArgs).toContain('--outputFile');
     expect(jestArgs).toContain(tempOutputFile);
 
-    // Should call AI with test results
-    expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+    expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
       prompt: expect.stringContaining('Analyze these Jest test results'),
       task: 'optimize'
     }));
@@ -202,20 +160,17 @@ describe('test integration tests', () => {
       debugTests: true
     };
 
-    // Mock test failure
     (execa as unknown as jest.Mock).mockRejectedValueOnce({
       message: 'Tests failed'
     });
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    // Should have set up the output file
     const jestArgs = (execa as unknown as jest.Mock).mock.calls[0][1];
     expect(jestArgs).toContain('--json');
     expect(jestArgs).toContain('--outputFile');
 
-    // Should call AI with error analysis
-    expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+    expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
       prompt: expect.stringContaining('Debug these failed Jest tests'),
       task: 'help'
     }));
@@ -233,13 +188,11 @@ describe('test integration tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    // Should call AI for test generation
-    expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+    expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
       task: 'test'
     }));
 
-    // Should also set up analysis after testing
-    expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
+    expect(aiModule.aiFunction).toHaveBeenCalledWith(expect.objectContaining({
       task: 'optimize'
     }));
 
@@ -252,15 +205,13 @@ describe('test integration tests', () => {
       quiet: false
     };
 
-    // Mock test failure
     (execa as unknown as jest.Mock).mockRejectedValueOnce({
       message: 'Tests failed'
     });
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    // Should not call AI for debugging
-    expect(ai.ai).not.toHaveBeenCalled();
+    expect(aiModule.aiFunction).not.toHaveBeenCalled();
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('Testing failed!');
     expect(mockCallback).toHaveBeenCalledWith(1);
@@ -272,14 +223,12 @@ describe('test integration tests', () => {
       generate: true
     };
 
-    // Mock AI error
-    (ai.ai as jest.Mock).mockRejectedValueOnce(new Error('AI service unavailable'));
+    (aiModule.aiFunction as jest.Mock).mockRejectedValueOnce(new Error('AI service unavailable'));
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('Could not generate AI test suggestions');
 
-    // Should still run tests even if AI fails
     expect(execa).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -295,7 +244,6 @@ describe('test integration tests', () => {
 
     await test(options, additionalArgs, mockCallback as unknown as typeof process.exit);
 
-    // Verify the additional args were passed to jest
     const execaCalls = (execa as unknown as jest.Mock).mock.calls;
     const jestCall = execaCalls[0];
     const jestArgs = jestCall[1];
