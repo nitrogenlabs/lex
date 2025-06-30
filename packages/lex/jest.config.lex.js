@@ -12,17 +12,14 @@ const { jest, sourceFullPath, targetEnvironment, useTypescript } = JSON.parse(
 const dirName = new URL('.', import.meta.url).pathname;
 const nodePath = pathResolve(dirName, './node_modules');
 
-// Check if setup files exist
+
 const lexSetupFile = pathResolve(dirName, './jest.setup.js');
 const projectSetupFile = pathResolve(rootDir, './jest.setup.js');
 const setupFilesAfterEnv = [];
 
-// Add Lex's setup file if it exists
-if(existsSync(lexSetupFile)) {
-  setupFilesAfterEnv.push(lexSetupFile);
-}
 
-// Add project's setup file if it exists
+setupFilesAfterEnv.push(lexSetupFile);
+
 if(existsSync(projectSetupFile)) {
   setupFilesAfterEnv.push(projectSetupFile);
 }
@@ -47,7 +44,6 @@ if(useTypescript) {
   transformIgnorePatterns = [];
 }
 
-// Create a base config
 const baseConfig = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
@@ -69,20 +65,17 @@ const baseConfig = {
     '\\.(css|jpg|png|svg|txt)$': pathResolve(dirName, './emptyModule')
   },
   modulePaths: [rootDir, `${rootDir}/node_modules`, nodePath, sourceFullPath],
-  // preset: 'ts-jest', // Removed to avoid resolution issues
   resolver: pathResolve(dirName, './resolver.cjs'),
   rootDir,
   setupFiles: [
     getNodePath('core-js'),
     getNodePath('regenerator-runtime/runtime.js')
   ],
-  // Only add setupFilesAfterEnv if there are entries
-  ...(setupFilesAfterEnv.length > 0 ? { setupFilesAfterEnv } : {}),
+  setupFilesAfterEnv,
   testEnvironment,
   testEnvironmentOptions,
   testPathIgnorePatterns: ['/node_modules/', `${nodePath}/`],
   testRegex,
-  testRunner: getNodePath('jest-circus/runner.js'),
   transform: {
     ...(useTypescript ? {
       '\\.tsx?$': [getNodePath('ts-jest/dist/index.js'), {
@@ -99,7 +92,6 @@ const baseConfig = {
   verbose: true
 };
 
-// Deep merge function
 const deepMerge = (target, source) => {
   if(!source) return target;
   const output = { ...target };
@@ -108,7 +100,6 @@ const deepMerge = (target, source) => {
     if(source[key] instanceof Object && key in target && target[key] instanceof Object && !Array.isArray(source[key]) && !Array.isArray(target[key])) {
       output[key] = {...target[key], ...source[key]};
     } else if(Array.isArray(source[key]) && Array.isArray(target[key])) {
-      // Merge arrays
       output[key] = [...target[key], ...source[key]];
     } else {
       output[key] = source[key];
@@ -118,5 +109,4 @@ const deepMerge = (target, source) => {
   return output;
 };
 
-// Export the merged configuration
 export default deepMerge(baseConfig, jest);

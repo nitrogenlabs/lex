@@ -75,11 +75,13 @@ module.exports = (value, options) => {
   }
 
   try {
-    return resolveSync(fileName, {basedir: `${__dirname}/../`, extensions});
-  } catch(error) {
+    // Try project directory first for better compatibility with external projects
+    return resolveSync(fileName, {basedir: process.cwd(), extensions});
+  } catch(projectError) {
     try {
-      return resolveSync(fileName, {basedir: process.cwd(), extensions});
-    } catch(error) {
+      // Fall back to Lex's directory
+      return resolveSync(fileName, {basedir: `${__dirname}/../`, extensions});
+    } catch(lexError) {
       return null;
     }
   }

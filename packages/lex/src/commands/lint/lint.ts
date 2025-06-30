@@ -523,7 +523,7 @@ const applyAIFix = async (
             
             // Read the file content again in case it was modified by automated fixes
             const fileContent = readFileSync(filePath, 'utf8');
-            
+
             // Prepare a prompt for AI
             const prompt = `Fix the following ESLint errors in this code:
 ${fileErrors.join('\n')}
@@ -534,10 +534,9 @@ ${fileContent}
 \`\`\`
 
 Return only the fixed code without any explanations.`;
-            
-            // Call the AI service to get fixed code
+
             const fixedContent = await callAIService(prompt, quiet);
-            
+
             if(fixedContent && fixedContent !== fileContent) {
               writeFileSync(filePath, fixedContent, 'utf8');
               log(`Applied AI fixes to ${filePath}`, 'info', quiet);

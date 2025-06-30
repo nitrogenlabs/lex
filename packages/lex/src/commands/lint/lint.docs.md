@@ -109,7 +109,7 @@ export type LintCallback = typeof process.exit;
 - **ESLint Configuration**: Provides a default ESLint configuration if none is found in the project.
 - **AI-Powered Fixes**: Can apply AI fixes to linting issues that can't be automatically fixed.
 - **Fallback Fixes**: When AI is unavailable, applies rule-based fixes for common issues.
-- **ESM Support**: Ensures package.json is configured for ESM support.
+- **ESM Support**: Ensures package.json is configured for ESM support. 
 
 ## Usage
 
