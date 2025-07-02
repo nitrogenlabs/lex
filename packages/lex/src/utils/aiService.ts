@@ -24,17 +24,17 @@ export const callCursorAI = async (prompt: string, options: AIConfig): Promise<s
     const taskMatch = prompt.match(/^(Generate code according to the following request|Explain the following code|Generate comprehensive unit tests|Analyze the following code|Provide guidance on the following development question):/);
     const task = taskMatch ? taskMatch[1] : '';
     const isGenerateTask = task.startsWith('Generate code');
-    
+
     const questionMatch = prompt.match(/(?:Generate code according to the following request|Explain the following code|Generate comprehensive unit tests|Analyze the following code|Provide guidance on the following development question):\s*([\s\S]+?)(?:===CONTEXT===|$)/);
     const question = questionMatch ? questionMatch[1].trim() : prompt;
-    
-    if (question.toLowerCase().includes('how many files') && prompt.includes('Project structure:')) {
+
+    if(question.toLowerCase().includes('how many files') && prompt.includes('Project structure:')) {
       const projectStructure = prompt.split('Project structure:')[1] || '';
       const files = projectStructure.trim().split('\n');
       return `Based on the project structure provided, there are ${files.length} files in the project.`;
     }
-    
-    if (isGenerateTask) {
+
+    if(isGenerateTask) {
       return `
 # Code Generation Request: "${question}"
 
@@ -50,7 +50,7 @@ The current CLI integration doesn't have direct access to Cursor's code generati
 **Alternative options:**
 
 1. **Use OpenAI or Anthropic directly:**
-   Configure in lex.config.js:
+   Configure in your lex.config file:
    \`\`\`js
    export default {
      ai: {
@@ -66,7 +66,7 @@ The current CLI integration doesn't have direct access to Cursor's code generati
    Run: \`cursor ai "${question}"\`
 `;
     }
-    
+
     return `
 To use Cursor's AI capabilities for "${question}", you need to:
 
@@ -78,10 +78,10 @@ The current integration is limited and doesn't directly access Cursor's AI capab
 
 For the best experience with AI code generation:
 - Use Cursor IDE directly
-- Or configure OpenAI or Anthropic as your provider in lex.config.js:
+- Or configure OpenAI or Anthropic as your provider in your lex.config file:
 
 \`\`\`js
-// lex.config.js
+// lex.config.js (or lex.config.mjs, lex.config.cjs, etc.)
 export default {
   ai: {
     provider: 'openai', // or 'anthropic'
@@ -105,7 +105,7 @@ export const callOpenAIAI = async (prompt: string, options: AIConfig): Promise<s
   try {
     const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
     if(!apiKey) {
-      throw new Error('OpenAI API key is required. Set it in lex.config.js or as OPENAI_API_KEY environment variable.');
+      throw new Error('OpenAI API key is required. Set it in your lex.config file or as OPENAI_API_KEY environment variable.');
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -141,7 +141,7 @@ export const callAnthropicAI = async (prompt: string, options: AIConfig): Promis
   try {
     const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
     if(!apiKey) {
-      throw new Error('Anthropic API key is required. Set it in lex.config.js or as ANTHROPIC_API_KEY environment variable.');
+      throw new Error('Anthropic API key is required. Set it in your lex.config file or as ANTHROPIC_API_KEY environment variable.');
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -278,8 +278,20 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
 
       LexConfig.config.ai = aiConfig;
 
-      const configPath = pathResolve(process.cwd(), 'lex.config.js');
-      if(existsSync(configPath)) {
+      // Search for config files in multiple formats like LexConfig.parseConfig does
+      const configFormats = ['js', 'mjs', 'cjs', 'ts', 'json'];
+      const configBaseName = 'lex.config';
+      let configPath = '';
+
+      for(const format of configFormats) {
+        const potentialPath = pathResolve(process.cwd(), `./${configBaseName}.${format}`);
+        if(existsSync(potentialPath)) {
+          configPath = potentialPath;
+          break;
+        }
+      }
+
+      if(configPath) {
         try {
           const configContent = readFileSync(configPath, 'utf8');
           const updatedConfig = configContent.replace(

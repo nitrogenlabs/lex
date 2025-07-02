@@ -35,12 +35,12 @@ if(targetEnvironment === 'web') {
 }
 
 let moduleFileExtensions = ['js', 'json'];
-let testRegex = '(/__tests__/.*|\\.(test|spec))\\.(js)?$';
+let testRegex = '(/__tests__/.*|\\.(test|spec|integration))\\.(js)?$';
 let transformIgnorePatterns = [];
 
 if(useTypescript) {
   moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
-  testRegex = '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)?$';
+  testRegex = '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$';
   transformIgnorePatterns = [];
 }
 

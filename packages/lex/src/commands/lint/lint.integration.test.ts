@@ -353,4 +353,108 @@ describe('lint integration tests', () => {
       expect.anything()
     );
   });
+
+  it('should find AI configuration in lex.config.mjs file', async () => {
+    const options: LintOptions = {
+      quiet: false
+    };
+
+    // Mock lex.config.mjs exists with AI configuration
+    (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      if(filePath.includes('/test/project/lex.config.mjs')) {
+        return true;
+      }
+      if(filePath.includes('/test/project/lex.config.js')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.cjs')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.ts')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.json')) {
+        return false;
+      }
+      if(filePath.includes('tsconfig.json')) {
+        return true;
+      }
+      if(filePath.includes('package.json')) {
+        return true;
+      }
+      return false;
+    });
+
+    // Mock the import of lex.config.mjs
+    const mockImport = jest.fn().mockResolvedValue({
+      default: {
+        ai: {
+          provider: 'openai',
+          apiKey: 'test-key'
+        }
+      }
+    });
+    jest.doMock('/test/project/lex.config.mjs', () => mockImport(), {virtual: true});
+
+    await lint(options, mockCallback as unknown as typeof process.exit);
+
+    // Should log that it found AI configuration in the mjs file
+    expect(log.log).toHaveBeenCalledWith(
+      expect.stringContaining('Found AI configuration in /test/project/lex.config.mjs'),
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it('should find AI configuration in lex.config.cjs file', async () => {
+    const options: LintOptions = {
+      quiet: false
+    };
+
+    // Mock lex.config.cjs exists with AI configuration
+    (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      if(filePath.includes('/test/project/lex.config.mjs')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.js')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.cjs')) {
+        return true;
+      }
+      if(filePath.includes('/test/project/lex.config.ts')) {
+        return false;
+      }
+      if(filePath.includes('/test/project/lex.config.json')) {
+        return false;
+      }
+      if(filePath.includes('tsconfig.json')) {
+        return true;
+      }
+      if(filePath.includes('package.json')) {
+        return true;
+      }
+      return false;
+    });
+
+    // Mock the import of lex.config.cjs
+    const mockImport = jest.fn().mockResolvedValue({
+      default: {
+        ai: {
+          provider: 'anthropic',
+          apiKey: 'test-key'
+        }
+      }
+    });
+    jest.doMock('/test/project/lex.config.cjs', () => mockImport(), {virtual: true});
+
+    await lint(options, mockCallback as unknown as typeof process.exit);
+
+    // Should log that it found AI configuration in the cjs file
+    expect(log.log).toHaveBeenCalledWith(
+      expect.stringContaining('Found AI configuration in /test/project/lex.config.cjs'),
+      expect.anything(),
+      expect.anything()
+    );
+  });
 });

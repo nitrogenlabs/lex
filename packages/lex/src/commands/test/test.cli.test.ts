@@ -7,12 +7,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {URL} from 'url';
 
+import {getTestFilePatterns, test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as log from '../../utils/log.js';
 import * as aiModule from '../ai/ai.js';
-import {getTestFilePatterns, test, TestOptions} from './test.js';
 
 jest.mock('execa');
 jest.mock('fs');
@@ -24,7 +24,7 @@ jest.mock('../../utils/file.js');
 jest.mock('../../utils/log.js');
 jest.mock('../ai/ai.js', () => ({
   aiFunction: jest.fn().mockResolvedValue({}),
-  ai: { action: jest.fn() }
+  ai: {action: jest.fn()}
 }));
 
 jest.mock('glob', () => ({

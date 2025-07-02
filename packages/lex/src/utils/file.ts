@@ -25,16 +25,16 @@ export const relativeNodePath = (filename: string, dirPath: string = './', backU
   const modulePath = `node_modules/${filename}`;
 
   // First, check the Lex package's node_modules directory
-  if (dirPath !== './') {
+  if(dirPath !== './') {
     const lexModulePath = pathResolve(dirPath, modulePath);
-    if (existsSync(lexModulePath)) {
+    if(existsSync(lexModulePath)) {
       return lexModulePath;
     }
   }
 
   // Second, check the user's project node_modules directory
   const projectPath = pathResolve(process.cwd(), modulePath);
-  if (existsSync(projectPath)) {
+  if(existsSync(projectPath)) {
     return projectPath;
   }
 
@@ -52,13 +52,13 @@ export const relativeNodePath = (filename: string, dirPath: string = './', backU
 export const getNodePath = (moduleName: string): string => {
   const dirName = new URL('.', import.meta.url).pathname;
   const modulePath: string = `node_modules/${moduleName}`;
-  
+
   // Try project root first
   const projectPath = pathResolve(process.cwd(), modulePath);
-  if (existsSync(projectPath)) {
+  if(existsSync(projectPath)) {
     return projectPath;
   }
-  
+
   // Then try module local to Lex
   const repoPath: string = findFileUp.sync(modulePath, dirName);
   if(repoPath && existsSync(repoPath)) {

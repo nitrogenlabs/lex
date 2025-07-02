@@ -133,17 +133,17 @@ export class LexConfig {
     if(sourcePath !== undefined && sourceFullPath === undefined) {
       updatedConfig.sourceFullPath = pathResolve(cwd, sourcePath);
     }
-    
+
     if(ai) {
       LexConfig.config.ai = {...LexConfig.config.ai, ...ai};
-      
+
       if(process.env.CURSOR_IDE === 'true' && LexConfig.config.ai.provider === 'none') {
         LexConfig.config.ai.provider = 'cursor';
       }
     }
 
     LexConfig.config = {...LexConfig.config, ...updatedConfig};
-    
+
     return LexConfig.config;
   }
 
@@ -184,22 +184,22 @@ export class LexConfig {
     const configBaseName: string = lexConfigName || 'lex.config';
     let configPath: string = lexConfig || '';
     let configExists: boolean = lexConfig ? existsSync(configPath) : false;
-    
-    if (!configPath || !configExists) {
-      if (debug) {
+
+    if(!configPath || !configExists) {
+      if(debug) {
         log(`Searching for config files with base name: ${configBaseName}`, 'info', quiet);
       }
-      
-      for (const format of configFormats) {
+
+      for(const format of configFormats) {
         const potentialPath = isRoot
           ? pathResolve(cwd, `./${configBaseName}.${format}`)
           : relativeFilePath(`${configBaseName}.${format}`, cwd);
-          
-        if (debug) {
+
+        if(debug) {
           log(`Checking for config file: ${potentialPath}`, 'info', quiet);
         }
-        
-        if (existsSync(potentialPath)) {
+
+        if(existsSync(potentialPath)) {
           configPath = potentialPath;
           configExists = true;
           break;
@@ -231,36 +231,36 @@ export class LexConfig {
       } else if(['.js', '.mjs', '.cjs', '.ts'].includes(ext)) {
         try {
           let lexCustomConfig;
-          
-          if (ext === '.cjs') {
+
+          if(ext === '.cjs') {
             const fileUrl = new URL(`file:///${pathResolve(configPath)}`).href;
 
-            if (debug) {
+            if(debug) {
               log(`Loading CommonJS config from: ${fileUrl}`, 'info', quiet);
             }
             lexCustomConfig = await import(fileUrl);
           } else {
-            if (debug) {
+            if(debug) {
               log(`Loading ESM/TS config from: ${configPath}`, 'info', quiet);
             }
 
             lexCustomConfig = await import(configPath);
           }
-          
+
           const config = lexCustomConfig.default || lexCustomConfig;
-          
-          if (debug) {
+
+          if(debug) {
             log(`Loaded config: ${JSON.stringify(config, null, 2)}`, 'info', quiet);
           }
-          
-          if (!config) {
+
+          if(!config) {
             log(`\n${cliName} Warning: Config file loaded but no configuration found`, 'warn', quiet);
           }
-          
+
           LexConfig.addConfigParams(cmd, config || {});
-        } catch (error) {
+        } catch(error) {
           log(`\n${cliName} Error: Failed to load config file: ${error.message}`, 'error', quiet);
-          if (debug) {
+          if(debug) {
             console.error(error);
           }
         }
@@ -268,10 +268,10 @@ export class LexConfig {
         log(`\n${cliName} Error: Config file must be a JS, CJS, MJS, TS, or JSON file.`, 'error', quiet);
       }
     } else {
-      if (debug) {
-        log(`No config file found. Using default configuration.`, 'info', quiet);
+      if(debug) {
+        log('No config file found. Using default configuration.', 'info', quiet);
       }
-      
+
       LexConfig.useTypescript = !!typescript;
       LexConfig.addConfigParams(cmd, LexConfig.config);
     }

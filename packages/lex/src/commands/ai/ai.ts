@@ -2,17 +2,17 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import chalk from 'chalk';
+import {Command} from 'commander';
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import { Command } from 'commander';
-import chalk from 'chalk';
 
 import {LexConfig} from '../../LexConfig.js';
+import {callAIService} from '../../utils/aiService.js';
 import {log} from '../../utils/log.js';
-import { callAIService } from '../../utils/aiService.js';
 
-if (process.env.CURSOR_EXTENSION === 'true' || 
-    process.env.CURSOR_TERMINAL === 'true' || 
+if(process.env.CURSOR_EXTENSION === 'true' ||
+    process.env.CURSOR_TERMINAL === 'true' ||
     process.env.CURSOR_APP === 'true' ||
     process.env.PATH?.includes('cursor') ||
     process.env.CURSOR_SESSION_ID) {
@@ -112,19 +112,19 @@ const displayResponse = (response: any, options: AIOptions): void => {
   const {task = 'help', quiet = false} = options;
 
   let content = '';
-  
-  if (typeof response === 'string') {
+
+  if(typeof response === 'string') {
     content = response;
-  } else if (response.choices?.[0]?.message?.content) {
+  } else if(response.choices?.[0]?.message?.content) {
     content = response.choices[0].message.content;
-  } else if (response.content) {
+  } else if(response.content) {
     content = response.content;
   } else {
     content = 'No response received from AI model';
   }
-  
+
   const cleanedContent = cleanResponse(content, options);
-  
+
   switch(task) {
     case 'generate':
       log('\nGenerated Code:\n', 'success', quiet);
@@ -155,13 +155,13 @@ const displayResponse = (response: any, options: AIOptions): void => {
 
 const cleanResponse = (content: string, options: AIOptions): string => {
   const {prompt = '', task = 'help'} = options;
-  
-  if (!content) {
+
+  if(!content) {
     return content;
   }
-  
+
   let cleanedContent = content;
-  
+
   const taskInstructions: Record<string, string> = {
     generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
     explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
@@ -171,30 +171,30 @@ const cleanResponse = (content: string, options: AIOptions): string => {
     ask: 'Provide guidance on the following development question:',
     analyze: 'Analyze the following code:'
   };
-  
+
   const instruction = taskInstructions[task] || '';
 
-  if (instruction && cleanedContent.includes(instruction)) {
+  if(instruction && cleanedContent.includes(instruction)) {
     cleanedContent = cleanedContent.replace(instruction, '').trim();
   }
-  
-  if (prompt && cleanedContent.includes(prompt)) {
+
+  if(prompt && cleanedContent.includes(prompt)) {
     cleanedContent = cleanedContent.replace(prompt, '').trim();
   }
-  
-  if (cleanedContent.includes('===CONTEXT===')) {
+
+  if(cleanedContent.includes('===CONTEXT===')) {
     cleanedContent = cleanedContent.split('===CONTEXT===')[0].trim();
   }
-  
-  if (!cleanedContent) {
+
+  if(!cleanedContent) {
     return content;
   }
-  
+
   return cleanedContent;
 };
 
 const getProviderAuth = (provider: string): string | undefined => {
-  if (process.cwd().includes('reaktor')) {
+  if(process.cwd().includes('reaktor')) {
     return 'cursor-auth';
   }
 
@@ -226,7 +226,7 @@ const detectCursorIDE = (): boolean => {
   if(process.env.CURSOR_IDE === 'true') {
     return true;
   }
-  
+
   const possibleCursorSignals = [
     process.env.CURSOR_EXTENSION === 'true',
     process.env.CURSOR_TERMINAL === 'true',
@@ -234,13 +234,13 @@ const detectCursorIDE = (): boolean => {
     process.env.PATH?.includes('cursor'),
     !!process.env.CURSOR_SESSION_ID
   ];
-  
-  const isCursorIDE = possibleCursorSignals.some(signal => signal);
-  
+
+  const isCursorIDE = possibleCursorSignals.some((signal) => signal);
+
   if(isCursorIDE) {
     process.env.CURSOR_IDE = 'true';
   }
-  
+
   return isCursorIDE;
 };
 
@@ -249,54 +249,54 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
     const config = LexConfig.config || {};
     const aiConfig = config.ai || {};
     const provider = options.provider || aiConfig.provider || 'none';
-    
-    if (provider === 'none' && !process.env.CURSOR_EXTENSION) {
+
+    if(provider === 'none' && !process.env.CURSOR_EXTENSION) {
       log(`${chalk.red('Error:')} No AI provider configured.`, 'error');
-      return { error: 'No AI provider configured' };
+      return {error: 'No AI provider configured'};
     }
 
     const task = options.task || 'ask';
     const validTasks = ['explain', 'generate', 'test', 'analyze', 'ask'];
 
-    if (!validTasks.includes(task)) {
+    if(!validTasks.includes(task)) {
       log(`${chalk.red('Error:')} Invalid task "${task}". Valid tasks are: ${validTasks.join(', ')}`, 'error');
-      return { error: `Invalid task "${task}"` };
+      return {error: `Invalid task "${task}"`};
     }
 
-    let prompt = options.prompt;
+    const {prompt} = options;
 
-    if (!prompt) {
+    if(!prompt) {
       log(`${chalk.red('Error:')} No prompt provided. Use --prompt "Your prompt here"`, 'error');
-      return { error: 'No prompt provided' };
+      return {error: 'No prompt provided'};
     }
 
     let context = '';
-    
-    if (options.file) {
+
+    if(options.file) {
       try {
         const fs = await import('fs/promises');
         const glob = await import('glob');
         const files = await glob.glob(options.file);
-        
-        if (files.length === 0) {
+
+        if(files.length === 0) {
           log(`${chalk.yellow('Warning:')} No files found matching "${options.file}"`, 'warning');
         } else {
-          for (const file of files) {
+          for(const file of files) {
             const content = await fs.readFile(file, 'utf8');
             context += `\n===FILE: ${file}===\n${content}\n`;
           }
         }
-      } catch (error) {
+      } catch(error) {
         log(`${chalk.yellow('Warning:')} Error reading file: ${error.message}`, 'warning');
       }
     }
-    
-    if (options.dir) {
+
+    if(options.dir) {
       try {
-        const { execaSync } = await import('execa');
+        const {execaSync} = await import('execa');
         const result = execaSync('find', [options.dir, '-type', 'f', '|', 'sort']);
         context += `\n===Project structure:===\n${result.stdout}\n`;
-      } catch (error) {
+      } catch(error) {
         log(`${chalk.yellow('Warning:')} Error reading directory: ${error.message}`, 'warning');
       }
     }
@@ -321,29 +321,29 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
         break;
     }
 
-    if (context) {
+    if(context) {
       formattedPrompt += `\n===CONTEXT===\n${context}`;
     }
 
-    if ((provider === 'cursor' || process.env.CURSOR_EXTENSION) && task === 'generate') {
-      log(`Using Cursor IDE for code generation...`, 'info');
-      log(`Note: For full code generation capabilities, please use Cursor IDE directly with Cmd+L or Cmd+K.`, 'info');
-      log(`The CLI integration has limited capabilities for code generation.`, 'warning');
-    } else if (provider === 'cursor' || process.env.CURSOR_EXTENSION) {
-      log(`Using Cursor IDE for AI assistance...`, 'info');
-      log(`Note: This is a limited integration. For full AI capabilities, use Cursor IDE directly.`, 'info');
+    if((provider === 'cursor' || process.env.CURSOR_EXTENSION) && task === 'generate') {
+      log('Using Cursor IDE for code generation...', 'info');
+      log('Note: For full code generation capabilities, please use Cursor IDE directly with Cmd+L or Cmd+K.', 'info');
+      log('The CLI integration has limited capabilities for code generation.', 'warning');
+    } else if(provider === 'cursor' || process.env.CURSOR_EXTENSION) {
+      log('Using Cursor IDE for AI assistance...', 'info');
+      log('Note: This is a limited integration. For full AI capabilities, use Cursor IDE directly.', 'info');
     } else {
       log(`Using ${provider} for AI assistance...`, 'info');
     }
-    
+
     const response = await callAIService(formattedPrompt, options.quiet || false);
-    
+
     log(`\n${response}`, 'success');
-    
-    return { response };
-  } catch (error) {
+
+    return {response};
+  } catch(error) {
     log(`${chalk.red('Error:')} ${error.message}`, 'error');
-    return { error: error.message };
+    return {error: error.message};
   }
 };
 

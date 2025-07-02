@@ -64,7 +64,7 @@ export interface TestOptions {
 export type TestCallback = typeof process.exit;
 
 export const getTestFilePatterns = (testPathPattern?: string): string[] => {
-  const defaultPatterns = ['**/*.test.*', '**/*.spec.*'];
+  const defaultPatterns = ['**/*.test.*', '**/*.spec.*', '**/*.integration.*'];
 
   if(!testPathPattern) {
     return defaultPatterns;

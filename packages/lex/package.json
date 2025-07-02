@@ -88,6 +88,8 @@
     "esbuild": "0.25.5",
     "esbuild-loader": "4.3.0",
     "eslint": "9.29.0",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
     "eslint-config-styleguidejs": "^4.0.10",
     "execa": "9.6.0",
     "exports-loader": "^5.0.0",

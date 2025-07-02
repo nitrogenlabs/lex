@@ -34,7 +34,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const updateApp: string = isNpm ? 'npx' : 'yarn';
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
-  
+
   const updateOptions: string[] = isNpm
     ? [
       'npm-check-updates',
