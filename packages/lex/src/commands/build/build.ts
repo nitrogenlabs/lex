@@ -10,7 +10,7 @@ import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
-import {checkLinkedModules, createSpinner, removeFiles} from '../../utils/app.js';
+import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
@@ -471,6 +471,17 @@ What are the key optimization opportunities for this build configuration? Consid
       if(!quiet) {
         console.error('AI analysis error:', aiError);
       }
+    }
+  }
+
+  // Copy configured files after successful build
+  if(buildResult === 0) {
+    try {
+      await copyConfiguredFiles(spinner, LexConfig.config, quiet);
+    } catch(copyError) {
+      log(`\n${cliName} Error: Failed to copy configured files: ${copyError.message}`, 'error', quiet);
+      callback(1);
+      return 1;
     }
   }
 

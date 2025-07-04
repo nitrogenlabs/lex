@@ -206,17 +206,17 @@ Configure the AI provider in your `lex.config.js`:
 ```js
 export default {
   // Other configuration...
-  
+
   ai: {
     // AI provider: 'cursor', 'copilot', 'openai', 'anthropic', or 'none'
     provider: 'cursor',
-    
+
     // Optional API key for external providers (recommended to use environment variables)
     // apiKey: process.env.OPENAI_API_KEY,
-    
+
     // AI model to use
     model: 'cursor-code',
-    
+
     // Additional parameters
     maxTokens: 4000,
     temperature: 0.1
@@ -367,6 +367,7 @@ Options:
   - **maxTokens** - *(optional)* Maximum tokens for AI completions.
   - **temperature** - *(optional)* Temperature for AI generation.
 - **configFiles** - *(optional)* - Array of configuration files to load. Defaults to `['package.json', 'lex.config.js']`.
+- **copyFiles** - *(optional)* - Array of file paths or glob patterns to copy to the output directory after build or compile. Supports relative paths and glob wildcards.
 - **entryHTML** - *(optional)* Path to the HTML file to use as the entry point for the app.
 - **entryJs** - *(optional)* Path to the JS file to use as the entry point for the app.
 - **esbuild** - *(optional)* Options to pass to esbuild.
@@ -383,10 +384,51 @@ Options:
 - **preset** - *(optional)* Preset to use for the project Options: `web`, `node`, `lambda`, `mobile`. Default: `web`.
 - **sourceFullPath** - *(optional)* Path to the source files.
 - **sourcePath** - *(optional)* Path to the source files.
-- **targetEnvironment** - *(optional)* 'node' | 'web';
-- **useGraphQl** - *(optional)* Whether to use GraphQL.
-- **useTypescript** - *(optional)* Use Typescript for the project. Default: false.
-- **webpack** - *(optional)* Options to pass to Webpack.
+- **targetEnvironment** - *(optional)* Target environment Options: `node`, `web`. Default: `web`.
+- **useGraphQl** - *(optional)* Whether to use GraphQL. Default: `false`.
+- **useTypescript** - *(optional)* Whether to use TypeScript. Default: `false`.
+- **webpack** - *(optional)* Options to pass to webpack.
+
+### Copy Files Configuration
+
+The `copyFiles` option allows you to specify files that should be copied to the output directory after a successful build or compile. This is useful for copying static assets, configuration files, or other resources that need to be included in the final output.
+
+#### Examples
+
+```javascript
+// lex.config.js
+export default {
+  // Copy specific files
+  copyFiles: [
+    'public/manifest.json',
+    'public/robots.txt',
+    'src/config/app.config.json'
+  ],
+
+  // Copy files with glob patterns
+  copyFiles: [
+    'public/**/*.json',
+    'src/assets/**/*.{png,jpg,svg}',
+    'src/locales/**/*.json'
+  ],
+
+  // Mix of specific files and glob patterns
+  copyFiles: [
+    'package.json',
+    'README.md',
+    'src/assets/**/*',
+    '!src/assets/**/*.tmp' // Exclude temporary files
+  ]
+};
+```
+
+#### Features
+
+- **Relative Paths**: All paths are resolved relative to the source directory
+- **Glob Patterns**: Support for glob wildcards (`*`, `**`, `?`, etc.)
+- **Directory Preservation**: Maintains the directory structure in the output
+- **Error Handling**: Graceful handling of missing files with warnings
+- **Build Integration**: Automatically runs after successful build or compile operations
 
 ## AI-Enhanced Features
 

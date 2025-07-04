@@ -9,7 +9,7 @@ import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from '
 import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
-import {checkLinkedModules, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
+import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
@@ -304,6 +304,21 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
     // Stop spinner
     spinner.fail('Code compiling failed.');
+
+    // Kill Process
+    callback(1);
+    return 1;
+  }
+
+  // Copy configured files after successful compilation
+  try {
+    await copyConfiguredFiles(spinner, LexConfig.config, quiet);
+  } catch(copyError) {
+    // Display error message
+    log(`\n${cliName} Error: Failed to copy configured files: ${copyError.message}`, 'error', quiet);
+
+    // Stop spinner
+    spinner.fail('Failed to copy configured files.');
 
     // Kill Process
     callback(1);

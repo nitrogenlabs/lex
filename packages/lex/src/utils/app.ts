@@ -35,7 +35,6 @@ interface FilenamesResult {
 export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
 
-  // Set filename
   let nameCaps: string;
   const itemTypes: string[] = ['stores', 'views'];
 
@@ -48,10 +47,8 @@ export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void =
     nameCaps = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
   }
 
-  // Display message
   log(`${cliName} adding ${name} ${type}...`, 'info', quiet);
 
-  // Template directory
   let templatePath: string;
   let templateExt: string;
   let templateReact: string;
@@ -115,17 +112,73 @@ export const copyFiles = async (files: string[], typeName: string, spinner, conf
     )));
     spinner.succeed(`Successfully copied ${files.length} ${typeName} files!`);
   } catch(error) {
-    // Stop spinner
     spinner.fail(`Copying of ${typeName} files failed.`);
     log(`Error: ${error.message}`, 'error');
     log(error, 'error');
   }
 };
 
+export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet: boolean) => {
+  const {copyFiles: copyFilesConfig, outputFullPath, sourceFullPath, sourcePath} = config;
+  if (!copyFilesConfig || copyFilesConfig.length === 0) {
+    return;
+  }
+
+  try {
+    spinner.start('Copying configured files...');
+    let totalCopied = 0;
+
+    const baseDir = sourceFullPath || (sourcePath ? pathResolve(cwd, sourcePath) : cwd);
+
+    for (const pattern of copyFilesConfig) {
+      const resolvedPattern = pathResolve(baseDir, pattern);
+      const matchingFiles = globSync(resolvedPattern, {
+        nodir: true,
+        absolute: true
+      });
+      if (matchingFiles.length === 0) {
+        if (!quiet) {
+          log(`Warning: No files found matching pattern: ${pattern}`, 'warn', quiet);
+        }
+        continue;
+      }
+
+      for (const sourceFile of matchingFiles) {
+        // Calculate relative path from source directory
+        const relativePath = pathRelative(baseDir, sourceFile);
+        // Determine destination path in output directory
+        const destPath = pathResolve(outputFullPath, relativePath);
+        // Create destination directory if it doesn't exist
+        const destDir = pathResolve(destPath, '..');
+        mkdirSync(destDir, {recursive: true});
+
+        await new Promise((resolve, reject) => {
+          copyFile(sourceFile, destPath, (copyError) => {
+            if (copyError) {
+              reject(copyError);
+            } else {
+              resolve(true);
+            }
+          });
+        });
+        totalCopied++;
+      }
+    }
+    if (totalCopied > 0) {
+      spinner.succeed(`Successfully copied ${totalCopied} configured files!`);
+    } else {
+      spinner.succeed('No configured files to copy');
+    }
+  } catch (error) {
+    spinner.fail('Failed to copy configured files');
+    log(`Error copying configured files: ${error.message}`, 'error', quiet);
+    throw error;
+  }
+};
+
 export const copyFileSync = (source: string, target: string) => {
   let targetFile: string = target;
 
-  // If target is a directory a new file with the same name will be created
   if(existsSync(target)) {
     if(lstatSync(target).isDirectory()) {
       targetFile = pathJoin(target, pathBasename(source));
@@ -138,14 +191,12 @@ export const copyFileSync = (source: string, target: string) => {
 export const copyFolderRecursiveSync = (source: string, target: string): void => {
   let files: string[] = [];
 
-  // Check if folder needs to be created or integrated
   const targetFolder: string = pathJoin(target, pathBasename(source));
 
   if(!existsSync(targetFolder)) {
     mkdirSync(targetFolder);
   }
 
-  // Copy
   if(lstatSync(source).isDirectory()) {
     files = readdirSync(source);
     files.forEach((file: string) => {
@@ -163,7 +214,6 @@ export const copyFolderRecursiveSync = (source: string, target: string): void =>
 export const getPackageJson = (packagePath?: string) => {
   const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
-  // Configure package.json
   const packageData: string = readFileSync(formatPath).toString();
   return JSON.parse(packageData);
 };
@@ -220,7 +270,6 @@ export const setPackageJson = (json, packagePath?: string) => {
 
   const formatPath: string = packagePath || `${process.cwd()}/package.json`;
 
-  // Update package.json
   writeFileSync(formatPath, JSON.stringify(json, null, 2));
 };
 
@@ -234,7 +283,6 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
   let modulePath: string;
   let prefix: string;
 
-  // if we have a scope we should check if the modules inside the folder is linked
   if(workingPath.includes('@')) {
     prefix = `@${workingPath.split('@').pop()}`;
     modulePath = workingPath;
@@ -262,7 +310,6 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
   }, []);
 };
 
-// Check for linked modules
 export const checkLinkedModules = () => {
   const linked = linkedModules();
 

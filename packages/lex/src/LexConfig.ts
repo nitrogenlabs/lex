@@ -57,6 +57,7 @@ export interface AIConfig {
 export interface LexConfigType {
   ai?: AIConfig;
   configFiles?: string[];
+  copyFiles?: string[];
   entryHTML?: string;
   entryJs?: string;
   esbuild?: EsbuildConfig;
@@ -89,6 +90,7 @@ export const defaultConfigValues: LexConfigType = {
     temperature: 0.1
   },
   configFiles: [],
+  copyFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',
   esbuild: {
