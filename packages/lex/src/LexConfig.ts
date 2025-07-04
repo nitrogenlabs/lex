@@ -17,6 +17,18 @@ export interface EsbuildConfig {
   platform?: 'node' | 'browser';
   target?: string;
   format?: 'cjs' | 'esm';
+  minify?: boolean;
+  treeShaking?: boolean;
+  drop?: string[];
+  pure?: string[];
+  external?: string[];
+  splitting?: boolean;
+  metafile?: boolean;
+  sourcemap?: boolean | 'inline' | 'external';
+  legalComments?: 'none' | 'inline' | 'eof' | 'linked' | 'separate';
+  banner?: Record<string, string>;
+  footer?: Record<string, string>;
+  define?: Record<string, string>;
   [key: string]: unknown;
 }
 
@@ -79,7 +91,16 @@ export const defaultConfigValues: LexConfigType = {
   configFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',
-  esbuild: {},
+  esbuild: {
+    minify: true,
+    treeShaking: true,
+    drop: ['console', 'debugger'],
+    pure: ['console.log', 'console.warn', 'console.error'],
+    legalComments: 'none',
+    splitting: true,
+    metafile: false,
+    sourcemap: false
+  },
   env: null,
   jest: {},
   outputFullPath: pathResolve(cwd, './dist'),

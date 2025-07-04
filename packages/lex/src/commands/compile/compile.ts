@@ -128,17 +128,63 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
+  // Get esbuild configuration with defaults for compile (individual files)
+  const esbuildConfig = LexConfig.config.esbuild || {};
+
   // ESBuild options
   const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--color=true',
-    '--format=cjs',
+    `--format=${esbuildConfig.format || 'cjs'}`,
     `--outdir=${outputDir}`,
-    '--platform=node',
-    '--sourcemap=inline',
-    '--target=node20'
+    `--platform=${esbuildConfig.platform || 'node'}`,
+    `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`,
+    `--target=${esbuildConfig.target || 'node20'}`
   ];
+
+  // Apply optimization options for compile (more conservative defaults)
+  if(esbuildConfig.minify === true) {
+    esbuildOptions.push('--minify');
+  }
+
+  if(esbuildConfig.treeShaking !== false) {
+    esbuildOptions.push('--tree-shaking=true');
+  }
+
+  if(esbuildConfig.drop && esbuildConfig.drop.length > 0) {
+    esbuildConfig.drop.forEach((item) => {
+      esbuildOptions.push(`--drop:${item}`);
+    });
+  }
+
+  if(esbuildConfig.pure && esbuildConfig.pure.length > 0) {
+    esbuildConfig.pure.forEach((item) => {
+      esbuildOptions.push(`--pure:${item}`);
+    });
+  }
+
+  if(esbuildConfig.legalComments) {
+    esbuildOptions.push(`--legal-comments=${esbuildConfig.legalComments}`);
+  }
+
+  if(esbuildConfig.banner) {
+    Object.entries(esbuildConfig.banner).forEach(([type, content]) => {
+      esbuildOptions.push(`--banner:${type}=${content}`);
+    });
+  }
+
+  if(esbuildConfig.footer) {
+    Object.entries(esbuildConfig.footer).forEach(([type, content]) => {
+      esbuildOptions.push(`--footer:${type}=${content}`);
+    });
+  }
+
+  if(esbuildConfig.define) {
+    Object.entries(esbuildConfig.define).forEach(([key, value]) => {
+      esbuildOptions.push(`--define:${key}=${value}`);
+    });
+  }
 
   if(watch) {
     esbuildOptions.push('--watch');

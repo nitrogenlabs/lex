@@ -85,7 +85,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
         } catch(ncuError) {
           // Third try: Install npm-check-updates globally and use it
           log('npm-check-updates not found. Installing it globally...', 'info', quiet);
-          
+
           try {
             await execa('npm', ['install', '-g', 'npm-check-updates'], {
               encoding: 'utf8',

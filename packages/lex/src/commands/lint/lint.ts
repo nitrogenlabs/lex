@@ -276,7 +276,7 @@ const runEslintWithLex = async (
     // Find Lex's ESLint binary
     const lexEslintPath = pathResolve(__dirname, '../../../node_modules/.bin/eslint');
     const globalLexEslintPath = pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'node_modules/.bin/eslint');
-    
+
     let eslintBinary = 'eslint'; // fallback to npx
     if(existsSync(lexEslintPath)) {
       eslintBinary = lexEslintPath;

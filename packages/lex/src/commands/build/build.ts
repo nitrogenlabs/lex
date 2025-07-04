@@ -84,17 +84,70 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
   const dirPath: string = pathResolve(dirName, '../..');
   const outputDir: string = outputPath || outputFullPath;
   const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
+  // Get esbuild configuration with defaults
+  const esbuildConfig = LexConfig.config.esbuild || {};
+
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--bundle',
     '--color=true',
     `--format=${format}`,
     `--outdir=${outputDir}`,
-    '--platform=node',
-    '--format=cjs',
-    '--sourcemap=inline',
-    `--target=${targetEnvironment === 'node' ? 'node20' : 'es2018'}`
+    `--platform=${esbuildConfig.platform || 'node'}`,
+    `--target=${esbuildConfig.target || (targetEnvironment === 'node' ? 'node20' : 'es2020')}`,
+    `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`
   ];
+
+  // Apply optimization options
+  if (esbuildConfig.minify !== false) {
+    esbuildOptions.push('--minify');
+  }
+
+  if (esbuildConfig.treeShaking !== false) {
+    esbuildOptions.push('--tree-shaking=true');
+  }
+
+    if (esbuildConfig.drop && esbuildConfig.drop.length > 0) {
+    esbuildConfig.drop.forEach(item => {
+      esbuildOptions.push(`--drop:${item}`);
+    });
+  }
+
+  if (esbuildConfig.pure && esbuildConfig.pure.length > 0) {
+    esbuildConfig.pure.forEach(item => {
+      esbuildOptions.push(`--pure:${item}`);
+    });
+  }
+
+  if (esbuildConfig.legalComments) {
+    esbuildOptions.push(`--legal-comments=${esbuildConfig.legalComments}`);
+  }
+
+  if (esbuildConfig.splitting !== false) {
+    esbuildOptions.push('--splitting');
+  }
+
+  if (esbuildConfig.metafile) {
+    esbuildOptions.push('--metafile');
+  }
+
+  if (esbuildConfig.banner) {
+    Object.entries(esbuildConfig.banner).forEach(([type, content]) => {
+      esbuildOptions.push(`--banner:${type}=${content}`);
+    });
+  }
+
+  if (esbuildConfig.footer) {
+    Object.entries(esbuildConfig.footer).forEach(([type, content]) => {
+      esbuildOptions.push(`--footer:${type}=${content}`);
+    });
+  }
+
+  if (esbuildConfig.define) {
+    Object.entries(esbuildConfig.define).forEach(([key, value]) => {
+      esbuildOptions.push(`--define:${key}=${value}`);
+    });
+  }
 
   if(external.length) {
     esbuildOptions.push(`--external:${external.join(',')}`);
@@ -395,12 +448,12 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
 
       await aiFunction({
         prompt: `Analyze this build for optimization opportunities:
-          
+
 Build Type: ${bundler}
 Format: ${cmd.format || 'default'}
 Environment: ${LexConfig.config.targetEnvironment}
 ${JSON.stringify(stats, null, 2)}
-          
+
 What are the key optimization opportunities for this build configuration? Consider:
 1. Bundle size optimization strategies
 2. Code splitting recommendations
