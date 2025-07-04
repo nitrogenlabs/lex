@@ -24,7 +24,7 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "eslint": "^9.20.1",
-    "eslint-config-styleguidejs": "^4.0.10",
+    "eslint-config-styleguidejs": "^4.0.15",
     "npm-check-updates": "^17.1.14"
   },
   "type": "module"

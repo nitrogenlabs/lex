@@ -487,7 +487,73 @@ const applyAIFix = async (
 3. Replacing console.log with log utility
 4. Fixing no-plusplus issues
 5. Fixing unnecessary escape characters
-6. Fixing other ESLint errors`;
+6. Fixing other ESLint errors
+
+CRITICAL REQUIREMENTS:
+- ONLY fix the specific lines with ESLint errors
+- DO NOT modify any other lines of code
+- DO NOT remove line breaks unless they are specifically causing ESLint errors
+- DO NOT condense multi-line structures to single lines
+- PRESERVE all existing line breaks and formatting that is not causing errors
+
+SPECIFIC FORMATTING RULES:
+- Maintain proper indentation (2 spaces)
+- Keep line breaks between class/interface declaration and their members
+- Keep line breaks between methods
+- Ensure there is a line break after opening braces for classes, interfaces, and methods
+- DO NOT place class/interface properties or methods on the same line as the opening brace
+- Preserve empty lines between logical code blocks
+- PRESERVE multi-line imports - do not condense them to single lines
+- PRESERVE multi-line object/array declarations - do not condense them to single lines
+
+SORT-KEYS RULE (HIGHEST PRIORITY):
+- All object literal keys MUST be sorted alphabetically in ascending order
+- This applies to ALL objects in the file, not just those with explicit sort-keys errors
+- Example: {b: 2, a: 1, c: 3} should become {a: 1, b: 2, c: 3}
+- Preserve the original formatting and line breaks when sorting
+
+Example of CORRECT formatting (DO NOT CHANGE):
+export class UserConstants {
+  static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {
+  this.CustomAdapter = CustomAdapter;
+  this.flux = flux;
+}
+
+import {
+  app,
+  events,
+  images,
+  locations,
+  messages,
+  posts,
+  tags,
+  users,
+  websocket
+} from './stores';
+
+const config = {
+  apiKey: 'value',
+  baseUrl: 'https://api.example.com',
+  timeout: 5000
+};
+
+Example of INCORRECT formatting (FIX THIS):
+export class UserConstants {static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {this.CustomAdapter = CustomAdapter;
+  this.flux = flux;}
+
+import {app, events, images, locations, messages, posts, tags, users, websocket} from './stores';
+
+const config = {baseUrl: 'https://api.example.com', apiKey: 'value', timeout: 5000};
+
+Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
 
           // Try to use Cursor CLI if available
           try {
@@ -548,7 +614,95 @@ Here's the code:
 ${fileContent}
 \`\`\`
 
-Return only the fixed code without any explanations.`;
+CRITICAL REQUIREMENTS:
+- ONLY fix the specific lines with ESLint errors
+- DO NOT modify any other lines of code
+- DO NOT remove line breaks unless they are specifically causing ESLint errors
+- DO NOT condense multi-line structures to single lines
+- PRESERVE all existing line breaks and formatting that is not causing errors
+
+SPECIFIC FORMATTING RULES:
+- Maintain proper indentation (2 spaces)
+- Keep line breaks between class/interface declaration and their members
+- Keep line breaks between methods
+- Ensure there is a line break after opening braces for classes, interfaces, and methods
+- DO NOT place class/interface properties or methods on the same line as the opening brace
+- Preserve empty lines between logical code blocks
+- PRESERVE multi-line imports - do not condense them to single lines
+- PRESERVE multi-line object/array declarations - do not condense them to single lines
+
+SORT-KEYS RULE (HIGHEST PRIORITY):
+- All object literal keys MUST be sorted alphabetically in ascending order
+- This applies to ALL objects in the file, not just those with explicit sort-keys errors
+- Example: {b: 2, a: 1, c: 3} should become {a: 1, b: 2, c: 3}
+- Preserve the original formatting and line breaks when sorting
+
+WHAT TO FIX:
+1. Sorting all object keys alphabetically (sort-keys rule) - ALL objects must have sorted keys
+2. Fixing naming conventions - ONLY for variables/functions with naming errors
+3. Replacing console.log with log utility - ONLY for console.log statements
+4. Fixing no-plusplus issues - ONLY for ++/-- operators
+5. Fixing unnecessary escape characters - ONLY for escaped characters that don't need escaping
+6. Proper indentation and spacing - ONLY where specifically required by errors
+7. String quotes consistency (use single quotes) - ONLY for string literals with quote errors
+8. Import order and spacing - ONLY for imports with order/spacing errors
+9. Function parameter formatting - ONLY for functions with parameter errors
+10. Variable naming conventions - ONLY for variables with naming errors
+11. No unused variables or imports - ONLY for unused variables/imports
+12. Avoiding nested ternaries - ONLY for nested ternary expressions
+13. Any other ESLint errors - ONLY for the specific errors listed above
+
+WHAT NOT TO FIX:
+- Do not change properly formatted multi-line structures
+- Do not remove line breaks that are not causing errors
+- Do not change indentation that is already correct
+- Do not modify spacing that is already correct
+- Do not condense readable multi-line code to single lines
+- Do not modify code that is not mentioned in the ESLint errors
+
+Example of CORRECT formatting (DO NOT CHANGE):
+export class UserConstants {
+  static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {
+  this.CustomAdapter = CustomAdapter;
+  this.flux = flux;
+}
+
+import {
+  app,
+  events,
+  images,
+  locations,
+  messages,
+  posts,
+  tags,
+  users,
+  websocket
+} from './stores';
+
+const config = {
+  apiKey: 'value',
+  baseUrl: 'https://api.example.com',
+  timeout: 5000
+};
+
+Example of INCORRECT formatting (FIX THIS):
+export class UserConstants {static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {this.CustomAdapter = CustomAdapter;
+  this.flux = flux;}
+
+import {app, events, images, locations, messages, posts, tags, users, websocket} from './stores';
+
+const config = {baseUrl: 'https://api.example.com', apiKey: 'value', timeout: 5000};
+
+Fix ONLY the specific ESLint errors listed above. Review the entire file for compliance with all ESLint rules.
+Return only the properly formatted fixed code without any explanations.`;
 
             const fixedContent = await callAIService(prompt, quiet);
 

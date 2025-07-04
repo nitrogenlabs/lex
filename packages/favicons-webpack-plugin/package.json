@@ -78,7 +78,7 @@
     "dir-compare": "^5.0.0",
     "es6-promisify": "^7.0.0",
     "eslint": "9.28.0",
-    "eslint-config-styleguidejs": "^4.0.10",
+    "eslint-config-styleguidejs": "^4.0.15",
     "express": "^5.1.0",
     "html-webpack-plugin": "^5.6.3",
     "memory-fs": "^0.5.0",

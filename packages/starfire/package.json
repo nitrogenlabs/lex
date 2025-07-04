@@ -59,7 +59,7 @@
     "emoji-regex": "^8.0.0",
     "escape-string-regexp": "^2.0.0",
     "eslint": "8.57.0",
-    "eslint-config-styleguidejs": "^3.2.1",
+    "eslint-config-styleguidejs": "^4.0.15",
     "eslint-friendly-formatter": "^4.0.1",
     "esutils": "^2.0.3",
     "execa": "7.1.1",

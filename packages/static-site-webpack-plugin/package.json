@@ -55,7 +55,7 @@
     "compression-webpack-plugin": "^11.1.0",
     "ejs": "^3.1.10",
     "eslint": "9.28.0",
-    "eslint-config-styleguidejs": "^3.2.2",
+    "eslint-config-styleguidejs": "^4.0.15",
     "glob": "^11.0.3",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3",

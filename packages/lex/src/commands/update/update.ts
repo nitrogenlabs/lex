@@ -31,39 +31,113 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const isNpm: boolean = packageManager === 'npm';
-  const updateApp: string = isNpm ? 'npx' : 'yarn';
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../..');
 
-  const updateOptions: string[] = isNpm
-    ? [
-      'npm-check-updates',
-      '--concurrency', '10',
-      '--packageManager', packageManager,
-      '--pre', '0',
-      '--target', 'latest',
-      ...(cmd.interactive ? ['--interactive'] : []),
-      '--upgrade'
-    ]
-    : [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
-
-  if(registry) {
-    updateOptions.push('--registry', registry);
-  }
-
   try {
-    await execa(updateApp, updateOptions, {
-      encoding: 'utf8',
-      stdio: 'inherit'
-    });
-
     if(isNpm) {
+      // Try to use npm-check-updates with different approaches
+      let ncuCommand: string;
+      let ncuArgs: string[];
+
+      // First try: Use npx with npm-check-updates
+      try {
+        ncuCommand = 'npx';
+        ncuArgs = [
+          'npm-check-updates',
+          '--concurrency', '10',
+          '--packageManager', packageManager,
+          '--pre', '0',
+          '--target', 'latest',
+          ...(cmd.interactive ? ['--interactive'] : []),
+          '--upgrade'
+        ];
+
+        if(registry) {
+          ncuArgs.push('--registry', registry);
+        }
+
+        await execa(ncuCommand, ncuArgs, {
+          encoding: 'utf8',
+          stdio: 'inherit'
+        });
+      } catch(npxError) {
+        // Second try: Use npm-check-updates directly (if installed globally)
+        try {
+          ncuCommand = 'npm-check-updates';
+          ncuArgs = [
+            '--concurrency', '10',
+            '--packageManager', packageManager,
+            '--pre', '0',
+            '--target', 'latest',
+            ...(cmd.interactive ? ['--interactive'] : []),
+            '--upgrade'
+          ];
+
+          if(registry) {
+            ncuArgs.push('--registry', registry);
+          }
+
+          await execa(ncuCommand, ncuArgs, {
+            encoding: 'utf8',
+            stdio: 'inherit'
+          });
+        } catch(ncuError) {
+          // Third try: Install npm-check-updates globally and use it
+          log('npm-check-updates not found. Installing it globally...', 'info', quiet);
+          
+          try {
+            await execa('npm', ['install', '-g', 'npm-check-updates'], {
+              encoding: 'utf8',
+              stdio: 'inherit'
+            });
+
+            ncuCommand = 'npm-check-updates';
+            ncuArgs = [
+              '--concurrency', '10',
+              '--packageManager', packageManager,
+              '--pre', '0',
+              '--target', 'latest',
+              ...(cmd.interactive ? ['--interactive'] : []),
+              '--upgrade'
+            ];
+
+            if(registry) {
+              ncuArgs.push('--registry', registry);
+            }
+
+            await execa(ncuCommand, ncuArgs, {
+              encoding: 'utf8',
+              stdio: 'inherit'
+            });
+          } catch(installError) {
+            log(`Failed to install or use npm-check-updates: ${installError.message}`, 'error', quiet);
+            log('Please install npm-check-updates manually: npm install -g npm-check-updates', 'info', quiet);
+            throw installError;
+          }
+        }
+      }
+
+      // After successful update, run npm install and audit fix
       await execa('npm', ['i', '--force'], {
         encoding: 'utf8',
         stdio: 'inherit'
       });
 
       await execa('npm', ['audit', 'fix'], {
+        encoding: 'utf8',
+        stdio: 'inherit'
+      });
+    } else {
+      // Use yarn
+      const updateApp = 'yarn';
+      const updateOptions: string[] = [cmd.interactive ? 'upgrade-interactive' : 'upgrade', '--latest'];
+
+      if(registry) {
+        updateOptions.push('--registry', registry);
+      }
+
+      await execa(updateApp, updateOptions, {
         encoding: 'utf8',
         stdio: 'inherit'
       });
@@ -76,7 +150,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
-    spinner.fail('Failed to updated packages.');
+    spinner.fail('Failed to update packages.');
 
     callback(1);
     return 1;

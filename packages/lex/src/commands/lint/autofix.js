@@ -90,7 +90,73 @@ const fixFileWithCursorAI = async (filePath) => {
 3. Replacing console.log with log utility
 4. Fixing no-plusplus issues
 5. Fixing unnecessary escape characters
-6. Fixing other ESLint errors`;
+6. Fixing other ESLint errors
+
+CRITICAL REQUIREMENTS:
+- ONLY fix the specific lines with ESLint errors
+- DO NOT modify any other lines of code
+- DO NOT remove line breaks unless they are specifically causing ESLint errors
+- DO NOT condense multi-line structures to single lines
+- PRESERVE all existing line breaks and formatting that is not causing errors
+
+SPECIFIC FORMATTING RULES:
+- Maintain proper indentation (2 spaces)
+- Keep line breaks between class/interface declaration and their members
+- Keep line breaks between methods
+- Ensure there is a line break after opening braces for classes, interfaces, and methods
+- DO NOT place class/interface properties or methods on the same line as the opening brace
+- Preserve empty lines between logical code blocks
+- PRESERVE multi-line imports - do not condense them to single lines
+- PRESERVE multi-line object/array declarations - do not condense them to single lines
+
+SORT-KEYS RULE (HIGHEST PRIORITY):
+- All object literal keys MUST be sorted alphabetically in ascending order
+- This applies to ALL objects in the file, not just those with explicit sort-keys errors
+- Example: {b: 2, a: 1, c: 3} should become {a: 1, b: 2, c: 3}
+- Preserve the original formatting and line breaks when sorting
+
+Example of CORRECT formatting (DO NOT CHANGE):
+export class UserConstants {
+  static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {
+  this.CustomAdapter = CustomAdapter;
+  this.flux = flux;
+}
+
+import {
+  app,
+  events,
+  images,
+  locations,
+  messages,
+  posts,
+  tags,
+  users,
+  websocket
+} from './stores';
+
+const config = {
+  apiKey: 'value',
+  baseUrl: 'https://api.example.com',
+  timeout: 5000
+};
+
+Example of INCORRECT formatting (FIX THIS):
+export class UserConstants {static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
+  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
+}
+
+constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {this.CustomAdapter = CustomAdapter;
+  this.flux = flux;}
+
+import {app, events, images, locations, messages, posts, tags, users, websocket} from './stores';
+
+const config = {baseUrl: 'https://api.example.com', apiKey: 'value', timeout: 5000};
+
+Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
 
     writeFileSync(promptFile, prompt);
 
