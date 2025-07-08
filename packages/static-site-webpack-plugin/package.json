@@ -48,13 +48,13 @@
     "eval": "^0.1.8",
     "lodash": "^4.17.21",
     "url": "^0.11.4",
-    "webpack-sources": "^3.3.2"
+    "webpack-sources": "^3.3.3"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
+    "@types/jest": "^30.0.0",
     "compression-webpack-plugin": "^11.1.0",
     "ejs": "^3.1.10",
-    "eslint": "9.28.0",
+    "eslint": "9.30.1",
     "eslint-config-styleguidejs": "^4.0.15",
     "glob": "^11.0.3",
     "rimraf": "^6.0.1",
