@@ -36,6 +36,10 @@ export interface JestConfig {
   roots?: string[];
   testEnvironment?: string;
   transform?: Record<string, [string, Record<string, unknown>]>;
+  transformIgnorePatterns?: string[];
+  moduleNameMapper?: Record<string, string>;
+  extensionsToTreatAsEsm?: string[];
+  preset?: string;
   [key: string]: unknown;
 }
 

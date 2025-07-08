@@ -1,8 +1,8 @@
-import { existsSync } from 'fs';
-import { resolve as pathResolve } from 'path';
-import { URL } from 'url';
+import {existsSync} from 'fs';
+import {resolve as pathResolve} from 'path';
+import {URL} from 'url';
 
-import { getNodePath } from './dist/utils/file.js';
+import {getNodePath} from './dist/utils/file.js';
 
 const rootDir = process.cwd();
 const { jest, sourceFullPath, targetEnvironment, useTypescript } = JSON.parse(
@@ -11,12 +11,9 @@ const { jest, sourceFullPath, targetEnvironment, useTypescript } = JSON.parse(
 
 const dirName = new URL('.', import.meta.url).pathname;
 const nodePath = pathResolve(dirName, './node_modules');
-
-
 const lexSetupFile = pathResolve(dirName, './jest.setup.js');
 const projectSetupFile = pathResolve(rootDir, './jest.setup.js');
 const setupFilesAfterEnv = [];
-
 
 setupFilesAfterEnv.push(lexSetupFile);
 
@@ -34,12 +31,12 @@ if(targetEnvironment === 'web') {
   };
 }
 
-let moduleFileExtensions = ['js', 'json'];
+let moduleFileExtensions = ['js', 'json', 'cjs', 'mjs'];
 let testRegex = '(/__tests__/.*|\\.(test|spec|integration))\\.(js)?$';
 let transformIgnorePatterns = [];
 
 if(useTypescript) {
-  moduleFileExtensions = ['js', 'ts', 'tsx', 'json'];
+  moduleFileExtensions = ['js', 'ts', 'tsx', 'json', 'cjs', 'mjs'];
   testRegex = '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$';
   transformIgnorePatterns = [];
 }
@@ -79,15 +76,24 @@ const baseConfig = {
   transform: {
     ...(useTypescript ? {
       '\\.tsx?$': [getNodePath('ts-jest/dist/index.js'), {
-        useESM: true
+        useESM: true,
+        tsconfig: {
+          useDefineForClassFields: true,
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true
+        }
       }]
     } : {
       '\\.[jt]sx?$': getNodePath('babel-jest')
     }),
-    '\\.(gql|graphql)$': getNodePath('jest-transform-graphql')
+    '\\.(gql|graphql)$': getNodePath('jest-transform-graphql'),
+    '\\.mjs$': [getNodePath('ts-jest/dist/index.js'), {
+      useESM: true
+    }],
+    '\\.cjs$': getNodePath('babel-jest')
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(chalk|@testing-library/jest-dom)/)'
+    'node_modules/(?!(chalk|@testing-library/jest-dom|zod|@nlabs)/)'
   ],
   verbose: true
 };

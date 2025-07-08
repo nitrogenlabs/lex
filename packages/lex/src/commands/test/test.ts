@@ -320,7 +320,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   }
 
   if(testPathPattern) {
-    jestOptions.push('--testPathPattern', testPathPattern);
+    jestOptions.push('--testPathPatterns', testPathPattern);
   }
 
   if(useStderr) {
@@ -373,7 +373,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
 
         await aiFunction({
           prompt: `Analyze these Jest test results and suggest test coverage improvements:
-          
+
 ${JSON.stringify(testResults, null, 2)}
 
 Test patterns: ${filePatterns.join(', ')}
@@ -412,7 +412,7 @@ Please provide:
 
         await aiFunction({
           prompt: `Debug these failed Jest tests and suggest fixes:
-          
+
 ${JSON.stringify(error.message, null, 2)}
 
 Test results: ${JSON.stringify(testResults, null, 2)}
