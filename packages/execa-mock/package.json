@@ -1,7 +1,7 @@
 {
   "name": "@nlabs/execa-mock",
   "type": "module",
-  "version": "1.43.1",
+  "version": "1.43.2",
   "description": "Execa jest mock",
   "license": "MIT",
   "main": "./index.js",
