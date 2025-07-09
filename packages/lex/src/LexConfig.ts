@@ -3,7 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {existsSync, readFileSync, writeFileSync} from 'fs';
-import {extname as pathExtname, resolve as pathResolve} from 'path';
+import {dirname, extname as pathExtname, resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
 import {relativeFilePath} from './utils/file.js';
@@ -122,10 +122,78 @@ export const defaultConfigValues: LexConfigType = {
   webpack: {}
 };
 
+function findLexRoot(startDir: string): string {
+  let dir = startDir;
+  while (dir !== '/' && dir !== '.') {
+    const pkgPath = pathResolve(dir, 'package.json');
+    if (existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+        if (pkg.name === '@nlabs/lex') {
+          return dir;
+        }
+      } catch {}
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error('Could not find @nlabs/lex root');
+}
+
+/**
+ * Get the appropriate TypeScript config path, prioritizing project configs over Lex configs
+ */
+export function getTypeScriptConfigPath(configName: string): string {
+  const cwd = process.cwd();
+
+  // For compile command, check for project's build config first
+  if (configName === 'tsconfig.build.json') {
+    const projectBuildConfig = pathResolve(cwd, 'tsconfig.build.json');
+    if (existsSync(projectBuildConfig)) {
+      return projectBuildConfig;
+    }
+  }
+
+  // For lint command, check for project's lint config first
+  if (configName === 'tsconfig.lint.json') {
+    const projectLintConfig = pathResolve(cwd, 'tsconfig.eslint.json');
+    if (existsSync(projectLintConfig)) {
+      return projectLintConfig;
+    }
+  }
+
+  // For test command, check for project's test config first
+  if (configName === 'tsconfig.test.json') {
+    const projectTestConfig = pathResolve(cwd, 'tsconfig.test.json');
+    if (existsSync(projectTestConfig)) {
+      return projectTestConfig;
+    }
+  }
+
+  // Check for the exact config name in the project
+  const projectConfigPath = pathResolve(cwd, configName);
+  if (existsSync(projectConfigPath)) {
+    return projectConfigPath;
+  }
+
+  // Otherwise, use Lex's config
+  const lexDir = LexConfig.getLexDir();
+  return pathResolve(lexDir, configName);
+}
+
 export class LexConfig {
   static config: LexConfigType = {
     ...defaultConfigValues
   };
+
+  /**
+   * Get the Lex package root directory, handling both development and installed environments
+   */
+  static getLexDir(): string {
+    const dirName = dirname(new URL('.', import.meta.url).pathname);
+    return findLexRoot(dirName);
+  }
 
   static set useTypescript(value: boolean) {
     LexConfig.config.useTypescript = value;
@@ -310,6 +378,45 @@ export class LexConfig {
     if(!existsSync(tsconfigPath)) {
       const dirName = new URL('.', import.meta.url).pathname;
       writeFileSync(tsconfigPath, readFileSync(pathResolve(dirName, '../../../tsconfig.base.json')));
+    }
+  }
+
+      static checkCompileTypescriptConfig() {
+    const lexDir = LexConfig.getLexDir();
+    const tsconfigCompilePath: string = pathResolve(lexDir, './tsconfig.build.json');
+
+    if(!existsSync(tsconfigCompilePath)) {
+      // Try to copy from the template location
+      const templatePath = pathResolve(lexDir, 'tsconfig.build.json');
+      if(existsSync(templatePath)) {
+        writeFileSync(tsconfigCompilePath, readFileSync(templatePath));
+      }
+    }
+  }
+
+  static checkLintTypescriptConfig() {
+    const lexDir = LexConfig.getLexDir();
+    const tsconfigLintPath: string = pathResolve(lexDir, './tsconfig.lint.json');
+
+    if(!existsSync(tsconfigLintPath)) {
+      // Try to copy from the template location
+      const templatePath = pathResolve(lexDir, 'tsconfig.lint.json');
+      if(existsSync(templatePath)) {
+        writeFileSync(tsconfigLintPath, readFileSync(templatePath));
+      }
+    }
+  }
+
+  static checkTestTypescriptConfig() {
+    const lexDir = LexConfig.getLexDir();
+    const tsconfigTestPath: string = pathResolve(lexDir, './tsconfig.test.json');
+
+    if(!existsSync(tsconfigTestPath)) {
+      // Try to copy from the template location
+      const templatePath = pathResolve(lexDir, 'tsconfig.test.json');
+      if(existsSync(templatePath)) {
+        writeFileSync(tsconfigTestPath, readFileSync(templatePath));
+      }
     }
   }
 }

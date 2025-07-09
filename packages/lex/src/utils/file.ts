@@ -7,6 +7,8 @@ import {existsSync} from 'fs';
 import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
+import {LexConfig} from '../LexConfig.js';
+
 // Get file paths relative to Lex
 export const relativeFilePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
   const nestDepth: number = 10;
@@ -68,4 +70,64 @@ export const getNodePath = (moduleName: string): string => {
   // Fallback to general search
   const localPath: string = findFileUp.sync(modulePath, './', 10) || `./${modulePath}`;
   return localPath;
+};
+
+/**
+ * Resolve binary path with fallback logic for monorepo and package scenarios
+ * Checks: 1) Lex's node_modules/.bin/, 2) Lex's node_modules/<package>/bin/, 3) Monorepo root node_modules/.bin/ (from process.cwd()), 4) Monorepo root node_modules/.bin/ (from Lex's dir)
+ */
+export const resolveBinaryPath = (binaryName: string, packageName?: string): string => {
+  const lexDir = LexConfig.getLexDir();
+
+  // 1. Check Lex's node_modules/.bin/
+  const lexBinPath = pathResolve(lexDir, `node_modules/.bin/${binaryName}`);
+  if(existsSync(lexBinPath)) {
+    return lexBinPath;
+  }
+
+  // 2. Check Lex's node_modules/<package>/bin/ (if packageName provided)
+  if(packageName) {
+    const lexPackageBinPath = pathResolve(lexDir, `node_modules/${packageName}/bin/${binaryName}`);
+    if(existsSync(lexPackageBinPath)) {
+      return lexPackageBinPath;
+    }
+
+    // Also check for .js extension
+    const lexPackageBinJsPath = pathResolve(lexDir, `node_modules/${packageName}/bin/${binaryName}.js`);
+    if(existsSync(lexPackageBinJsPath)) {
+      return lexPackageBinJsPath;
+    }
+
+    // Check for .cjs extension
+    const lexPackageBinCjsPath = pathResolve(lexDir, `node_modules/${packageName}/bin/${binaryName}.cjs`);
+    if(existsSync(lexPackageBinCjsPath)) {
+      return lexPackageBinCjsPath;
+    }
+  }
+
+  // 3. Walk up from process.cwd() and check node_modules/.bin/
+  const checkBinUp = (startDir: string) => {
+    let checkDir = startDir;
+    for(let i = 0; i < 5; i++) {
+      const monorepoBinPath = pathResolve(checkDir, `node_modules/.bin/${binaryName}`);
+      if(existsSync(monorepoBinPath)) {
+        return monorepoBinPath;
+      }
+      const parentDir = pathResolve(checkDir, '..');
+      if(parentDir === checkDir) break;
+      checkDir = parentDir;
+    }
+    return '';
+  };
+
+  // 3a. Walk up from process.cwd()
+  const fromCwd = checkBinUp(process.cwd());
+  if(fromCwd) return fromCwd;
+
+  // 3b. Walk up from Lex's directory
+  const fromLex = checkBinUp(lexDir);
+  if(fromLex) return fromLex;
+
+  // Not found
+  return '';
 };

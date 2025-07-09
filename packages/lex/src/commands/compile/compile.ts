@@ -8,9 +8,9 @@ import {sync as globSync} from 'glob';
 import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
-import {LexConfig} from '../../LexConfig.js';
+import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
-import {relativeNodePath} from '../../utils/file.js';
+import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
@@ -71,29 +71,22 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   // Add tsconfig file if none exists
   if(useTypescript) {
-    // Make sure tsconfig.json exists
-    LexConfig.checkTypescriptConfig();
+    // Make sure tsconfig.build.json exists
+    LexConfig.checkCompileTypescriptConfig();
 
-    // Check static types with typescript
-    const typescriptPath: string = relativeNodePath('typescript/bin/tsc', dirPath);
+    // Use robust path resolution for TypeScript binary
+    const typescriptPath: string = resolveBinaryPath('tsc', 'typescript');
+
+    // Check if TypeScript binary exists
+    if(!typescriptPath) {
+      log(`\n${cliName} Error: TypeScript binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+      log('Please reinstall Lex or check your installation.', 'info', quiet);
+      return 1;
+    }
+
     const typescriptOptions: string[] = config ?
       ['-p', config] :
-      [
-        '--allowSyntheticDefaultImports',
-        '--baseUrl', sourceDir,
-        '--declaration',
-        '--emitDeclarationOnly',
-        '--lib', 'ESNext,DOM',
-        '--module', 'esnext',
-        '--moduleResolution', 'node',
-        '--noImplicitReturns',
-        '--noImplicitThis',
-        '--outDir', outputDir,
-        '--removeComments',
-        '--resolveJsonModule',
-        '--target', 'ESNext',
-        '--typeRoots', 'node_modules/@types,node_modules/json-d-ts'
-      ];
+      ['-p', getTypeScriptConfigPath('tsconfig.build.json')];
 
     // Start type checking spinner
     spinner.start('Static type checking with Typescript...');
@@ -132,11 +125,19 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const esbuildConfig = LexConfig.config.esbuild || {};
 
   // ESBuild options
-  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
+  const esbuildPath: string = resolveBinaryPath('esbuild', 'esbuild');
+
+  // Check if esbuild binary exists
+  if(!esbuildPath) {
+    log(`\n${cliName} Error: esbuild binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+    log('Please reinstall Lex or check your installation.', 'info', quiet);
+    return 1;
+  }
+
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--color=true',
-    `--format=${esbuildConfig.format || 'cjs'}`,
+    `--format=${esbuildConfig.format || 'esm'}`,
     `--outdir=${outputDir}`,
     `--platform=${esbuildConfig.platform || 'node'}`,
     `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`,
@@ -194,7 +195,15 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
 
   if(cssFiles.length) {
-    const postcssPath: string = relativeNodePath('postcss-cli/index.js', dirPath);
+    const postcssPath: string = resolveBinaryPath('postcss', 'postcss-cli');
+
+    // Check if PostCSS binary exists
+    if(!postcssPath) {
+      log(`\n${cliName} Error: PostCSS binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+      log('Please reinstall Lex or check your installation.', 'info', quiet);
+      return 1;
+    }
+
     const postcssOptions: string[] = [
       `${sourceDir}/**/**.css`,
       '--base',

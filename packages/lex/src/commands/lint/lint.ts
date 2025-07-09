@@ -3,12 +3,13 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import {existsSync, writeFileSync, readFileSync, unlinkSync} from 'fs';
-import {resolve as pathResolve, dirname} from 'path';
+import {existsSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
+import {dirname, resolve as pathResolve} from 'path';
 import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
+import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 // Create __dirname equivalent for ESM
@@ -160,9 +161,9 @@ export default [
       parser: {
         importSource: '@typescript-eslint/parser'
       },
-      parserOptions: {
-        project: './tsconfig.json'
-      }
+              parserOptions: {
+          project: getTypeScriptConfigPath('tsconfig.lint.json')
+        }
     },
     plugins: {
       '@typescript-eslint': {
@@ -273,15 +274,14 @@ const runEslintWithLex = async (
     // Determine which config file to use
     const configPath = hasProjectConfig ? projectConfigPath : (lexConfigPath || projectConfigPath);
 
-    // Find Lex's ESLint binary
-    const lexEslintPath = pathResolve(__dirname, '../../../node_modules/.bin/eslint');
-    const globalLexEslintPath = pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'node_modules/.bin/eslint');
+    // Find Lex's ESLint binary using robust path resolution
+    const eslintBinary = resolveBinaryPath('eslint', 'eslint');
 
-    let eslintBinary = 'eslint'; // fallback to npx
-    if(existsSync(lexEslintPath)) {
-      eslintBinary = lexEslintPath;
-    } else if(existsSync(globalLexEslintPath)) {
-      eslintBinary = globalLexEslintPath;
+    // Always use Lex's own ESLint binary
+    if(!eslintBinary) {
+      log(`\n${cliName} Error: ESLint binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+      log('Please reinstall Lex or check your installation.', 'info', quiet);
+      return 1;
     }
 
     // Run eslint on JS files with config using Lex's ESLint
@@ -343,8 +343,7 @@ const runEslintWithLex = async (
     const eslintNotFound = jsResult.stderr?.includes('command not found') || jsResult.stderr?.includes('eslint: command not found');
     if(eslintNotFound) {
       spinner.fail('ESLint not found!');
-      log(`\n${cliName} Error: Lex's ESLint binary not found. This may be a Lex installation issue.`, 'error', quiet);
-      log('Please try reinstalling Lex: npm install -g @nlabs/lex', 'info', quiet);
+      log(`\n${cliName} Error: Lex's ESLint binary not found. Please reinstall Lex or check your installation.`, 'error', quiet);
       return 1;
     }
 
@@ -986,6 +985,11 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
     // Detect TypeScript directly
     const useTypescript = detectTypeScript(cwd);
     log(`TypeScript ${useTypescript ? 'detected' : 'not detected'} from tsconfig.json`, 'info', quiet);
+
+    // Ensure lint-specific TypeScript config exists
+    if(useTypescript) {
+      LexConfig.checkLintTypescriptConfig();
+    }
 
     // Ensure package.json has type: module for ESM support
     ensureModuleType(cwd);

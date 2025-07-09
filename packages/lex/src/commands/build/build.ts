@@ -4,12 +4,12 @@
  */
 import GraphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {execa} from 'execa';
-import {readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
-import {LexConfig} from '../../LexConfig.js';
+import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
 import {relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
@@ -420,7 +420,13 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   }
 
   if(useTypescript) {
-    LexConfig.checkTypescriptConfig();
+    // Use the compile-specific TypeScript config for building
+    const compileConfigPath = getTypeScriptConfigPath('tsconfig.build.json');
+    if(existsSync(compileConfigPath)) {
+      log('Using tsconfig.build.json for build...', 'info', quiet);
+    } else {
+      LexConfig.checkCompileTypescriptConfig();
+    }
   }
 
   let buildResult = 0;

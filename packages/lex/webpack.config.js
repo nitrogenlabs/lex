@@ -169,10 +169,8 @@ if(existsSync(`${sourceFullPath}/tsconfig.json`)) {
 // Loader paths
 const esbuildLoaderPath = relativeNodePath('esbuild-loader', dirName);
 const cssLoaderPath = relativeNodePath('css-loader', dirName);
-const fileLoaderPath = relativeNodePath('file-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
 const htmlLoaderPath = relativeNodePath('html-loader', dirName);
-const jsonLoaderPath = relativeNodePath('json-loader', dirName);
 const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
 const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
 const styleLoaderPath = relativeNodePath('style-loader', dirName);
@@ -185,6 +183,7 @@ const aliasPaths = {
     '@nlabs/arkhamjs-utils-react',
     process.cwd()
   ),
+  '@nlabs/utils': '/Users/nitrog7/.nvm/versions/node/v22.14.0/lib/node_modules/@nlabs/utils',
   'core-js': relativeNodePath('core-js', dirName),
   process: relativeNodePath('process', dirName),
   react: relativeNodePath('react', process.cwd()),
@@ -222,6 +221,11 @@ export default (webpackEnv, webpackOptions) => {
           resolve: {
             fullySpecified: false
           }
+        },
+        {
+          test: /\.js$/,
+          include: /node_modules/,
+          type: 'javascript/auto'
         },
         {
           enforce: 'pre',
@@ -316,14 +320,8 @@ export default (webpackEnv, webpackOptions) => {
         {
           exclude: /(node_modules)/,
           include: sourceFullPath,
-          loader: jsonLoaderPath,
-          test: /\.json$/
-        },
-        {
-          exclude: /(node_modules)/,
-          include: sourceFullPath,
-          loader: fileLoaderPath,
-          test: /\.(gif|jpg|png|svg)$/
+          test: /\.(gif|jpg|png|svg)$/,
+          type: 'asset/resource'
         },
         {
           exclude: /(node_modules)/,
@@ -392,7 +390,7 @@ export default (webpackEnv, webpackOptions) => {
         vm: relativeNodePath('vm-browserify', dirName)
       },
       mainFiles: ['index'],
-      modules: [sourceFullPath, 'node_modules', relativeNodePath('', dirName)],
+      modules: [sourceFullPath, 'node_modules', relativeNodePath('', dirName), '/Users/nitrog7/.nvm/versions/node/v22.14.0/lib/node_modules'],
       plugins: resolvePlugins,
       unsafeCache: {
         node_modules: true
@@ -507,9 +505,12 @@ export default (webpackEnv, webpackOptions) => {
 
     if(isStatic) {
       webpackConfig.plugins.push(
-        new StaticSitePlugin(),
-        new webpack.HashedModuleIdsPlugin()
+        new StaticSitePlugin()
       );
+    }
+
+    if(isProduction && isWeb) {
+      webpackConfig.optimization.moduleIds = 'deterministic';
     }
   }
 

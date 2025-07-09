@@ -2,14 +2,14 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {execa} from 'execa';
-import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
+import { execa } from 'execa';
+import { resolve as pathResolve } from 'path';
+import { URL } from 'url';
 
-import {LexConfig} from '../../LexConfig.js';
-import {createSpinner, removeFiles} from '../../utils/app.js';
-import {relativeNodePath} from '../../utils/file.js';
-import {log} from '../../utils/log.js';
+import { LexConfig } from '../../LexConfig.js';
+import { createSpinner, removeFiles } from '../../utils/app.js';
+import { resolveBinaryPath } from '../../utils/file.js';
+import { log } from '../../utils/log.js';
 
 export interface DevOptions {
   readonly bundleAnalyzer?: boolean;
@@ -85,8 +85,15 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   }
 
   try {
-    const dirPath = pathResolve(dirName, '../../..');
-    const webpackPath = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
+    // Use robust path resolution for webpack binary
+    const webpackPath = resolveBinaryPath('webpack-cli');
+
+    // Check if webpack binary exists
+    if(!webpackPath) {
+      log(`\n${cliName} Error: webpack-cli binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+      log('Please reinstall Lex or check your installation.', 'info', quiet);
+      return 1;
+    }
     // @ts-ignore
     await execa(webpackPath, webpackOptions, {
       encoding: 'utf8',

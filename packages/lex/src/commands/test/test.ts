@@ -3,14 +3,14 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import {readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
-import {LexConfig} from '../../LexConfig.js';
+import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
-import {relativeNodePath} from '../../utils/file.js';
+import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
@@ -165,7 +165,13 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   const {useTypescript} = LexConfig.config;
 
   if(useTypescript) {
-    LexConfig.checkTypescriptConfig();
+    // Use the test-specific TypeScript config for testing
+    const testConfigPath = getTypeScriptConfigPath('tsconfig.test.json');
+    if(existsSync(testConfigPath)) {
+      log('Using tsconfig.test.json for testing...', 'info', quiet);
+    } else {
+      LexConfig.checkTestTypescriptConfig();
+    }
   }
 
   if(useGenerate) {
@@ -199,7 +205,16 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
 
   const dirName = new URL('.', import.meta.url).pathname;
   const dirPath: string = pathResolve(dirName, '../../..');
-  const jestPath: string = relativeNodePath('jest-cli/bin/jest.js', dirPath);
+
+  // Use robust path resolution for Jest binary
+  const jestPath: string = resolveBinaryPath('jest');
+
+  // Check if Jest binary exists
+  if(!jestPath) {
+    log(`\n${cliName} Error: Jest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+    log('Please reinstall Lex or check your installation.', 'info', quiet);
+    return 1;
+  }
   const jestConfigFile: string = config || pathResolve(dirName, '../../../jest.config.lex.js');
   const jestSetupFile: string = setup || '';
   const jestOptions: string[] = ['--no-cache'];
