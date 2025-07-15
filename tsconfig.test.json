@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "inlineSourceMap": false,
+    "inlineSourceMap": true,
     "isolatedModules": true,
     "jsx": "react",
     "lib": [
@@ -22,20 +22,25 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "pretty": false,
+    "noUnusedLocals": false,
+    "pretty": true,
     "removeComments": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "target": "ESNext",
     "types": [
-      "node",
-      "jest"
+      "jest",
+      "node"
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*.integration.*",
+    "**/__tests__/**",
+    "jest.setup.ts"
   ],
   "exclude": [
     "dist",

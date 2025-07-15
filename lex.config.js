@@ -1,34 +1,50 @@
 /**
- * Root-level Lex configuration file
+ * Lex configuration file
+ * This file contains configuration options for the Lex CLI tool
  */
+
 export default {
   // Source and output paths
   sourcePath: './src',
   outputPath: './dist',
-
+  
   // Project settings
-  name: 'lex',
   useTypescript: true,
-
-  // Copy files configuration - patterns are now relative to sourcePath
-  copyFiles: [],
-
-  // AI configuration for linting and code generation
+  targetEnvironment: 'web',
+  preset: 'web',
+  
+  // AI configuration
+  // Use this section to configure AI features for lint --fix and ai commands
   ai: {
-    // AI provider options: 'cursor', 'openai', 'anthropic', 'copilot'
+    // Available providers: 'cursor', 'copilot', 'openai', 'anthropic', 'none'
     provider: 'cursor',
-
-    // Model to use (provider-specific)
-    model: 'cursor-code',
-
-    // API key (not needed for Cursor)
-    // This can also be set via environment variables:
-    // - Generic: AI_API_KEY
-    // - Provider-specific: OPENAI_API_KEY, ANTHROPIC_API_KEY, GITHUB_TOKEN (for Copilot)
-    // apiKey: 'your-api-key',
-
-    // You can customize these settings based on your preferences
+    
+    // API key for external providers (recommended to use environment variables)
+    // apiKey: process.env.OPENAI_API_KEY,
+    
+    // Model configuration (specific to each provider)
+    model: 'cursor-code', // For Cursor IDE
+    // model: 'copilot-codex', // For GitHub Copilot
+    // model: 'gpt-4o', // For OpenAI
+    // model: 'claude-3-sonnet', // For Anthropic
+    
+    // Optional parameters
     maxTokens: 4000,
     temperature: 0.1
+  },
+  
+  // Build configuration
+  esbuild: {
+    entryPoints: ['src/index.ts'],
+    outdir: 'dist',
+    platform: 'node',
+    target: 'es2020',
+    format: 'esm'
+  },
+  
+  // Test configuration
+  jest: {
+    roots: ['<rootDir>/src'],
+    testEnvironment: 'node'
   }
-};
+}; 

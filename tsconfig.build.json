@@ -4,12 +4,12 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
-    "declaration": false,
+    "declaration": true,
     "emitDeclarationOnly": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "inlineSourceMap": false,
+    "inlineSourceMap": true,
     "isolatedModules": true,
     "jsx": "react",
     "lib": [
@@ -18,26 +18,30 @@
     ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "pretty": false,
-    "removeComments": false,
+    "noUnusedLocals": false,
+    "outDir": "./dist",
+    "pretty": true,
+    "removeComments": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
     "types": [
-      "node",
-      "jest"
+      "node"
     ]
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*.integration.*",
+    "**/__tests__/**",
+    "**/__mocks__/**",
     "dist",
     "node_modules"
   ]
