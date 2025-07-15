@@ -14,6 +14,25 @@ import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
+/**
+ * Detect if the project is using ESM by checking package.json
+ */
+const detectESM = (cwd: string): boolean => {
+  const packageJsonPath = pathResolve(cwd, 'package.json');
+
+  if(existsSync(packageJsonPath)) {
+    try {
+      const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
+      const packageJson = JSON.parse(packageJsonContent);
+      return packageJson.type === 'module';
+    } catch(_error) {
+      return false;
+    }
+  }
+
+  return false;
+};
+
 export interface TestOptions {
   readonly analyze?: boolean;
   readonly aiDebug?: boolean;
@@ -216,8 +235,18 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     return 1;
   }
   const jestConfigFile: string = config || pathResolve(dirName, '../../../jest.config.lex.js');
-  const jestSetupFile: string = setup || '';
+  const jestSetupFile: string = setup || pathResolve(dirName, '../../../jest.setup.js');
   const jestOptions: string[] = ['--no-cache'];
+
+  // Detect if project is using ESM and set NODE_OPTIONS if so
+  const isESM = detectESM(process.cwd());
+  let nodeOptions = process.env.NODE_OPTIONS || '';
+  if(isESM) {
+    if(!nodeOptions.includes('--experimental-vm-modules')) {
+      nodeOptions = `${nodeOptions} --experimental-vm-modules`.trim();
+    }
+    log('ESM project detected, using --experimental-vm-modules in NODE_OPTIONS', 'info', quiet);
+  }
 
   jestOptions.push('--config', jestConfigFile);
 
@@ -354,9 +383,8 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push('--no-cache');
   }
 
-  if(jestSetupFile !== '') {
-    const cwd: string = process.cwd();
-    jestOptions.push(`--setupFilesAfterEnv=${pathResolve(cwd, jestSetupFile)}`);
+  if(jestSetupFile && existsSync(jestSetupFile)) {
+    jestOptions.push(`--setupFilesAfterEnv=${jestSetupFile}`);
   }
 
   if(update) {
@@ -371,10 +399,20 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push(...args);
   }
 
+  // Debug: Log Jest options for verification
+  if(debug) {
+    log(`Jest options: ${jestOptions.join(' ')}`, 'info', quiet);
+    log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
+  }
+
   try {
     await execa(jestPath, jestOptions, {
       encoding: 'utf8',
-      stdio: 'inherit'
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        NODE_OPTIONS: nodeOptions
+      }
     });
 
     spinner.succeed('Testing completed!');
