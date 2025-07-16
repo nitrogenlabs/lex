@@ -3,6 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {StorybookOptions} from './storybook.js';
+import {mockExecaSuccess, mockExecaFailure, mockExecaSuccessOnce, mockExecaFailureOnce, clearExecaMocks, getExecaCalls} from '../../mocks/execaMock.js';
 
 describe('storybook.options tests', () => {
   describe('StorybookOptions interface', () => {

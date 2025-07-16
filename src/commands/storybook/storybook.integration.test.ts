@@ -7,13 +7,15 @@ import {existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 
+
 import {storybook, StorybookOptions} from './storybook.js';
 import {LexConfig} from '../../LexConfig.js';
+import {clearExecaMocks, mockExecaFailure} from '../../mocks/execaMock.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 
 // Mock dependencies
-jest.mock('execa');
+// execa mock is now global
 jest.mock('fs');
 jest.mock('glob');
 jest.mock('path');
@@ -31,8 +33,13 @@ describe('storybook.integration tests', () => {
   };
   let tempDir: string;
 
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    clearExecaMocks();
 
     // Create temp directory
     tempDir = '/tmp/lex-storybook-test';
@@ -77,10 +84,7 @@ describe('storybook.integration tests', () => {
     (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
 
     // Mock execa
-    (execa as unknown as jest.Mock).mockResolvedValue({
-      stdout: 'storybook output',
-      stderr: ''
-    });
+    // mockExecaSuccess(); // REMOVE, rely on global mock
 
     // Mock LexConfig
     LexConfig.parseConfig = jest.fn().mockResolvedValue(undefined);
@@ -297,7 +301,7 @@ describe('storybook.integration tests', () => {
       quiet: false
     };
 
-    (execa as unknown as jest.Mock).mockRejectedValue(new Error('Storybook failed to start'));
+    mockExecaFailure('Storybook failed to start');
 
     const result = await storybook(options, mockCallback);
 

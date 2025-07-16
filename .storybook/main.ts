@@ -1,24 +1,17 @@
-import type {StorybookConfig} from '@storybook/react-webpack5';
-import {dirname, resolve} from 'path';
+import type { StorybookConfig } from '@storybook/react-webpack5';
+import { dirname, resolve } from 'path';
 
-// Dynamically resolve the Lex package's node_modules
-function getLexNodeModulesPath() {
-  // Since this config is now inside Lex's directory, we can use __dirname
-  // to find the Lex package root and then navigate to node_modules
-  const lexPackageRoot = dirname(dirname(__dirname)); // Go up from .storybook to packages/lex to packages
-  return resolve(lexPackageRoot, 'lex', 'node_modules');
-}
+const getLexNodeModulesPath = () => {
+  const lexPackageRoot = dirname(__dirname); // Go up from .storybook to lex root
+  return resolve(lexPackageRoot, 'node_modules');
+};
 
-function lexModule(modulePath: string) {
-  return resolve(getLexNodeModulesPath(), modulePath);
-}
+const lexModule = (modulePath: string) => resolve(getLexNodeModulesPath(), modulePath);
 
 const config: StorybookConfig = {
   addons: [
+    lexModule('@storybook/addon-docs'),
     lexModule('@storybook/addon-links'),
-    lexModule('@storybook/addon-essentials'),
-    lexModule('@storybook/addon-interactions'),
-    lexModule('@storybook/addon-styling'),
     lexModule('@storybook/addon-themes')
   ],
   framework: {
@@ -63,8 +56,29 @@ const config: StorybookConfig = {
       extensions: ['.js', '.ts', '.tsx'],
       plugins: [
         ...(config.resolve?.plugins || [])
-      ]
+      ],
+      fallback: {
+        ...config.resolve?.fallback,
+        "process": require.resolve("process/browser"),
+        "buffer": require.resolve("buffer"),
+        "util": require.resolve("util"),
+        "stream": require.resolve("stream-browserify"),
+        "crypto": require.resolve("crypto-browserify"),
+        "path": require.resolve("path-browserify"),
+        "os": require.resolve("os-browserify/browser"),
+        "vm": require.resolve("vm-browserify"),
+        "fs": false,
+        "net": false,
+        "tls": false
+      }
     },
+    plugins: [
+      ...(config.plugins || []),
+      new (require('webpack')).ProvidePlugin({
+        process: 'process/browser',
+        Buffer: ['buffer', 'Buffer']
+      })
+    ],
     stats: 'verbose'
   })
 };
