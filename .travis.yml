@@ -1,11 +1,103 @@
+# Travis CI Configuration for Lex CLI
+
+os: linux
+dist: focal
+
 language: node_js
 node_js:
-  - "10"
+  - "18"
+  - "20"
+  - "22"
+
+cache:
+  directories:
+    - node_modules
+    - $HOME/.npm
+    - $HOME/.cache
+
+env:
+  global:
+    - NODE_ENV=test
+    - CI=true
+    - NPM_CONFIG_LOGLEVEL=warn
+
+before_install:
+  - npm install -g npm@latest
+  - npm install -g codecov
+  - npm install -g @nlabs/lex
+  - git config --global user.email "travis@nitrogenlabs.com"
+  - git config --global user.name "Travis CI"
+
 install:
-  - npm install -g lerna @nlabs/lex yarn
-  - lex versions
-  - lerna bootstrap
+  - npm ci
+
+before_script:
+  - lex --version
+  - npx tsc --noEmit --project tsconfig.lint.json
+  - lex help
+
 script:
-  - yarn lint
-  - yarn build
-  - yarn test
+  - npm run lint
+  - npm run type-check
+  - npm run build
+  - npm run test:unit
+  - npm run test:integration
+  - npm run test:cli
+
+after_script:
+  - npm run test:coverage
+  - npm run test:coverage:upload || true
+
+deploy:
+  - provider: npm
+    email: $NPM_EMAIL
+    api_key: $NPM_TOKEN
+    on:
+      tags: true
+      node: "20"
+    skip_cleanup: true
+
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: "dist/*"
+    skip_cleanup: true
+    on:
+      tags: true
+      node: "20"
+
+branches:
+  only:
+    - main
+    - develop
+    - /^feature\/.*$/
+    - /^hotfix\/.*$/
+    - /^release\/.*$/
+
+notifications:
+  email:
+    recipients:
+      - dev@nitrogenlabs.com
+    on_success: change
+    on_failure: always
+
+addons:
+  code_climate:
+    repo_token: $CODECLIMATE_REPO_TOKEN
+
+services:
+  - docker
+
+before_cache:
+  - rm -rf node_modules/.cache
+  - rm -rf $HOME/.npm/_cacache
+
+after_success:
+  - lex init test-app --typescript --quiet || true
+  - lex dev --quiet --help || true
+  - lex build --help || true
+  - lex test --help || true
+  - lex lint --help || true
+  - lex storybook --help || true
+  - lex ai --help || true
+  - rm -rf test-app || true
