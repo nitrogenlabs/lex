@@ -32,7 +32,7 @@ export const migrate = async (cmd: MigrateOptions, callback: MigrateCallback = p
   await removeModules();
 
   const {packageManager: configPackageManager} = LexConfig.config;
-  const packageManager: string = cmdPackageManager || configPackageManager;
+  const packageManager: string = cmdPackageManager || configPackageManager || '';
   const packagePath: string = `${cwd}/package.json`;
   const appPackage = getPackageJson(packagePath);
   const {dependencies = {}, devDependencies = {}} = appPackage;

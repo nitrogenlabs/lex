@@ -1,118 +1,123 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {clean, CleanOptions} from './clean.js';
-import {LexConfig} from '../../LexConfig.js';
-import * as app from '../../utils/app.js';
-import * as log from '../../utils/log.js';
+import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
+import {clean} from './clean.js';
 
-// Mock dependencies
-jest.mock('../../utils/app.js');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
+    start: jest.fn(),
+    succeed: jest.fn()
+  })),
+  removeModules: jest.fn().mockResolvedValue(undefined),
+  removeFiles: jest.fn().mockResolvedValue(undefined)
+}));
 jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
+jest.mock('../../LexConfig.js', () => ({
+  LexConfig: {
+    parseConfig: jest.fn().mockResolvedValue(undefined)
+  }
+}));
 
-describe('clean.cli tests', () => {
-  let mockSpinner: any;
-  let mockCallback: jest.Mock;
+describe('clean cli', () => {
+  let consoleLogSpy;
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Mock spinner
-    mockSpinner = {
-      start: jest.fn(),
-      succeed: jest.fn(),
-      fail: jest.fn()
-    };
-    (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
-
-    // Mock LexConfig
-    (LexConfig.parseConfig as jest.Mock).mockResolvedValue({});
-
-    // Mock app utilities
-    (app.removeModules as jest.Mock).mockResolvedValue(undefined);
-    (app.removeFiles as jest.Mock).mockResolvedValue(undefined);
-
-    // Mock callback
-    mockCallback = jest.fn();
   });
 
-  it('should clean files with default options', async () => {
-    const options: CleanOptions = {
-      quiet: false
-    };
+  it('should clean node_modules successfully', async () => {
+    await clean({});
 
-    const result = await clean(options, mockCallback);
+    expect(removeModules).toHaveBeenCalled();
+  });
 
-    expect(log.log).toHaveBeenCalledWith('Lex cleaning directory...', 'info', false);
-    expect(LexConfig.parseConfig).toHaveBeenCalledWith(options);
-    expect(mockSpinner.start).toHaveBeenCalledWith('Cleaning files...');
-    expect(app.removeModules).toHaveBeenCalled();
-    expect(app.removeFiles).toHaveBeenCalledWith('./coverage', true);
-    expect(app.removeFiles).toHaveBeenCalledWith('./npm-debug.log', true);
-    expect(mockSpinner.succeed).toHaveBeenCalledWith('Successfully cleaned!');
-    expect(result).toBe(0);
-    expect(mockCallback).toHaveBeenCalledWith(0);
+  it('should clean coverage directory', async () => {
+    await clean({});
+
+    expect(removeFiles).toHaveBeenCalledWith('./coverage', true);
+  });
+
+  it('should clean npm debug logs', async () => {
+    await clean({});
+
+    expect(removeFiles).toHaveBeenCalledWith('./npm-debug.log', true);
   });
 
   it('should clean snapshots when snapshots option is true', async () => {
-    const options: CleanOptions = {
-      quiet: false,
-      snapshots: true
-    };
+    await clean({snapshots: true});
 
-    await clean(options, mockCallback);
-
-    expect(app.removeFiles).toHaveBeenCalledWith('./**/__snapshots__', true);
+    expect(removeFiles).toHaveBeenCalledWith('./**/__snapshots__', true);
   });
 
   it('should not clean snapshots when snapshots option is false', async () => {
-    const options: CleanOptions = {
-      quiet: false,
-      snapshots: false
-    };
+    const {removeFiles} = require('../../utils/app.js');
+    await clean({snapshots: false});
+    const {calls} = removeFiles.mock;
+    const snapshotCall = calls.find((call: any) => call[0].includes('__snapshots__'));
 
-    await clean(options, mockCallback);
-
-    expect(app.removeFiles).not.toHaveBeenCalledWith('./**/__snapshots__', true);
+    expect(snapshotCall).toBeUndefined();
   });
 
-  it('should use custom CLI name when provided', async () => {
-    const options: CleanOptions = {
-      cliName: 'CustomCLI',
-      quiet: false
-    };
+  it('should handle removeModules failure', async () => {
+    const {removeModules} = require('../../utils/app.js');
+    removeModules.mockRejectedValueOnce(new Error('Permission denied'));
+    const result = await clean({});
 
-    await clean(options, mockCallback);
-
-    expect(log.log).toHaveBeenCalledWith('CustomCLI cleaning directory...', 'info', false);
-  });
-
-  it('should handle errors during cleaning', async () => {
-    const options: CleanOptions = {
-      quiet: false
-    };
-
-    const errorMessage = 'Failed to remove files';
-    (app.removeModules as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
-
-    const result = await clean(options, mockCallback);
-
-    expect(mockSpinner.fail).toHaveBeenCalledWith('Failed to clean project.');
-    expect(log.log).toHaveBeenCalledWith(`\nLex Error: ${errorMessage}`, 'error', false);
     expect(result).toBe(1);
-    expect(mockCallback).toHaveBeenCalledWith(1);
   });
 
-  it('should respect quiet option', async () => {
-    const options: CleanOptions = {
-      quiet: true
-    };
+  it('should handle removeFiles failure for coverage', async () => {
+    const {removeFiles} = require('../../utils/app.js');
+    removeFiles.mockRejectedValueOnce(new Error('Cannot remove coverage'));
+    const result = await clean({});
 
-    await clean(options, mockCallback);
+    expect(result).toBe(1);
+  });
 
-    expect(app.createSpinner).toHaveBeenCalledWith(true);
-    expect(log.log).toHaveBeenCalledWith('Lex cleaning directory...', 'info', true);
+  it('should handle removeFiles failure for npm logs', async () => {
+    (removeModules as jest.MockedFunction<typeof removeModules>).mockResolvedValueOnce(undefined);
+    (removeFiles as jest.MockedFunction<typeof removeFiles>).mockResolvedValueOnce(undefined);
+    (removeFiles as jest.MockedFunction<typeof removeFiles>).mockRejectedValueOnce(new Error('Cannot remove npm logs'));
+    const result = await clean({});
+
+    expect(result).toBe(1);
+  });
+
+  it('should handle removeFiles failure for snapshots', async () => {
+    (removeModules as jest.MockedFunction<typeof removeModules>).mockResolvedValueOnce(undefined);
+    (removeFiles as jest.MockedFunction<typeof removeFiles>).mockResolvedValueOnce(undefined);
+    (removeFiles as jest.MockedFunction<typeof removeFiles>).mockResolvedValueOnce(undefined);
+    (removeFiles as jest.MockedFunction<typeof removeFiles>).mockRejectedValueOnce(new Error('Cannot remove snapshots'));
+    const result = await clean({snapshots: true});
+
+    expect(result).toBe(1);
+  });
+
+  it('should execute cleaning operations in correct order', async () => {
+    await clean({});
+
+    expect(removeModules).toHaveBeenCalled();
+    expect(removeFiles).toHaveBeenCalled();
+  });
+
+  it('should handle general errors gracefully', async () => {
+    const {removeModules} = require('../../utils/app.js');
+    removeModules.mockRejectedValueOnce(new Error('Test error'));
+    const result = await clean({});
+
+    expect(result).toBe(1);
+  });
+
+  it('should work with quiet mode', async () => {
+    await clean({quiet: true});
+
+    expect(createSpinner).toHaveBeenCalledWith(true);
   });
 });

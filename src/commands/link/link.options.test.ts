@@ -1,56 +1,42 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {linked, LinkOptions} from './link.js';
-import {LexConfig} from '../../LexConfig.js';
-import * as app from '../../utils/app.js';
+import {linked} from './link.js';
 
-// Mock dependencies
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js');
-jest.mock('../../utils/log.js');
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 
-describe('link.options tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+describe('link options', () => {
+  let consoleLogSpy: jest.SpyInstance;
 
-    // Mock LexConfig
-    LexConfig.parseConfig = jest.fn().mockResolvedValue(undefined);
-
-    // Mock app utils
-    jest.spyOn(app, 'checkLinkedModules').mockImplementation(() => {});
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
-  it('should accept cliName option', async () => {
-    const options: LinkOptions = {
-      cliName: 'CustomCLI'
-    };
-
-    // We're not testing the full execution here, just that the option is accepted
-    expect(() => linked(options)).not.toThrow();
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
   });
 
-  it('should accept quiet option', async () => {
-    const options: LinkOptions = {
-      quiet: true
-    };
+  it('should handle default options', async () => {
+    const result = await linked({});
 
-    expect(() => linked(options)).not.toThrow();
+    expect(result).toBe(0);
   });
 
-  it('should use default options when not provided', async () => {
-    const options: LinkOptions = {};
+  it('should handle quiet option', async () => {
+    const result = await linked({quiet: true});
 
-    expect(() => linked(options)).not.toThrow();
+    expect(result).toBe(0);
   });
 
-  it('should handle all options together', async () => {
-    const options: LinkOptions = {
-      cliName: 'CustomCLI',
-      quiet: true
-    };
+  it('should handle cliName option', async () => {
+    const result = await linked({cliName: 'CustomCLI'});
 
-    expect(() => linked(options)).not.toThrow();
+    expect(result).toBe(0);
   });
 });

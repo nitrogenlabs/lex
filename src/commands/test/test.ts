@@ -6,11 +6,10 @@ import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
-import {resolveBinaryPath} from '../../utils/file.js';
+import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
@@ -222,7 +221,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     }
   }
 
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const dirPath: string = pathResolve(dirName, '../../..');
 
   // Use robust path resolution for Jest binary

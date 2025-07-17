@@ -64,10 +64,10 @@ To run the tests:
 
 ```bash
 # Run all test module tests
-npm test -- packages/lex/src/commands/test
+npm test -- src/commands/test
 
 # Run specific test file
-npm test -- packages/lex/src/commands/test/test.cli.test.ts
+npm test -- src/commands/test/test.cli.test.ts
 ```
 
 ## Common Test Patterns
@@ -80,9 +80,9 @@ it('should pass option to Jest when specified', async () => {
     quiet: false,
     optionToTest: true
   };
-  
+
   await test(options, [], mockCallback as unknown as typeof process.exit);
-  
+
   const jestArgs = (execa as unknown as jest.Mock).mock.calls[0][1];
   expect(jestArgs).toContain('--optionFlag');
 });
@@ -96,9 +96,9 @@ it('should integrate with AI for test generation', async () => {
     quiet: false,
     generate: true
   };
-  
+
   await test(options, [], mockCallback as unknown as typeof process.exit);
-  
+
   expect(ai.ai).toHaveBeenCalledWith(expect.objectContaining({
     task: 'test',
     prompt: expect.stringContaining('Generate Jest unit tests')
@@ -111,13 +111,13 @@ it('should integrate with AI for test generation', async () => {
 ```typescript
 it('should handle Jest execution errors', async () => {
   const options = { quiet: false };
-  
+
   (execa as unknown as jest.Mock).mockRejectedValueOnce({
     message: 'Jest error'
   });
-  
+
   const result = await test(options, [], mockCallback);
-  
+
   expect(result).toBe(1);
   expect(mockCallback).toHaveBeenCalledWith(1);
 });
@@ -139,4 +139,4 @@ Key mocks include:
 1. **File System Mocks** - To simulate reading test files and results
 2. **Glob Mocks** - To simulate finding source and test files
 3. **Execa Mocks** - To simulate Jest execution and capture command-line arguments
-4. **AI Mocks** - To verify AI prompt construction and task execution 
+4. **AI Mocks** - To verify AI prompt construction and task execution

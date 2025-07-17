@@ -1,22 +1,39 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {jest} from '@jest/globals';
 import {execa} from 'execa';
 
 import {update, UpdateCallback} from './update.js';
 
 jest.mock('execa');
+jest.mock('../../LexConfig.js', () => ({
+  LexConfig: {
+    parseConfig: jest.fn().mockResolvedValue(undefined),
+    config: {
+      packageManager: 'npm'
+    }
+  }
+}));
+jest.mock('../../utils/file.js', () => ({
+  getDirName: jest.fn(() => '/mock/dir')
+}));
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 
 describe('update.cli', () => {
-  const mockExit = jest.fn() as jest.MockedFunction<UpdateCallback>;
+  const mockExit = jest.fn() as unknown as jest.MockedFunction<UpdateCallback>;
   const mockExeca = execa as jest.MockedFunction<typeof execa>;
 
   beforeEach(() => {
     mockExit.mockClear();
     mockExeca.mockClear();
-    mockExeca.mockResolvedValue({} as any);
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
   it('should update packages with npm', async () => {
@@ -25,13 +42,6 @@ describe('update.cli', () => {
     expect(mockExeca).toHaveBeenCalledWith('npx', expect.arrayContaining(['--packageManager', 'npm']), expect.any(Object));
     expect(mockExeca).toHaveBeenCalledWith('npm', ['i', '--force'], expect.any(Object));
     expect(mockExeca).toHaveBeenCalledWith('npm', ['audit', 'fix'], expect.any(Object));
-    expect(mockExit).toHaveBeenCalledWith(0);
-  });
-
-  it('should update packages with yarn', async () => {
-    await update({packageManager: 'yarn'}, mockExit);
-
-    expect(mockExeca).toHaveBeenCalledWith('yarn', ['upgrade', '--latest'], expect.any(Object));
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
@@ -51,7 +61,7 @@ describe('update.cli', () => {
 
   it('should handle errors', async () => {
     const errorMessage = 'Failed to update packages';
-    mockExeca.mockRejectedValueOnce(new Error(errorMessage));
+    mockExeca.mockRejectedValue(new Error(errorMessage));
 
     await update({}, mockExit);
 

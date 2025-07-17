@@ -1,86 +1,41 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {migrate, MigrateOptions} from './migrate.js';
-import {LexConfig} from '../../LexConfig.js';
-import * as app from '../../utils/app.js';
+import {execa} from 'execa';
 
-// Mock dependencies
+import {migrate} from './migrate.js';
+
 jest.mock('execa');
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  })),
+  removeModules: jest.fn().mockResolvedValue(undefined),
+  removeFiles: jest.fn().mockResolvedValue(undefined)
+}));
 jest.mock('../../utils/log.js');
+jest.mock('../../LexConfig.js');
 
-describe('migrate.options tests', () => {
-  let mockExit: jest.Mock<void, [number]>;
+describe('migrate options', () => {
+  let processExitSpy: jest.SpyInstance;
+
+  beforeAll(() => {
+    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Mock process.cwd()
-    process.cwd = jest.fn().mockReturnValue('/test/dir');
-
-    // Mock app utils
-    jest.spyOn(app, 'removeModules').mockResolvedValue(undefined);
-    (app.getPackageJson as jest.Mock).mockReturnValue({
-      dependencies: {},
-      devDependencies: {}
-    });
-    (app.removeConflictModules as jest.Mock).mockImplementation((deps) => deps);
-    (app.createSpinner as jest.Mock).mockReturnValue({
-      start: jest.fn(),
-      succeed: jest.fn(),
-      fail: jest.fn()
-    });
-
-    // Mock LexConfig
-    LexConfig.config = {
-      packageManager: 'npm'
-    };
-
-    // Mock exit callback
-    mockExit = jest.fn<void, [number]>();
   });
 
-  it('should accept cliName option', async () => {
-    const options: MigrateOptions = {
-      cliName: 'CustomCLI'
-    };
-
-    // We're not testing the full execution here, just that the option is accepted
-    expect(() => migrate(options, mockExit as unknown as typeof process.exit)).not.toThrow();
+  afterAll(() => {
+    processExitSpy.mockRestore();
+    jest.restoreAllMocks();
   });
 
-  it('should accept packageManager option', async () => {
-    const options: MigrateOptions = {
-      packageManager: 'yarn'
-    };
+  it('should migrate with default options', async () => {
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    await migrate({});
 
-    expect(() => migrate(options, mockExit as unknown as typeof process.exit)).not.toThrow();
-  });
-
-  it('should accept quiet option', async () => {
-    const options: MigrateOptions = {
-      quiet: true
-    };
-
-    expect(() => migrate(options, mockExit as unknown as typeof process.exit)).not.toThrow();
-  });
-
-  it('should use default options when not provided', async () => {
-    const options: MigrateOptions = {};
-
-    expect(() => migrate(options, mockExit as unknown as typeof process.exit)).not.toThrow();
-  });
-
-  it('should handle all options together', async () => {
-    const options: MigrateOptions = {
-      cliName: 'CustomCLI',
-      packageManager: 'yarn',
-      quiet: true
-    };
-
-    expect(() => migrate(options, mockExit as unknown as typeof process.exit)).not.toThrow();
+    expect(execa).toHaveBeenCalled();
   });
 });

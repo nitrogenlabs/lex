@@ -5,6 +5,8 @@
  */
 import {Option, program} from 'commander';
 import {readFileSync} from 'fs';
+import {createRequire} from 'module';
+import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 
 import {aiFunction} from './commands/ai/ai.js';
@@ -24,6 +26,17 @@ import {test} from './commands/test/test.js';
 import {update} from './commands/update/update.js';
 import {upgrade} from './commands/upgrade/upgrade.js';
 import {versions} from './commands/versions/versions.js';
+
+// Inject Lex's own node_modules into NODE_PATH for module resolution
+const lexNodeModules = resolve(dirname(fileURLToPath(import.meta.url)), '../node_modules');
+if(!process.env.NODE_PATH) {
+  process.env.NODE_PATH = lexNodeModules;
+} else if(!process.env.NODE_PATH.split(':').includes(lexNodeModules)) {
+  process.env.NODE_PATH += `:${lexNodeModules}`;
+}
+// Re-initialize Node's module search paths
+const require = createRequire(import.meta.url);
+require('module').Module._initPaths();
 
 const packagePath = fileURLToPath(new URL('../package.json', import.meta.url));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));

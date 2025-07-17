@@ -1,19 +1,15 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
 import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
 import {readFileSync} from 'fs';
 import latestVersion from 'latest-version';
-import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
+import {getLexPackageJsonPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {parseVersion} from '../versions/versions.js';
 
-const packagePath = fileURLToPath(new URL('../../../package.json', import.meta.url));
+const packagePath = getLexPackageJsonPath();
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 export interface UpgradeOptions {

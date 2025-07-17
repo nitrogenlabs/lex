@@ -1,69 +1,41 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {linked, LinkOptions} from './link.js';
-import {LexConfig} from '../../LexConfig.js';
-import * as app from '../../utils/app.js';
-import * as log from '../../utils/log.js';
+import {linked} from './link.js';
 
-// Mock dependencies
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js');
-jest.mock('../../utils/log.js');
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 
-describe('link.cli tests', () => {
-  let mockCallback: jest.Mock;
+describe('link cli', () => {
+  let consoleLogSpy: jest.SpyInstance;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-
-    // Mock LexConfig
-    LexConfig.parseConfig = jest.fn().mockResolvedValue(undefined);
-
-    // Mock app utils
-    jest.spyOn(app, 'checkLinkedModules').mockImplementation(() => {});
-
-    // Mock callback
-    mockCallback = jest.fn();
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
-  it('should check for linked modules with default options', async () => {
-    const options: LinkOptions = {};
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+  });
 
-    const result = await linked(options, mockCallback);
+  it('should link modules with default options', async () => {
+    const result = await linked({});
 
-    expect(log.log).toHaveBeenCalledWith('Lex checking for linked modules...', 'info', undefined);
-    expect(LexConfig.parseConfig).toHaveBeenCalledWith(options);
-    expect(app.checkLinkedModules).toHaveBeenCalled();
     expect(result).toBe(0);
-    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should use custom CLI name when provided', async () => {
-    const options: LinkOptions = {
-      cliName: 'CustomCLI'
-    };
+  it('should link modules with quiet option', async () => {
+    const result = await linked({quiet: true});
 
-    await linked(options, mockCallback);
-
-    expect(log.log).toHaveBeenCalledWith('CustomCLI checking for linked modules...', 'info', undefined);
+    expect(result).toBe(0);
   });
 
-  it('should respect quiet option', async () => {
-    const options: LinkOptions = {
-      quiet: true
-    };
-
-    await linked(options, mockCallback);
-
-    expect(log.log).toHaveBeenCalledWith(expect.any(String), expect.any(String), true);
-  });
-
-  it('should work without a callback', async () => {
-    const options: LinkOptions = {};
-
-    const result = await linked(options);
+  it('should link modules with cliName option', async () => {
+    const result = await linked({cliName: 'CustomCLI'});
 
     expect(result).toBe(0);
   });

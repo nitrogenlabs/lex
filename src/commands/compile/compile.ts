@@ -6,11 +6,10 @@ import {execa} from 'execa';
 import {existsSync, lstatSync, readdirSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
-import {resolveBinaryPath} from '../../utils/file.js';
+import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
@@ -57,8 +56,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   // Compile type
   const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
   const outputDir: string = outputPath || outputFullPath;
-  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath;
-  const dirName = new URL('.', import.meta.url).pathname;
+  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
+  const dirName = getDirName();
   const dirPath: string = pathResolve(dirName, '../..');
 
   // Check for linked modules

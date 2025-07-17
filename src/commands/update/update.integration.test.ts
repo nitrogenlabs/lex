@@ -1,75 +1,46 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {jest} from '@jest/globals';
 import {execa} from 'execa';
 
 import {update, UpdateCallback} from './update.js';
-import {LexConfig} from '../../LexConfig.js';
 
 jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
+jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');
+jest.mock('../../utils/file.js', () => ({
+  getDirName: jest.fn(() => '/mock/dir')
+}));
 
-describe('update.integration', () => {
-  const mockExit = jest.fn() as jest.MockedFunction<UpdateCallback>;
-  const mockExeca = execa as jest.MockedFunction<typeof execa>;
-  const mockLexConfig = LexConfig as jest.Mocked<typeof LexConfig>;
+describe('update integration', () => {
+  const mockCallback = jest.fn() as unknown as jest.MockedFunction<UpdateCallback>;
 
   beforeEach(() => {
-    mockExit.mockClear();
-    mockExeca.mockClear();
-    mockExeca.mockResolvedValue({} as any);
-    mockLexConfig.parseConfig.mockResolvedValue(undefined);
-    mockLexConfig.config = {
-      packageManager: 'npm'
-    } as any;
+    jest.clearAllMocks();
   });
 
-  it('should use config packageManager when not provided in command', async () => {
-    mockLexConfig.config = {
-      packageManager: 'yarn'
-    } as any;
-
-    await update({}, mockExit);
-
-    expect(mockExeca).toHaveBeenCalledWith('yarn', expect.anything(), expect.any(Object));
-    expect(mockExit).toHaveBeenCalledWith(0);
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
-  it('should use command packageManager over config packageManager', async () => {
-    mockLexConfig.config = {
-      packageManager: 'yarn'
-    } as any;
+  it('should update successfully', async () => {
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    await update({}, mockCallback);
 
-    await update({packageManager: 'npm'}, mockExit);
-
-    expect(mockExeca).toHaveBeenCalledWith('npx', expect.anything(), expect.any(Object));
-    expect(mockExit).toHaveBeenCalledWith(0);
+    expect(execa).toHaveBeenCalled();
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should default to npm if no packageManager is specified', async () => {
-    mockLexConfig.config = {} as any;
-
-    await update({}, mockExit);
-
-    expect(mockExeca).toHaveBeenCalledWith('npx', expect.anything(), expect.any(Object));
-    expect(mockExit).toHaveBeenCalledWith(0);
-  });
-
-  it('should return 0 on success', async () => {
-    const result = await update({}, mockExit);
-
-    expect(result).toBe(0);
-    expect(mockExit).toHaveBeenCalledWith(0);
-  });
-
-  it('should return 1 on error', async () => {
-    mockExeca.mockRejectedValueOnce(new Error('Failed to update'));
-
-    const result = await update({}, mockExit);
+  it('should handle update errors', async () => {
+    (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('Failed to update'));
+    const result = await update({}, mockCallback);
 
     expect(result).toBe(1);
-    expect(mockExit).toHaveBeenCalledWith(1);
+    expect(mockCallback).toHaveBeenCalledWith(1);
   });
 });

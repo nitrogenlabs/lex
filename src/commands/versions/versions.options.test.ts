@@ -1,10 +1,20 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
 import {VersionsCmd} from './versions.js';
 
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
+
 describe('versions.options', () => {
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   it('should have the correct options structure', () => {
     const options: VersionsCmd = {
       json: true

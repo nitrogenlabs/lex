@@ -1,0 +1,33 @@
+{
+  "useTypescript": true,
+  "sourcePath": "./src",
+  "outputPath": "./dist",
+  "targetEnvironment": "web",
+  "preset": "web",
+  "packageManager": "npm",
+  "ai": {
+    "provider": "none",
+    "model": "gpt-4o",
+    "maxTokens": 4000,
+    "temperature": 0.1
+  },
+  "esbuild": {
+    "minify": true,
+    "treeShaking": true,
+    "drop": [],
+    "pure": [],
+    "legalComments": "none",
+    "splitting": true,
+    "metafile": false,
+    "sourcemap": false
+  },
+  "webpack": {},
+  "jest": {},
+  "outputHash": false,
+  "useGraphQl": false,
+  "configFiles": [],
+  "copyFiles": [],
+  "entryHTML": "index.html",
+  "entryJs": "index.js",
+  "env": null
+}

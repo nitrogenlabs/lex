@@ -7,11 +7,10 @@ import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
-import {relativeNodePath} from '../../utils/file.js';
+import {getDirName, relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
@@ -47,7 +46,7 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     useGraphQl,
     useTypescript
   } = LexConfig.config;
-  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath;
+  const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
   const loader = {
     '.js': 'js'
   };
@@ -60,7 +59,7 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
   const plugins = [];
 
   if(useGraphQl) {
-    plugins.push((GraphqlLoaderPlugin as unknown as () => void)());
+    plugins.push((GraphqlLoaderPlugin as unknown as () => never)());
   }
 
   const globOptions = {
@@ -80,11 +79,10 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     ...Object.keys(packageJson.peerDependencies || {})
   ];
 
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const dirPath: string = pathResolve(dirName, '../..');
-  const outputDir: string = outputPath || outputFullPath;
+  const outputDir: string = outputPath || outputFullPath || '';
   const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
-  // Get esbuild configuration with defaults
   const esbuildConfig = LexConfig.config.esbuild || {};
 
   const esbuildOptions: string[] = [
@@ -98,7 +96,6 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`
   ];
 
-  // Apply optimization options
   if (esbuildConfig.minify !== false) {
     esbuildOptions.push('--minify');
   }
@@ -232,7 +229,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   } = cmd;
 
   let webpackConfig: string;
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
 
   if(config) {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
@@ -416,7 +413,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   spinner.start('Building code...');
 
   if(remove) {
-    await removeFiles(outputFullPath);
+    await removeFiles(outputFullPath || '');
   }
 
   if(useTypescript) {

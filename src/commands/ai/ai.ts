@@ -12,10 +12,10 @@ import {callAIService} from '../../utils/aiService.js';
 import {log} from '../../utils/log.js';
 
 if(process.env.CURSOR_EXTENSION === 'true' ||
-    process.env.CURSOR_TERMINAL === 'true' ||
-    process.env.CURSOR_APP === 'true' ||
-    process.env.PATH?.includes('cursor') ||
-    process.env.CURSOR_SESSION_ID) {
+  process.env.CURSOR_TERMINAL === 'true' ||
+  process.env.CURSOR_APP === 'true' ||
+  process.env.PATH?.includes('cursor') ||
+  process.env.CURSOR_SESSION_ID) {
   process.env.CURSOR_IDE = 'true';
 }
 

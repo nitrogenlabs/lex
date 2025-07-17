@@ -5,16 +5,22 @@
 import {execa} from 'execa';
 import {existsSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {dirname, resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
-// Create __dirname equivalent for ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+let currentFilename: string;
+let currentDirname: string;
+
+try {
+  currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
+  currentDirname = dirname(currentFilename);
+} catch {
+  currentFilename = process.cwd();
+  currentDirname = process.cwd();
+}
 
 export interface LintOptions {
   readonly cache?: boolean;
@@ -61,15 +67,10 @@ interface ConfigResult {
   originalConfig: string | null;
 }
 
-/**
- * Create a temporary ESLint config file
- */
 const createDefaultESLintConfig = (useTypescript: boolean, cwd: string): ConfigResult => {
-  // Create a flat config file for ESLint 9.x
-  const configPath = pathResolve(cwd, 'eslint.config.js');
+  const configPath = pathResolve(cwd, 'eslint.config.ts');
+  let originalConfig;
 
-  // Save the original config if it exists
-  let originalConfig = null;
   if(existsSync(configPath)) {
     try {
       originalConfig = readFileSync(configPath, 'utf8');
@@ -78,20 +79,13 @@ const createDefaultESLintConfig = (useTypescript: boolean, cwd: string): ConfigR
     }
   }
 
-  // Try to find Lex's eslint.config.js to copy
-  // Try different potential locations for the Lex config
   const possiblePaths = [
-    // From src/commands/lint/lint.ts to root
-    pathResolve(__dirname, '../../../../eslint.config.js'),
-    // From packages/lex/src/commands/lint/lint.ts to packages/lex
-    pathResolve(__dirname, '../../../eslint.config.js'),
-    // From packages/lex/src/commands/lint/lint.ts to root
-    pathResolve(__dirname, '../../../../../eslint.config.js'),
-    // Absolute path if Lex is installed globally
-    pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+    pathResolve(currentDirname, '../../../../eslint.config.ts'),
+    pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.ts')
   ];
 
   let foundConfig = '';
+
   for(const path of possiblePaths) {
     if(existsSync(path)) {
       foundConfig = path;
@@ -102,34 +96,28 @@ const createDefaultESLintConfig = (useTypescript: boolean, cwd: string): ConfigR
   let eslintConfig;
 
   if(foundConfig) {
-    // Copy Lex's config file
     try {
       eslintConfig = readFileSync(foundConfig, 'utf8');
     } catch(_error) {
-      // Fall back to default config if we can't read Lex's config
       eslintConfig = createBasicESLintConfig(useTypescript);
     }
   } else {
-    // Create a simple config if Lex's config doesn't exist
     eslintConfig = createBasicESLintConfig(useTypescript);
   }
 
-  // Write the config
   writeFileSync(configPath, eslintConfig, 'utf8');
 
-  // Return both the config path and the original config
   return {
     configPath,
     originalConfig
   };
 };
 
-/**
- * Create a basic ESLint config as a fallback
- */
 const createBasicESLintConfig = (useTypescript: boolean): string => {
   let config = `// ESLint configuration
-export default [
+import { typescriptConfig } from 'eslint-config-styleguidejs';
+
+const config = [
   {
     ignores: ['**/node_modules/**', '**/dist/**', '**/build/**']
   },
@@ -181,9 +169,11 @@ export default [
   }`;
   }
 
-  // Close the array
+  // Close the array and export
   config += `
-];`;
+];
+
+export default config;`;
 
   return config;
 };
@@ -204,10 +194,9 @@ const ensureModuleType = (cwd: string): void => {
       const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
       const packageJson = JSON.parse(packageJsonContent);
 
-      // If type is not set to module, set it
+      // If type is not set to module, warn instead of auto-modifying
       if(packageJson.type !== 'module') {
-        packageJson.type = 'module';
-        writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf8');
+        log('Warning: package.json should have "type": "module" for ESM support. Please add this manually.', 'warn', false);
       }
     } catch(_error) {
       // Ignore errors
@@ -215,12 +204,7 @@ const ensureModuleType = (cwd: string): void => {
   }
 };
 
-/**
- * Log which ESLint version is being used
- * Lex provides its own ESLint, so no installation is needed in the project
- */
 const installDependencies = async (cwd: string, useTypescript: boolean, quiet: boolean): Promise<void> => {
-  // Lex provides its own ESLint, so we don't need to install it in the project
   if(useTypescript) {
     log('Using TypeScript ESLint from Lex...', 'info', quiet);
   } else {
@@ -228,11 +212,6 @@ const installDependencies = async (cwd: string, useTypescript: boolean, quiet: b
   }
 };
 
-// Function removed as it's no longer needed
-
-/**
- * Run ESLint using Lex's own ESLint binary
- */
 const runEslintWithLex = async (
   cwd: string,
   quiet: boolean,
@@ -245,22 +224,13 @@ const runEslintWithLex = async (
   const spinner = createSpinner(quiet);
 
   try {
-    // Determine which ESLint config to use
-    // First check if the project has its own eslint.config.js
     const projectConfigPath = pathResolve(cwd, 'eslint.config.js');
-    const hasProjectConfig = existsSync(projectConfigPath);
+    const projectConfigPathTs = pathResolve(cwd, 'eslint.config.ts');
+    const hasProjectConfig = existsSync(projectConfigPath) || existsSync(projectConfigPathTs);
 
-    // If not, try to find Lex's default config
-    // Try different potential locations for the Lex config
     const possiblePaths = [
-      // From src/commands/lint/lint.ts to root
-      pathResolve(__dirname, '../../../../eslint.config.js'),
-      // From packages/lex/src/commands/lint/lint.ts to packages/lex
-      pathResolve(__dirname, '../../../eslint.config.js'),
-      // From packages/lex/src/commands/lint/lint.ts to root
-      pathResolve(__dirname, '../../../../../eslint.config.js'),
-      // Absolute path if Lex is installed globally
-      pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+      pathResolve(currentDirname, '../../../../eslint.config.ts'),
+      pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.ts')
     ];
 
     let lexConfigPath = '';
@@ -271,34 +241,29 @@ const runEslintWithLex = async (
       }
     }
 
-    // Determine which config file to use
-    const configPath = hasProjectConfig ? projectConfigPath : (lexConfigPath || projectConfigPath);
+    const configPath = hasProjectConfig ? (existsSync(projectConfigPathTs) ? projectConfigPathTs : projectConfigPath) : (lexConfigPath || projectConfigPath);
 
-    // Find Lex's ESLint binary using robust path resolution
     const eslintBinary = resolveBinaryPath('eslint', 'eslint');
 
-    // Always use Lex's own ESLint binary
     if(!eslintBinary) {
-      log(`\n${cliName} Error: ESLint binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+      log(`\n${cliName} Error: ESLint binary not found in Lex's node_modules`, 'error', quiet);
       log('Please reinstall Lex or check your installation.', 'info', quiet);
       return 1;
     }
 
-    // Run eslint on JS files with config using Lex's ESLint
     const jsResult = await execa(eslintBinary, [
       'src/**/*.{js,jsx}',
-      '--config', configPath, // Use the determined config
+      '--config', configPath,
       ...(fix ? ['--fix'] : []),
       ...(debug ? ['--debug'] : []),
-      '--no-error-on-unmatched-pattern' // Don't error if no files are found
+      '--no-error-on-unmatched-pattern'
     ], {
       reject: false,
       stdio: 'pipe',
       cwd,
-      shell: true // Needed for glob pattern expansion
+      shell: true
     });
 
-    // Display JS output and capture it if needed
     if(jsResult.stdout) {
       console.log(jsResult.stdout);
       if(captureOutput) {
@@ -313,23 +278,21 @@ const runEslintWithLex = async (
       }
     }
 
-    // Run eslint on TS files if needed
     let tsResult: any = {exitCode: 0, stdout: '', stderr: ''};
     if(useTypescript) {
       tsResult = await execa(eslintBinary, [
         'src/**/*.{ts,tsx}',
-        '--config', configPath, // Use the determined config
+        '--config', configPath,
         ...(fix ? ['--fix'] : []),
         ...(debug ? ['--debug'] : []),
-        '--no-error-on-unmatched-pattern' // Don't error if no files are found
+        '--no-error-on-unmatched-pattern'
       ], {
         reject: false,
         stdio: 'pipe',
         cwd,
-        shell: true // Needed for glob pattern expansion
+        shell: true
       });
 
-      // Display TS output
       if(tsResult.stdout) {
         console.log(tsResult.stdout);
       }
@@ -339,7 +302,6 @@ const runEslintWithLex = async (
       }
     }
 
-    // Check for ESLint command not found error
     const eslintNotFound = jsResult.stderr?.includes('command not found') || jsResult.stderr?.includes('eslint: command not found');
     if(eslintNotFound) {
       spinner.fail('ESLint not found!');
@@ -347,15 +309,14 @@ const runEslintWithLex = async (
       return 1;
     }
 
-    // Success if both exit codes are 0
     if(jsResult.exitCode === 0 && tsResult.exitCode === 0) {
       spinner.succeed('Linting completed!');
       return 0;
     }
-    // Check for special cases - no files found
+
     const noFilesFound =
-        (jsResult.stderr?.includes('No such file or directory') || jsResult.stdout?.includes('No such file or directory')) &&
-        (!useTypescript || tsResult.stderr?.includes('No such file or directory') || tsResult.stdout?.includes('No such file or directory'));
+      (jsResult.stderr?.includes('No such file or directory') || jsResult.stdout?.includes('No such file or directory')) &&
+      (!useTypescript || tsResult.stderr?.includes('No such file or directory') || tsResult.stdout?.includes('No such file or directory'));
 
     if(noFilesFound) {
       spinner.succeed('No files found to lint');
@@ -371,9 +332,6 @@ const runEslintWithLex = async (
   }
 };
 
-/**
- * Use AI to fix linting errors that couldn't be fixed automatically
- */
 const applyAIFix = async (
   cwd: string,
   errors: string,
@@ -383,22 +341,17 @@ const applyAIFix = async (
   spinner.start('Using AI to fix remaining lint issues...');
 
   try {
-    // Extract file paths and errors from the ESLint output
     const fileErrorMap = new Map<string, string[]>();
     const lines = errors.split('\n');
     let currentFile = '';
 
-    // Improved parsing of ESLint output
     for(const line of lines) {
-      // Match file paths (they typically start with / or C:\ on Windows)
       if(line.match(/^(\/|[A-Z]:\\).*?\.(js|jsx|ts|tsx)$/)) {
         currentFile = line.trim();
         if(!fileErrorMap.has(currentFile)) {
           fileErrorMap.set(currentFile, []);
         }
-      }
-      // Match error lines (they typically have line:column format)
-      else if(currentFile && line.trim() && line.match(/\s+\d+:\d+\s+(error|warning)\s+/)) {
+      } else if(currentFile && line.trim() && line.match(/\s+\d+:\d+\s+(error|warning)\s+/)) {
         const errorArray = fileErrorMap.get(currentFile);
         if(errorArray) {
           errorArray.push(line.trim());
@@ -406,11 +359,9 @@ const applyAIFix = async (
       }
     }
 
-    // If no errors were found using the regex approach, try a different parsing strategy
     if(fileErrorMap.size === 0) {
       log('Using alternative error parsing strategy', 'info', quiet);
 
-      // Reset and try a different parsing approach
       const sections = errors.split('\n\n');
 
       for(const section of sections) {
@@ -421,7 +372,6 @@ const applyAIFix = async (
         const lines = section.split('\n');
         const filePath = lines[0].trim();
 
-        // Only process if it looks like a file path
         if(filePath.match(/\.(js|jsx|ts|tsx)$/)) {
           fileErrorMap.set(filePath, []);
 
@@ -434,11 +384,9 @@ const applyAIFix = async (
       }
     }
 
-    // If still no files found, try to extract file paths directly
     if(fileErrorMap.size === 0) {
       log('Using direct file path extraction', 'info', quiet);
 
-      // Find all file paths in the error output
       const filePathRegex = /(?:\/|[A-Z]:\\)(?:[^:\n]+\/)*[^:\n]+\.(js|jsx|ts|tsx)/g;
       const filePaths = errors.match(filePathRegex) || [];
 
@@ -448,13 +396,12 @@ const applyAIFix = async (
         }
       }
 
-      // Add known problematic files if they exist
       const knownFiles = [
-        '/Users/nitrog7/Development/lex/packages/lex/src/create/changelog.ts',
-        '/Users/nitrog7/Development/lex/packages/lex/src/utils/aiService.ts',
-        '/Users/nitrog7/Development/lex/packages/lex/src/utils/app.ts',
-        '/Users/nitrog7/Development/lex/packages/lex/src/utils/reactShim.ts',
-        '/Users/nitrog7/Development/lex/packages/lex/src/commands/lint/autofix.js'
+        pathResolve(cwd, 'src/create/changelog.ts'),
+        pathResolve(cwd, 'src/utils/aiService.ts'),
+        pathResolve(cwd, 'src/utils/app.ts'),
+        pathResolve(cwd, 'src/utils/reactShim.ts'),
+        pathResolve(cwd, 'src/commands/lint/autofix.js')
       ];
 
       for(const file of knownFiles) {
@@ -464,7 +411,6 @@ const applyAIFix = async (
       }
     }
 
-    // Process each file with errors
     for(const filePath of fileErrorMap.keys()) {
       if(!existsSync(filePath)) {
         log(`File not found: ${filePath}`, 'warn', quiet);
@@ -473,13 +419,10 @@ const applyAIFix = async (
 
       log(`Processing file: ${filePath}`, 'info', quiet);
 
-      // Check if we're running in Cursor IDE
       const isCursorIDE = LexConfig.config.ai?.provider === 'cursor' || process.env.CURSOR_IDE === 'true';
 
       if(isCursorIDE) {
-        // If we're in Cursor IDE, use its built-in AI capabilities
         try {
-          // Create a prompt for Cursor AI
           const prompt = `Fix all ESLint errors in this file. Focus on:
 1. Fixing naming conventions
 2. Fixing sort-keys issues
@@ -554,9 +497,7 @@ const config = {baseUrl: 'https://api.example.com', apiKey: 'value', timeout: 50
 
 Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
 
-          // Try to use Cursor CLI if available
           try {
-            // Create a temporary prompt file
             const promptFile = pathResolve(cwd, '.cursor_prompt_temp.txt');
             writeFileSync(promptFile, prompt, 'utf8');
 
@@ -567,16 +508,13 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
               cwd
             });
 
-            // Clean up
             try {
               unlinkSync(promptFile);
             } catch(_error) {
-              // Ignore cleanup errors
             }
 
             log(`Applied Cursor AI fixes to ${filePath}`, 'info', quiet);
           } catch(error) {
-            // If Cursor CLI fails, fall back to direct fixes
             const wasModified = await applyDirectFixes(filePath, quiet);
             if(wasModified) {
               log(`Applied direct fixes to ${filePath}`, 'info', quiet);
@@ -584,27 +522,21 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
           }
         } catch(error) {
           log(`Error using Cursor AI: ${error.message}`, 'error', quiet);
-          // Fall back to direct fixes
           await applyDirectFixes(filePath, quiet);
         }
       } else {
-        // For non-Cursor environments, apply direct fixes and then use AI service
         const wasModified = await applyDirectFixes(filePath, quiet);
         if(wasModified) {
           log(`Applied direct fixes to ${filePath}`, 'info', quiet);
         }
 
-        // For remaining issues, use the AI service
         const fileErrors = fileErrorMap.get(filePath) || [];
         if(fileErrors.length > 0) {
           try {
-            // Import the AI service dynamically to avoid circular dependencies
             const {callAIService} = await import('../../utils/aiService.js');
 
-            // Read the file content again in case it was modified by automated fixes
             const fileContent = readFileSync(filePath, 'utf8');
 
-            // Prepare a prompt for AI
             const prompt = `Fix the following ESLint errors in this code:
 ${fileErrors.join('\n')}
 
@@ -726,34 +658,26 @@ Return only the properly formatted fixed code without any explanations.`;
   }
 };
 
-/**
- * Apply direct fixes to common ESLint issues
- */
 const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boolean> => {
   let wasModified = false;
 
   try {
-    // Read file content
     const fileContent = readFileSync(filePath, 'utf8');
     let newContent = fileContent;
 
-    // Fix issues based on filename
     if(filePath.includes('aiService.ts')) {
       log('Fixing issues in aiService.ts', 'info', quiet);
 
-      // Fix the order of keys in headers objects
       newContent = newContent.replace(
         /'Content-Type': 'application\/json',\s*'Authorization': `Bearer/g,
         '\'Authorization\': `Bearer\', \'Content-Type\': \'application/json\''
       );
 
-      // Fix method and headers order
       newContent = newContent.replace(
         /headers: {([^}]*)},\s*method: 'POST'/g,
         'method: \'POST\',\n      headers: {$1}'
       );
 
-      // Fix role and content order
       newContent = newContent.replace(
         /{role: 'system', content:/g,
         '{content:, role: \'system\','
@@ -763,16 +687,13 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
         '{content:, role: \'user\','
       );
 
-      // Fix naming convention issues - parameter names with leading underscores
       newContent = newContent.replace(
         /\(([^)]*?)_([a-zA-Z0-9]+)(\s*:[^)]*)\)/g,
         '($1$2$3)'
       );
 
-      // Replace console.log statements
       newContent = newContent.replace(/console\.log\(/g, 'log(');
 
-      // Add log import if needed
       if(!newContent.includes('import {log}') && newContent.includes('log(')) {
         newContent = newContent.replace(
           /import {([^}]*)} from '(.*)';/,
@@ -781,42 +702,33 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
       }
     }
 
-    // Fix reactShim.ts naming conventions
     if(filePath.includes('reactShim.ts')) {
       log('Fixing naming-convention issues in reactShim.ts', 'info', quiet);
 
-      // Fix React import naming
       newContent = newContent.replace(
         'import * as React from',
         'import * as react from'
       );
 
-      // Fix React usage
       newContent = newContent.replace(/React\./g, 'react.');
     }
 
-    // Fix changelog.ts issues
     if(filePath.includes('changelog.ts')) {
       log('Fixing issues in changelog.ts', 'info', quiet);
 
-      // Fix no-plusplus
       newContent = newContent.replace(/(\w+)\+\+/g, '$1 += 1');
 
-      // Fix unnecessary escape characters
       newContent = newContent.replace(/\\\$/g, '$');
       newContent = newContent.replace(/\\\./g, '.');
       newContent = newContent.replace(/\\\*/g, '*');
       newContent = newContent.replace(/\\:/g, ':');
     }
 
-    // Fix app.ts issues
     if(filePath.includes('app.ts')) {
       log('Fixing issues in app.ts', 'info', quiet);
 
-      // Fix console.log
       newContent = newContent.replace(/console\.log\(/g, 'log(');
 
-      // Add log import if needed
       if(!newContent.includes('import {log}') && newContent.includes('log(')) {
         newContent = newContent.replace(
           /import boxen from 'boxen';/,
@@ -824,21 +736,17 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
         );
       }
 
-      // Fix unnecessary escape characters
       newContent = newContent.replace(/\\\//g, '/');
     }
 
-    // Fix autofix.js issues
     if(filePath.includes('autofix.js')) {
       log('Fixing issues in autofix.js', 'info', quiet);
 
-      // Fix import style
       newContent = newContent.replace(
         /import {([^}]*)} from 'path';[\s\n]*import {([^}]*)} from 'path';/,
         'import {$1, $2} from \'path\';'
       );
 
-      // Fix variable naming convention
       newContent = newContent.replace(
         /__filename/g,
         'currentFilename'
@@ -848,13 +756,11 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
         'currentDirname'
       );
 
-      // Fix nested ternary
       newContent = newContent.replace(
         /const prefix = type === 'error' \? '❌ ' : type === 'success' \? '✅ ' : 'ℹ️ ';/,
         'let prefix = \'ℹ️ \';\nif(type === \'error\') {\n  prefix = \'❌ \';\n} else if(type === \'success\') {\n  prefix = \'✅ \';\n}'
       );
 
-      // Fix function style
       newContent = newContent.replace(
         /async function runEslintFix\(\)/g,
         'const runEslintFix = async ()'
@@ -876,19 +782,16 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
         'const main = async ()'
       );
 
-      // Fix unused variables
       newContent = newContent.replace(
         /import {existsSync, readFileSync, writeFileSync}/g,
         'import {writeFileSync}'
       );
 
-      // Fix console.log
       newContent = newContent.replace(
         /console\.log\(`\${prefix} \${message}`\);/g,
         'process.stdout.write(`${prefix} ${message}\\n`);'
       );
 
-      // Fix unused error variables
       newContent = newContent.replace(
         /} catch\(error\) {[\s\n]*\/\/ Ignore cleanup errors/g,
         '} catch(_) {\n      // Ignore cleanup errors'
@@ -902,20 +805,17 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
         '} catch(_) {\n    return false;'
       );
 
-      // Fix await in loop
       newContent = newContent.replace(
         /for\(const filePath of filesWithErrors\) {[\s\n]*const success = await fixFileWithCursorAI\(filePath\);/g,
         'const fixResults = await Promise.all(filesWithErrors.map(filePath => fixFileWithCursorAI(filePath)));\nfor(const success of fixResults) {'
       );
 
-      // Fix increment
       newContent = newContent.replace(
         /fixedCount\+\+;/g,
         'fixedCount += 1;'
       );
     }
 
-    // Write the modified content back if changes were made
     if(newContent !== fileContent) {
       writeFileSync(filePath, newContent, 'utf8');
       log(`Fixed issues in ${filePath}`, 'info', quiet);
@@ -929,11 +829,7 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
   }
 };
 
-/**
- * Check for AI configuration in main lex.config file (supports js, mjs, cjs, ts, json formats)
- */
 const loadAIConfig = async (cwd: string, quiet: boolean): Promise<void> => {
-  // Search for config files in multiple formats like LexConfig.parseConfig does
   const configFormats = ['js', 'mjs', 'cjs', 'ts', 'json'];
   const configBaseName = 'lex.config';
   let lexConfigPath = '';
@@ -951,7 +847,6 @@ const loadAIConfig = async (cwd: string, quiet: boolean): Promise<void> => {
       const lexConfig = await import(lexConfigPath);
       if(lexConfig.default && lexConfig.default.ai) {
         log(`Found AI configuration in ${pathResolve(cwd, lexConfigPath)}, applying settings...`, 'info', quiet);
-        // Update the AI configuration in LexConfig
         LexConfig.config.ai = {...LexConfig.config.ai, ...lexConfig.default.ai};
       }
     } catch(error) {
@@ -974,61 +869,46 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
   const cwd = process.cwd();
   const spinner = createSpinner(quiet);
 
-  // Load AI configuration if available
   await loadAIConfig(cwd, quiet);
 
-  // Track if we need to restore an original config
   let originalConfig: string | null = null;
   let tempConfigPath: string | null = null;
 
   try {
-    // Detect TypeScript directly
     const useTypescript = detectTypeScript(cwd);
     log(`TypeScript ${useTypescript ? 'detected' : 'not detected'} from tsconfig.json`, 'info', quiet);
 
-    // Ensure lint-specific TypeScript config exists
     if(useTypescript) {
       LexConfig.checkLintTypescriptConfig();
     }
 
-    // Ensure package.json has type: module for ESM support
     ensureModuleType(cwd);
 
-    // Install necessary dependencies
     await installDependencies(cwd, useTypescript, quiet);
 
-    // Check for ESLint configuration files
     const projectConfigPath = pathResolve(cwd, 'eslint.config.js');
+    const projectConfigPathTs = pathResolve(cwd, 'eslint.config.ts');
     const hasEslintConfig = existsSync(projectConfigPath) ||
-                          existsSync(pathResolve(cwd, '.eslintrc.js')) ||
-                          existsSync(pathResolve(cwd, '.eslintrc.json')) ||
-                          existsSync(pathResolve(cwd, '.eslintrc.yml')) ||
-                          existsSync(pathResolve(cwd, '.eslintrc.yaml')) ||
-                          existsSync(pathResolve(cwd, '.eslintrc'));
+      existsSync(projectConfigPathTs) ||
+      existsSync(pathResolve(cwd, '.eslintrc.js')) ||
+      existsSync(pathResolve(cwd, '.eslintrc.json')) ||
+      existsSync(pathResolve(cwd, '.eslintrc.yml')) ||
+      existsSync(pathResolve(cwd, '.eslintrc.yaml')) ||
+      existsSync(pathResolve(cwd, '.eslintrc'));
 
-    // Remove any existing .eslintrc.json file to avoid conflicts with eslint.config.js
     if(existsSync(pathResolve(cwd, '.eslintrc.json'))) {
       unlinkSync(pathResolve(cwd, '.eslintrc.json'));
     }
 
-    // Try to find Lex's ESLint config if needed
     let lexConfigPath = '';
     let shouldCreateTempConfig = false;
 
     if(!hasEslintConfig) {
-      // Try different potential locations for the Lex config
       const possiblePaths = [
-        // From src/commands/lint/lint.ts to root
-        pathResolve(__dirname, '../../../../eslint.config.js'),
-        // From packages/lex/src/commands/lint/lint.ts to packages/lex
-        pathResolve(__dirname, '../../../eslint.config.js'),
-        // From packages/lex/src/commands/lint/lint.ts to root
-        pathResolve(__dirname, '../../../../../eslint.config.js'),
-        // Absolute path if Lex is installed globally
-        pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.js')
+        pathResolve(currentDirname, '../../../../eslint.config.ts'),
+        pathResolve(process.env.LEX_HOME || '/usr/local/lib/node_modules/@nlabs/lex', 'eslint.config.ts')
       ];
 
-      // Find the first existing config
       for(const path of possiblePaths) {
         if(existsSync(path)) {
           lexConfigPath = path;
@@ -1037,35 +917,30 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
       }
 
       if(debug) {
-        log(`Current directory: ${__dirname}`, 'info', quiet);
+        log(`Current directory: ${currentDirname}`, 'info', quiet);
         log(`Project config path: ${projectConfigPath}`, 'info', quiet);
         log(`Project config exists: ${hasEslintConfig}`, 'info', quiet);
         log(`Found Lex config: ${lexConfigPath}`, 'info', quiet);
         log(`Lex config exists: ${!!lexConfigPath && existsSync(lexConfigPath)}`, 'info', quiet);
       }
 
-      // If we found Lex's config, use it
       if(lexConfigPath && existsSync(lexConfigPath)) {
         log('No ESLint configuration found in project. Using Lex\'s default configuration.', 'info', quiet);
       } else {
-        // Otherwise, we need to create a temporary config
         shouldCreateTempConfig = true;
       }
     }
 
-    // If user specified a config file, use that
     if(config) {
       const userConfigPath = pathResolve(cwd, config);
       if(existsSync(userConfigPath)) {
         log(`Using specified ESLint configuration: ${config}`, 'info', quiet);
-        // User-specified config takes precedence
         shouldCreateTempConfig = false;
       } else {
         log(`Specified ESLint configuration not found: ${config}. Using Lex's default configuration.`, 'warn', quiet);
       }
     }
 
-    // Create a temporary config if needed
     if(shouldCreateTempConfig) {
       log('No ESLint configuration found. Creating a temporary configuration...', 'info', quiet);
       const configResult = createDefaultESLintConfig(useTypescript, cwd);
@@ -1073,32 +948,25 @@ export const lint = async (cmd: LintOptions, callback: LintCallback = process.ex
       originalConfig = configResult.originalConfig;
     }
 
-    // Capture the ESLint output for AI fix if needed
     let eslintOutput = '';
     const captureOutput = (output: string) => {
       eslintOutput += `${output}\n`;
     };
 
-    // Always run ESLint with --fix first to apply built-in fixes
     const result = await runEslintWithLex(cwd, quiet, cliName, true, debug, useTypescript, captureOutput);
 
-    // If there are still errors and fix flag is set, try to fix them with AI
     if(result !== 0 && fix) {
-      // Check if AI is configured
       const aiConfigured = LexConfig.config.ai?.provider && LexConfig.config.ai.provider !== 'none';
 
       if(aiConfigured) {
         log('Applying AI fixes to remaining issues...', 'info', quiet);
         await applyAIFix(cwd, eslintOutput, quiet);
 
-        // Run ESLint again to check if all issues are fixed
         const afterFixResult = await runEslintWithLex(cwd, quiet, cliName, false, debug, useTypescript);
 
-        // Return the result of the second run
         callback(afterFixResult);
         return afterFixResult;
       }
-      // If AI is not configured, suggest configuring it
       log('ESLint could not fix all issues automatically.', 'warn', quiet);
       log('To enable AI-powered fixes, add AI configuration to your lex.config file:', 'info', quiet);
       log(`
@@ -1115,25 +983,22 @@ export default {
     callback(result);
     return result;
   } catch(error) {
-    // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-    spinner.fail('Linting failed!');
+    if(spinner) {
+      spinner.fail('Linting failed!');
+    }
     callback(1);
     return 1;
   } finally {
-    // Restore the original config if we created a temporary one
     if(tempConfigPath && originalConfig) {
       try {
         writeFileSync(tempConfigPath, originalConfig, 'utf8');
       } catch(_error) {
-        // Ignore errors
       }
     } else if(tempConfigPath) {
-      // Remove the temporary config if there was no original
       try {
         unlinkSync(tempConfigPath);
       } catch(_error) {
-        // Ignore errors
       }
     }
   }

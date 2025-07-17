@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {jest} from '@jest/globals';
 import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
 import latestVersion from 'latest-version';
@@ -12,9 +7,34 @@ import {upgrade, UpgradeCallback} from './upgrade.js';
 jest.mock('execa');
 jest.mock('latest-version');
 jest.mock('compare-versions');
+jest.mock('glob', () => ({
+  sync: jest.fn(() => [])
+}));
+jest.mock('fs', () => ({
+  readFileSync: jest.fn(() => JSON.stringify({
+    version: '0.9.0',
+    dependencies: {
+      esbuild: '1.0.0',
+      jest: '27.0.0',
+      typescript: '4.0.0'
+    }
+  })),
+  existsSync: jest.fn(() => true)
+}));
+jest.mock('../../utils/file.js', () => ({
+  getLexPackageJsonPath: jest.fn(() => '/mock/path/package.json')
+}));
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 
 describe('upgrade.cli', () => {
-  const mockExit = jest.fn() as jest.MockedFunction<UpgradeCallback>;
+  const mockExit = jest.fn() as unknown as jest.MockedFunction<UpgradeCallback>;
   const mockExeca = execa as jest.MockedFunction<typeof execa>;
   const mockLatestVersion = latestVersion as jest.MockedFunction<typeof latestVersion>;
   const mockCompareVersions = compareVersions as jest.MockedFunction<typeof compareVersions>;
@@ -24,8 +44,11 @@ describe('upgrade.cli', () => {
     mockExeca.mockClear();
     mockLatestVersion.mockClear();
     mockCompareVersions.mockClear();
-    mockExeca.mockResolvedValue({} as any);
     mockLatestVersion.mockResolvedValue('1.0.0');
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
   it('should upgrade when newer version is available', async () => {

@@ -5,10 +5,10 @@
 import {execa} from 'execa';
 import {renameSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../../utils/app.js';
+import {getDirName} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface InitOptions {
@@ -38,14 +38,14 @@ export const init = async (
   spinner.start('Downloading app...');
   const tmpPath: string = pathResolve(cwd, './.lexTmp');
   const appPath: string = pathResolve(cwd, `./${appName}`);
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const dnpPath: string = pathResolve(dirName, '../../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
   await LexConfig.parseConfig(cmd);
   const {packageManager: configPackageManager, useTypescript: configTypescript} = LexConfig.config;
-  const packageManager: string = cmdPackageManager || configPackageManager;
-  const useTypescript: boolean = typescript !== undefined ? typescript : configTypescript;
+  const packageManager: string = cmdPackageManager || configPackageManager || '';
+  const useTypescript: boolean = typescript !== undefined ? typescript : configTypescript || false;
 
   let appModule: string = packageName;
 

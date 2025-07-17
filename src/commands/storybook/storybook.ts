@@ -1,7 +1,3 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
 import {execa} from 'execa';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
@@ -24,9 +20,6 @@ export interface StorybookOptions {
 
 export type StorybookCallback = (status: number) => void;
 
-/**
- * Find all story files in the project
- */
 const findStoryFiles = (): string[] => {
   const storyPatterns = [
     '**/*.stories.{ts,tsx,js,jsx}',
@@ -47,9 +40,6 @@ const findStoryFiles = (): string[] => {
   return storyFiles;
 };
 
-/**
- * Check if Storybook is properly initialized in the project or Lex
- */
 const checkStorybookInitialization = (): boolean => {
   const projectConfigDir = pathResolve(process.cwd(), '.storybook');
   const lexConfigDir = pathResolve(LexConfig.getLexDir(), '.storybook');
@@ -59,16 +49,12 @@ const checkStorybookInitialization = (): boolean => {
 export const storybook = async (cmd: StorybookOptions, callback: StorybookCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', config, open = false, port, quiet, static: staticBuild = false, variables} = cmd;
 
-  // Spinner
   const spinner = createSpinner(quiet);
 
-  // Display status
   log(`${cliName} starting Storybook...`, 'info', quiet);
 
-  // Get custom configuration
   await LexConfig.parseConfig(cmd);
 
-  // Set node environment variables
   let variablesObj: object = {NODE_ENV: 'development'};
 
   if(variables) {
@@ -83,7 +69,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
 
   process.env = {...process.env, ...variablesObj};
 
-  // Find story files
   spinner.start('Finding story files...');
   const storyFiles = findStoryFiles();
 
@@ -96,7 +81,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
 
   spinner.succeed(`Found ${storyFiles.length} story file(s)`);
 
-  // Check if Storybook is initialized (in project or Lex)
   if(!checkStorybookInitialization()) {
     spinner.fail('Storybook is not initialized in this project or in Lex.');
     log('Please run "npx storybook@latest init" to set up Storybook in your project, or ensure Lex has a valid .storybook configuration.', 'info', quiet);
@@ -104,43 +88,35 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     return 1;
   }
 
-  // Determine Storybook config directory
   const projectConfigDir = pathResolve(process.cwd(), '.storybook');
   const lexConfigDir = pathResolve(LexConfig.getLexDir(), '.storybook');
 
-  // Use project config if it exists, otherwise use Lex's canonical config
   let configDir = config || (existsSync(projectConfigDir) ? projectConfigDir : lexConfigDir);
 
-  // Debug output
   if(!quiet) {
     log(`Project config dir: ${projectConfigDir} (exists: ${existsSync(projectConfigDir)})`, 'info', quiet);
     log(`Lex config dir: ${lexConfigDir} (exists: ${existsSync(lexConfigDir)})`, 'info', quiet);
     log(`Initial config dir: ${configDir}`, 'info', quiet);
   }
 
-  // If using Lex's config, we need to create a temporary config that points to the current project's stories
   if(configDir === lexConfigDir) {
     if(!quiet) {
       log('Using Lex config, will create temporary config in project .storybook directory', 'info', quiet);
     }
     const projectStorybookDir = pathResolve(process.cwd(), '.storybook');
 
-    // Create or update the project's .storybook directory
     const fs = await import('fs/promises');
     await fs.mkdir(projectStorybookDir, {recursive: true});
 
-    // Copy Lex's main.ts and modify it to look for stories in the current project
     const lexMainPath = pathResolve(lexConfigDir, 'main.ts');
     const projectMainPath = pathResolve(projectStorybookDir, 'main.ts');
     let mainContent = await fs.readFile(lexMainPath, 'utf8');
 
-    // Replace the stories path to look in the current project
     mainContent = mainContent.replace(
       /stories:\s*\[.*?\]/,
       `stories: ['${pathResolve(process.cwd(), 'src/**/*.stories.@(ts|tsx)')}', '${pathResolve(process.cwd(), 'src/**/*.mdx')}']`
     );
 
-    // Replace the lexModule function to use absolute paths to Lex's node_modules
     const lexNodeModules = pathResolve(LexConfig.getLexDir(), 'node_modules');
     mainContent = mainContent.replace(
       /const lexModule = \(modulePath: string\) => resolve\(getLexNodeModulesPath\(\), modulePath\);/,
@@ -149,7 +125,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
 
     await fs.writeFile(projectMainPath, mainContent);
 
-    // Copy preview.ts if it exists
     const lexPreviewPath = pathResolve(lexConfigDir, 'preview.ts');
     if(existsSync(lexPreviewPath)) {
       const previewContent = await fs.readFile(lexPreviewPath, 'utf8');
@@ -167,7 +142,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     return 1;
   }
 
-  // Determine Storybook binary to use
   const storybookPath = resolveBinaryPath('storybook');
 
   if(!storybookPath) {
@@ -177,9 +151,7 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     return 1;
   }
 
-  // Build Storybook arguments - Storybook v9 uses subcommands
   const storybookArgs = [staticBuild ? 'build' : 'dev'];
-  // Always use the determined config directory
   storybookArgs.push('--config-dir', configDir);
 
   if(port) {
@@ -191,12 +163,10 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
   }
 
   if(staticBuild) {
-    // For static build, we need to specify the output directory
     const outputDir = pathResolve(process.cwd(), 'storybook-static');
     storybookArgs.push('--output-dir', outputDir);
   }
 
-  // Debug output
   if(!quiet) {
     log(`Config directory: ${configDir}`, 'info', quiet);
   }
@@ -204,42 +174,36 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
   try {
     spinner.start(staticBuild ? 'Building static Storybook...' : 'Starting Storybook development server...');
 
-    // @ts-ignore
-    const storybookProcess = execa(storybookPath, storybookArgs, {
+    const storybookProcess = execa(storybookPath as any, storybookArgs, {
       encoding: 'utf8',
       env: {
         ...process.env,
         LEX_QUIET: quiet,
         STORYBOOK_OPEN: open
-      },
+      } as any,
       stdio: 'pipe'
     });
 
     let outputBuffer = '';
     let urlFound = false;
 
-    // Handle stdout
     storybookProcess.stdout?.on('data', (data) => {
       const output = data.toString();
       outputBuffer += output;
 
-      // Stop spinner and show output when we detect Storybook is ready
       if(!urlFound && (output.includes('Local:') || output.includes('http://localhost') || output.includes('Storybook'))) {
         spinner.succeed('Storybook development server is ready!');
         urlFound = true;
       }
 
-      // Show output in real-time
       process.stdout.write(output);
     });
 
-    // Handle stderr
     storybookProcess.stderr?.on('data', (data) => {
       const output = data.toString();
       process.stderr.write(output);
     });
 
-    // Stop spinner after timeout if no URL found
     setTimeout(() => {
       if(!urlFound) {
         spinner.succeed('Storybook development server starting...');
@@ -252,7 +216,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     callback(0);
     return 0;
   } catch(error) {
-    // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     spinner.fail('There was an error while running storybook.');
     callback(1);

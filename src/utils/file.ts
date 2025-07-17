@@ -1,13 +1,59 @@
 /**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import findFileUp from 'find-file-up';
 import {existsSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
+
 
 import {LexConfig} from '../LexConfig.js';
+
+/**
+ * Safely get directory name that works in both ESM and Jest environments
+ */
+export function getDirName(): string {
+  try {
+    // Only works in ESM environments
+    // eslint-disable-next-line no-eval
+    return eval('new URL(".", import.meta.url).pathname');
+  } catch {
+    // Fallback for Jest or CJS
+    return process.cwd();
+  }
+}
+
+/**
+ * Safely get file path that works in both ESM and Jest environments
+ */
+export function getFilePath(relativePath: string): string {
+  try {
+    // Only works in ESM environments
+    // eslint-disable-next-line no-eval
+    return eval('require("url").fileURLToPath(new URL(relativePath, import.meta.url))');
+  } catch {
+    // Fallback for Jest or CJS
+    if(relativePath === '../../../package.json') {
+      return pathResolve(process.cwd(), 'package.json');
+    }
+    return pathResolve(process.cwd(), relativePath);
+  }
+}
+
+/**
+ * Get the path to Lex's own package.json, regardless of CWD
+ */
+export function getLexPackageJsonPath(): string {
+  try {
+    // This will always resolve to Lex's own package.json, regardless of CWD
+    // eslint-disable-next-line no-eval
+    const lexRoot = eval('require("path").dirname(require("url").fileURLToPath(import.meta.url))');
+    return pathResolve(lexRoot, '../../package.json');
+  } catch {
+    // Fallback for Jest or CJS environments
+    return pathResolve(process.cwd(), 'package.json');
+  }
+}
 
 // Get file paths relative to Lex
 export const relativeFilePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
@@ -52,7 +98,7 @@ export const relativeNodePath = (filename: string, dirPath: string = './', backU
 
 // Get file paths relative to Lex
 export const getNodePath = (moduleName: string): string => {
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const modulePath: string = `node_modules/${moduleName}`;
 
   // Try project root first

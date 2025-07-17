@@ -1,12 +1,16 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {jest} from '@jest/globals';
-
-import {jsonVersions, packages, parseVersion, versions} from './versions.js';
 import {log} from '../../utils/log.js';
+import {jsonVersions, packages, parseVersion, versions} from './versions.js';
 
+
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 jest.mock('../../utils/log.js');
 
 describe('versions.integration', () => {
@@ -21,27 +25,27 @@ describe('versions.integration', () => {
   });
 
   afterAll(() => {
-    mockConsoleLog.mockRestore();
+    jest.restoreAllMocks();
   });
 
   it('should parse version correctly', () => {
     expect(parseVersion('^1.0.0')).toBe('1.0.0');
     expect(parseVersion('1.0.0')).toBe('1.0.0');
     expect(parseVersion('^1.2.3')).toBe('1.2.3');
-    expect(parseVersion(undefined)).toBe(undefined);
+    expect(parseVersion(undefined as unknown as string)).toBe(undefined);
   });
 
   it('should create JSON versions correctly', () => {
     const mockPackages = {
-      test1: '1.0.0',
-      test2: '2.0.0'
+      esbuild: '1.0.0',
+      jest: '2.0.0'
     };
 
     const result = jsonVersions(mockPackages);
 
     expect(result).toEqual({
-      test1: mockPackages.test1,
-      test2: mockPackages.test2
+      esbuild: packages.esbuild,
+      jest: packages.jest
     });
   });
 

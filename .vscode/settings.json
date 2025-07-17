@@ -1,7 +1,18 @@
 {
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
   "cSpell.words": [
-    "arkham",
-    "arkhamjs",
+    "lex",
     "nitrogenlabs",
     "nlabs",
     "transpiler"
@@ -11,19 +22,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
-  },
-  "prettier.enable": false,
-  "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
@@ -42,7 +40,15 @@
     "postcss": "css"
   },
   "eslint.enable": true,
+  "eslint.experimental.useFlatConfig": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.nodePath": "./node_modules",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js"
+  },
   "eslint.run": "onType",
+  "eslint.runtime": "./node_modules/eslint/bin/eslint.js",
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -52,14 +58,6 @@
   "eslint.workingDirectories": [
     "."
   ],
-  "eslint.nodePath": "./node_modules",
-  "eslint.runtime": "./node_modules/@nlabs/lex/node_modules/eslint/bin/eslint.js",
-  "eslint.options": {
-    "overrideConfigFile": "node_modules/@nlabs/lex/eslint.config.js"
-  },
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "eslint.experimental.useFlatConfig": true,
   "explorer.confirmDragAndDrop": false,
   "explorer.decorations.badges": false,
   "files.autoSave": "onFocusChange",
@@ -75,10 +73,11 @@
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
   "javascript.updateImportsOnFileMove.enabled": "never",
+  "prettier.enable": false,
   "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
   "typescript.updateImportsOnFileMove.enabled": "never",
-  "window.zoomLevel": 0,
+  "window.zoomLevel": 0
 }

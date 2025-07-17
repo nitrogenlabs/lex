@@ -27,7 +27,9 @@ export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_statu
   await LexConfig.parseConfig(cmd);
 
   // Start cleaning spinner
-  spinner.start('Cleaning files...');
+  if(spinner) {
+    spinner.start('Cleaning files...');
+  }
 
   try {
     // Remove node_modules
@@ -44,7 +46,9 @@ export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_statu
     }
 
     // Stop spinner
-    spinner.succeed('Successfully cleaned!');
+    if(spinner) {
+      spinner.succeed('Successfully cleaned!');
+    }
 
     // Stop process
     callback(0);
@@ -54,7 +58,9 @@ export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_statu
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     // Stop spinner
-    spinner.fail('Failed to clean project.');
+    if(spinner) {
+      spinner.fail('Failed to clean project.');
+    }
 
     // Kill process
     callback(1);

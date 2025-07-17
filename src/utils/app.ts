@@ -2,17 +2,20 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+
 import boxen from 'boxen';
 import {copyFile, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
-import {globSync} from 'glob';
+import {sync as globSync} from 'glob';
 import isEmpty from 'lodash/isEmpty.js';
 import ora from 'ora';
 import {basename as pathBasename, join as pathJoin, relative as pathRelative, resolve as pathResolve} from 'path';
 import {rimrafSync} from 'rimraf';
 
+
 import {log} from './log.js';
 
 import type {LexConfigType} from '../LexConfig.js';
+
 
 export const cwd: string = process.cwd();
 
@@ -305,7 +308,8 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
 
       return list;
     } catch(fsError) {
-      throw fsError;
+      // Skip files that don't exist or can't be accessed
+      return list;
     }
   }, []);
 };

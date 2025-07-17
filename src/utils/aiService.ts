@@ -6,9 +6,9 @@ import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
 import readline from 'readline';
 
+import {AIConfig, LexConfig} from '../LexConfig.js';
 import {createSpinner} from './app.js';
 import {log} from './log.js';
-import {LexConfig, AIConfig} from '../LexConfig.js';
 
 // Cursor IDE integration
 export const callCursorAI = async (prompt: string, options: AIConfig): Promise<string> => {
@@ -272,7 +272,7 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
       aiConfig.provider = provider;
 
       if(provider !== 'cursor' && provider !== 'copilot' &&
-         !process.env[`${provider.toUpperCase()}_API_KEY`]) {
+        !process.env[`${provider.toUpperCase()}_API_KEY`]) {
         aiConfig.apiKey = await promptForAPIKey(provider, quiet);
       }
 

@@ -6,7 +6,7 @@ import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {dirname, extname as pathExtname, resolve as pathResolve} from 'path';
 import {URL} from 'url';
 
-import {relativeFilePath} from './utils/file.js';
+import {getDirName, getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
 
 const cwd: string = process.cwd();
@@ -124,8 +124,10 @@ export const defaultConfigValues: LexConfigType = {
 
 function findLexRoot(startDir: string): string {
   let dir = startDir;
+  console.log('DEBUG: findLexRoot starting with dir:', dir); // TEMP DEBUG
   while(dir !== '/' && dir !== '.') {
     const pkgPath = pathResolve(dir, 'package.json');
+    console.log('DEBUG: findLexRoot checking', pkgPath); // TEMP DEBUG
     if(existsSync(pkgPath)) {
       try {
         const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
@@ -135,6 +137,7 @@ function findLexRoot(startDir: string): string {
       } catch{}
     }
     const parent = dirname(dir);
+    console.log('DEBUG: findLexRoot parent of', dir, 'is', parent); // TEMP DEBUG
     if(parent === dir) {
       break;
     }
@@ -193,8 +196,8 @@ export class LexConfig {
    * Get the Lex package root directory, handling both development and installed environments
    */
   static getLexDir(): string {
-    const dirName = dirname(new URL('.', import.meta.url).pathname);
-    return findLexRoot(dirName);
+    // Always use the directory of Lex's own package.json
+    return dirname(getLexPackageJsonPath());
   }
 
   static set useTypescript(value: boolean) {
@@ -378,7 +381,7 @@ export class LexConfig {
     const tsconfigPath: string = pathResolve(cwd, './tsconfig.json');
 
     if(!existsSync(tsconfigPath)) {
-      const dirName = new URL('.', import.meta.url).pathname;
+      const dirName = getDirName();
       writeFileSync(tsconfigPath, readFileSync(pathResolve(dirName, '../../../tsconfig.base.json')));
     }
   }

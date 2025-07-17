@@ -7,7 +7,7 @@
 
 import {execa} from 'execa';
 import {writeFileSync} from 'fs';
-import {resolve as pathResolve, dirname} from 'path';
+import {dirname, resolve as pathResolve} from 'path';
 import {fileURLToPath} from 'url';
 
 // Get directory name

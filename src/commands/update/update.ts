@@ -7,6 +7,7 @@ import {resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
+import {getDirName} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface UpdateOptions {
@@ -31,7 +32,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const isNpm: boolean = packageManager === 'npm';
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const dirPath: string = pathResolve(dirName, '../..');
 
   try {

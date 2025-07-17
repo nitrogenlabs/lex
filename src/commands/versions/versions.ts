@@ -3,11 +3,11 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {readFileSync} from 'fs';
-import {fileURLToPath} from 'url';
 
+import {getLexPackageJsonPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
-const packagePath = fileURLToPath(new URL('../../../package.json', import.meta.url));
+const packagePath = getLexPackageJsonPath();
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '');

@@ -4,11 +4,10 @@
  */
 import {execa} from 'execa';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
-import {resolveBinaryPath} from '../../utils/file.js';
+import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface DevOptions {
@@ -63,14 +62,14 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     spinner.start('Cleaning output directory...');
 
     // Clean
-    await removeFiles(outputFullPath);
+    await removeFiles(outputFullPath || '');
 
     // Stop spinner
     spinner.succeed('Successfully cleaned output directory!');
   }
 
   // Get custom webpack configuration file
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
   const webpackConfig: string = config || pathResolve(dirName, '../../../webpack.config.js');
 
   // Compile using webpack

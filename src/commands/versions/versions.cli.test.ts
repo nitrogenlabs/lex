@@ -1,11 +1,14 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {jest} from '@jest/globals';
-
 import {jsonVersions, packages, versions} from './versions.js';
 
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 jest.mock('../../utils/log.js');
 
 describe('versions.cli', () => {
@@ -18,7 +21,7 @@ describe('versions.cli', () => {
   });
 
   afterAll(() => {
-    mockConsoleLog.mockRestore();
+    jest.restoreAllMocks();
   });
 
   it('should display versions in text format by default', async () => {

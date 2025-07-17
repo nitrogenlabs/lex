@@ -4,11 +4,11 @@
  */
 import {existsSync, readFileSync, renameSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {URL} from 'url';
 
 import {createChangelog} from '../../create/changelog.js';
 import {LexConfig} from '../../LexConfig.js';
 import {copyFolderRecursiveSync, getFilenames, removeFiles, updateTemplateName} from '../../utils/app.js';
+import {getDirName} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface CreateOptions {
@@ -21,13 +21,13 @@ export interface CreateOptions {
 export type CreateCallback = (status: number) => void;
 
 export const create = async (type: string, cmd: CreateOptions, callback: CreateCallback = () => ({})): Promise<number> => {
-  const {cliName = 'Lex', outputFile, outputName, quiet} = cmd;
+  const {cliName = 'Lex', outputFile = '', outputName = '', quiet} = cmd;
   const cwd: string = process.cwd();
   log(`${cliName} creating ${type}...`, 'info', quiet);
 
   // Get custom configuration
   await LexConfig.parseConfig(cmd, false);
-  const {outputPath, sourcePath, useTypescript} = LexConfig.config;
+  const {outputPath = '', sourcePath = '', useTypescript} = LexConfig.config;
 
   if(useTypescript) {
     // Make sure tsconfig.json exists
@@ -35,7 +35,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
   }
 
   const {config} = LexConfig;
-  const dirName = new URL('.', import.meta.url).pathname;
+  const dirName = getDirName();
 
   switch(type) {
     case 'changelog': {

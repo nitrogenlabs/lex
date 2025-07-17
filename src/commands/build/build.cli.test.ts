@@ -1,17 +1,23 @@
-/**
- * Test file for build CLI argument generation
- * This test focuses on CLI argument logic without importing problematic modules
- */
+jest.mock('execa');
 
-describe('Build CLI Arguments', () => {
+describe('build cli', () => {
+  let consoleLogSpy;
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+  });
+
   const generateEsbuildArgs = (options: any) => {
     const args = ['--bundle', '--color=true'];
 
-    if (options.format) args.push(`--format=${options.format}`);
-    if (options.watch) args.push('--watch');
-    if (options.outputPath) args.push(`--outdir=${options.outputPath}`);
-    if (options.sourcemap !== false) args.push('--sourcemap=inline');
-    if (options.platform) args.push(`--platform=${options.platform}`);
+    if(options.format) args.push(`--format=${options.format}`);
+    if(options.watch) args.push('--watch');
+    if(options.outputPath) args.push(`--outdir=${options.outputPath}`);
+    if(options.sourcemap !== false) args.push('--sourcemap=inline');
+    if(options.platform) args.push(`--platform=${options.platform}`);
 
     return args;
   };
@@ -19,10 +25,10 @@ describe('Build CLI Arguments', () => {
   const generateWebpackArgs = (options: any) => {
     const args = ['--color', '--progress'];
 
-    if (options.config) args.push('--config', options.config);
-    if (options.mode) args.push('--mode', options.mode);
-    if (options.analyze) args.push('--analyze');
-    if (options.watch) args.push('--watch');
+    if(options.config) args.push('--config', options.config);
+    if(options.mode) args.push('--mode', options.mode);
+    if(options.analyze) args.push('--analyze');
+    if(options.watch) args.push('--watch');
 
     return args;
   };
@@ -37,25 +43,25 @@ describe('Build CLI Arguments', () => {
     });
 
     it('should handle format option', () => {
-      const args = generateEsbuildArgs({ format: 'esm' });
+      const args = generateEsbuildArgs({format: 'esm'});
 
       expect(args).toContain('--format=esm');
     });
 
     it('should handle watch option', () => {
-      const args = generateEsbuildArgs({ watch: true });
+      const args = generateEsbuildArgs({watch: true});
 
       expect(args).toContain('--watch');
     });
 
     it('should handle output path option', () => {
-      const args = generateEsbuildArgs({ outputPath: './dist' });
+      const args = generateEsbuildArgs({outputPath: './dist'});
 
       expect(args).toContain('--outdir=./dist');
     });
 
     it('should handle platform option', () => {
-      const args = generateEsbuildArgs({ platform: 'node' });
+      const args = generateEsbuildArgs({platform: 'node'});
 
       expect(args).toContain('--platform=node');
     });
@@ -84,27 +90,27 @@ describe('Build CLI Arguments', () => {
     });
 
     it('should handle config option', () => {
-      const args = generateWebpackArgs({ config: 'webpack.config.js' });
+      const args = generateWebpackArgs({config: 'webpack.config.js'});
 
       expect(args).toContain('--config');
       expect(args).toContain('webpack.config.js');
     });
 
     it('should handle mode option', () => {
-      const args = generateWebpackArgs({ mode: 'production' });
+      const args = generateWebpackArgs({mode: 'production'});
 
       expect(args).toContain('--mode');
       expect(args).toContain('production');
     });
 
     it('should handle analyze option', () => {
-      const args = generateWebpackArgs({ analyze: true });
+      const args = generateWebpackArgs({analyze: true});
 
       expect(args).toContain('--analyze');
     });
 
     it('should handle watch option', () => {
-      const args = generateWebpackArgs({ watch: true });
+      const args = generateWebpackArgs({watch: true});
 
       expect(args).toContain('--watch');
     });
@@ -169,7 +175,7 @@ describe('Build CLI Arguments', () => {
       ];
 
       booleanOptions.forEach(option => {
-        const testOptions = { [option]: true };
+        const testOptions = {[option]: true};
         expect(testOptions[option]).toBe(true);
       });
 
@@ -184,7 +190,7 @@ describe('Build CLI Arguments', () => {
       ];
 
       valueOptions.forEach(option => {
-        const testOptions = { [option]: 'test-value' };
+        const testOptions = {[option]: 'test-value'};
         expect(testOptions[option]).toBe('test-value');
       });
 

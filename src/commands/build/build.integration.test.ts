@@ -1,20 +1,29 @@
+jest.mock('execa');
+
 import {execa} from 'execa';
-import {writeFileSync, mkdirSync, rmSync} from 'fs';
+import {mkdirSync, rmSync, writeFileSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
 
-// Integration tests for the actual lex build command
 describe('lex build integration', () => {
   let testDir: string;
   let originalCwd: string;
+  let consoleLogSpy;
+
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+  });
 
   beforeEach(() => {
     originalCwd = process.cwd();
     testDir = join(tmpdir(), `lex-build-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    mkdirSync(testDir, {recursive: true});
     process.chdir(testDir);
 
-    // Create a minimal package.json
     writeFileSync(join(testDir, 'package.json'), JSON.stringify({
       name: 'test-project',
       version: '1.0.0',
@@ -22,8 +31,7 @@ describe('lex build integration', () => {
       peerDependencies: {}
     }, null, 2));
 
-    // Create a minimal source structure
-    mkdirSync(join(testDir, 'src'), { recursive: true });
+    mkdirSync(join(testDir, 'src'), {recursive: true});
     writeFileSync(join(testDir, 'src', 'index.js'), `
       console.log('Hello from test project');
       export default { message: 'test' };
@@ -31,9 +39,10 @@ describe('lex build integration', () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     process.chdir(originalCwd);
     try {
-      rmSync(testDir, { recursive: true, force: true });
+      rmSync(testDir, {recursive: true, force: true});
     } catch {
       // Ignore cleanup errors
     }
@@ -54,8 +63,7 @@ describe('lex build integration', () => {
 
       expect(result.exitCode).toBe(0);
     } catch {
-      // If webpack is not available or fails, that's expected in test environment
-       
+
       console.log('Webpack build test skipped - webpack may not be available');
     }
   }, 35000);
@@ -76,8 +84,7 @@ describe('lex build integration', () => {
 
       expect(result.exitCode).toBe(0);
     } catch {
-      // If esbuild is not available or fails, that's expected in test environment
-       
+
       console.log('ESBuild build test skipped - esbuild may not be available');
     }
   }, 35000);
@@ -101,7 +108,7 @@ describe('lex build integration', () => {
 
       expect(result.exitCode).toBe(0);
     } catch {
-       
+
       console.log('CLI options test skipped - build tools may not be available');
     }
   }, 35000);

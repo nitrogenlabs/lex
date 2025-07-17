@@ -1,103 +1,114 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
-import {init, InitOptions} from './init.js';
-import {LexConfig} from '../../LexConfig.js';
+import {execa} from 'execa';
 
-// Mock dependencies
+import {init} from './init.js';
+
 jest.mock('execa');
-jest.mock('fs');
-jest.mock('path');
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js');
+jest.mock('fs', () => ({
+  existsSync: jest.fn(() => true),
+  readFileSync: jest.fn(() => '{}'),
+  renameSync: jest.fn(),
+  unlinkSync: jest.fn(),
+  writeFileSync: jest.fn()
+}));
+jest.mock('glob', () => ({
+  sync: jest.fn()
+}));
+jest.mock('path', () => ({
+  dirname: jest.fn(() => '/mock/dir'),
+  resolve: jest.fn((...args) => args.join('/'))
+}));
+jest.mock('../../LexConfig.js', () => ({
+  LexConfig: {
+    config: {
+      packageManager: 'npm',
+      useTypescript: false
+    },
+    parseConfig: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+jest.mock('../../utils/app.js', () => ({
+  createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
+    start: jest.fn(),
+    succeed: jest.fn()
+  })),
+  getPackageJson: jest.fn(() => ({
+    description: 'Test app',
+    name: 'test-app',
+    version: '0.1.0'
+  })),
+  setPackageJson: jest.fn()
+}));
 jest.mock('../../utils/log.js');
+jest.mock('../../utils/file.js', () => ({
+  getDirName: jest.fn(() => '/mock/dir')
+}));
 
-describe('init.options tests', () => {
+describe('init options', () => {
+  let consoleLogSpy: jest.SpyInstance;
+  let chdirSpy: jest.SpyInstance;
+
+  beforeAll(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    chdirSpy = jest.spyOn(process, 'chdir').mockImplementation(() => undefined);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Mock process.cwd() and chdir
-    process.cwd = jest.fn().mockReturnValue('/test/dir');
-    process.chdir = jest.fn();
-
-    // Mock URL
-    global.URL = jest.fn().mockImplementation(() => ({
-      pathname: '/test/path'
-    })) as any;
-
-    // Mock LexConfig
-    LexConfig.parseConfig = jest.fn().mockResolvedValue(undefined);
-    LexConfig.config = {
-      packageManager: 'npm',
-      useTypescript: true
-    };
-
-    // Mock console.log to prevent test output pollution
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
-  afterEach(() => {
-    // Restore console.log
-    (console.log as jest.Mock).mockRestore();
+  afterAll(() => {
+    consoleLogSpy.mockRestore();
+    chdirSpy.mockRestore();
+    jest.restoreAllMocks();
   });
 
-  it('should accept cliName option', async () => {
-    const options: InitOptions = {
-      cliName: 'CustomCLI'
-    };
+  it('should handle default options', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '@test/package', {}, mockCallback);
 
-    // We're not testing the full execution here, just that the option is accepted
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should accept install option', async () => {
-    const options: InitOptions = {
-      install: true
-    };
+  it('should handle typescript option', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '', {typescript: true}, mockCallback);
 
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should accept packageManager option', async () => {
-    const options: InitOptions = {
-      packageManager: 'yarn'
-    };
+  it('should handle install option', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '@test/package', {install: true}, mockCallback);
 
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should accept quiet option', async () => {
-    const options: InitOptions = {
-      quiet: true
-    };
+  it('should handle packageManager option', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '@test/package', {packageManager: 'yarn'}, mockCallback);
 
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should accept typescript option', async () => {
-    const options: InitOptions = {
-      typescript: true
-    };
+  it('should handle quiet option', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '@test/package', {quiet: true}, mockCallback);
 
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
-  it('should use default options when not provided', async () => {
-    const options: InitOptions = {};
+  it('should handle cliName option', async () => {
+    const mockCallback = jest.fn();
+    const result = await init('test-app', '@test/package', {cliName: 'CustomCLI'}, mockCallback);
 
-    expect(() => init('test-app', '', options)).not.toThrow();
-  });
-
-  it('should handle all options together', async () => {
-    const options: InitOptions = {
-      cliName: 'CustomCLI',
-      install: true,
-      packageManager: 'yarn',
-      quiet: true,
-      typescript: true
-    };
-
-    expect(() => init('test-app', '', options)).not.toThrow();
+    expect(result).toBe(0);
+    expect(mockCallback).toHaveBeenCalledWith(0);
   });
 });

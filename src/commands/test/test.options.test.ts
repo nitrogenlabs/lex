@@ -1,29 +1,48 @@
-/**
- * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
 import {execa} from 'execa';
 import path from 'path';
 import {URL} from 'url';
 
-import {test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as logUtils from '../../utils/log.js';
+import {test, TestOptions} from './test.js';
 
-// Mock dependencies
 jest.mock('execa');
-jest.mock('fs');
+jest.mock('fs', () => ({
+  existsSync: jest.fn(() => true),
+  readFileSync: jest.fn(() => '{"type": "module"}')
+}));
 jest.mock('path');
 jest.mock('url');
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js');
-jest.mock('../../utils/file.js');
+jest.mock('../../LexConfig.js', () => ({
+  LexConfig: {
+    parseConfig: jest.fn().mockResolvedValue(undefined),
+    config: {
+      useTypescript: true
+    },
+    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: jest.fn(),
+    getLexDir: jest.fn(() => '/mock/lex/dir')
+  },
+  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json'),
+  getLexDir: jest.fn(() => '/mock/lex/dir')
+}));
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
+jest.mock('../../utils/file.js', () => ({
+  getDirName: jest.fn(() => '/mock/dir'),
+  resolveBinaryPath: jest.fn(() => '/mock/path/to/jest'),
+  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js')
+}));
 jest.mock('../../utils/log.js');
 jest.mock('../ai/ai.js');
-
-// Mock glob module
 jest.mock('glob', () => ({
   sync: jest.fn(() => [])
 }));
@@ -34,8 +53,8 @@ describe('test options tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
 
-    // Mock spinner
     mockSpinner = {
       start: jest.fn(),
       succeed: jest.fn(),
@@ -43,33 +62,28 @@ describe('test options tests', () => {
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 
-    // Mock LexConfig
-    (LexConfig.parseConfig as jest.Mock).mockResolvedValue({});
+    (LexConfig.parseConfig as jest.Mock).mockResolvedValue({} as never);
     (LexConfig.config as any) = {
       useTypescript: true
     };
     (LexConfig.checkTypescriptConfig as jest.Mock).mockImplementation(() => {});
 
-    // Mock URL
-    (URL as jest.MockedClass<typeof URL>).mockImplementation(() => ({
+    (URL as unknown as jest.MockedClass<typeof URL>).mockImplementation(() => ({
       pathname: '/mock/path'
-    } as unknown as URL));
+    } as any));
 
-    // Mock path
     (path.resolve as jest.Mock).mockImplementation((...args) => args.join('/'));
 
-    // Mock file utils
     (file.relativeNodePath as jest.Mock).mockReturnValue('/node_modules/jest-cli/bin/jest.js');
 
-    // Mock execa
-    (execa as unknown as jest.Mock).mockResolvedValue({
-      stdout: 'test results',
-      stderr: ''
-    });
-
-    // Mock callback
     mockCallback = jest.fn();
   });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  const getExecaCalls = () => (execa as jest.MockedFunction<typeof execa>).mock.calls;
 
   it('should pass bail option to Jest when specified', async () => {
     const options: TestOptions = {
@@ -79,8 +93,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--bail');
   });
@@ -93,8 +106,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--changedFilesWithAncestor');
   });
@@ -107,8 +119,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--changedSince');
   });
@@ -121,8 +132,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--ci');
   });
@@ -136,8 +146,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--collectCoverageFrom');
     expect(jestArgs).toContain(coveragePattern);
@@ -151,8 +160,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--colors');
   });
@@ -166,8 +174,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--config');
     expect(jestArgs).toContain(customConfig);
@@ -181,8 +188,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--debug');
   });
@@ -195,8 +201,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--detectOpenHandles');
   });
@@ -213,8 +218,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--bail');
     expect(jestArgs).toContain('--ci');
@@ -255,10 +259,9 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain(`--setupFilesAfterEnv=${path.resolve(process.cwd(), setupFile)}`);
+    expect(jestArgs).toContain(`--setupFilesAfterEnv=${setupFile}`);
   });
 
   it('should handle watch option', async () => {
@@ -270,8 +273,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--watch');
     expect(jestArgs).toContain(watchPattern);
@@ -285,8 +287,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--watchAll');
   });
@@ -299,8 +300,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const execaCalls = (execa as unknown as jest.Mock).mock.calls;
-    const jestArgs = execaCalls[0][1];
+    const jestArgs = getExecaCalls()[0][1];
 
     expect(jestArgs).toContain('--updateSnapshot');
   });

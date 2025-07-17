@@ -13,5 +13,14 @@ const mockSpinner = {
 
 const mockOra = jest.fn().mockImplementation(() => mockSpinner);
 
-module.exports = mockOra;
+module.exports = () => ({
+  start: jest.fn().mockReturnThis(),
+  succeed: jest.fn().mockReturnThis(),
+  fail: jest.fn().mockReturnThis(),
+  stop: jest.fn().mockReturnThis(),
+  info: jest.fn().mockReturnThis(),
+  warn: jest.fn().mockReturnThis(),
+  text: ''
+});
+
 module.exports.default = mockOra;

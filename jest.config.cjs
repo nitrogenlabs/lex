@@ -20,21 +20,24 @@ module.exports = {
     '.*LexConfig.*': '<rootDir>/__mocks__/LexConfig.js',
     '.*build\\.js$': '<rootDir>/__mocks__/build.js',
     '.*versions\\.js$': '<rootDir>/__mocks__/versions.js',
-    '.*compile\\.js$': '<rootDir>/__mocks__/compile.js'
+    '.*compile\\.js$': '<rootDir>/__mocks__/compile.js',
+    // Mock file utility to avoid import.meta.url issues
+    'utils/file\\.js$': '<rootDir>/__mocks__/file.js',
+    '.*/utils/file\\.js$': '<rootDir>/__mocks__/file.js',
+    '^(\\.{1,2}/)*utils/file\\.js$': '<rootDir>/__mocks__/file.js',
+
   },
   rootDir: './',
   testMatch: ['<rootDir>/**/*.test.ts*'],
   transform: {
-    '^.+\\.ts$|^.+\\.tsx$': ['ts-jest', {
-      useESM: true,
-      tsconfig: {
-        module: 'ESNext',
-        target: 'ESNext',
-        allowJs: true
-      }
+    '^.+\\.ts$|^.+\\.tsx$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', {targets: {node: 'current'}}],
+        '@babel/preset-typescript'
+      ]
     }]
   },
   collectCoverage: false,
   transformIgnorePatterns: [],
-  setupFilesAfterEnv: ['../../jest.setup.js']
+  setupFilesAfterEnv: ['./jest.setup.js']
 };

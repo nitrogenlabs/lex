@@ -1,11 +1,20 @@
-/**
- * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
- * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
- */
 import {StorybookOptions} from './storybook.js';
-import {mockExecaSuccess, mockExecaFailure, mockExecaSuccessOnce, mockExecaFailureOnce, clearExecaMocks, getExecaCalls} from '../../mocks/execaMock.js';
+
+jest.mock('execa');
+jest.mock('../../utils/app.js', () => ({
+  ...jest.requireActual('../../utils/app.js'),
+  createSpinner: jest.fn(() => ({
+    start: jest.fn(),
+    succeed: jest.fn(),
+    fail: jest.fn()
+  }))
+}));
 
 describe('storybook.options tests', () => {
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('StorybookOptions interface', () => {
     it('should accept all valid options', () => {
       const options: StorybookOptions = {
@@ -175,6 +184,7 @@ describe('storybook.options tests', () => {
 
       validPorts.forEach((port) => {
         const options: StorybookOptions = {port};
+
         expect(options.port).toBe(port);
       });
     });
@@ -189,6 +199,7 @@ describe('storybook.options tests', () => {
 
       validJsonStrings.forEach((variables) => {
         const options: StorybookOptions = {variables};
+
         expect(options.variables).toBe(variables);
       });
     });
@@ -203,6 +214,7 @@ describe('storybook.options tests', () => {
 
       validPaths.forEach((config) => {
         const options: StorybookOptions = {config};
+
         expect(options.config).toBe(config);
       });
     });
