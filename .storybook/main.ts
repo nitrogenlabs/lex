@@ -13,7 +13,37 @@ const config = {
       }
     }
   },
-  stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx']
+  stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx'],
+  webpackFinal: async (config) => {
+    return {
+      ...config,
+      module: {
+        ...config.module,
+        rules: [
+          ...(config.module?.rules || []),
+          {
+            test: /\.(ts|tsx)$/,
+            use: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: [
+                    '@babel/preset-typescript',
+                    [
+                      '@babel/preset-react',
+                      {
+                        runtime: 'automatic'
+                      }
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    };
+  }
 };
 
 export default config;

@@ -59,7 +59,9 @@
     "@babel/core": "^7.28.0",
     "@babel/plugin-transform-nullish-coalescing-operator": "^7.27.1",
     "@babel/plugin-transform-optional-chaining": "^7.27.1",
+    "@babel/plugin-transform-runtime": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "7.27.1",
     "@luckycatfactory/esbuild-graphql-loader": "^3.8.1",
     "@mdx-js/loader": "^3.1.0",
@@ -85,7 +87,9 @@
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^30.0.4",
+    "babel-loader": "^10.0.0",
     "babel-plugin-module-resolver": "^5.0.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "boxen": "8.0.1",
     "buffer": "^6.0.3",
     "caniuse-lite": "1.0.30001727",
@@ -181,16 +185,12 @@
     "webpack-plugin-serve": "^1.6.0"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.28.0",
-    "@babel/preset-react": "^7.27.1",
     "@types/jest": "^30.0.0",
     "@types/luxon": "^3.6.2",
     "@types/node": "^24.0.14",
     "@types/ora": "^3.2.0",
     "@types/react": "^19.1.8",
-    "@types/webpack": "^5.28.5",
-    "babel-loader": "^10.0.0",
-    "babel-plugin-transform-import-meta": "^2.3.3"
+    "@types/webpack": "^5.28.5"
   },
   "peerDependencies": {
     "@storybook/react": "^9.0.17",
