@@ -3,6 +3,7 @@ const config = {
     '@storybook/addon-docs',
     '@storybook/addon-links',
     '@storybook/addon-postcss',
+    '@storybook/addon-styling-webpack',
     '@storybook/addon-themes'
   ],
   framework: {

@@ -72,6 +72,7 @@
     "@storybook/addon-docs": "^9.0.17",
     "@storybook/addon-links": "^9.0.17",
     "@storybook/addon-postcss": "^2.0.0",
+    "@storybook/addon-styling-webpack": "^2.0.0",
     "@storybook/addon-themes": "^9.0.17",
     "@storybook/addon-viewport": "^9.0.8",
     "@storybook/addon-webpack5-compiler-babel": "^3.0.6",
