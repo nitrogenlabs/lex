@@ -3,7 +3,28 @@ const config = {
     '@storybook/addon-docs',
     '@storybook/addon-links',
     '@storybook/addon-postcss',
-    '@storybook/addon-styling-webpack',
+    {
+      name: '@storybook/addon-styling-webpack',
+      options: {
+        rules: [
+          {
+            test: /\.css$/,
+            use: [
+              'style-loader',
+              'css-loader',
+              {
+                loader: 'postcss-loader',
+                options: {
+                  postcssOptions: {
+                    config: 'node_modules/@nlabs/lex/postcss.config.js',
+                  },
+                },
+              }
+            ]
+          }
+        ]
+      }
+    },
     '@storybook/addon-themes'
   ],
   framework: {
@@ -11,7 +32,7 @@ const config = {
     options: {
       builder: {
         useSWC: true
-      }
+      },
     }
   },
   stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx'],
@@ -29,9 +50,9 @@ const config = {
                 loader: 'babel-loader',
                 options: {
                   presets: [
-                    '@babel/preset-typescript',
+                    '/Users/nitrog7/Development/gothamjs/node_modules/@babel/preset-typescript',
                     [
-                      '@babel/preset-react',
+                      '/Users/nitrog7/Development/gothamjs/node_modules/@babel/preset-react',
                       {
                         runtime: 'automatic'
                       }
