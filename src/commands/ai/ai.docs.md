@@ -13,12 +13,15 @@ The main function that handles AI request execution with various configuration o
 - `options`: An object containing the AI configuration options
   - `cliName?: string` - Custom name for the CLI tool in output messages (defaults to "Lex")
   - `context?: boolean` - Whether to include project context in the AI prompt
+  - `debug?: boolean` - Whether to enable debug mode for additional logging
+  - `dir?: string` - Directory to use as context for the AI request
   - `file?: string` - Path to a file to provide as context
   - `lexConfig?: string` - Path to a custom Lex configuration file
   - `model?: string` - Override the AI model specified in config
   - `prompt?: string` - The text prompt to send to the AI
+  - `provider?: string` - AI provider to use (openai, anthropic, cursor, copilot)
   - `quiet?: boolean` - Whether to suppress output except for errors
-  - `task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help'` - The type of task to perform
+  - `task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help' | 'ask' | 'analyze'` - The type of task to perform
 
 #### Returns
 
@@ -32,12 +35,15 @@ The main function that handles AI request execution with various configuration o
 export interface AIOptions {
   readonly cliName?: string;
   readonly context?: boolean;
+  readonly debug?: boolean;
+  readonly dir?: string;
   readonly file?: string;
   readonly lexConfig?: string;
   readonly model?: string;
   readonly prompt?: string;
+  readonly provider?: string;
   readonly quiet?: boolean;
-  readonly task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help';
+  readonly task?: 'generate' | 'explain' | 'test' | 'optimize' | 'help' | 'ask' | 'analyze';
 }
 ```
 
@@ -103,12 +109,15 @@ Gets the appropriate API key or authentication for the selected provider.
 
 ## Features
 
-- **Multiple AI Providers**: Supports OpenAI, Anthropic, Cursor, and GitHub Copilot.
-- **Task Types**: Specialized prompts for code generation, explanation, testing, and optimization.
-- **Project Context**: Automatically includes relevant project context based on the task.
-- **File Context**: Can include specific file content as context for the AI.
-- **Environment Variables**: Supports multiple authentication methods via environment variables.
-- **Configuration**: Configurable via lex.config.js or command-line options.
+- **Multiple AI Providers**: Supports OpenAI, Anthropic, Cursor, and GitHub Copilot
+- **Task Types**: Specialized prompts for code generation, explanation, testing, and optimization
+- **Project Context**: Automatically includes relevant project context based on the task
+- **File Context**: Can include specific file content as context for the AI
+- **Directory Context**: Can use a specific directory as context for the AI request
+- **Environment Variables**: Supports multiple authentication methods via environment variables
+- **Configuration**: Configurable via lex.config.js or command-line options
+- **Debug Mode**: Additional logging for troubleshooting AI interactions
+- **Provider Selection**: Explicit provider selection for different AI services
 
 ## Usage
 
@@ -116,12 +125,25 @@ Gets the appropriate API key or authentication for the selected provider.
 lex ai [options]
 ```
 
+## Command Line Options
+
+- `--context` - Include project context in the AI prompt
+- `--debug` - Enable debug mode for additional logging
+- `--dir <path>` - Directory to use as context for the AI request
+- `--file <path>` - Path to a file to provide as context
+- `--lexConfig <path>` - Path to a custom Lex configuration file
+- `--model <name>` - Override the AI model specified in config
+- `--prompt <text>` - The text prompt to send to the AI
+- `--provider <name>` - AI provider to use (openai, anthropic, cursor, copilot)
+- `--quiet` - Suppress output except for errors
+- `--task <type>` - The type of task to perform (generate, explain, test, optimize, help, ask, analyze)
+
 ## Integration
 
 The AI module is also used by other Lex commands:
 
-- **Lint**: The `lint` command uses AI to fix linting errors when the `--fix` flag is used.
-- **Build**: The `build` command can use AI to assist with build errors and optimization.
+- **Lint**: The `lint` command uses AI to fix linting errors when the `--fix` flag is used
+- **Build**: The `build` command can use AI to assist with build errors and optimization
 
 ## Provider-Specific Behavior
 
@@ -160,3 +182,7 @@ The module checks for the following environment variables:
 - `ANTHROPIC_API_KEY`: Anthropic-specific API key
 - `GITHUB_TOKEN`: GitHub token for Copilot access
 - `CURSOR_IDE`: Flag to indicate running in Cursor IDE
+- `CURSOR_EXTENSION`: Flag to indicate running in Cursor extension
+- `CURSOR_TERMINAL`: Flag to indicate running in Cursor terminal
+- `CURSOR_APP`: Flag to indicate running in Cursor app
+- `CURSOR_SESSION_ID`: Cursor session identifier

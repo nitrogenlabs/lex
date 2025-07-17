@@ -7,7 +7,7 @@ The compile module is responsible for compiling TypeScript and JavaScript code u
 The compile module provides functionality to:
 
 - Compile TypeScript and JavaScript files using ESBuild
-- Run TypeScript type checking 
+- Run TypeScript type checking
 - Process CSS files with PostCSS
 - Copy static assets (images, fonts, and documents)
 - Support watch mode for development
@@ -104,4 +104,64 @@ await compile({
 | `quiet` | Suppress console output | false |
 | `remove` | Clean output directory before compilation | false |
 | `sourcePath` | Custom source directory | From LexConfig |
-| `watch` | Enable watch mode | false | 
+| `watch` | Enable watch mode | false |
+
+## ESBuild Configuration
+
+The compile command uses ESBuild with the following configuration options available through the `esbuild` section in your `lex.config.js`:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `format` | string | `esm` | Output format (`esm`, `cjs`) |
+| `platform` | string | `node` | Target platform (`node`, `browser`) |
+| `sourcemap` | string | `inline` | Source map generation |
+| `target` | string | `node20` | Target environment |
+| `minify` | boolean | `false` | Enable minification (more conservative for compile) |
+| `treeShaking` | boolean | `true` | Enable tree shaking |
+| `drop` | string[] | - | Console and debugger statements to drop |
+| `pure` | string[] | - | Functions to mark as pure |
+| `legalComments` | string | - | Legal comments handling |
+| `banner` | object | - | Banner text for output files |
+| `footer` | object | - | Footer text for output files |
+| `define` | object | - | Global variable definitions |
+
+## TypeScript Support
+
+When TypeScript is enabled in your Lex configuration:
+
+- Uses `tsconfig.build.json` for compilation (created automatically if needed)
+- Runs static type checking before compilation
+- Supports custom TypeScript configuration via the `--config` option
+
+## CSS Processing
+
+The compile command automatically processes CSS files using PostCSS:
+
+- Processes all `.css` files found in the source directory
+- Applies PostCSS plugins configured in your project
+- Supports Tailwind CSS and other PostCSS plugins
+
+## Asset Copying
+
+The compile command automatically copies static assets:
+
+- Images (`.jpg`, `.jpeg`, `.png`, `.gif`, `.svg`, `.webp`)
+- Fonts (`.woff`, `.woff2`, `.ttf`, `.eot`)
+- Documents (`.md`, `.txt`, `.pdf`)
+
+## Watch Mode
+
+When watch mode is enabled:
+
+- Monitors source files for changes
+- Automatically recompiles when files are modified
+- Provides real-time feedback on compilation status
+
+## Error Handling
+
+The compile command provides detailed error messages for:
+
+- TypeScript compilation errors
+- ESBuild compilation errors
+- Missing dependencies
+- Configuration issues
