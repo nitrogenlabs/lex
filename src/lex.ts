@@ -27,14 +27,15 @@ import {update} from './commands/update/update.js';
 import {upgrade} from './commands/upgrade/upgrade.js';
 import {versions} from './commands/versions/versions.js';
 
-// Inject Lex's own node_modules into NODE_PATH for module resolution
+process.env.LEX_ROOT = dirname(fileURLToPath(import.meta.url));
+
 const lexNodeModules = resolve(dirname(fileURLToPath(import.meta.url)), '../node_modules');
 if(!process.env.NODE_PATH) {
   process.env.NODE_PATH = lexNodeModules;
 } else if(!process.env.NODE_PATH.split(':').includes(lexNodeModules)) {
   process.env.NODE_PATH += `:${lexNodeModules}`;
 }
-// Re-initialize Node's module search paths
+
 const require = createRequire(import.meta.url);
 require('module').Module._initPaths();
 
@@ -189,6 +190,7 @@ program.command('storybook')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--static', 'Build a static Storybook site instead of starting dev server.')
   .option('--variables <n>', 'Environment variables to set in "process.env". (ie. "{STORYBOOK_THEME: \'dark\'}").')
+  .option('--verbose', 'Show detailed webpack progress output.')
   .action((cmd) => storybook(cmd, process.exit).then(() => {}));
 
 program.command('test')

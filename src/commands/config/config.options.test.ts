@@ -59,9 +59,11 @@ jest.mock('../../utils/log.js');
 
 describe('config options', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -17,6 +17,7 @@ The main function that starts Storybook development server or builds a static si
   - `port?: number` - Port number for the Storybook server
   - `quiet?: boolean` - Whether to suppress output
   - `static?: boolean` - Whether to build a static Storybook site instead of starting dev server (defaults to false)
+  - `useLexConfig?: boolean` - Whether to prefer Lex's Storybook configuration over the project's config (defaults to false)
   - `variables?: string` - JSON string of environment variables to set
 - `callback`: An optional callback function that receives the exit status code, defaults to an empty function
 
@@ -36,6 +37,7 @@ export interface StorybookOptions {
   readonly port?: number;
   readonly quiet?: boolean;
   readonly static?: boolean;
+  readonly useLexConfig?: boolean;
   readonly variables?: string;
 }
 ```
@@ -53,6 +55,7 @@ export type StorybookCallback = (status: number) => void;
 - **Development Server**: Starts Storybook development server with hot reloading
 - **Static Build**: Optionally builds a static Storybook site for deployment
 - **Custom Configuration**: Supports custom Storybook configuration directories
+- **Lex Configuration**: Optionally use Lex's built-in Storybook configuration instead of project config
 - **Auto-Open Browser**: Optionally opens the browser automatically
 - **Custom Port**: Supports specifying a custom port for the development server
 - **Environment Variables**: Supports setting custom environment variables
@@ -83,6 +86,12 @@ await storybook({
   quiet: false
 });
 
+// Use Lex's Storybook configuration instead of project config
+await storybook({
+  useLexConfig: true,
+  quiet: false
+});
+
 // With custom configuration directory
 await storybook({
   config: './.storybook',
@@ -106,6 +115,21 @@ await storybook({
   }
 });
 ```
+
+## Configuration Priority
+
+The command follows this priority order for Storybook configuration:
+
+1. **Custom config path** (if `config` option is provided)
+2. **Lex config** (if `useLexConfig: true` is set)
+3. **Project config** (if `.storybook` exists in project root)
+4. **Lex config** (as fallback)
+
+When using Lex's configuration, the command will:
+
+- Copy Lex's configuration files to a temporary `.storybook` directory in the project
+- Update story paths to match the current project structure
+- Update module resolution paths to use Lex's node_modules
 
 ## Story File Patterns
 

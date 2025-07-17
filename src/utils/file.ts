@@ -3,8 +3,9 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import findFileUp from 'find-file-up';
-import {existsSync} from 'fs';
-import {resolve as pathResolve} from 'path';
+import {existsSync, readFileSync} from 'fs';
+import {resolve as pathResolve, dirname} from 'path';
+import {sync as globSync} from 'glob';
 
 
 import {LexConfig} from '../LexConfig.js';
@@ -44,15 +45,58 @@ export function getFilePath(relativePath: string): string {
  * Get the path to Lex's own package.json, regardless of CWD
  */
 export function getLexPackageJsonPath(): string {
-  try {
-    // This will always resolve to Lex's own package.json, regardless of CWD
-    // eslint-disable-next-line no-eval
-    const lexRoot = eval('require("path").dirname(require("url").fileURLToPath(import.meta.url))');
-    return pathResolve(lexRoot, '../../package.json');
-  } catch {
-    // Fallback for Jest or CJS environments
-    return pathResolve(process.cwd(), 'package.json');
+  const LEX_PACKAGE_NAME = '@nlabs/lex';
+  let startDir: string;
+
+  if(process.env.LEX_ROOT) {
+    startDir = process.env.LEX_ROOT;
+  } else {
+    // Try multiple approaches to get the Lex CLI's directory
+    try {
+      // Approach 1: ESM import.meta.url
+      startDir = eval('new URL(".", import.meta.url).pathname');
+    } catch(err1) {
+      try {
+        // Approach 2: CJS __filename (if available)
+        startDir = eval('__filename ? require("path").dirname(__filename) : null');
+        if(!startDir) {
+          throw new Error('__filename not available');
+        }
+      } catch(err2) {
+        try {
+          // Approach 3: Use process.argv[1] (the actual script being executed)
+          if(process.argv[1] && !process.argv[1].includes('node')) {
+            startDir = dirname(process.argv[1]);
+          } else {
+            throw new Error('process.argv[1] not suitable');
+          }
+        } catch(err3) {
+          // Approach 4: Fallback to process.cwd()
+          startDir = process.cwd();
+        }
+      }
+    }
   }
+
+  let dir = startDir;
+  for(let i = 0; i < 8; i++) {
+    const pkgPath = pathResolve(dir, 'package.json');
+    if(existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+        if(pkg.name === LEX_PACKAGE_NAME) {
+          return pkgPath;
+        }
+      } catch(error) {
+        // Silently continue if package.json can't be read
+      }
+    }
+    const parent = dirname(dir);
+    if(parent === dir) break;
+    dir = parent;
+  }
+  // Fallback to process.cwd() as last resort
+  return pathResolve(process.cwd(), 'package.json');
 }
 
 // Get file paths relative to Lex
@@ -181,5 +225,22 @@ export const resolveBinaryPath = (binaryName: string, packageName?: string): str
   }
 
   // Not found
+  return '';
+};
+
+export const findTailwindCssPath = (): string => {
+  const tailwindPatterns = ['**/tailwind.css'];
+
+  for(const pattern of tailwindPatterns) {
+    const files = globSync(pattern, {
+      cwd: process.cwd(),
+      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.storybook/**']
+    });
+
+    if(files.length > 0) {
+      return pathResolve(process.cwd(), files[0]);
+    }
+  }
+
   return '';
 };

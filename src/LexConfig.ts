@@ -124,20 +124,17 @@ export const defaultConfigValues: LexConfigType = {
 
 function findLexRoot(startDir: string): string {
   let dir = startDir;
-  console.log('DEBUG: findLexRoot starting with dir:', dir); // TEMP DEBUG
   while(dir !== '/' && dir !== '.') {
     const pkgPath = pathResolve(dir, 'package.json');
-    console.log('DEBUG: findLexRoot checking', pkgPath); // TEMP DEBUG
     if(existsSync(pkgPath)) {
       try {
         const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
         if(pkg.name === '@nlabs/lex') {
           return dir;
         }
-      } catch{}
+      } catch {}
     }
     const parent = dirname(dir);
-    console.log('DEBUG: findLexRoot parent of', dir, 'is', parent); // TEMP DEBUG
     if(parent === dir) {
       break;
     }

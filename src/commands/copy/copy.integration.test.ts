@@ -1,8 +1,8 @@
 import fs from 'fs';
 
+import {copy, CopyOptions} from './copy.js';
 import * as app from '../../utils/app.js';
 import * as log from '../../utils/log.js';
-import {copy, CopyOptions} from './copy.js';
 
 jest.mock('execa');
 jest.mock('fs');

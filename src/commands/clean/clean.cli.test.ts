@@ -1,5 +1,5 @@
-import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
 import {clean} from './clean.js';
+import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
 
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
@@ -20,9 +20,11 @@ jest.mock('../../LexConfig.js', () => ({
 
 describe('clean cli', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   afterAll(() => {
     consoleLogSpy.mockRestore();
     jest.restoreAllMocks();

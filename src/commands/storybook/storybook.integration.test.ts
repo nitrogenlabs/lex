@@ -2,9 +2,9 @@ import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 
+import {storybook, StorybookOptions} from './storybook.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
-import {storybook, StorybookOptions} from './storybook.js';
 
 jest.mock('execa');
 jest.mock('fs', () => ({

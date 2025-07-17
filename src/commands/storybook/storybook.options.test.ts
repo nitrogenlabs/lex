@@ -24,7 +24,8 @@ describe('storybook.options tests', () => {
         port: 6007,
         quiet: false,
         static: true,
-        variables: '{"DEBUG": true}'
+        variables: '{"DEBUG": true}',
+        verbose: true
       };
 
       expect(options.cliName).toBe('CustomCLI');
@@ -34,6 +35,7 @@ describe('storybook.options tests', () => {
       expect(options.quiet).toBe(false);
       expect(options.static).toBe(true);
       expect(options.variables).toBe('{"DEBUG": true}');
+      expect(options.verbose).toBe(true);
     });
 
     it('should accept partial options', () => {
@@ -48,6 +50,7 @@ describe('storybook.options tests', () => {
       expect(options.port).toBeUndefined();
       expect(options.static).toBeUndefined();
       expect(options.variables).toBeUndefined();
+      expect(options.verbose).toBeUndefined();
     });
 
     it('should accept empty options object', () => {
@@ -60,6 +63,7 @@ describe('storybook.options tests', () => {
       expect(options.quiet).toBeUndefined();
       expect(options.static).toBeUndefined();
       expect(options.variables).toBeUndefined();
+      expect(options.verbose).toBeUndefined();
     });
   });
 
@@ -118,6 +122,14 @@ describe('storybook.options tests', () => {
       };
 
       expect(typeof options.variables).toBe('string');
+    });
+
+    it('should accept boolean for verbose', () => {
+      const options: StorybookOptions = {
+        verbose: true
+      };
+
+      expect(typeof options.verbose).toBe('boolean');
     });
   });
 

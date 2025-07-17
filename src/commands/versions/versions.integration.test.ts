@@ -1,5 +1,5 @@
-import {log} from '../../utils/log.js';
 import {jsonVersions, packages, parseVersion, versions} from './versions.js';
+import {log} from '../../utils/log.js';
 
 
 jest.mock('execa');

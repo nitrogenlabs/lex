@@ -19,9 +19,11 @@ jest.mock('../../LexConfig.js', () => ({
 
 describe('clean integration', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   afterAll(() => {
     consoleLogSpy.mockRestore();
     jest.restoreAllMocks();

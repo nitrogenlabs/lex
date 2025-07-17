@@ -45,9 +45,11 @@ jest.mock('glob', () => ({
 
 describe('compile integration', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -3,8 +3,8 @@ import {execa} from 'execa';
 import latestVersion from 'latest-version';
 
 
-import {LexConfig} from '../../LexConfig.js';
 import {upgrade, UpgradeCallback} from './upgrade.js';
+import {LexConfig} from '../../LexConfig.js';
 
 jest.mock('execa');
 jest.mock('../../LexConfig.js');

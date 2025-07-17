@@ -3,8 +3,8 @@ import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {existsSync} from 'node:fs';
 
-import {aiFunction} from '../ai/ai.js';
 import {test, TestCallback} from './test.js';
+import {aiFunction} from '../ai/ai.js';
 
 jest.mock('execa');
 jest.mock('fs');

@@ -17,7 +17,7 @@ let currentDirname: string;
 try {
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
-} catch {
+} catch{
   currentFilename = process.cwd();
   currentDirname = process.cwd();
 }

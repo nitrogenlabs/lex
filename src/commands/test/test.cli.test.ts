@@ -1,9 +1,9 @@
 import {execa} from 'execa';
 import * as fs from 'fs';
 
+import {test, TestOptions} from './test.js';
 import * as app from '../../utils/app.js';
 import * as logUtils from '../../utils/log.js';
-import {test, TestOptions} from './test.js';
 
 jest.mock('execa');
 jest.mock('fs', () => ({

@@ -21,7 +21,7 @@
   "editor.autoClosingBrackets": "never",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+    "source.organizeImports": false
   },
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,

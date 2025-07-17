@@ -24,9 +24,11 @@ jest.mock('../../utils/log.js');
 
 describe('copy cli', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -3,11 +3,11 @@ import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import path from 'path';
 
+import {storybook, StorybookOptions} from './storybook.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as log from '../../utils/log.js';
-import {storybook, StorybookOptions} from './storybook.js';
 
 jest.mock('execa');
 jest.mock('fs');
@@ -121,6 +121,7 @@ describe('storybook.cli tests', () => {
         encoding: 'utf8',
         env: {
           LEX_QUIET: false,
+          LEX_VERBOSE: false,
           NODE_ENV: 'development',
           STORYBOOK_OPEN: false
         }

@@ -5,13 +5,13 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(() => true),
   readFileSync: jest.fn(() => '{}'),
   writeFileSync: jest.fn(),
-  renameSync: jest.fn(),
+  renameSync: jest.fn()
 }));
 jest.mock('glob', () => ({
   sync: jest.fn(() => [])
 }));
 jest.mock('path', () => ({
-  resolve: jest.fn((...args) => args.join('/')),
+  resolve: jest.fn((...args) => args.join('/'))
 }));
 jest.mock('glob', () => ({
   sync: jest.fn(() => [])

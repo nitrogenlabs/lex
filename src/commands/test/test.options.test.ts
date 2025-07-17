@@ -2,11 +2,11 @@ import {execa} from 'execa';
 import path from 'path';
 import {URL} from 'url';
 
+import {test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as logUtils from '../../utils/log.js';
-import {test, TestOptions} from './test.js';
 
 jest.mock('execa');
 jest.mock('fs', () => ({
