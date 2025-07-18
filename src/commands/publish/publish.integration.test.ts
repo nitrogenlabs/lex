@@ -4,12 +4,18 @@ import {publish} from './publish.js';
 
 jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
     start: jest.fn(),
     succeed: jest.fn(),
     fail: jest.fn()
-  }))
+  })),
+  getPackageJson: jest.fn(() => ({
+    name: 'test-package',
+    version: '1.0.0',
+    dependencies: {},
+    devDependencies: {}
+  })),
+  setPackageJson: jest.fn()
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');

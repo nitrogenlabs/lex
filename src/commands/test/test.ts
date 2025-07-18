@@ -241,6 +241,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   } else {
     const projectJestConfigPath = pathResolve(process.cwd(), 'jest.config.js');
     const projectJestConfigCjsPath = pathResolve(process.cwd(), 'jest.config.cjs');
+    const projectJestConfigMjsPath = pathResolve(process.cwd(), 'jest.config.mjs');
     const projectJestConfigJsonPath = pathResolve(process.cwd(), 'jest.config.json');
 
     if(existsSync(projectJestConfigPath)) {
@@ -252,6 +253,11 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
       jestConfigFile = projectJestConfigCjsPath;
       if(debug) {
         log(`Using project Jest config file (CJS): ${jestConfigFile}`, 'info', quiet);
+      }
+    } else if(existsSync(projectJestConfigMjsPath)) {
+      jestConfigFile = projectJestConfigMjsPath;
+      if(debug) {
+        log(`Using project Jest config file (MJS): ${jestConfigFile}`, 'info', quiet);
       }
     } else if(existsSync(projectJestConfigJsonPath)) {
       jestConfigFile = projectJestConfigJsonPath;
@@ -292,20 +298,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   }
 
   const jestSetupFile: string = setup || pathResolve(process.cwd(), 'jest.setup.js');
-
-  if(!existsSync(jestSetupFile)) {
-    const lexDir = LexConfig.getLexDir();
-    const templateSetupFile = pathResolve(lexDir, 'jest.setup.template.js');
-    if(existsSync(templateSetupFile)) {
-      const fs = await import('fs');
-      const templateContent = fs.readFileSync(templateSetupFile, 'utf8');
-      fs.writeFileSync(jestSetupFile, templateContent);
-      if(debug) {
-        log(`Created Jest setup file from template: ${jestSetupFile}`, 'info', quiet);
-      }
-    }
-  }
-
   const jestOptions: string[] = ['--no-cache'];
 
   const isESM = detectESM(process.cwd());
@@ -435,7 +427,7 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   }
 
   if(testPathPattern) {
-    jestOptions.push('--testPathPatterns', testPathPattern);
+    jestOptions.push('--testPathPattern', testPathPattern);
   }
 
   if(useStderr) {

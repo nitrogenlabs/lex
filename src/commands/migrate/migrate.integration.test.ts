@@ -4,14 +4,21 @@ import {migrate} from './migrate.js';
 
 jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
     start: jest.fn(),
     succeed: jest.fn(),
     fail: jest.fn()
   })),
+  getPackageJson: jest.fn(() => ({
+    name: 'test-package',
+    version: '1.0.0',
+    dependencies: {},
+    devDependencies: {}
+  })),
+  setPackageJson: jest.fn(),
   removeModules: jest.fn().mockResolvedValue(undefined),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  removeFiles: jest.fn().mockResolvedValue(undefined),
+  removeConflictModules: jest.fn((modules) => modules)
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');
