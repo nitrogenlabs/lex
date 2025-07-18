@@ -13,9 +13,6 @@ import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
-/**
- * Detect if the project is using ESM by checking package.json
- */
 const detectESM = (cwd: string): boolean => {
   const packageJsonPath = pathResolve(cwd, 'package.json');
 
@@ -102,7 +99,6 @@ const findUncoveredSourceFiles = (): string[] => {
     ignore: ['**/node_modules/**', '**/dist/**']
   });
 
-  // Simple heuristic to find source files without corresponding test files
   return sourceFiles.filter((sourceFile) => {
     const baseName = sourceFile.replace(/\.[^/.]+$/, '');
     return !testFiles.some((testFile) => testFile.includes(baseName));
@@ -183,7 +179,6 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   const {useTypescript} = LexConfig.config;
 
   if(useTypescript) {
-    // Use the test-specific TypeScript config for testing
     const testConfigPath = getTypeScriptConfigPath('tsconfig.test.json');
     if(existsSync(testConfigPath)) {
       log('Using tsconfig.test.json for testing...', 'info', quiet);
@@ -222,22 +217,97 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
   }
 
   const dirName = getDirName();
-  const dirPath: string = pathResolve(dirName, '../../..');
+  const dirPath: string = pathResolve(dirName, '../..');
 
-  // Use robust path resolution for Jest binary
-  const jestPath: string = resolveBinaryPath('jest');
+  const projectJestBin = pathResolve(process.cwd(), 'node_modules/.bin/jest');
+  let jestPath: string;
+  if(existsSync(projectJestBin)) {
+    jestPath = projectJestBin;
+  } else {
+    jestPath = resolveBinaryPath('jest');
+  }
 
-  // Check if Jest binary exists
   if(!jestPath) {
     log(`\n${cliName} Error: Jest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
     log('Please reinstall Lex or check your installation.', 'info', quiet);
     return 1;
   }
-  const jestConfigFile: string = config || pathResolve(dirName, '../../../jest.config.lex.js');
-  const jestSetupFile: string = setup || pathResolve(dirName, '../../../jest.setup.js');
+
+  let jestConfigFile: string;
+  let projectJestConfig: any = null;
+
+  if(config) {
+    jestConfigFile = config;
+  } else {
+    const projectJestConfigPath = pathResolve(process.cwd(), 'jest.config.js');
+    const projectJestConfigCjsPath = pathResolve(process.cwd(), 'jest.config.cjs');
+    const projectJestConfigJsonPath = pathResolve(process.cwd(), 'jest.config.json');
+
+    if(existsSync(projectJestConfigPath)) {
+      jestConfigFile = projectJestConfigPath;
+      if(debug) {
+        log(`Using project Jest config file: ${jestConfigFile}`, 'info', quiet);
+      }
+    } else if(existsSync(projectJestConfigCjsPath)) {
+      jestConfigFile = projectJestConfigCjsPath;
+      if(debug) {
+        log(`Using project Jest config file (CJS): ${jestConfigFile}`, 'info', quiet);
+      }
+    } else if(existsSync(projectJestConfigJsonPath)) {
+      jestConfigFile = projectJestConfigJsonPath;
+      if(debug) {
+        log(`Using project Jest config file (JSON): ${jestConfigFile}`, 'info', quiet);
+      }
+    } else {
+      // No Jest config file exists in the project
+      // Check if there's a Jest config in lex.config.cjs
+      projectJestConfig = LexConfig.config.jest;
+
+      const lexDir = LexConfig.getLexDir();
+      const lexJestConfig = pathResolve(lexDir, 'jest.config.mjs');
+
+      if(debug) {
+        log(`Looking for Jest config at: ${lexJestConfig}`, 'info', quiet);
+        log(`File exists: ${existsSync(lexJestConfig)}`, 'info', quiet);
+      }
+
+      if(existsSync(lexJestConfig)) {
+        jestConfigFile = lexJestConfig;
+        if(projectJestConfig && Object.keys(projectJestConfig).length > 0) {
+          if(debug) {
+            log(`Using Lex Jest config with project Jest config from lex.config.cjs: ${jestConfigFile}`, 'info', quiet);
+          }
+        } else {
+          if(debug) {
+            log(`Using Lex Jest config (no project Jest config found): ${jestConfigFile}`, 'info', quiet);
+          }
+        }
+      } else {
+        if(debug) {
+          log('No Jest config found in project or Lex', 'warn', quiet);
+        }
+        jestConfigFile = '';
+      }
+    }
+  }
+
+  const jestSetupFile: string = setup || pathResolve(process.cwd(), 'jest.setup.js');
+
+  if(!existsSync(jestSetupFile)) {
+    const lexDir = LexConfig.getLexDir();
+    const templateSetupFile = pathResolve(lexDir, 'jest.setup.template.js');
+    if(existsSync(templateSetupFile)) {
+      const fs = await import('fs');
+      const templateContent = fs.readFileSync(templateSetupFile, 'utf8');
+      fs.writeFileSync(jestSetupFile, templateContent);
+      if(debug) {
+        log(`Created Jest setup file from template: ${jestSetupFile}`, 'info', quiet);
+      }
+    }
+  }
+
   const jestOptions: string[] = ['--no-cache'];
 
-  // Detect if project is using ESM and set NODE_OPTIONS if so
   const isESM = detectESM(process.cwd());
   let nodeOptions = process.env.NODE_OPTIONS || '';
   if(isESM) {
@@ -247,7 +317,9 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     log('ESM project detected, using --experimental-vm-modules in NODE_OPTIONS', 'info', quiet);
   }
 
-  jestOptions.push('--config', jestConfigFile);
+  if(jestConfigFile) {
+    jestOptions.push('--config', jestConfigFile);
+  }
 
   if(bail) {
     jestOptions.push('--bail');
@@ -398,20 +470,21 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     jestOptions.push(...args);
   }
 
-  // Debug: Log Jest options for verification
   if(debug) {
     log(`Jest options: ${jestOptions.join(' ')}`, 'info', quiet);
     log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
   }
 
   try {
+    const env: Record<string, string> = {
+      ...process.env,
+      NODE_OPTIONS: nodeOptions
+    };
+
     await execa(jestPath, jestOptions, {
       encoding: 'utf8',
       stdio: 'inherit',
-      env: {
-        ...process.env,
-        NODE_OPTIONS: nodeOptions
-      }
+      env
     });
 
     spinner.succeed('Testing completed!');

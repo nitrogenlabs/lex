@@ -1,9 +1,8 @@
+import chalk from 'chalk';
 import {execa} from 'execa';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
-import chalk from 'chalk';
-import ora from 'ora';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
@@ -69,15 +68,12 @@ const filterAndBeautifyOutput = (output: string, isVerbose: boolean): string => 
     return output;
   }
 
-  // Filter out ALL webpack progress lines completely
   const lines = output.split('\n');
-  const filteredLines = lines.filter(line => {
-    // Completely filter out ALL webpack progress lines
+  const filteredLines = lines.filter((line) => {
     if(line.includes('[webpack.Progress]')) {
       return false;
     }
 
-    // Keep important Storybook messages
     if(line.includes('Storybook') ||
       line.includes('Local:') ||
       line.includes('http://localhost') ||
@@ -95,18 +91,16 @@ const filterAndBeautifyOutput = (output: string, isVerbose: boolean): string => 
   return filteredLines.join('\n');
 };
 
-const beautifyOutput = (output: string): string => {
-  return output
-    .replace(/Storybook v[\d.]+/g, chalk.cyan('$&'))
-    .replace(/info =>/g, chalk.blue('info =>'))
-    .replace(/Local:/g, chalk.green('Local:'))
-    .replace(/On your network:/g, chalk.green('On your network:'))
-    .replace(/Storybook.*started/g, chalk.green('$&'))
-    .replace(/Storybook.*ready/g, chalk.green('$&'))
-    .replace(/error/g, chalk.red('$&'))
-    .replace(/warning/g, chalk.yellow('$&'))
-    .replace(/(\d+)%/g, chalk.magenta('$1%'));
-};
+const beautifyOutput = (output: string): string => output
+  .replace(/Storybook v[\d.]+/g, chalk.cyan('$&'))
+  .replace(/info =>/g, chalk.blue('info =>'))
+  .replace(/Local:/g, chalk.green('Local:'))
+  .replace(/On your network:/g, chalk.green('On your network:'))
+  .replace(/Storybook.*started/g, chalk.green('$&'))
+  .replace(/Storybook.*ready/g, chalk.green('$&'))
+  .replace(/error/g, chalk.red('$&'))
+  .replace(/warning/g, chalk.yellow('$&'))
+  .replace(/(\d+)%/g, chalk.magenta('$1%'));
 
 export const storybook = async (cmd: StorybookOptions, callback: StorybookCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', config, open = false, port = 6007, quiet, static: staticBuild = false, useLexConfig = false, variables, verbose = false} = cmd;
@@ -280,12 +274,10 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
       const output = data.toString();
       const progressPercentage = extractProgressPercentage(output);
 
-      // Update spinner and print beautified progress line if found
       if(progressPercentage !== null && progressPercentage !== lastProgressPercentage) {
         lastProgressPercentage = progressPercentage;
         const action = staticBuild ? 'Building' : 'Starting';
         (spinner as any).text = `${action} Storybook... ${progressPercentage}%`;
-        // Print beautified progress line
         process.stdout.write(`\nWebpack Progress: ${chalk.magenta(`${progressPercentage}%`)}\n`);
       }
 
@@ -297,7 +289,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
         urlFound = true;
       }
 
-      // Only write filtered output, completely ignoring webpack progress lines
       if(filteredOutput.trim()) {
         process.stdout.write(beautifiedOutput);
       }
@@ -305,7 +296,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
 
     storybookProcess.stderr?.on('data', (data) => {
       const output = data.toString();
-      // Also filter stderr to remove webpack progress lines
       const filteredOutput = filterAndBeautifyOutput(output, verbose);
       const beautifiedOutput = beautifyOutput(filteredOutput);
 
@@ -314,7 +304,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
       }
     });
 
-    // Remove setTimeout fallback. Instead, handle spinner on process exit.
     try {
       await storybookProcess;
       if(!urlFound) {

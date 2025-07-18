@@ -1,21 +1,5 @@
 require('@testing-library/jest-dom');
 
-const originalReadFileSync = require('fs').readFileSync;
-require('fs').readFileSync = jest.fn((path, encoding) => {
-  if (path && path.toString().includes('package.json')) {
-    return JSON.stringify({
-      version: '1.0.0',
-      dependencies: {
-        esbuild: '^0.19.0',
-        jest: '^29.0.0',
-        typescript: '^5.0.0',
-        webpack: '^5.0.0'
-      }
-    });
-  }
-  return originalReadFileSync(path, encoding);
-});
-
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),

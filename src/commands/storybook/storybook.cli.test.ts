@@ -116,7 +116,7 @@ describe('storybook.cli tests', () => {
     expect(mockSpinner.succeed).toHaveBeenCalledWith('Found 6 story file(s)');
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['dev', '--config-dir', '/Users/nitrog7/Development/lex/.storybook'],
+      ['dev', '--config-dir', '/Users/nitrog7/Development/lex/.storybook', '--port', '6007'],
       expect.objectContaining({
         encoding: 'utf8',
         env: {
@@ -221,7 +221,7 @@ describe('storybook.cli tests', () => {
     expect(mockSpinner.start).toHaveBeenCalledWith('Building static Storybook...');
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['build', '--config-dir', '/Users/nitrog7/Development/lex/.storybook', '--output-dir', '/Users/nitrog7/Development/lex/storybook-static'],
+      ['build', '--config-dir', '/Users/nitrog7/Development/lex/.storybook', '--port', '6007', '--output-dir', '/Users/nitrog7/Development/lex/storybook-static'],
       expect.any(Object)
     );
     expect(mockSpinner.succeed).toHaveBeenCalledWith('Found 6 story file(s)');

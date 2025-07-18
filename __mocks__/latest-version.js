@@ -1,0 +1,1 @@
+module.exports = jest.fn().mockResolvedValue('1.0.0');

@@ -167,7 +167,7 @@ describe('storybook.integration tests', () => {
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['build', '--config-dir', '/tmp/lex-storybook-test/.storybook', '--output-dir', '/tmp/lex-storybook-test/storybook-static'],
+      ['build', '--config-dir', '/tmp/lex-storybook-test/.storybook', '--port', '6007', '--output-dir', '/tmp/lex-storybook-test/storybook-static'],
       expect.any(Object)
     );
   });
@@ -200,7 +200,7 @@ describe('storybook.integration tests', () => {
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['dev', '--config-dir', './custom-storybook'],
+      ['dev', '--config-dir', './custom-storybook', '--port', '6007'],
       expect.any(Object)
     );
   });

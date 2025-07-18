@@ -132,7 +132,7 @@ function findLexRoot(startDir: string): string {
         if(pkg.name === '@nlabs/lex') {
           return dir;
         }
-      } catch {}
+      } catch{}
     }
     const parent = dirname(dir);
     if(parent === dir) {
@@ -143,13 +143,9 @@ function findLexRoot(startDir: string): string {
   throw new Error('Could not find @nlabs/lex root');
 }
 
-/**
- * Get the appropriate TypeScript config path, prioritizing project configs over Lex configs
- */
 export function getTypeScriptConfigPath(configName: string): string {
   const cwd = process.cwd();
 
-  // For compile command, check for project's build config first
   if(configName === 'tsconfig.build.json') {
     const projectBuildConfig = pathResolve(cwd, 'tsconfig.build.json');
     if(existsSync(projectBuildConfig)) {
@@ -157,7 +153,6 @@ export function getTypeScriptConfigPath(configName: string): string {
     }
   }
 
-  // For lint command, check for project's lint config first
   if(configName === 'tsconfig.lint.json') {
     const projectLintConfig = pathResolve(cwd, 'tsconfig.eslint.json');
     if(existsSync(projectLintConfig)) {
@@ -165,7 +160,6 @@ export function getTypeScriptConfigPath(configName: string): string {
     }
   }
 
-  // For test command, check for project's test config first
   if(configName === 'tsconfig.test.json') {
     const projectTestConfig = pathResolve(cwd, 'tsconfig.test.json');
     if(existsSync(projectTestConfig)) {
@@ -173,13 +167,11 @@ export function getTypeScriptConfigPath(configName: string): string {
     }
   }
 
-  // Check for the exact config name in the project
   const projectConfigPath = pathResolve(cwd, configName);
   if(existsSync(projectConfigPath)) {
     return projectConfigPath;
   }
 
-  // Otherwise, use Lex's config
   const lexDir = LexConfig.getLexDir();
   return pathResolve(lexDir, configName);
 }
@@ -189,11 +181,7 @@ export class LexConfig {
     ...defaultConfigValues
   };
 
-  /**
-   * Get the Lex package root directory, handling both development and installed environments
-   */
   static getLexDir(): string {
-    // Always use the directory of Lex's own package.json
     return dirname(getLexPackageJsonPath());
   }
 
@@ -388,7 +376,6 @@ export class LexConfig {
     const tsconfigCompilePath: string = pathResolve(lexDir, './tsconfig.build.json');
 
     if(!existsSync(tsconfigCompilePath)) {
-      // Try to copy from the template location
       const templatePath = pathResolve(lexDir, 'tsconfig.build.json');
       if(existsSync(templatePath)) {
         writeFileSync(tsconfigCompilePath, readFileSync(templatePath));
@@ -401,7 +388,6 @@ export class LexConfig {
     const tsconfigLintPath: string = pathResolve(lexDir, './tsconfig.lint.json');
 
     if(!existsSync(tsconfigLintPath)) {
-      // Try to copy from the template location
       const templatePath = pathResolve(lexDir, 'tsconfig.lint.json');
       if(existsSync(templatePath)) {
         writeFileSync(tsconfigLintPath, readFileSync(templatePath));
@@ -414,7 +400,6 @@ export class LexConfig {
     const tsconfigTestPath: string = pathResolve(lexDir, './tsconfig.test.json');
 
     if(!existsSync(tsconfigTestPath)) {
-      // Try to copy from the template location
       const templatePath = pathResolve(lexDir, 'tsconfig.test.json');
       if(existsSync(templatePath)) {
         writeFileSync(tsconfigTestPath, readFileSync(templatePath));

@@ -34,8 +34,21 @@ jest.mock('../../utils/file.js', () => ({
   relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js')
 }));
 jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{"type": "module"}')
+  existsSync: jest.fn((path: string) => {
+    // Handle undefined or null paths
+    if(!path) {
+      return false;
+    }
+
+    return true;
+  }),
+  readFileSync: jest.fn((path: string) => {
+    if(path.includes('package.json')) {
+      return '{"type": "module", "scripts": {"test": "jest"}}';
+    }
+    return '{"type": "module"}';
+  }),
+  writeFileSync: jest.fn()
 }));
 jest.mock('glob', () => ({
   sync: jest.fn(() => [])

@@ -28,10 +28,8 @@ export const config = async (type: string, cmd: ConfigOptions, callback: ConfigC
     return Promise.resolve(1);
   }
 
-  // Display status
   log(`${cliName} generating configuration for ${startCase(type)}...`, 'info', quiet);
 
-  // Get custom configuration
   await LexConfig.parseConfig(cmd);
 
   let configOptions;
@@ -41,27 +39,22 @@ export const config = async (type: string, cmd: ConfigOptions, callback: ConfigC
       configOptions = LexConfig.config;
       break;
     case 'jest':
-      configOptions = import('../../../jest.config.lex.js');
+      configOptions = import('../../../jest.config.mjs');
       break;
     case 'webpack':
       configOptions = import('../../../webpack.config.js');
       break;
   }
 
-  // Output config to console
   const jsonOutput: string = JSON.stringify(configOptions, null, 2);
 
   if(json) {
-    // Spinner
     const spinner = createSpinner(quiet);
 
-    // Start spinner
     spinner.start('Creating JSON output...');
 
-    // Save json locally
     writeFileSync(json, jsonOutput);
 
-    // Success spinner
     spinner.succeed(`Successfully saved JSON output to ${pathRelative(process.cwd(), json)}`);
   }
 

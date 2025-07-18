@@ -23,6 +23,7 @@ export * from './utils/aiService.js';
 export * from './utils/app.js';
 export * from './utils/file.js';
 export * from './utils/log.js';
+export * from './utils/reactShim.js';
 
 // Export commands
 export * from './commands/ai/ai.js';

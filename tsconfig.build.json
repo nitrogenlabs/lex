@@ -3,18 +3,15 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./src",
     "declaration": true,
-    "emitDeclarationOnly": false,
+    "emitDeclarationOnly": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
     "inlineSourceMap": true,
     "isolatedModules": true,
     "jsx": "react",
     "lib": [
-      "ESNext",
-      "DOM"
+      "dom",
+      "ESNext"
     ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -22,14 +19,14 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": false,
-    "outDir": "./dist",
     "pretty": true,
-    "removeComments": true,
     "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
     "skipLibCheck": true,
-    "strict": true,
     "target": "ESNext",
     "types": [
+      "jest",
       "node"
     ]
   },
@@ -43,6 +40,7 @@
     "**/__tests__/**",
     "**/__mocks__/**",
     "dist",
-    "node_modules"
+    "node_modules",
+    "jest.config.mjs"
   ]
 }

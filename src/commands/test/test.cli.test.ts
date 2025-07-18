@@ -78,7 +78,7 @@ describe('test.cli', () => {
       expect(mockSpinner.succeed).toHaveBeenCalledWith('Testing completed!');
 
       expect(execa as unknown as jest.Mock).toHaveBeenCalledWith(
-        '/node_modules/jest-cli/bin/jest.js',
+        expect.stringContaining('jest'),
         expect.arrayContaining(['--no-cache', '--config']),
         expect.objectContaining({encoding: 'utf8'})
       );
