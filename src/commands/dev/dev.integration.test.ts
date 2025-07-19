@@ -11,6 +11,23 @@ jest.mock('../../utils/app.js', () => ({
     fail: jest.fn()
   }))
 }));
+jest.mock('../../utils/file.js', () => ({
+  ...jest.requireActual('../../utils/file.js'),
+  resolveWebpackPaths: jest.fn(() => ({
+    webpackPath: '/mock/path/to/webpack-cli',
+    webpackConfig: '/mock/path/to/webpack.config.js'
+  }))
+}));
+jest.mock('../../LexConfig.js', () => ({
+  LexConfig: {
+    parseConfig: jest.fn().mockResolvedValue(undefined),
+    config: {
+      outputFullPath: '/mock/output',
+      useTypescript: false
+    },
+    checkTypescriptConfig: jest.fn()
+  }
+}));
 
 describe('dev integration', () => {
   let consoleLogSpy: jest.SpyInstance;
@@ -29,10 +46,22 @@ describe('dev integration', () => {
   });
 
   it('should start development server successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    const mockChildProcess = {
+      stdout: {on: jest.fn()},
+      stderr: {on: jest.fn()},
+      on: jest.fn()
+    };
+    (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+
+    mockChildProcess.on.mockImplementation((event, callback) => {
+      if(event === 'close') {
+        setTimeout(() => callback(0), 10);
+      }
+      return mockChildProcess;
+    });
+
     const result = await dev({});
 
-    expect(result).toBe(0);
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
   });
 

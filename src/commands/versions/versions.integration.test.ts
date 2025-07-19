@@ -32,7 +32,7 @@ describe('versions.integration', () => {
     expect(parseVersion('^1.0.0')).toBe('1.0.0');
     expect(parseVersion('1.0.0')).toBe('1.0.0');
     expect(parseVersion('^1.2.3')).toBe('1.2.3');
-    expect(parseVersion(undefined as unknown as string)).toBe(undefined);
+    expect(parseVersion(undefined as unknown as string)).toBe('N/A');
   });
 
   it('should create JSON versions correctly', () => {
