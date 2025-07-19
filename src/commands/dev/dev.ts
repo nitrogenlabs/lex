@@ -2,17 +2,17 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import boxen from 'boxen';
+import chalk from 'chalk';
 import {execa} from 'execa';
-import {dirname, resolve as pathResolve} from 'path';
-import {networkInterfaces} from 'os';
 import https from 'https';
+import {networkInterfaces} from 'os';
+import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
-import boxen from 'boxen';
-import chalk from 'chalk';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -20,7 +20,7 @@ let currentDirname: string;
 try {
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
-} catch {
+} catch{
   currentFilename = process.cwd();
   currentDirname = process.cwd();
 }
@@ -47,7 +47,9 @@ const getNetworkAddresses = () => {
 
   for(const name of Object.keys(interfaces)) {
     const networkInterface = interfaces[name];
-    if(!networkInterface) continue;
+    if(!networkInterface) {
+      continue;
+    }
 
     for(const iface of networkInterface) {
       if(iface.family === 'IPv4' && !iface.internal) {
@@ -71,8 +73,10 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (port: number = 3000, host: string = 'localhost', quiet: boolean, publicIp?: string) => {
-  if(quiet) return;
+const displayServerStatus = (port: number = 7001, host: string = 'localhost', quiet: boolean, publicIp?: string) => {
+  if(quiet) {
+    return;
+  }
 
   const addresses = getNetworkAddresses();
   const localUrl = `http://localhost:${port}`;
@@ -90,8 +94,8 @@ const displayServerStatus = (port: number = 3000, host: string = 'localhost', qu
   }
 
   const statusBox = boxen(
-    `${chalk.cyan.bold('🚀 Development Server Running')}\n\n` +
-    urlLines + `\n` +
+    `${chalk.cyan.bold('🚀 Development Server Running')}\n\n${
+      urlLines}\n` +
     `${chalk.yellow('Press Ctrl+C to stop the server')}`,
     {
       padding: 1,
@@ -102,18 +106,16 @@ const displayServerStatus = (port: number = 3000, host: string = 'localhost', qu
     }
   );
 
-  console.log('\n' + statusBox + '\n');
+  console.log(`\n${statusBox}\n`);
 };
 
-const fetchPublicIp = (): Promise<string | undefined> => {
-  return new Promise((resolve) => {
-    https.get('https://api.ipify.org', (res) => {
-      let data = '';
-      res.on('data', (chunk) => (data += chunk));
-      res.on('end', () => resolve(data.trim()));
-    }).on('error', () => resolve(undefined));
-  });
-};
+const fetchPublicIp = (): Promise<string | undefined> => new Promise((resolve) => {
+  https.get('https://api.ipify.org', (res) => {
+    let data = '';
+    res.on('data', (chunk) => (data += chunk));
+    res.on('end', () => resolve(data.trim()));
+  }).on('error', () => resolve(undefined));
+});
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
   const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
@@ -191,25 +193,32 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     } as any);
 
     let serverStarted = false;
-    let detectedPort = 3000;
+    let detectedPort = 7001;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString();
 
       handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
 
-      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled'))) {
+      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
         serverStarted = true;
         spinner.succeed('Development server started.');
 
-        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/);
+        // Try multiple patterns to detect the port
+        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
+          output.match(/http:\/\/localhost:(\d+)/) ||
+          output.match(/port:\s*(\d+)/) ||
+          output.match(/listening on port (\d+)/) ||
+          output.match(/WebpackPluginServe listening on port (\d+)/);
         if(portMatch) {
           detectedPort = parseInt(portMatch[1], 10);
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
         fetchPublicIp().then((publicIp) => {
-          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          if(publicIp) {
+            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          }
         });
       }
     });
@@ -219,18 +228,25 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
       handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
 
-      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled'))) {
+      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
         serverStarted = true;
         spinner.succeed('Development server started.');
 
-        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/);
+        // Try multiple patterns to detect the port
+        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
+          output.match(/http:\/\/localhost:(\d+)/) ||
+          output.match(/port:\s*(\d+)/) ||
+          output.match(/listening on port (\d+)/) ||
+          output.match(/WebpackPluginServe listening on port (\d+)/);
         if(portMatch) {
           detectedPort = parseInt(portMatch[1], 10);
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
         fetchPublicIp().then((publicIp) => {
-          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          if(publicIp) {
+            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          }
         });
       }
     });
@@ -240,10 +256,12 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         spinner.succeed('Development server started.');
         displayServerStatus(detectedPort, 'localhost', quiet);
         fetchPublicIp().then((publicIp) => {
-          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          if(publicIp) {
+            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          }
         });
       }
-    }, 3000);
+    }, 5000);
 
     await childProcess;
 
@@ -251,7 +269,9 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
       spinner.succeed('Development server started.');
       displayServerStatus(detectedPort, 'localhost', quiet);
       fetchPublicIp().then((publicIp) => {
-        if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+        if(publicIp) {
+          displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+        }
       });
     }
 
