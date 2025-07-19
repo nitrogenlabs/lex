@@ -10,7 +10,7 @@ import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
-import {getDirName, relativeNodePath} from '../../utils/file.js';
+import {getDirName, relativeNodePath, resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
@@ -245,7 +245,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
     webpackConfig = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
   } else {
-    // Look for webpack config in project directory first
     const projectConfigPath = pathResolve(process.cwd(), 'webpack.config.js');
     const projectConfigPathTs = pathResolve(process.cwd(), 'webpack.config.ts');
     const hasProjectConfig = existsSync(projectConfigPath) || existsSync(projectConfigPathTs);
@@ -253,31 +252,8 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     if(hasProjectConfig) {
       webpackConfig = existsSync(projectConfigPathTs) ? projectConfigPathTs : projectConfigPath;
     } else {
-      // Fall back to Lex's webpack config
-      const possiblePaths = [
-        pathResolve(currentDirname, '/webpack.config.js'),
-        pathResolve(currentDirname, '/webpack.config.ts'),
-        pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.js'),
-        pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.ts'),
-        // Add more fallback paths
-        pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.js'),
-        pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.ts')
-      ];
-
-      let lexConfigPath = '';
-      for(const path of possiblePaths) {
-        if(existsSync(path)) {
-          lexConfigPath = path;
-          break;
-        }
-      }
-
-      if(lexConfigPath) {
-        webpackConfig = lexConfigPath;
-      } else {
-        // Final fallback to the original path
-        webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
-      }
+      const {webpackConfig: resolvedConfig} = resolveWebpackPaths(currentDirname);
+      webpackConfig = resolvedConfig;
     }
   }
 
@@ -380,31 +356,11 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   }
 
   try {
-    // Try to find webpack-cli in multiple locations
-    const possibleWebpackPaths = [
-      pathResolve(process.cwd(), '/node_modules/webpack-cli/bin/cli.js'),
-      pathResolve(process.cwd(), '/node_modules/.bin/webpack'),
-      pathResolve(currentDirname, '/node_modules/webpack-cli/bin/cli.js'),
-      pathResolve(currentDirname, '/node_modules/.bin/webpack'),
-      pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
-      pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/.bin/webpack')
-    ];
+    const {webpackPath} = resolveWebpackPaths(currentDirname);
 
-    let webpackPath = '';
-    for(const path of possibleWebpackPaths) {
-      if(existsSync(path)) {
-        webpackPath = path;
-        break;
-      }
-    }
+    const finalWebpackOptions = webpackPath === 'npx' ? ['webpack', ...webpackOptions] : webpackOptions;
 
-    if(!webpackPath) {
-      // Fallback to using npx webpack
-      webpackPath = 'npx';
-      webpackOptions.unshift('webpack');
-    }
-
-    await execa(webpackPath, webpackOptions, {encoding: 'utf8', stdio: 'inherit'});
+    await execa(webpackPath, finalWebpackOptions, {encoding: 'utf8', stdio: 'inherit'});
 
     spinner.succeed('Build completed successfully!');
 
@@ -481,7 +437,6 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   }
 
   if(useTypescript) {
-    // Use the compile-specific TypeScript config for building
     const compileConfigPath = getTypeScriptConfigPath('tsconfig.build.json');
     if(existsSync(compileConfigPath)) {
       log('Using tsconfig.build.json for build...', 'info', quiet);
@@ -541,7 +496,6 @@ What are the key optimization opportunities for this build configuration? Consid
     }
   }
 
-  // Copy configured files after successful build
   if(buildResult === 0) {
     try {
       await copyConfiguredFiles(spinner, LexConfig.config, quiet);

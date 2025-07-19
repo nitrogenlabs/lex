@@ -12,7 +12,7 @@ import {LexConfig} from '../LexConfig.js';
 export function getDirName(): string {
   try {
     return eval('new URL(".", import.meta.url).pathname');
-  } catch{
+  } catch {
     return process.cwd();
   }
 }
@@ -20,7 +20,7 @@ export function getDirName(): string {
 export function getFilePath(relativePath: string): string {
   try {
     return eval('require("url").fileURLToPath(new URL(relativePath, import.meta.url))');
-  } catch{
+  } catch {
     if(relativePath === '../../../package.json') {
       return pathResolve(process.cwd(), 'package.json');
     }
@@ -210,4 +210,56 @@ export const findTailwindCssPath = (): string => {
   }
 
   return '';
+};
+
+export const resolveWebpackPaths = (currentDirname: string): {webpackPath: string; webpackConfig: string} => {
+  const possibleWebpackPaths = [
+    pathResolve(process.cwd(), 'node_modules/webpack-cli/bin/cli.js'),
+    pathResolve(process.cwd(), 'node_modules/.bin/webpack'),
+    pathResolve(process.cwd(), 'node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
+    pathResolve(process.cwd(), 'node_modules/@nlabs/lex', 'node_modules/.bin/webpack'),
+    pathResolve(currentDirname, 'node_modules/@nlabs/lex/node_modules/webpack-cli/bin/cli.js'),
+    pathResolve(currentDirname, 'node_modules/@nlabs/lex/node_modules/.bin/webpack'),
+    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
+    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/.bin/webpack')
+  ];
+
+  let webpackPath = '';
+
+  for(const path of possibleWebpackPaths) {
+    if(existsSync(path)) {
+      webpackPath = path;
+      break;
+    }
+  }
+
+  if(!webpackPath) {
+    webpackPath = 'npx';
+  }
+
+  const possibleWebpackConfigPaths = [
+    pathResolve(process.cwd(), 'webpack.config.js'),
+    pathResolve(process.cwd(), 'webpack.config.ts'),
+    pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.js'),
+    pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.ts'),
+    pathResolve(currentDirname, 'node_modules/@nlabs/lex/webpack.config.js'),
+    pathResolve(currentDirname, 'node_modules/@nlabs/lex/webpack.config.ts'),
+    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.js'),
+    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.ts')
+  ];
+
+  let webpackConfig = '';
+
+  for(const path of possibleWebpackConfigPaths) {
+    if(existsSync(path)) {
+      webpackConfig = path;
+      break;
+    }
+  }
+
+  if(!webpackConfig) {
+    webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
+  }
+
+  return {webpackPath, webpackConfig};
 };
