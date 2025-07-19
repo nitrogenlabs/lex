@@ -15,7 +15,13 @@
       "types": "./dist/test-react/index.d.ts",
       "import": "./dist/test-react/index.js",
       "require": "./dist/test-react/index.js"
-    }
+    },
+    "./storybook": {
+      "types": "./dist/storybook/index.d.ts",
+      "import": "./dist/storybook/index.js",
+      "require": "./dist/storybook/index.js"
+    },
+    "./eslint.config.js": "./eslint.config.js"
   },
   "types": "./dist/index.d.ts",
   "keywords": [
@@ -48,7 +54,7 @@
     "clean": "rm -rf dist node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",
-    "lint": "eslint ./src --fix",
+    "lint": "eslint ./src --fix --no-warn-ignored",
     "lint:ai": "node ./dist/lex.js lint --fix",
     "lint:rebuild": "npm run build && npm run lint:ai",
     "prepublishOnly": "npm run build",
@@ -124,7 +130,7 @@
     "css-loader": "^7.1.2",
     "cssnano": "^7.1.0",
     "dotenv-webpack": "^8.1.1",
-    "download-npm-package": "^3.1.12",
+    "download-npm-package": "^3.1.5",
     "esbuild": "0.25.6",
     "esbuild-loader": "4.3.0",
     "eslint": "^9.31.0",
@@ -180,7 +186,7 @@
     "rimraf": "^6.0.1",
     "semver": "^7.7.2",
     "speed-measure-webpack-plugin": "^1.5.0",
-    "static-site-generator-webpack-plugin": "^3.4.2",
+    "static-site-generator-webpack-plugin": "^3.3.0",
     "storybook": "^9.0.17",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",

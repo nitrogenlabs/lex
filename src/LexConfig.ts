@@ -9,6 +9,8 @@ import {URL} from 'url';
 import {getDirName, getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
 
+import type {Linter} from 'eslint';
+
 const cwd: string = process.cwd();
 
 export interface EsbuildConfig {
@@ -58,14 +60,22 @@ export interface AIConfig {
   maxTokens?: number;
   temperature?: number;
 }
+
+export interface ESLintConfig {
+  extends?: string[];
+  rules?: Linter.RulesRecord;
+  [key: string]: unknown;
+}
+
 export interface LexConfigType {
   ai?: AIConfig;
   configFiles?: string[];
   copyFiles?: string[];
   entryHTML?: string;
   entryJs?: string;
-  esbuild?: EsbuildConfig;
   env?: object;
+  esbuild?: EsbuildConfig;
+  eslint?: ESLintConfig;
   gitUrl?: string;
   jest?: JestConfig;
   libraryName?: string;
@@ -97,6 +107,7 @@ export const defaultConfigValues: LexConfigType = {
   copyFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',
+  eslint: {},
   esbuild: {
     minify: true,
     treeShaking: true,

@@ -1,12 +1,15 @@
-# 🚀 Lex - The Ultimate React Development CLI
+# Lex: The Ultimate React Development CLI
 
 > **Zero Configuration. Maximum Productivity.**
 
 Lex is the all-in-one development CLI that eliminates the complexity of modern React development. No more juggling webpack configs, testing setups, or build tools. Just install Lex globally and focus on what matters most - building amazing applications.
 
-[![npm version](https://badge.fury.io/js/%40nlabs%2Flex.svg)](https://badge.fury.io/js/%40nlabs%2Flex)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![npm version](https://img.shields.io/npm/v/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
+[![npm downloads](https://img.shields.io/npm/dm/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
+[![Issues](http://img.shields.io/github/issues/nitrogenlabs/lex.svg?style=flat-square)](https://github.com/nitrogenlabs/lex/issues)
+[![TypeScript](https://badges.frapsoft.com/typescript/version/typescript-next.svg?v=101)](https://github.com/ellerbrock/typescript-badges/)
+[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Chat](https://img.shields.io/discord/446122412715802649.svg)](https://discord.gg/nitrogenlabs)
 
 ## ✨ Why Lex?
 
@@ -168,7 +171,18 @@ lex test --generate
 
 # Debug failing tests
 lex test --debugTests
+
+# Use project-specific Jest config
+lex test --config ./jest.config.js
 ```
+
+#### Advanced Testing Features
+
+- **Smart Configuration Merging**: Automatically merges your project's Jest config with Lex's optimized defaults
+- **ESM Support**: Automatic detection and configuration for ES modules projects
+- **Automatic Setup**: Creates jest.setup.js file if one doesn't exist
+- **React JSX Automatic Runtime**: No need to import React in your test files
+- **TypeScript-First**: Optimized for TypeScript projects with specialized configs
 
 ### 🎨 **Storybook Integration**
 
@@ -243,6 +257,15 @@ export default {
     minify: true,
     sourcemap: true,
     target: 'es2020'
+  },
+
+  // Jest configuration (merged with Lex defaults)
+  jest: {
+    testEnvironment: 'jsdom',
+    setupFilesAfterEnv: ['./src/setupTests.js'],
+    moduleNameMapper: {
+      '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+    }
   }
 };
 ```

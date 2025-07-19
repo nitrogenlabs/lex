@@ -10,14 +10,14 @@ import {log} from '../../utils/log.js';
 const packagePath = getLexPackageJsonPath();
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 
-export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '');
+export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '') || 'N/A';
 
 export const packages = {
-  esbuild: parseVersion(packageJson.dependencies.esbuild),
-  jest: parseVersion(packageJson.dependencies.jest),
+  esbuild: parseVersion(packageJson?.dependencies?.esbuild),
+  jest: parseVersion(packageJson?.dependencies?.jest),
   lex: packageJson.version,
-  typescript: parseVersion(packageJson.dependencies.typescript),
-  webpack: parseVersion(packageJson.dependencies.webpack)
+  typescript: parseVersion(packageJson?.dependencies?.typescript),
+  webpack: parseVersion(packageJson?.dependencies?.webpack)
 };
 
 export const jsonVersions = (lexPackages) => Object.keys(lexPackages).reduce((list, key) => {

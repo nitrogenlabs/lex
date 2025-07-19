@@ -25,6 +25,9 @@ export * from './utils/file.js';
 export * from './utils/log.js';
 export * from './utils/reactShim.js';
 
+// Export Storybook module
+export * from './storybook/index.js';
+
 // Export commands
 export * from './commands/ai/ai.js';
 export * from './commands/build/build.js';

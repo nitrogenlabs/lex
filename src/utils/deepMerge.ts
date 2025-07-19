@@ -10,7 +10,9 @@
  * @returns The merged object
  */
 export const deepMerge = (target: any, source: any): any => {
-  if(!source) return target;
+  if(!source) {
+    return target;
+  }
 
   const result = {...target};
 
