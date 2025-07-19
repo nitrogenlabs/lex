@@ -6,13 +6,24 @@ import GraphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {resolve as pathResolve} from 'path';
+import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
 import {getDirName, relativeNodePath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
+
+let currentFilename: string;
+let currentDirname: string;
+
+try {
+  currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
+  currentDirname = dirname(currentFilename);
+} catch {
+  currentFilename = process.cwd();
+  currentDirname = process.cwd();
+}
 
 export interface BuildOptions {
   readonly assist?: boolean;
@@ -96,51 +107,51 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`
   ];
 
-  if (esbuildConfig.minify !== false) {
+  if(esbuildConfig.minify !== false) {
     esbuildOptions.push('--minify');
   }
 
-  if (esbuildConfig.treeShaking !== false) {
+  if(esbuildConfig.treeShaking !== false) {
     esbuildOptions.push('--tree-shaking=true');
   }
 
-    if (esbuildConfig.drop && esbuildConfig.drop.length > 0) {
+  if(esbuildConfig.drop && esbuildConfig.drop.length > 0) {
     esbuildConfig.drop.forEach(item => {
       esbuildOptions.push(`--drop:${item}`);
     });
   }
 
-  if (esbuildConfig.pure && esbuildConfig.pure.length > 0) {
+  if(esbuildConfig.pure && esbuildConfig.pure.length > 0) {
     esbuildConfig.pure.forEach(item => {
       esbuildOptions.push(`--pure:${item}`);
     });
   }
 
-  if (esbuildConfig.legalComments) {
+  if(esbuildConfig.legalComments) {
     esbuildOptions.push(`--legal-comments=${esbuildConfig.legalComments}`);
   }
 
-  if (esbuildConfig.splitting !== false) {
+  if(esbuildConfig.splitting !== false) {
     esbuildOptions.push('--splitting');
   }
 
-  if (esbuildConfig.metafile) {
+  if(esbuildConfig.metafile) {
     esbuildOptions.push('--metafile');
   }
 
-  if (esbuildConfig.banner) {
+  if(esbuildConfig.banner) {
     Object.entries(esbuildConfig.banner).forEach(([type, content]) => {
       esbuildOptions.push(`--banner:${type}=${content}`);
     });
   }
 
-  if (esbuildConfig.footer) {
+  if(esbuildConfig.footer) {
     Object.entries(esbuildConfig.footer).forEach(([type, content]) => {
       esbuildOptions.push(`--footer:${type}=${content}`);
     });
   }
 
-  if (esbuildConfig.define) {
+  if(esbuildConfig.define) {
     Object.entries(esbuildConfig.define).forEach(([key, value]) => {
       esbuildOptions.push(`--define:${key}=${value}`);
     });
@@ -229,13 +240,45 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   } = cmd;
 
   let webpackConfig: string;
-  const dirName = getDirName();
 
   if(config) {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
     webpackConfig = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
   } else {
-    webpackConfig = pathResolve(dirName, '../../webpack.config.js');
+    // Look for webpack config in project directory first
+    const projectConfigPath = pathResolve(process.cwd(), 'webpack.config.js');
+    const projectConfigPathTs = pathResolve(process.cwd(), 'webpack.config.ts');
+    const hasProjectConfig = existsSync(projectConfigPath) || existsSync(projectConfigPathTs);
+
+    if(hasProjectConfig) {
+      webpackConfig = existsSync(projectConfigPathTs) ? projectConfigPathTs : projectConfigPath;
+    } else {
+      // Fall back to Lex's webpack config
+      const possiblePaths = [
+        pathResolve(currentDirname, '/webpack.config.js'),
+        pathResolve(currentDirname, '/webpack.config.ts'),
+        pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.js'),
+        pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.ts'),
+        // Add more fallback paths
+        pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.js'),
+        pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.ts')
+      ];
+
+      let lexConfigPath = '';
+      for(const path of possiblePaths) {
+        if(existsSync(path)) {
+          lexConfigPath = path;
+          break;
+        }
+      }
+
+      if(lexConfigPath) {
+        webpackConfig = lexConfigPath;
+      } else {
+        // Final fallback to the original path
+        webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
+      }
+    }
   }
 
   const webpackOptions: string[] = [
@@ -336,10 +379,31 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     webpackOptions.push('--watchOptionsStdin');
   }
 
-  const dirPath: string = pathResolve(dirName, '../..');
-
   try {
-    const webpackPath: string = relativeNodePath('webpack-cli/bin/cli.js', dirPath);
+    // Try to find webpack-cli in multiple locations
+    const possibleWebpackPaths = [
+      pathResolve(process.cwd(), '/node_modules/webpack-cli/bin/cli.js'),
+      pathResolve(process.cwd(), '/node_modules/.bin/webpack'),
+      pathResolve(currentDirname, '/node_modules/webpack-cli/bin/cli.js'),
+      pathResolve(currentDirname, '/node_modules/.bin/webpack'),
+      pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
+      pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/.bin/webpack')
+    ];
+
+    let webpackPath = '';
+    for(const path of possibleWebpackPaths) {
+      if(existsSync(path)) {
+        webpackPath = path;
+        break;
+      }
+    }
+
+    if(!webpackPath) {
+      // Fallback to using npx webpack
+      webpackPath = 'npx';
+      webpackOptions.unshift('webpack');
+    }
+
     await execa(webpackPath, webpackOptions, {encoding: 'utf8', stdio: 'inherit'});
 
     spinner.succeed('Build completed successfully!');
