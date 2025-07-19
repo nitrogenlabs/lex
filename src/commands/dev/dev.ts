@@ -4,6 +4,8 @@
  */
 import {execa} from 'execa';
 import {dirname, resolve as pathResolve} from 'path';
+import {networkInterfaces} from 'os';
+import https from 'https';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
@@ -35,17 +37,61 @@ export interface DevOptions {
 
 export type DevCallback = (status: number) => void;
 
-const displayServerStatus = (port: number = 3000, host: string = 'localhost', quiet: boolean) => {
+const getNetworkAddresses = () => {
+  const interfaces = networkInterfaces();
+  const addresses = {
+    local: 'localhost',
+    private: null,
+    public: null
+  };
+
+  for(const name of Object.keys(interfaces)) {
+    const networkInterface = interfaces[name];
+    if(!networkInterface) continue;
+
+    for(const iface of networkInterface) {
+      if(iface.family === 'IPv4' && !iface.internal) {
+        const ip = iface.address;
+
+        // Private IP ranges
+        if(ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('172.')) {
+          if(!addresses.private) {
+            addresses.private = ip;
+          }
+        } else {
+          // Public IP (not in private ranges)
+          if(!addresses.public) {
+            addresses.public = ip;
+          }
+        }
+      }
+    }
+  }
+
+  return addresses;
+};
+
+const displayServerStatus = (port: number = 3000, host: string = 'localhost', quiet: boolean, publicIp?: string) => {
   if(quiet) return;
 
-  const url = `http://${host}:${port}`;
+  const addresses = getNetworkAddresses();
   const localUrl = `http://localhost:${port}`;
-  const networkUrl = `http://${host}:${port}`;
+  const privateUrl = addresses.private ? `http://${addresses.private}:${port}` : null;
+  const publicUrl = publicIp ? `http://${publicIp}:${port}` : (addresses.public ? `http://${addresses.public}:${port}` : null);
+
+  let urlLines = `${chalk.green('Local:')}     ${chalk.underline(localUrl)}\n`;
+
+  if(privateUrl) {
+    urlLines += `${chalk.green('Private:')}   ${chalk.underline(privateUrl)}\n`;
+  }
+
+  if(publicUrl) {
+    urlLines += `${chalk.green('Public:')}    ${chalk.underline(publicUrl)}\n`;
+  }
 
   const statusBox = boxen(
     `${chalk.cyan.bold('🚀 Development Server Running')}\n\n` +
-    `${chalk.green('Local:')}     ${chalk.underline(localUrl)}\n` +
-    `${chalk.green('Network:')}   ${chalk.underline(networkUrl)}\n\n` +
+    urlLines + `\n` +
     `${chalk.yellow('Press Ctrl+C to stop the server')}`,
     {
       padding: 1,
@@ -57,6 +103,16 @@ const displayServerStatus = (port: number = 3000, host: string = 'localhost', qu
   );
 
   console.log('\n' + statusBox + '\n');
+};
+
+const fetchPublicIp = (): Promise<string | undefined> => {
+  return new Promise((resolve) => {
+    https.get('https://api.ipify.org', (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => resolve(data.trim()));
+    }).on('error', () => resolve(undefined));
+  });
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
@@ -152,6 +208,9 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
+        fetchPublicIp().then((publicIp) => {
+          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+        });
       }
     });
 
@@ -170,6 +229,9 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
+        fetchPublicIp().then((publicIp) => {
+          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+        });
       }
     });
 
@@ -177,6 +239,9 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
       if(!serverStarted) {
         spinner.succeed('Development server started.');
         displayServerStatus(detectedPort, 'localhost', quiet);
+        fetchPublicIp().then((publicIp) => {
+          if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+        });
       }
     }, 3000);
 
@@ -185,6 +250,9 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     if(!serverStarted) {
       spinner.succeed('Development server started.');
       displayServerStatus(detectedPort, 'localhost', quiet);
+      fetchPublicIp().then((publicIp) => {
+        if(publicIp) displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+      });
     }
 
     callback(0);
