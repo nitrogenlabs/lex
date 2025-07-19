@@ -9,10 +9,12 @@ import {sync as globSync} from 'glob';
 import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
-import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
+import {checkLinkedModules, copyConfiguredFiles, createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {getDirName, relativeNodePath, resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
+import boxen from 'boxen';
+import chalk from 'chalk';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -40,6 +42,33 @@ export interface BuildOptions {
 }
 
 export type BuildCallback = (status: number) => void;
+
+const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean, stats?: {modules?: number; assets?: number; size?: string}) => {
+  if(quiet) return;
+
+  let statsInfo = '';
+  if(stats && stats.modules && stats.assets) {
+    statsInfo = `\n${chalk.green('Modules:')}    ${chalk.cyan(stats.modules)}\n` +
+      `${chalk.green('Assets:')}     ${chalk.cyan(stats.assets)}\n` +
+      `${chalk.green('Size:')}       ${chalk.cyan(stats.size)}\n`;
+  }
+
+  const statusBox = boxen(
+    `${chalk.cyan.bold('🏗️  Build Completed Successfully')}\n\n` +
+    `${chalk.green('Bundler:')}    ${chalk.cyan(bundler)}\n` +
+    `${chalk.green('Output:')}     ${chalk.underline(outputPath)}${statsInfo}\n` +
+    `${chalk.yellow('Ready for deployment! 🚀')}`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'green',
+      backgroundColor: '#1a1a1a'
+    }
+  );
+
+  console.log('\n' + statusBox + '\n');
+};
 
 export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
@@ -172,6 +201,7 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
     await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
 
     spinner.succeed('Build completed successfully!');
+    displayBuildStatus('esbuild', outputDir, quiet);
   } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
@@ -360,9 +390,63 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
 
     const finalWebpackOptions = webpackPath === 'npx' ? ['webpack', ...webpackOptions] : webpackOptions;
 
-    await execa(webpackPath, finalWebpackOptions, {encoding: 'utf8', stdio: 'inherit'});
+    const childProcess = execa(webpackPath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
 
-    spinner.succeed('Build completed successfully!');
+    let buildCompleted = false;
+    let buildStats = {
+      modules: 0,
+      assets: 0,
+      size: '0 B'
+    };
+
+    childProcess.stdout?.on('data', (data: Buffer) => {
+      const output = data.toString();
+
+      handleWebpackProgress(output, spinner, quiet, '🏗️', 'Webpack Building');
+
+      if(!buildCompleted && output.includes('compiled successfully')) {
+        buildCompleted = true;
+        spinner.succeed('Build completed successfully!');
+
+        const moduleMatch = output.match(/(\d+) modules/);
+        const assetMatch = output.match(/(\d+) assets/);
+        const sizeMatch = output.match(/assets by status ([\d.]+ \w+)/) || output.match(/assets by path.*?([\d.]+ \w+)/);
+
+        if(moduleMatch) buildStats.modules = parseInt(moduleMatch[1], 10);
+        if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
+        if(sizeMatch) buildStats.size = sizeMatch[1];
+
+        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+      }
+    });
+
+    childProcess.stderr?.on('data', (data: Buffer) => {
+      const output = data.toString();
+
+      handleWebpackProgress(output, spinner, quiet, '🏗️', 'Webpack Building');
+
+      if(!buildCompleted && output.includes('compiled successfully')) {
+        buildCompleted = true;
+        spinner.succeed('Build completed successfully!');
+
+        const moduleMatch = output.match(/(\d+) modules/);
+        const assetMatch = output.match(/(\d+) assets/);
+        const sizeMatch = output.match(/assets by status ([\d.]+ \w+)/) || output.match(/assets by path.*?([\d.]+ \w+)/);
+
+        if(moduleMatch) buildStats.modules = parseInt(moduleMatch[1], 10);
+        if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
+        if(sizeMatch) buildStats.size = sizeMatch[1];
+
+        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+      }
+    });
+
+    await childProcess;
+
+    if(!buildCompleted) {
+      spinner.succeed('Build completed successfully!');
+      displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+    }
 
     callback(0);
     return 0;

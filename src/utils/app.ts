@@ -4,6 +4,7 @@
  */
 
 import boxen from 'boxen';
+import chalk from 'chalk';
 import {copyFile, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import isEmpty from 'lodash/isEmpty.js';
@@ -78,6 +79,7 @@ export interface Spinner {
   fail: (text?: string) => void;
   start: (text?: string) => void;
   succeed: (text?: string) => void;
+  text?: string;
 }
 
 export const createSpinner = (quiet = false): Spinner => {
@@ -90,6 +92,35 @@ export const createSpinner = (quiet = false): Spinner => {
   }
 
   return ora({color: 'yellow'});
+};
+
+export const createProgressBar = (percentage: number): string => {
+  const width = 20;
+  const filled = Math.round((percentage / 100) * width);
+  const empty = width - filled;
+
+  const filledBar = chalk.cyan('█').repeat(filled);
+  const emptyBar = chalk.gray('░').repeat(empty);
+
+  return filledBar + emptyBar;
+};
+
+export const handleWebpackProgress = (output: string, spinner: Spinner, quiet: boolean, emoji: string, action: string): void => {
+  if(quiet) return;
+
+  const progressMatch = output.match(/\[webpack\.Progress\] (\d+)%/);
+  if(progressMatch) {
+    const progress = parseInt(progressMatch[1], 10);
+    const progressBar = createProgressBar(progress);
+    spinner.text = `${emoji} ${action}: ${progressBar} ${progress}%`;
+  } else if(output.includes('[webpack.Progress]')) {
+    const generalProgressMatch = output.match(/(\d+)%/);
+    if(generalProgressMatch) {
+      const progress = parseInt(generalProgressMatch[1], 10);
+      const progressBar = createProgressBar(progress);
+      spinner.text = `${emoji} ${action}: ${progressBar} ${progress}%`;
+    }
+  }
 };
 
 export const copyFiles = async (files: string[], typeName: string, spinner, config: LexConfigType) => {

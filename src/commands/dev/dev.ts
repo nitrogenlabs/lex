@@ -6,9 +6,11 @@ import {execa} from 'execa';
 import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
-import {createSpinner, removeFiles} from '../../utils/app.js';
+import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+import boxen from 'boxen';
+import chalk from 'chalk';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -32,6 +34,30 @@ export interface DevOptions {
 }
 
 export type DevCallback = (status: number) => void;
+
+const displayServerStatus = (port: number = 3000, host: string = 'localhost', quiet: boolean) => {
+  if(quiet) return;
+
+  const url = `http://${host}:${port}`;
+  const localUrl = `http://localhost:${port}`;
+  const networkUrl = `http://${host}:${port}`;
+
+  const statusBox = boxen(
+    `${chalk.cyan.bold('🚀 Development Server Running')}\n\n` +
+    `${chalk.green('Local:')}     ${chalk.underline(localUrl)}\n` +
+    `${chalk.green('Network:')}   ${chalk.underline(networkUrl)}\n\n` +
+    `${chalk.yellow('Press Ctrl+C to stop the server')}`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan',
+      backgroundColor: '#1a1a1a'
+    }
+  );
+
+  console.log('\n' + statusBox + '\n');
+};
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
   const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
@@ -97,16 +123,69 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   try {
     const finalWebpackOptions = webpackPath === 'npx' ? ['webpack', ...webpackOptions] : webpackOptions;
 
-    await execa(webpackPath, finalWebpackOptions, {
+    spinner.start('Starting development server...');
+
+    const childProcess = execa(webpackPath, finalWebpackOptions, {
       encoding: 'utf8',
       env: {
         LEX_QUIET: quiet,
         WEBPACK_DEV_OPEN: open
       },
-      stdio: 'inherit'
+      stdio: 'pipe'
     } as any);
 
-    spinner.succeed('Development server started.');
+    let serverStarted = false;
+    let detectedPort = 3000;
+
+    childProcess.stdout?.on('data', (data: Buffer) => {
+      const output = data.toString();
+
+      handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
+
+      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled'))) {
+        serverStarted = true;
+        spinner.succeed('Development server started.');
+
+        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/);
+        if(portMatch) {
+          detectedPort = parseInt(portMatch[1], 10);
+        }
+
+        displayServerStatus(detectedPort, 'localhost', quiet);
+      }
+    });
+
+    childProcess.stderr?.on('data', (data: Buffer) => {
+      const output = data.toString();
+
+      handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
+
+      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled'))) {
+        serverStarted = true;
+        spinner.succeed('Development server started.');
+
+        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/);
+        if(portMatch) {
+          detectedPort = parseInt(portMatch[1], 10);
+        }
+
+        displayServerStatus(detectedPort, 'localhost', quiet);
+      }
+    });
+
+    setTimeout(() => {
+      if(!serverStarted) {
+        spinner.succeed('Development server started.');
+        displayServerStatus(detectedPort, 'localhost', quiet);
+      }
+    }, 3000);
+
+    await childProcess;
+
+    if(!serverStarted) {
+      spinner.succeed('Development server started.');
+      displayServerStatus(detectedPort, 'localhost', quiet);
+    }
 
     callback(0);
     return 0;
