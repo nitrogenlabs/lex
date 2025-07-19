@@ -50,9 +50,9 @@ const config = {
                 loader: 'babel-loader',
                 options: {
                   presets: [
-                    '/Users/nitrog7/Development/gothamjs/node_modules/@babel/preset-typescript',
+                    '@babel/preset-typescript',
                     [
-                      '/Users/nitrog7/Development/gothamjs/node_modules/@babel/preset-react',
+                      '@babel/preset-react',
                       {
                         runtime: 'automatic'
                       }
@@ -63,6 +63,13 @@ const config = {
             ]
           }
         ]
+      },
+      resolve: {
+        ...config.resolve,
+        extensions: ['.js', '.ts', '.tsx', '.json', '.mdx'],
+        extensionAlias: {
+          '.js': ['.ts', '.tsx', '.js']
+        }
       }
     };
   }
