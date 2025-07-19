@@ -12,7 +12,7 @@ import {LexConfig} from '../LexConfig.js';
 export function getDirName(): string {
   try {
     return eval('new URL(".", import.meta.url).pathname');
-  } catch {
+  } catch{
     return process.cwd();
   }
 }
@@ -20,7 +20,7 @@ export function getDirName(): string {
 export function getFilePath(relativePath: string): string {
   try {
     return eval('require("url").fileURLToPath(new URL(relativePath, import.meta.url))');
-  } catch {
+  } catch{
     if(relativePath === '../../../package.json') {
       return pathResolve(process.cwd(), 'package.json');
     }

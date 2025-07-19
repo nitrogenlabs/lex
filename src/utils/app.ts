@@ -106,7 +106,9 @@ export const createProgressBar = (percentage: number): string => {
 };
 
 export const handleWebpackProgress = (output: string, spinner: Spinner, quiet: boolean, emoji: string, action: string): void => {
-  if(quiet) return;
+  if(quiet) {
+    return;
+  }
 
   const progressMatch = output.match(/\[webpack\.Progress\] (\d+)%/);
   if(progressMatch) {
