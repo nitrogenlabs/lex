@@ -53,6 +53,11 @@ const {
   webpack: webpackCustom
 } = lexConfig;
 
+const webpackPublicPath = webpackCustom?.publicPath || './src/public';
+
+// Filter out Lex-specific properties from webpack config
+const {publicPath: _, ...webpackConfig} = webpackCustom || {};
+
 // Only add plugins if they are needed
 const plugins = [
   new ProgressPlugin({
@@ -119,6 +124,13 @@ const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
+// Handle publicPath for static assets
+const publicPathFull = pathResolve(process.cwd(), webpackPublicPath);
+if(existsSync(publicPathFull)) {
+  staticPaths.push({from: publicPathFull, to: './public/'});
+  watchIgnorePaths.push(publicPathFull);
+}
+
 if(existsSync(imagePath)) {
   staticPaths.push({from: imagePath, to: './images/'});
   watchIgnorePaths.push(imagePath);
@@ -147,6 +159,32 @@ if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
       template: `${sourceFullPath}/${lexConfig.entryHTML}`
     })
   );
+
+    // Add fallback for missing static assets
+  const missingAssets = [];
+  const requiredAssets = ['favicon.ico', 'images/logo-icon-64.png', 'manifest.json'];
+
+  requiredAssets.forEach(asset => {
+    if (!existsSync(`${sourceFullPath}/${asset}`)) {
+      missingAssets.push(asset);
+    }
+  });
+
+  if (missingAssets.length > 0) {
+    // Create empty fallback files for missing assets
+    plugins.push(
+      new CopyWebpackPlugin({
+        patterns: missingAssets.map(asset => ({
+          from: pathResolve(dirName, 'emptyModule.js'),
+          to: `${outputFullPath}/${asset}`,
+          transform() {
+            // Return empty content for missing assets
+            return '';
+          }
+        }))
+      })
+    );
+  }
 }
 
 let outputFilename = outputFile;
@@ -252,13 +290,41 @@ export default (webpackEnv, webpackOptions) => {
           test: /\.(ts|tsx|js)$/
         },
         {
-          exclude: /(node_modules)/,
+          exclude: [pathResolve(sourceFullPath, lexConfig.entryHTML)],
           include: sourceFullPath,
           test: /\.html$/,
           use: [
             {
               loader: htmlLoaderPath,
-              options: {minimize: isProduction}
+              options: {
+                minimize: isProduction,
+                sources: {
+                  list: [
+                    // Exclude static assets from being processed as modules
+                    '...',
+                    {
+                      tag: 'link',
+                      attribute: 'href',
+                      type: 'src',
+                      filter: (tag, attribute, attributes) => {
+                        // Don't process static assets as modules
+                        const href = attributes[attribute];
+                        return !href || !href.match(/\.(ico|png|jpg|jpeg|gif|svg|json)$/);
+                      }
+                    },
+                    {
+                      tag: 'script',
+                      attribute: 'src',
+                      type: 'src',
+                      filter: (tag, attribute, attributes) => {
+                        // Don't process static assets as modules
+                        const src = attributes[attribute];
+                        return !src || !src.match(/\.(ico|png|jpg|jpeg|gif|svg|json)$/);
+                      }
+                    }
+                  ]
+                }
+              }
             }
           ]
         },
@@ -323,6 +389,49 @@ export default (webpackEnv, webpackOptions) => {
           test: /\.(gif|jpg|png|svg)$/,
           type: 'asset/resource'
         },
+        {
+          // Optimize images and videos from publicPath
+          test: /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac)$/,
+          include: publicPathFull,
+          type: 'asset/resource',
+          generator: {
+            filename: 'public/[name].[hash][ext]'
+          },
+          use: isProduction ? [
+            {
+              loader: 'image-webpack-loader',
+              options: {
+                mozjpeg: {
+                  progressive: true,
+                  quality: 65
+                },
+                optipng: {
+                  enabled: false
+                },
+                pngquant: {
+                  quality: [0.65, 0.90],
+                  speed: 4
+                },
+                gifsicle: {
+                  interlaced: false
+                },
+                webp: {
+                  quality: 75
+                }
+              }
+            }
+          ] : []
+        },
+        {
+          // Handle missing static assets gracefully
+          test: /\.(ico|json)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: '[name][ext]'
+          }
+        },
+
+
         {
           exclude: /(node_modules)/,
           include: sourceFullPath,
@@ -513,6 +622,6 @@ export default (webpackEnv, webpackOptions) => {
       webpackConfig.optimization.moduleIds = 'deterministic';
     }
   }
-
-  return merge(webpackConfig, webpackCustom);
+  return merge(webpackConfig, webpackConfig);
+  return merge(webpackConfig, webpackConfig);
 };

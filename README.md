@@ -149,6 +149,10 @@ lex dev --usePublicIp
 
 **🌐 Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
+**📁 Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
+
+**🎨 Public Assets**: Use the `webpack.publicPath` configuration to specify a directory for public assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
+
 ### 🏗️ **Production Builds**
 
 ```bash
@@ -356,6 +360,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `webpack.module` | `object` | `undefined` | Webpack module configuration | `webpack: { module: { rules: [...] } }` |
 | `webpack.output` | `object` | `undefined` | Webpack output configuration | `webpack: { output: { filename: 'bundle.js' } }` |
 | `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
+| `webpack.publicPath` | `string` | `'./src/public'` | Path to public assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { publicPath: './assets' }` |
 
 ### 🔗 **Library Configuration**
 
@@ -488,6 +493,30 @@ If TypeScript compilation fails, ensure your `tsconfig.json` is properly configu
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
+```
+
+#### Missing Static Assets Error
+
+If you see webpack compilation errors about missing static assets (like favicon.ico, manifest.json, or images), this is because your HTML template references files that don't exist.
+
+**Solution**: Either create the missing files or update your HTML template to use relative paths:
+
+```html
+<!-- Instead of absolute paths -->
+<link rel="icon" href="/favicon.ico" />
+<link rel="manifest" href="/manifest.json" />
+
+<!-- Use relative paths -->
+<link rel="icon" href="favicon.ico" />
+<link rel="manifest" href="manifest.json" />
+```
+
+Or create the missing files in your source directory:
+
+```bash
+touch src/favicon.ico
+touch src/manifest.json
+mkdir -p src/images && touch src/images/logo-icon-64.png
 ```
 
 ## 📚 Documentation

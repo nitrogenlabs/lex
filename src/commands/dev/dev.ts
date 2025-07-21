@@ -7,8 +7,8 @@ import chalk from 'chalk';
 import {execa} from 'execa';
 import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import https from 'https';
-import {networkInterfaces} from 'os';
-import {dirname, resolve as pathResolve,join} from 'path';
+import {networkInterfaces, homedir} from 'os';
+import {dirname, resolve as pathResolve, join} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
@@ -45,8 +45,7 @@ interface PublicIpCache {
 }
 
 const getCacheDir = (): string => {
-  const os = require('os');
-  const cacheDir = join(os.homedir(), '.lex-cache');
+  const cacheDir = join(homedir(), '.lex-cache');
   if(!existsSync(cacheDir)) {
     mkdirSync(cacheDir, {recursive: true});
   }

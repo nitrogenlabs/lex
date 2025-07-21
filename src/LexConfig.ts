@@ -50,6 +50,7 @@ export interface WebpackConfig {
   output?: Record<string, unknown>;
   module?: Record<string, unknown>;
   plugins?: unknown[];
+  publicPath?: string;
   [key: string]: unknown;
 }
 
@@ -130,7 +131,9 @@ export const defaultConfigValues: LexConfigType = {
   targetEnvironment: 'web',
   useGraphQl: false,
   useTypescript: false,
-  webpack: {}
+  webpack: {
+    publicPath: './src/public'
+  }
 };
 
 function findLexRoot(startDir: string): string {
