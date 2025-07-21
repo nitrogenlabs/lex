@@ -56,7 +56,7 @@ const {
 const webpackPublicPath = webpackCustom?.publicPath || './src/public';
 
 // Filter out Lex-specific properties from webpack config
-const {publicPath: _, ...webpackConfig} = webpackCustom || {};
+const {publicPath: _, ...webpackConfigFiltered} = webpackCustom || {};
 
 // Only add plugins if they are needed
 const plugins = [
@@ -221,7 +221,7 @@ const cssLoaderPath = relativeNodePath('css-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
 const htmlLoaderPath = relativeNodePath('html-loader', dirName);
 const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
-const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
+const sourceMapLoaderPath = pathResolve(dirName, 'node_modules/source-map-loader');
 const styleLoaderPath = relativeNodePath('style-loader', dirName);
 const webpackPath = relativeNodePath('webpack', dirName);
 
@@ -371,7 +371,6 @@ export default (webpackEnv, webpackOptions) => {
                       strict: false,
                       warnings: false
                     }),
-                    require('tailwindcss/nesting'), // Add tailwindcss/nesting
                     postcssNesting(),
                     tailwindcss(),
                     autoprefixer(),
@@ -666,5 +665,5 @@ export default (webpackEnv, webpackOptions) => {
     }
   }
 
-  return merge(webpackConfig, webpackConfig);
+  return merge(webpackConfig, webpackConfigFiltered);
 };
