@@ -17,6 +17,7 @@ The main function that starts a development server using webpack.
   - `open?: boolean` - Whether to open the browser automatically (defaults to false)
   - `quiet?: boolean` - Whether to suppress output
   - `remove?: boolean` - Whether to clean the output directory before starting (defaults to false)
+  - `usePublicIp?: boolean` - Force refresh the cached public IP address (defaults to false)
   - `variables?: string` - JSON string of environment variables to set
 - `callback`: An optional callback function that receives the exit status code, defaults to an empty function
 
@@ -36,6 +37,7 @@ export interface DevOptions {
   readonly open?: boolean;
   readonly quiet?: boolean;
   readonly remove?: boolean;
+  readonly usePublicIp?: boolean;
   readonly variables?: string;
 }
 ```
@@ -54,6 +56,8 @@ export type DevCallback = (status: number) => void;
 - **Auto-Open Browser**: Optionally opens the browser automatically
 - **Environment Variables**: Supports setting custom environment variables
 - **Output Directory Cleaning**: Optionally cleans the output directory before starting
+- **Public IP Caching**: Caches public IP address for 1 week to reduce API calls
+- **Public IP Refresh**: Force refresh cached public IP with `--usePublicIp` flag
 - **TypeScript Support**: Automatically checks TypeScript configuration if enabled
 - **Error Handling**: Provides detailed error messages for webpack compilation issues
 - **Custom CLI Name**: Supports custom CLI name for output messages
@@ -94,6 +98,12 @@ await dev({
   quiet: false
 });
 
+// With public IP refresh
+await dev({
+  usePublicIp: true,
+  quiet: false
+});
+
 // With custom callback
 await dev({
   quiet: false
@@ -104,4 +114,4 @@ await dev({
     console.error('Failed to start development server');
   }
 });
-``` 
+```

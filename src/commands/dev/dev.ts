@@ -5,9 +5,10 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
 import {execa} from 'execa';
+import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import https from 'https';
 import {networkInterfaces} from 'os';
-import {dirname, resolve as pathResolve} from 'path';
+import {dirname, resolve as pathResolve,join} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
@@ -32,10 +33,81 @@ export interface DevOptions {
   readonly open?: boolean;
   readonly quiet?: boolean;
   readonly remove?: boolean;
+  readonly usePublicIp?: boolean;
   readonly variables?: string;
 }
 
 export type DevCallback = (status: number) => void;
+
+interface PublicIpCache {
+  ip: string;
+  timestamp: number;
+}
+
+const getCacheDir = (): string => {
+  const os = require('os');
+  const cacheDir = join(os.homedir(), '.lex-cache');
+  if(!existsSync(cacheDir)) {
+    mkdirSync(cacheDir, {recursive: true});
+  }
+  return cacheDir;
+};
+
+const getCachePath = (): string => join(getCacheDir(), 'public-ip.json');
+
+const readPublicIpCache = (): PublicIpCache | null => {
+  const cachePath = getCachePath();
+  if(!existsSync(cachePath)) {
+    return null;
+  }
+
+  try {
+    const cacheData = readFileSync(cachePath, 'utf8');
+    const cache: PublicIpCache = JSON.parse(cacheData);
+
+    // Check if cache is older than 1 week (7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+    if(Date.now() - cache.timestamp > oneWeekMs) {
+      return null;
+    }
+
+    return cache;
+  } catch{
+    return null;
+  }
+};
+
+const writePublicIpCache = (ip: string): void => {
+  const cachePath = getCachePath();
+  const cache: PublicIpCache = {
+    ip,
+    timestamp: Date.now()
+  };
+  writeFileSync(cachePath, JSON.stringify(cache, null, 2));
+};
+
+const fetchPublicIp = (forceRefresh: boolean = false): Promise<string | undefined> => new Promise((resolve) => {
+  // Check cache first unless force refresh is requested
+  if(!forceRefresh) {
+    const cached = readPublicIpCache();
+    if(cached) {
+      resolve(cached.ip);
+      return;
+    }
+  }
+
+  https.get('https://api.ipify.org', (res) => {
+    let data = '';
+    res.on('data', (chunk) => (data += chunk));
+    res.on('end', () => {
+      const ip = data.trim();
+      if(ip) {
+        writePublicIpCache(ip);
+      }
+      resolve(ip);
+    });
+  }).on('error', () => resolve(undefined));
+});
 
 const getNetworkAddresses = () => {
   const interfaces = networkInterfaces();
@@ -94,8 +166,7 @@ const displayServerStatus = (port: number = 7001, host: string = 'localhost', qu
   }
 
   const statusBox = boxen(
-    `${chalk.cyan.bold('🚀 Development Server Running')}\n\n${
-      urlLines}\n` +
+    `${chalk.cyan.bold('🚀 Development Server Running')}\n\n${urlLines}\n` +
     `${chalk.yellow('Press Ctrl+C to stop the server')}`,
     {
       padding: 1,
@@ -109,16 +180,8 @@ const displayServerStatus = (port: number = 7001, host: string = 'localhost', qu
   console.log(`\n${statusBox}\n`);
 };
 
-const fetchPublicIp = (): Promise<string | undefined> => new Promise((resolve) => {
-  https.get('https://api.ipify.org', (res) => {
-    let data = '';
-    res.on('data', (chunk) => (data += chunk));
-    res.on('end', () => resolve(data.trim()));
-  }).on('error', () => resolve(undefined));
-});
-
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -215,7 +278,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
-        fetchPublicIp().then((publicIp) => {
+        fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
             displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
           }
@@ -243,7 +306,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         }
 
         displayServerStatus(detectedPort, 'localhost', quiet);
-        fetchPublicIp().then((publicIp) => {
+        fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
             displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
           }
@@ -255,7 +318,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
       if(!serverStarted) {
         spinner.succeed('Development server started.');
         displayServerStatus(detectedPort, 'localhost', quiet);
-        fetchPublicIp().then((publicIp) => {
+        fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
             displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
           }
@@ -268,7 +331,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     if(!serverStarted) {
       spinner.succeed('Development server started.');
       displayServerStatus(detectedPort, 'localhost', quiet);
-      fetchPublicIp().then((publicIp) => {
+      fetchPublicIp(usePublicIp).then((publicIp) => {
         if(publicIp) {
           displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
         }

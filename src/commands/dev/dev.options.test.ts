@@ -68,4 +68,24 @@ describe('dev options', () => {
 
     expect(execa).toHaveBeenCalled();
   });
+
+  it('should start dev server with usePublicIp option', async () => {
+    const mockChildProcess = {
+      stdout: {on: jest.fn()},
+      stderr: {on: jest.fn()},
+      on: jest.fn()
+    };
+    (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+
+    mockChildProcess.on.mockImplementation((event, callback) => {
+      if(event === 'close') {
+        setTimeout(() => callback(0), 10);
+      }
+      return mockChildProcess;
+    });
+
+    await dev({usePublicIp: true});
+
+    expect(execa).toHaveBeenCalled();
+  });
 });

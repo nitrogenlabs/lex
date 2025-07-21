@@ -34,4 +34,11 @@ describe('dev cli', () => {
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
   });
+
+  it('should start dev server with usePublicIp option', async () => {
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    await dev({usePublicIp: true});
+
+    expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
+  });
 });

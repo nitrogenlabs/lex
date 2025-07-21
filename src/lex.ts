@@ -118,6 +118,7 @@ program.command('dev')
   .option('--remove', 'Removes all files from the output directory before compiling.')
   .option('--sourcePath <path>', 'Source path')
   .option('--typescript', 'Transpile as Typescript.')
+  .option('--usePublicIp', 'Force refresh the cached public IP address.')
   .option('--variables <n>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
   .option('--watch', 'Watch for changes.')
   .action((cmd) => dev(cmd, process.exit).then(() => {}));

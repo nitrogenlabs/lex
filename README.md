@@ -142,7 +142,12 @@ lex dev --bundleAnalyzer
 
 # Custom webpack config
 lex dev --config ./custom.webpack.js
+
+# Force refresh cached public IP
+lex dev --usePublicIp
 ```
+
+**🌐 Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
 ### 🏗️ **Production Builds**
 
