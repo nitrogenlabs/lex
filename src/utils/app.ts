@@ -169,8 +169,8 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
     for(const pattern of copyFilesConfig) {
       const resolvedPattern = pathResolve(baseDir, pattern);
       const matchingFiles = globSync(resolvedPattern, {
-        nodir: true,
-        absolute: true
+        absolute: true,
+        nodir: true
       });
       if(matchingFiles.length === 0) {
         if(!quiet) {
@@ -340,7 +340,7 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
       }
 
       return list;
-    } catch(fsError) {
+    } catch{
       // Skip files that don't exist or can't be accessed
       return list;
     }

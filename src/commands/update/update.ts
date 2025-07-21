@@ -33,15 +33,12 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const isNpm: boolean = packageManager === 'npm';
   const dirName = getDirName();
-  const dirPath: string = pathResolve(dirName, '../..');
 
   try {
     if(isNpm) {
-      // Try to use npm-check-updates with different approaches
       let ncuCommand: string;
       let ncuArgs: string[];
 
-      // First try: Use npx with npm-check-updates
       try {
         ncuCommand = 'npx';
         ncuArgs = [
@@ -62,8 +59,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
           encoding: 'utf8',
           stdio: 'inherit'
         });
-      } catch(npxError) {
-        // Second try: Use npm-check-updates directly (if installed globally)
+      } catch {
         try {
           ncuCommand = 'npm-check-updates';
           ncuArgs = [
@@ -83,8 +79,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
             encoding: 'utf8',
             stdio: 'inherit'
           });
-        } catch(ncuError) {
-          // Third try: Install npm-check-updates globally and use it
+        } catch {
           log('npm-check-updates not found. Installing it globally...', 'info', quiet);
 
           try {

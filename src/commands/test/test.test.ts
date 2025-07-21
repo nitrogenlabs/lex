@@ -59,7 +59,7 @@ describe('test command', () => {
 
   it('runs Jest with default options', async () => {
     const callback = jest.fn() as unknown as TestCallback;
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await test({}, [], callback);
 
@@ -88,8 +88,8 @@ describe('test command', () => {
       await test({aiGenerate: true}, [], callback);
 
       expect(aiFunction).toHaveBeenCalledWith(expect.objectContaining({
-        task: 'test',
-        file: 'src/utils/helper.ts'
+        file: 'src/utils/helper.ts',
+        task: 'test'
       }));
     });
 
@@ -109,7 +109,7 @@ describe('test command', () => {
   describe('AI test analysis', () => {
     it('analyzes test results with AI when tests pass', async () => {
       const callback = jest.fn() as unknown as TestCallback;
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
       (readFileSync as jest.Mock).mockReturnValue('{"numPassedTests":5,"numFailedTests":0}');
 
       await test({aiAnalyze: true}, [], callback);
@@ -137,7 +137,7 @@ describe('test command', () => {
   describe('test options', () => {
     it('passes options to Jest', async () => {
       const callback = jest.fn() as unknown as TestCallback;
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
       await test({
         bail: true,

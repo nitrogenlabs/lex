@@ -10,7 +10,7 @@ import {dirname, resolve as pathResolve} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
-import {getDirName, relativeNodePath, resolveWebpackPaths} from '../../utils/file.js';
+import {getDirName, relativeNodePath, resolveWebpackPaths, getLexPackageJsonPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 import boxen from 'boxen';
@@ -32,8 +32,9 @@ export interface BuildOptions {
   readonly analyze?: boolean;
   readonly bundler?: 'webpack' | 'esbuild';
   readonly cliName?: string;
+  readonly entry?: string; // <-- add entry
   readonly format?: string;
-  readonly outputPath?: string;
+  readonly outputPath?: string; // <-- already present
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly sourcePath?: string;
@@ -269,6 +270,11 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     watchOptionsStdin
   } = cmd;
 
+  console.log('entry:', entry, 'type:', typeof entry);
+  console.log('outputPath:', outputPath, 'type:', typeof outputPath);
+
+  const entryValue = Array.isArray(entry) ? entry[0] : entry;
+
   let webpackConfig: string;
 
   if(config) {
@@ -287,109 +293,72 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     }
   }
 
+  console.log('webpackConfig path:', webpackConfig);
+  console.log('webpackConfig exists:', existsSync(webpackConfig));
+
+  if(!existsSync(webpackConfig)) {
+    const lexPackagePath = getLexPackageJsonPath();
+    const lexPackageDir = dirname(lexPackagePath);
+    const lexWebpackConfig = pathResolve(lexPackageDir, 'webpack.config.js');
+
+    if(existsSync(lexWebpackConfig)) {
+      webpackConfig = lexWebpackConfig;
+      console.log('Using Lex webpack config:', webpackConfig);
+    } else {
+      log(`\n${cliName} Error: Could not find webpack.config.js`, 'error', quiet);
+      spinner.fail('Build failed.');
+      callback(1);
+      return 1;
+    }
+  }
+
   const webpackOptions: string[] = [
     '--color',
     '--progress',
     '--config', webpackConfig
   ];
 
-  if(analyze) {
-    webpackOptions.push('--analyze');
-  }
-
-  if(configName) {
-    webpackOptions.push('--configName', configName);
-  }
-
-  if(defineProcessEnvNodeEnv) {
-    webpackOptions.push('--defineProcessEnvNodeEnv', defineProcessEnvNodeEnv);
-  }
-
-  if(devtool) {
-    webpackOptions.push('--devtool', devtool);
-  }
-
-  if(disableInterpret) {
-    webpackOptions.push('--disableInterpret');
-  }
-
-  if(entry) {
-    webpackOptions.push('--entry', entry);
-  }
-
-  if(env) {
-    webpackOptions.push('--env', env);
-  }
-
-  if(failOnWarnings) {
-    webpackOptions.push('--failOnWarnings');
-  }
-
-  if(json) {
-    webpackOptions.push('--json', json);
-  }
-
-  if(mode) {
-    webpackOptions.push('--mode', mode);
-  }
-
-  if(merge) {
-    webpackOptions.push('--merge');
-  }
-
-  if(name) {
-    webpackOptions.push('--name', name);
-  }
-
-  if(noDevtool) {
-    webpackOptions.push('--noDevtool');
-  }
-
-  if(noStats) {
-    webpackOptions.push('--noStats');
-  }
-
-  if(noTarget) {
-    webpackOptions.push('--noTarget');
-  }
-
-  if(noWatch) {
-    webpackOptions.push('--noWatch');
-  }
-
-  if(noWatchOptionsStdin) {
-    webpackOptions.push('--noWatchOptionsStdin');
-  }
-
-  if(nodeEnv) {
-    webpackOptions.push('--nodeEnv', nodeEnv);
-  }
-
-  if(outputPath) {
-    webpackOptions.push('--outputPath', outputPath);
-  }
-
-  if(stats) {
-    webpackOptions.push('--stats', stats);
-  }
-
-  if(target) {
-    webpackOptions.push('--target', target);
-  }
-
-  if(watch) {
-    webpackOptions.push('--watch');
-  }
-
-  if(watchOptionsStdin) {
-    webpackOptions.push('--watchOptionsStdin');
-  }
+  if(analyze) webpackOptions.push('--analyze');
+  if(configName) webpackOptions.push('--configName', configName);
+  if(defineProcessEnvNodeEnv) webpackOptions.push('--defineProcessEnvNodeEnv', defineProcessEnvNodeEnv);
+  if(devtool) webpackOptions.push('--devtool', devtool);
+  if(disableInterpret) webpackOptions.push('--disableInterpret');
+  // Pass entry directly as CLI flag
+  if(entryValue) webpackOptions.push('--entry', entryValue.toString());
+  if(env) webpackOptions.push('--env', env);
+  if(failOnWarnings) webpackOptions.push('--failOnWarnings');
+  if(json) webpackOptions.push('--json', json);
+  if(mode) webpackOptions.push('--mode', mode);
+  if(merge) webpackOptions.push('--merge');
+  if(name) webpackOptions.push('--name', name);
+  if(noDevtool) webpackOptions.push('--noDevtool');
+  if(noStats) webpackOptions.push('--noStats');
+  if(noTarget) webpackOptions.push('--noTarget');
+  if(noWatch) webpackOptions.push('--noWatch');
+  if(noWatchOptionsStdin) webpackOptions.push('--noWatchOptionsStdin');
+  if(nodeEnv) webpackOptions.push('--nodeEnv', nodeEnv);
+  if(outputPath) webpackOptions.push('--output-path', outputPath.toString()); // Convert to string
+  if(stats) webpackOptions.push('--stats', stats);
+  if(target) webpackOptions.push('--target', target);
+  if(watch) webpackOptions.push('--watch');
+  if(watchOptionsStdin) webpackOptions.push('--watchOptionsStdin');
 
   try {
     const {webpackPath} = resolveWebpackPaths(currentDirname);
 
-    const finalWebpackOptions = webpackPath === 'npx' ? ['webpack', ...webpackOptions] : webpackOptions;
+    // Fix: Ensure finalWebpackOptions is always an array of strings
+    let finalWebpackOptions: string[];
+    if(webpackPath === 'npx') {
+      finalWebpackOptions = ['webpack', ...webpackOptions];
+    } else {
+      finalWebpackOptions = [...webpackOptions];
+    }
 
+    console.log('webpackPath:', webpackPath);
+    console.log('finalWebpackOptions:', JSON.stringify(finalWebpackOptions));
+    console.log('finalWebpackOptions type:', Array.isArray(finalWebpackOptions) ? 'Array' : typeof finalWebpackOptions);
+
+    // Make sure we're passing an array of strings to execa
     const childProcess = execa(webpackPath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
 
     let buildCompleted = false;

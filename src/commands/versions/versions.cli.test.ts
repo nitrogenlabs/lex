@@ -4,9 +4,9 @@ jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');

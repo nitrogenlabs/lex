@@ -2,7 +2,6 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 import postcssBrowserReporter from 'postcss-browser-reporter';
@@ -12,6 +11,8 @@ import postcssFor from 'postcss-for';
 import postcssHash from 'postcss-hash';
 import postcssImport from 'postcss-import';
 import postcssNesting from 'postcss-nesting';
+import tailwindcss from '@tailwindcss/postcss';
+import tailwindNesting from '@tailwindcss/nesting';
 import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssSimpleVars from 'postcss-simple-vars';
@@ -21,7 +22,6 @@ import {default as webpack} from 'webpack';
 
 const config = {
   plugins: [
-    tailwindcss(),
     postcssImport({addDependencyTo: webpack}),
     postcssUrl(),
     postcssFor(),
@@ -35,8 +35,10 @@ const config = {
       strict: false,
       warnings: false
     }),
-    autoprefixer(),
+    tailwindNesting(),
     postcssNesting(),
+    tailwindcss(),
+    autoprefixer(),
     postcssFlexbugsFixes(),
     postcssPresetEnv({
       browsers: ['last 5 versions'],

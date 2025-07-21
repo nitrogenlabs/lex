@@ -37,6 +37,7 @@ if(!process.env.NODE_PATH) {
 }
 
 const require = createRequire(import.meta.url);
+// eslint-disable-next-line no-underscore-dangle
 require('module').Module._initPaths();
 
 const packagePath = fileURLToPath(new URL('../package.json', import.meta.url));

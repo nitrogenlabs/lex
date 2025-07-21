@@ -118,7 +118,11 @@ const processTestResults = (outputFile?: string): any => {
   }
 };
 
-export const test = async (options: TestOptions, args: string[], callback: TestCallback = process.exit): Promise<number> => {
+export const test = async (
+  options: TestOptions,
+  args: string[],
+  callback: TestCallback = process.exit
+): Promise<number> => {
   const {
     analyze = false,
     aiAnalyze = false,
@@ -197,11 +201,11 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
         const targetFile = uncoveredFiles[0];
 
         await aiFunction({
-          prompt: `Generate Jest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
-          task: 'test',
-          file: targetFile,
           context: true,
-          quiet
+          file: targetFile,
+          prompt: `Generate Jest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
+          quiet,
+          task: 'test'
         });
 
         spinner.succeed(`AI test generation suggestions provided for ${targetFile}`);
@@ -211,16 +215,17 @@ export const test = async (options: TestOptions, args: string[], callback: TestC
     } catch(aiError) {
       spinner.fail('Could not generate AI test suggestions');
       if(!quiet) {
+        // eslint-disable-next-line no-console
         console.error('AI test generation error:', aiError);
       }
     }
   }
 
   const dirName = getDirName();
-  const dirPath: string = pathResolve(dirName, '../..');
 
   const projectJestBin = pathResolve(process.cwd(), 'node_modules/.bin/jest');
   let jestPath: string;
+
   if(existsSync(projectJestBin)) {
     jestPath = projectJestBin;
   } else {
@@ -509,6 +514,7 @@ Please provide:
       } catch(aiError) {
         spinner.fail('Could not generate AI test analysis');
         if(!quiet) {
+          // eslint-disable-next-line no-console
           console.error('AI analysis error:', aiError);
         }
       }
@@ -528,6 +534,7 @@ Please provide:
         const testResults = processTestResults(tempOutputFile);
 
         await aiFunction({
+          context: true,
           prompt: `Debug these failed Jest tests and suggest fixes:
 
 ${JSON.stringify(error.message, null, 2)}
@@ -539,15 +546,15 @@ Please provide:
 2. Specific suggestions to fix each failing test
 3. Any potential issues with test fixtures or mocks
 4. Code examples for solutions`,
-          task: 'help',
-          context: true,
-          quiet
+          quiet,
+          task: 'help'
         });
 
         spinner.succeed('AI debugging assistance complete');
       } catch(aiError) {
         spinner.fail('Could not generate AI debugging assistance');
         if(!quiet) {
+          // eslint-disable-next-line no-console
           console.error('AI debugging error:', aiError);
         }
       }

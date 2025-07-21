@@ -11,22 +11,22 @@ jest.mock('../../LexConfig.js');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('compare-versions');
 jest.mock('fs', () => ({
+  existsSync: jest.fn(() => true),
   readFileSync: jest.fn(() => JSON.stringify({
-    version: '0.9.0',
     dependencies: {
       esbuild: '1.0.0',
       jest: '27.0.0',
       typescript: '4.0.0'
-    }
-  })),
-  existsSync: jest.fn(() => true)
+    },
+    version: '0.9.0'
+  }))
 }));
 jest.mock('../../utils/file.js', () => ({
   getLexPackageJsonPath: jest.fn(() => '/mock/path/package.json')

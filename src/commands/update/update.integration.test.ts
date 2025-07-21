@@ -29,7 +29,7 @@ describe('update integration', () => {
   });
 
   it('should update successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await update({}, mockCallback);
 
     expect(execa).toHaveBeenCalled();

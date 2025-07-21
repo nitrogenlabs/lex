@@ -9,15 +9,15 @@ import {resolve as pathResolve, dirname} from 'path';
 
 import {LexConfig} from '../LexConfig.js';
 
-export function getDirName(): string {
+export const getDirName = (): string => {
   try {
     return eval('new URL(".", import.meta.url).pathname');
   } catch{
     return process.cwd();
   }
-}
+};
 
-export function getFilePath(relativePath: string): string {
+export const getFilePath = (relativePath: string): string => {
   try {
     return eval('require("url").fileURLToPath(new URL(relativePath, import.meta.url))');
   } catch{
@@ -26,9 +26,9 @@ export function getFilePath(relativePath: string): string {
     }
     return pathResolve(process.cwd(), relativePath);
   }
-}
+};
 
-export function getLexPackageJsonPath(): string {
+export const getLexPackageJsonPath = (): string => {
   const LEX_PACKAGE_NAME = '@nlabs/lex';
 
   const lexInNodeModules = pathResolve(process.cwd(), 'node_modules/@nlabs/lex/package.json');
@@ -44,20 +44,20 @@ export function getLexPackageJsonPath(): string {
   } else {
     try {
       startDir = eval('new URL(".", import.meta.url).pathname');
-    } catch(err1) {
+    } catch{
       try {
         startDir = eval('__filename ? require("path").dirname(__filename) : null');
         if(!startDir) {
           throw new Error('__filename not available');
         }
-      } catch(err2) {
+      } catch{
         try {
           if(process.argv[1] && !process.argv[1].includes('node')) {
             startDir = dirname(process.argv[1]);
           } else {
             throw new Error('process.argv[1] not suitable');
           }
-        } catch(err3) {
+        } catch{
           startDir = process.cwd();
         }
       }
@@ -73,7 +73,7 @@ export function getLexPackageJsonPath(): string {
         if(pkg.name === LEX_PACKAGE_NAME) {
           return pkgPath;
         }
-      } catch(error) {
+      } catch{
       }
     }
     const parent = dirname(dir);
@@ -84,7 +84,7 @@ export function getLexPackageJsonPath(): string {
   }
 
   return pathResolve(process.cwd(), 'package.json');
-}
+};
 
 export const relativeFilePath = (filename: string, dirPath: string = './', backUp: number = 0): string => {
   const nestDepth: number = 10;
@@ -261,5 +261,5 @@ export const resolveWebpackPaths = (currentDirname: string): {webpackPath: strin
     webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
   }
 
-  return {webpackPath, webpackConfig};
+  return {webpackConfig, webpackPath};
 };

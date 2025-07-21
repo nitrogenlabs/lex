@@ -11,7 +11,7 @@ import {createSpinner} from './app.js';
 import {log} from './log.js';
 
 // Cursor IDE integration
-export const callCursorAI = async (prompt: string, options: AIConfig): Promise<string> => {
+export const callCursorAI = async (prompt: string, _options: AIConfig): Promise<string> => {
   try {
     // When running within Cursor IDE, we can write the prompt to a temporary file
     // that Cursor can use to provide AI assistance
@@ -173,7 +173,7 @@ export const callAnthropicAI = async (prompt: string, options: AIConfig): Promis
   }
 };
 
-export const callCopilotAI = async (prompt: string, options: AIConfig): Promise<string> => {
+export const callCopilotAI = async (prompt: string, _options: AIConfig): Promise<string> => {
   try {
     log('GitHub Copilot AI fixes not directly supported. Using manual fix mode.', 'info');
     return prompt;
@@ -182,7 +182,7 @@ export const callCopilotAI = async (prompt: string, options: AIConfig): Promise<
   }
 };
 
-export const promptForAIProvider = async (quiet = false): Promise<'cursor' | 'copilot' | 'openai' | 'anthropic' | 'none'> => {
+export const promptForAIProvider = async (_quiet = false): Promise<'cursor' | 'copilot' | 'openai' | 'anthropic' | 'none'> => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -219,7 +219,7 @@ export const promptForAIProvider = async (quiet = false): Promise<'cursor' | 'co
   });
 };
 
-export const promptForAPIKey = async (provider: string, quiet = false): Promise<string> => {
+export const promptForAPIKey = async (provider: string, _quiet = false): Promise<string> => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -233,7 +233,10 @@ export const promptForAPIKey = async (provider: string, quiet = false): Promise<
   });
 };
 
-export const getAIService = (provider: string, options: AIConfig): (prompt: string, options: AIConfig) => Promise<string> => {
+export const getAIService = (
+  provider: string,
+  _options: AIConfig
+): (prompt: string, options: AIConfig) => Promise<string> => {
   switch(provider) {
     case 'cursor':
       return callCursorAI;

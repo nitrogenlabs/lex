@@ -70,7 +70,22 @@ const plugins = [
   new DotenvPlugin({
     path: pathResolve(process.cwd(), '.env'),
     systemvars: false
-  })
+  }),
+  // Notify on rebuild
+  {
+    apply: (compiler) => {
+      compiler.hooks.watchRun.tap('NotifyOnRebuild', () => {
+        console.log('\x1b[36m[webpack]\x1b[0m Detected file change. Rebuilding...');
+      });
+      compiler.hooks.done.tap('NotifyOnRebuild', (stats) => {
+        if (stats.hasErrors()) {
+          console.log('\x1b[31m[webpack]\x1b[0m Build failed with errors.');
+        } else {
+          console.log('\x1b[32m[webpack]\x1b[0m Build complete. Watching for changes...');
+        }
+      });
+    }
+  }
 ];
 
 const isWeb = (preset || targetEnvironment) === 'web';
@@ -160,7 +175,6 @@ if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
     })
   );
 
-    // Add fallback for missing static assets
   const missingAssets = [];
   const requiredAssets = ['favicon.ico', 'images/logo-icon-64.png', 'manifest.json'];
 
@@ -171,14 +185,12 @@ if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
   });
 
   if (missingAssets.length > 0) {
-    // Create empty fallback files for missing assets
     plugins.push(
       new CopyWebpackPlugin({
         patterns: missingAssets.map(asset => ({
           from: pathResolve(dirName, 'emptyModule.js'),
           to: `${outputFullPath}/${asset}`,
           transform() {
-            // Return empty content for missing assets
             return '';
           }
         }))
@@ -204,7 +216,6 @@ if(existsSync(`${sourceFullPath}/tsconfig.json`)) {
   }));
 }
 
-// Loader paths
 const esbuildLoaderPath = relativeNodePath('esbuild-loader', dirName);
 const cssLoaderPath = relativeNodePath('css-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
@@ -214,7 +225,6 @@ const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
 const styleLoaderPath = relativeNodePath('style-loader', dirName);
 const webpackPath = relativeNodePath('webpack', dirName);
 
-// Aliases
 const aliasPaths = {
   '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
   '@nlabs/arkhamjs-utils-react': relativeNodePath(
@@ -237,18 +247,21 @@ const alias = aliasKeys.reduce((aliases, key) => {
   return aliases;
 }, {});
 
-// Webpack config
 export default (webpackEnv, webpackOptions) => {
-  const {bundleAnalyzer, watch} = webpackOptions;
+  const {bundleAnalyzer, watch, entry: cliEntry} = webpackOptions;
+  const entryValue = Array.isArray(cliEntry) ? cliEntry[0] : cliEntry;
+
   const webpackConfig = {
     bail: true,
     cache: !isProduction,
     devtool: isProduction
       ? 'inline-cheap-module-source-map'
       : 'eval-cheap-module-source-map',
-    entry: {
-      index: `${sourceFullPath}/${lexConfig.entryJs}`
-    },
+    entry: entryValue
+      ? { index: entryValue }
+      : {
+          index: `${sourceFullPath}/${lexConfig.entryJs}`
+        },
     externals: isReactNative ? {'react-native': true} : undefined,
     ignoreWarnings: [/Failed to parse source map/],
     mode: isProduction ? 'production' : 'development',
@@ -300,14 +313,12 @@ export default (webpackEnv, webpackOptions) => {
                 minimize: isProduction,
                 sources: {
                   list: [
-                    // Exclude static assets from being processed as modules
                     '...',
                     {
                       tag: 'link',
                       attribute: 'href',
                       type: 'src',
                       filter: (tag, attribute, attributes) => {
-                        // Don't process static assets as modules
                         const href = attributes[attribute];
                         return !href || !href.match(/\.(ico|png|jpg|jpeg|gif|svg|json)$/);
                       }
@@ -317,7 +328,6 @@ export default (webpackEnv, webpackOptions) => {
                       attribute: 'src',
                       type: 'src',
                       filter: (tag, attribute, attributes) => {
-                        // Don't process static assets as modules
                         const src = attributes[attribute];
                         return !src || !src.match(/\.(ico|png|jpg|jpeg|gif|svg|json)$/);
                       }
@@ -361,9 +371,10 @@ export default (webpackEnv, webpackOptions) => {
                       strict: false,
                       warnings: false
                     }),
+                    require('tailwindcss/nesting'), // Add tailwindcss/nesting
+                    postcssNesting(),
                     tailwindcss(),
                     autoprefixer(),
-                    postcssNesting(),
                     postcssFlexbugsFixes(),
                     postcssPresetEnv({
                       stage: 0
@@ -390,7 +401,6 @@ export default (webpackEnv, webpackOptions) => {
           type: 'asset/resource'
         },
         {
-          // Optimize images and videos from publicPath
           test: /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac)$/,
           include: publicPathFull,
           type: 'asset/resource',
@@ -423,15 +433,12 @@ export default (webpackEnv, webpackOptions) => {
           ] : []
         },
         {
-          // Handle missing static assets gracefully
           test: /\.(ico|json)$/,
           type: 'asset/resource',
           generator: {
             filename: '[name][ext]'
           }
         },
-
-
         {
           exclude: /(node_modules)/,
           include: sourceFullPath,
@@ -508,7 +515,6 @@ export default (webpackEnv, webpackOptions) => {
     target: isWeb ? 'web' : 'node'
   };
 
-  // Add development plugins
   if(!isProduction) {
     webpackConfig.resolve.alias = {
       ...webpackConfig.resolve.alias,
@@ -531,13 +537,10 @@ export default (webpackEnv, webpackOptions) => {
           index: '/index.html',
           logger: console.log.bind(console),
           rewrites: [
-            // wps
             {
               from: '/wps',
               to: ({parsedUrl: {pathname}}) => pathname
             },
-
-            // Javascript files
             {
               from: /\.js/,
               to: ({parsedUrl: {pathname}}) => {
@@ -546,8 +549,6 @@ export default (webpackEnv, webpackOptions) => {
                 return `/${pathUrl[fileIndex]}`;
               }
             },
-
-            // Static files
             {
               from: /\.[css,gif,ico,jpg,json,png,svg]/,
               to: ({parsedUrl: {pathname}}) => pathname
@@ -582,14 +583,12 @@ export default (webpackEnv, webpackOptions) => {
 
     if(watch) {
       webpackConfig.bail = false;
-      // webpackConfig.watch = true;
       webpackConfig.watchOptions = {
         aggregateTimeout: 500,
         ignored: ['node_modules/**', ...watchIgnorePaths]
       };
     }
   } else {
-    // Create site ico files
     const siteLogo = `${sourceFullPath}/images/logo.png`;
 
     if(existsSync(siteLogo)) {
@@ -622,6 +621,50 @@ export default (webpackEnv, webpackOptions) => {
       webpackConfig.optimization.moduleIds = 'deterministic';
     }
   }
-  return merge(webpackConfig, webpackConfig);
+
+  if (process.env.LEX_CONFIG_DEBUG) {
+    console.log('\n\x1b[36m[LEX_CONFIG_DEBUG] Webpack mode:', process.env.NODE_ENV, 'isProduction:', isProduction, '\x1b[0m');
+    if (webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
+      console.log('\x1b[36m[LEX_CONFIG_DEBUG] Loader chains:\x1b[0m');
+      webpackConfig.module.rules.forEach((rule, idx) => {
+        if (rule.test) {
+          let testStr = rule.test.toString();
+          let use = rule.use || rule.loader || rule.type;
+          if (Array.isArray(use)) {
+            use = use.map(u => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
+          } else if (typeof use === 'object' && use !== null) {
+            use = use.loader || use.type;
+          }
+          console.log(`  [${idx}] ${testStr}: ${use}`);
+        }
+      });
+    }
+
+    if (webpackConfig && Array.isArray(webpackConfig.plugins)) {
+      console.log('\x1b[36m[LEX_CONFIG_DEBUG] Plugins:\x1b[0m');
+      webpackConfig.plugins.forEach((plugin, idx) => {
+        let name = plugin.constructor && plugin.constructor.name;
+        if (!name && typeof plugin === 'object' && plugin.apply) name = 'CustomPlugin';
+        if (!name && typeof plugin === 'function') name = 'FunctionPlugin';
+        console.log(`  [${idx}] ${name}`);
+      });
+    }
+
+    if (webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
+      const cssRule = webpackConfig.module.rules.find(rule => rule.test && rule.test.toString().includes('css'));
+      if (cssRule) {
+        let use = cssRule.use || cssRule.loader || cssRule.type;
+        if (Array.isArray(use)) {
+          use = use.map(u => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
+        } else if (typeof use === 'object' && use !== null) {
+          use = use.loader || use.type;
+        }
+        console.log('\x1b[36m[LEX_CONFIG_DEBUG] CSS Loader Chain:\x1b[0m', use);
+      } else {
+        console.log('\x1b[36m[LEX_CONFIG_DEBUG] No CSS loader rule found.\x1b[0m');
+      }
+    }
+  }
+
   return merge(webpackConfig, webpackConfig);
 };

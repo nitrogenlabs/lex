@@ -5,10 +5,10 @@ import {update, UpdateCallback} from './update.js';
 jest.mock('execa');
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
     config: {
       packageManager: 'npm'
-    }
+    },
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   }
 }));
 jest.mock('../../utils/file.js', () => ({
@@ -17,9 +17,9 @@ jest.mock('../../utils/file.js', () => ({
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 
@@ -46,7 +46,7 @@ describe('update.cli', () => {
   });
 
   it('should handle interactive mode', async () => {
-    await update({packageManager: 'npm', interactive: true}, mockExit);
+    await update({interactive: true, packageManager: 'npm'}, mockExit);
 
     expect(mockExeca).toHaveBeenCalledWith('npx', expect.arrayContaining(['--interactive']), expect.any(Object));
     expect(mockExit).toHaveBeenCalledWith(0);
