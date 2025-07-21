@@ -270,6 +270,221 @@ export default {
 };
 ```
 
+## 📋 Configuration Options Reference
+
+Lex provides extensive configuration options through the `lex.config.js` file. Here's a comprehensive reference of all available options:
+
+### 🎯 **Project Settings**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `entryHTML` | `string` | `'index.html'` | HTML template file | `entryHTML: 'app.html'` |
+| `entryJs` | `string` | `'index.js'` | Main JavaScript entry file | `entryJs: 'main.tsx'` |
+| `outputFile` | `string` | `undefined` | Specific output filename | `outputFile: 'bundle.js'` |
+| `outputFullPath` | `string` | `path.resolve('./dist')` | Absolute output path for build artifacts. Used by webpack dev server for static file serving. | `outputFullPath: '/absolute/build'` |
+| `outputHash` | `boolean` | `false` | Add hash to output filenames | `outputHash: true` |
+| `outputPath` | `string` | `'./dist'` | Output directory path | `outputPath: './build'` |
+| `packageManager` | `'npm' \| 'yarn'` | `'npm'` | Package manager to use | `packageManager: 'yarn'` |
+| `preset` | `'web' \| 'node' \| 'lambda' \| 'mobile'` | `'web'` | Project preset type | `preset: 'node'` |
+| `sourceFullPath` | `string` | `path.resolve('./src')` | Absolute source code path | `sourceFullPath: '/absolute/path'` |
+| `sourcePath` | `string` | `'./src'` | Source code directory path | `sourcePath: './app'` |
+| `targetEnvironment` | `'web' \| 'node'` | `'web'` | Target runtime environment | `targetEnvironment: 'node'` |
+| `useGraphQl` | `boolean` | `false` | Enable GraphQL support | `useGraphQl: true` |
+| `useTypescript` | `boolean` | `false` | Enable TypeScript support | `useTypescript: true` |
+
+### 🤖 **AI Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `ai.apiKey` | `string` | `undefined` | API key for AI provider | `ai: { apiKey: 'sk-...' }` |
+| `ai.maxTokens` | `number` | `4000` | Maximum tokens for AI responses | `ai: { maxTokens: 8000 }` |
+| `ai.model` | `string` | `'gpt-4o'` | AI model to use | `ai: { model: 'gpt-4' }` |
+| `ai.provider` | `'cursor' \| 'copilot' \| 'openai' \| 'anthropic' \| 'none'` | `'none'` | AI service provider | `ai: { provider: 'openai' }` |
+| `ai.temperature` | `number` | `0.1` | AI response creativity (0-1) | `ai: { temperature: 0.7 }` |
+
+### ⚡ **ESBuild Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `esbuild.banner` | `Record<string, string>` | `undefined` | Banner text for output files | `esbuild: { banner: { js: '// My Banner' } }` |
+| `esbuild.define` | `Record<string, string>` | `undefined` | Global variable definitions | `esbuild: { define: { 'process.env.NODE_ENV': '"production"' } }` |
+| `esbuild.drop` | `string[]` | `['console', 'debugger']` | Code to drop in production | `esbuild: { drop: ['console'] }` |
+| `esbuild.entryPoints` | `string[]` | `undefined` | Entry points for ESBuild | `esbuild: { entryPoints: ['src/index.ts'] }` |
+| `esbuild.external` | `string[]` | `undefined` | External dependencies | `esbuild: { external: ['react'] }` |
+| `esbuild.footer` | `Record<string, string>` | `undefined` | Footer text for output files | `esbuild: { footer: { js: '// My Footer' } }` |
+| `esbuild.format` | `'cjs' \| 'esm'` | `undefined` | Output format | `esbuild: { format: 'esm' }` |
+| `esbuild.legalComments` | `'none' \| 'inline' \| 'eof' \| 'linked' \| 'separate'` | `'none'` | Legal comments handling | `esbuild: { legalComments: 'inline' }` |
+| `esbuild.metafile` | `boolean` | `false` | Generate metafile | `esbuild: { metafile: true }` |
+| `esbuild.minify` | `boolean` | `true` | Enable minification | `esbuild: { minify: false }` |
+| `esbuild.outdir` | `string` | `undefined` | Output directory for ESBuild | `esbuild: { outdir: './build' }` |
+| `esbuild.platform` | `'node' \| 'browser'` | `undefined` | Target platform | `esbuild: { platform: 'browser' }` |
+| `esbuild.pure` | `string[]` | `['console.log', 'console.warn', 'console.error']` | Pure function calls | `esbuild: { pure: ['console.log'] }` |
+| `esbuild.sourcemap` | `boolean \| 'inline' \| 'external'` | `false` | Source map generation | `esbuild: { sourcemap: true }` |
+| `esbuild.splitting` | `boolean` | `true` | Enable code splitting | `esbuild: { splitting: false }` |
+| `esbuild.target` | `string` | `undefined` | Target environment | `esbuild: { target: 'es2020' }` |
+| `esbuild.treeShaking` | `boolean` | `true` | Enable tree shaking | `esbuild: { treeShaking: false }` |
+
+### 🧪 **Jest Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `jest.extensionsToTreatAsEsm` | `string[]` | `undefined` | Extensions to treat as ES modules | `jest: { extensionsToTreatAsEsm: ['.ts', '.tsx'] }` |
+| `jest.moduleNameMapper` | `Record<string, string>` | `undefined` | Module name mappings | `jest: { moduleNameMapper: { '\\.(css)$': 'identity-obj-proxy' } }` |
+| `jest.preset` | `string` | `undefined` | Jest preset | `jest: { preset: 'ts-jest' }` |
+| `jest.roots` | `string[]` | `undefined` | Test root directories | `jest: { roots: ['<rootDir>/src'] }` |
+| `jest.testEnvironment` | `string` | `undefined` | Test environment | `jest: { testEnvironment: 'jsdom' }` |
+| `jest.transform` | `Record<string, [string, object]>` | `undefined` | Transform configurations | `jest: { transform: { '^.+\\.tsx?$': ['ts-jest'] } }` |
+| `jest.transformIgnorePatterns` | `string[]` | `undefined` | Patterns to ignore in transforms | `jest: { transformIgnorePatterns: ['node_modules'] }` |
+
+### 🔧 **ESLint Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `eslint.extends` | `string[]` | `undefined` | ESLint extends configurations | `eslint: { extends: ['@typescript-eslint/recommended'] }` |
+| `eslint.rules` | `Linter.RulesRecord` | `undefined` | ESLint rules | `eslint: { rules: { 'no-console': 'warn' } }` |
+
+### 📦 **Webpack Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `webpack.entry` | `string \| string[]` | `undefined` | Webpack entry points | `webpack: { entry: './src/index.js' }` |
+| `webpack.module` | `object` | `undefined` | Webpack module configuration | `webpack: { module: { rules: [...] } }` |
+| `webpack.output` | `object` | `undefined` | Webpack output configuration | `webpack: { output: { filename: 'bundle.js' } }` |
+| `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
+
+### 🔗 **Library Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `libraryName` | `string` | `undefined` | Library name for UMD builds | `libraryName: 'MyLibrary'` |
+| `libraryTarget` | `string` | `undefined` | Library target format | `libraryTarget: 'umd'` |
+
+### 📁 **File Management**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `configFiles` | `string[]` | `[]` | Additional config files to include | `configFiles: ['./config/custom.js']` |
+| `copyFiles` | `string[]` | `[]` | Files to copy during build | `copyFiles: ['public/assets']` |
+| `env` | `object` | `null` | Environment variables | `env: { NODE_ENV: 'development' }` |
+| `gitUrl` | `string` | `undefined` | Git repository URL | `gitUrl: 'https://github.com/user/repo'` |
+
+### 📝 **Usage Examples**
+
+#### Basic TypeScript Project
+
+```javascript
+export default {
+  useTypescript: true,
+  sourcePath: './src',
+  outputPath: './dist',
+  preset: 'web',
+  targetEnvironment: 'web'
+};
+```
+
+#### Node.js Library
+
+```javascript
+export default {
+  useTypescript: true,
+  preset: 'node',
+  targetEnvironment: 'node',
+  libraryName: 'MyLibrary',
+  libraryTarget: 'umd',
+  esbuild: {
+    format: 'cjs',
+    platform: 'node',
+    external: ['lodash']
+  }
+};
+```
+
+#### AI-Powered Development
+
+```javascript
+export default {
+  useTypescript: true,
+  ai: {
+    provider: 'openai',
+    apiKey: process.env.OPENAI_API_KEY,
+    model: 'gpt-4',
+    maxTokens: 8000,
+    temperature: 0.3
+  },
+  jest: {
+    testEnvironment: 'jsdom',
+    setupFilesAfterEnv: ['./src/setupTests.ts']
+  }
+};
+```
+
+#### Advanced ESBuild Configuration
+
+```javascript
+export default {
+  useTypescript: true,
+  esbuild: {
+    minify: true,
+    sourcemap: 'inline',
+    target: 'es2020',
+    format: 'esm',
+    splitting: true,
+    metafile: true,
+    define: {
+      'process.env.NODE_ENV': '"production"',
+      'global': 'globalThis'
+    },
+    banner: {
+      js: '// My Awesome Library v1.0.0'
+    }
+  }
+};
+```
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### 404 Error with "Static Paths" Message
+
+If you see a 404 error with a message like "Static Paths /path/to/dist", this is likely because the webpack dev server is trying to serve static files from a directory that doesn't exist yet.
+
+**Solution**: The `outputFullPath` directory should exist before starting the dev server. You can:
+
+- Run `lex build` first to create the output directory
+- Or ensure your `outputPath` configuration points to an existing directory
+
+#### Port Already in Use
+
+If you get an "address already in use" error, another process is using the default port (7001).
+
+**Solution**: Kill the existing process or use a different port:
+
+```bash
+# Kill processes on port 7001
+lsof -ti:7001 | xargs kill -9
+
+# Or use a different port
+lex dev --port 3000
+```
+
+#### TypeScript Configuration Issues
+
+If TypeScript compilation fails, ensure your `tsconfig.json` is properly configured.
+
+**Solution**: Check that your `tsconfig.json` includes the correct paths:
+
+```json
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
 ## 📚 Documentation
 
 - 📖 **[Full Documentation](http://lex.nitrogenlabs.com)** - Complete API reference

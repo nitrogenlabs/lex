@@ -460,7 +460,7 @@ export default (webpackEnv, webpackOptions) => {
         open: process.env.WEBPACK_DEV_OPEN === 'true',
         port: 7001,
         progress: 'minimal',
-        static: [outputFullPath],
+        static: existsSync(outputFullPath) ? [outputFullPath] : [],
         status: true
       })
     );
