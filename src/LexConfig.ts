@@ -132,7 +132,7 @@ export const defaultConfigValues: LexConfigType = {
   useGraphQl: false,
   useTypescript: false,
   webpack: {
-    publicPath: './src/public'
+    publicPath: './src/static'
   }
 };
 
@@ -146,7 +146,7 @@ function findLexRoot(startDir: string): string {
         if(pkg.name === '@nlabs/lex') {
           return dir;
         }
-      } catch{}
+      } catch {}
     }
     const parent = dirname(dir);
     if(parent === dir) {

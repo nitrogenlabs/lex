@@ -360,7 +360,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `webpack.module` | `object` | `undefined` | Webpack module configuration | `webpack: { module: { rules: [...] } }` |
 | `webpack.output` | `object` | `undefined` | Webpack output configuration | `webpack: { output: { filename: 'bundle.js' } }` |
 | `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
-| `webpack.publicPath` | `string` | `'./src/public'` | Path to public assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { publicPath: './assets' }` |
+| `webpack.publicPath` | `string` | `'./src/static'` | Path to public assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { publicPath: './assets' }` |
 
 ### 🔗 **Library Configuration**
 

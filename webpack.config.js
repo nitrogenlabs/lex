@@ -53,25 +53,40 @@ const {
   webpack: webpackCustom
 } = lexConfig;
 
-const webpackPublicPath = webpackCustom?.publicPath || './src/public';
+const webpackPublicPath = webpackCustom?.publicPath || './src/static';
 
-// Filter out Lex-specific properties from webpack config
-const {publicPath: _, ...webpackConfigFiltered} = webpackCustom || {};
+const { publicPath: _, ...webpackConfigFiltered } = webpackCustom || {};
 
-// Only add plugins if they are needed
 const plugins = [
   new ProgressPlugin({
     activeModules: false,
     entries: true,
+    handler(percentage, message, ...args) {
+      // custom logic
+    },
     modules: true,
+    modulesCount: 5000,
+    profile: false,
     dependencies: true,
+    dependenciesCount: 10000,
     percentBy: null
   }),
   new DotenvPlugin({
+    allowEmptyValues: true,
     path: pathResolve(process.cwd(), '.env'),
-    systemvars: false
+    safe: false,
+    silent: true,
+    systemvars: true
   }),
-  // Notify on rebuild
+  new webpack.ProvidePlugin({
+    Buffer: ['buffer', 'Buffer'],
+    process: 'process/browser',
+    global: 'global'
+  }),
+  new webpack.DefinePlugin({
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'global': 'global'
+  }),
   {
     apply: (compiler) => {
       compiler.hooks.watchRun.tap('NotifyOnRebuild', () => {
@@ -96,12 +111,12 @@ if(isWeb) {
     new CompressionWebpackPlugin({algorithm: 'gzip'}),
     new ProvidePlugin({
       process: 'process/browser',
+      global: 'global',
       React: pathResolve(dirName, './node_modules/react')
     })
   );
 }
 
-// Add svg files
 const globOptions = {
   cwd: sourceFullPath,
   dot: false,
@@ -128,7 +143,6 @@ if(globSync(svgPaths, globOptions).length) {
   );
 }
 
-// If there is are static directories, make sure we copy the files over
 const staticPaths = [];
 const watchIgnorePaths = [
   `${sourceFullPath}/**/**.gif`,
@@ -139,10 +153,12 @@ const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
-// Handle publicPath for static assets
 const publicPathFull = pathResolve(process.cwd(), webpackPublicPath);
 if(existsSync(publicPathFull)) {
-  staticPaths.push({from: publicPathFull, to: './public/'});
+  staticPaths.push({
+    from: publicPathFull,
+    to: './'
+  });
   watchIgnorePaths.push(publicPathFull);
 }
 
@@ -171,7 +187,8 @@ if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
       minify: isProduction,
       scriptLoading: 'defer',
       showErrors: !isProduction,
-      template: `${sourceFullPath}/${lexConfig.entryHTML}`
+      template: `${sourceFullPath}/${lexConfig.entryHTML}`,
+      inject: true
     })
   );
 
@@ -227,16 +244,14 @@ const webpackPath = relativeNodePath('webpack', dirName);
 
 const aliasPaths = {
   '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
-  '@nlabs/arkhamjs-utils-react': relativeNodePath(
-    '@nlabs/arkhamjs-utils-react',
-    process.cwd()
-  ),
-  '@nlabs/utils': '/Users/nitrog7/.nvm/versions/node/v22.14.0/lib/node_modules/@nlabs/utils',
+  '@nlabs/arkhamjs-utils-react': relativeNodePath('@nlabs/arkhamjs-utils-react', process.cwd()),
+  'buffer': relativeNodePath('buffer', dirName),
   'core-js': relativeNodePath('core-js', dirName),
   process: relativeNodePath('process', dirName),
   react: relativeNodePath('react', process.cwd()),
   'react-dom': relativeNodePath('react-dom', process.cwd()),
-  'regenerator-runtime': relativeNodePath('regenerator-runtime', dirName)
+  'regenerator-runtime': relativeNodePath('regenerator-runtime', dirName),
+  'Buffer': relativeNodePath('buffer', dirName)
 };
 const aliasKeys = Object.keys(aliasPaths);
 const alias = aliasKeys.reduce((aliases, key) => {
@@ -258,9 +273,19 @@ export default (webpackEnv, webpackOptions) => {
       ? 'inline-cheap-module-source-map'
       : 'eval-cheap-module-source-map',
     entry: entryValue
-      ? { index: entryValue }
+      ? {
+          index: [
+            'buffer',
+            'process/browser',
+            entryValue
+          ]
+        }
       : {
-          index: `${sourceFullPath}/${lexConfig.entryJs}`
+          index: [
+            'buffer',
+            'process/browser',
+            `${sourceFullPath}/${lexConfig.entryJs}`
+          ]
         },
     externals: isReactNative ? {'react-native': true} : undefined,
     ignoreWarnings: [/Failed to parse source map/],
@@ -404,7 +429,7 @@ export default (webpackEnv, webpackOptions) => {
           include: publicPathFull,
           type: 'asset/resource',
           generator: {
-            filename: 'public/[name].[hash][ext]'
+            filename: '[name].[hash][ext]'
           },
           use: isProduction ? [
             {
@@ -432,7 +457,11 @@ export default (webpackEnv, webpackOptions) => {
           ] : []
         },
         {
-          test: /\.(ico|json)$/,
+          test: /\.json$/,
+          type: 'json'
+        },
+        {
+          test: /\.ico$/,
           type: 'asset/resource',
           generator: {
             filename: '[name][ext]'
@@ -494,15 +523,17 @@ export default (webpackEnv, webpackOptions) => {
       fallback: {
         assert: relativeNodePath('assert', dirName),
         buffer: relativeNodePath('buffer', dirName),
-        crypto: relativeNodePath('crypto-browserify', dirName),
+        crypto: relativeNodePath('crypto-js', dirName),
         http: relativeNodePath('stream-http', dirName),
         https: relativeNodePath('https-browserify', dirName),
         os: relativeNodePath('os-browserify/browser.js', dirName),
         path: relativeNodePath('path-browserify', dirName),
         process: relativeNodePath('process/browser.js', dirName),
+        randombytes: relativeNodePath('randombytes', dirName),
         stream: relativeNodePath('stream-browserify', dirName),
         util: relativeNodePath('util', dirName),
-        vm: relativeNodePath('vm-browserify', dirName)
+        vm: relativeNodePath('vm-browserify', dirName),
+        Buffer: relativeNodePath('buffer', dirName)
       },
       mainFiles: ['index'],
       modules: [sourceFullPath, 'node_modules', relativeNodePath('', dirName), '/Users/nitrog7/.nvm/versions/node/v22.14.0/lib/node_modules'],
