@@ -378,7 +378,10 @@ export default (webpackEnv, webpackOptions) => {
               options: {
                 postcssOptions: {
                   plugins: [
-                    postcssImport({addDependencyTo: webpack}),
+                    postcssImport({
+                      addDependencyTo: webpack,
+                      path: [relativeNodePath('', dirName)]
+                    }),
                     postcssUrl(),
                     postcssFor(),
                     postcssPercentage({
