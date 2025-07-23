@@ -263,8 +263,13 @@ const alias = aliasKeys.reduce((aliases, key) => {
 }, {});
 
 export default (webpackEnv, webpackOptions) => {
-  const {bundleAnalyzer, watch, entry: cliEntry} = webpackOptions;
+  const {bundleAnalyzer, watch, entry: cliEntry, mode: cliMode} = webpackOptions;
   const entryValue = Array.isArray(cliEntry) ? cliEntry[0] : cliEntry;
+
+  // Debug printout for environment and mode
+  console.log('[Lex Webpack] NODE_ENV:', process.env.NODE_ENV);
+  console.log('[Lex Webpack] isProduction:', isProduction);
+  console.log('[Lex Webpack] cliMode:', cliMode);
 
   const webpackConfig = {
     bail: true,
@@ -406,7 +411,7 @@ export default (webpackEnv, webpackOptions) => {
                     postcssPresetEnv({
                       stage: 0
                     }),
-                    cssnano({autoprefixer: false}),
+                    ...(isProduction ? [cssnano({autoprefixer: false})] : []),
                     postcssBrowserReporter()
                   ]
                 }
@@ -416,7 +421,7 @@ export default (webpackEnv, webpackOptions) => {
               loader: esbuildLoaderPath,
               options: {
                 loader: 'css',
-                minify: true
+                minify: isProduction
               }
             }
           ]
