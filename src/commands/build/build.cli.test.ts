@@ -171,7 +171,7 @@ describe('build cli', () => {
       const booleanOptions = [
         'analyze', 'disableInterpret', 'failOnWarnings', 'merge', 'noDevtool',
         'noStats', 'noTarget', 'noWatch', 'noWatchOptionsStdin', 'quiet',
-        'remove', 'static', 'typescript', 'watch', 'watchOptionsStdin'
+        'remove', 'static', 'translations', 'typescript', 'watch', 'watchOptionsStdin'
       ];
 
       booleanOptions.forEach(option => {
@@ -179,7 +179,7 @@ describe('build cli', () => {
         expect(testOptions[option]).toBe(true);
       });
 
-      expect(booleanOptions).toHaveLength(15);
+      expect(booleanOptions).toHaveLength(16);
     });
 
     it('should test all value CLI options', () => {
@@ -198,8 +198,8 @@ describe('build cli', () => {
     });
 
     it('should ensure comprehensive CLI coverage', () => {
-      const totalOptions = 15 + 18;
-      expect(totalOptions).toBe(33);
+      const totalOptions = 16 + 18;
+      expect(totalOptions).toBe(34);
     });
   });
 });

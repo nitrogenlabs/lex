@@ -12,6 +12,7 @@ import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {getDirName, relativeNodePath, resolveWebpackPaths, getLexPackageJsonPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+import {processTranslations} from '../../utils/translations.js';
 import {aiFunction} from '../ai/ai.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
@@ -38,6 +39,7 @@ export interface BuildOptions {
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly sourcePath?: string;
+  readonly translations?: boolean;
   readonly variables?: string;
   readonly watch?: boolean;
 }
@@ -455,6 +457,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
     cliName = 'Lex',
     quiet = false,
     remove = false,
+    translations = false,
     variables = '{}'
   } = cmd;
 
@@ -482,6 +485,24 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   }
 
   process.env = {...process.env, ...variablesObj};
+
+  // Process translations if flag is enabled (before building)
+  if(translations) {
+    spinner.start('Processing translations...');
+
+    try {
+      const sourcePath = LexConfig.config.sourceFullPath || process.cwd();
+      const outputPath = LexConfig.config.outputFullPath || 'dist';
+
+      await processTranslations(sourcePath, outputPath, quiet);
+      spinner.succeed('Translations processed successfully!');
+    } catch(translationError) {
+      log(`\n${cliName} Error: Failed to process translations: ${translationError.message}`, 'error', quiet);
+      spinner.fail('Failed to process translations.');
+      callback(1);
+      return 1;
+    }
+  }
 
   spinner.start('Building code...');
 

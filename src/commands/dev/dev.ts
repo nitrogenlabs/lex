@@ -14,6 +14,7 @@ import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+import {processTranslations} from '../../utils/translations.js';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -21,7 +22,7 @@ let currentDirname: string;
 try {
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
-} catch{
+} catch {
   currentFilename = process.cwd();
   currentDirname = process.cwd();
 }
@@ -33,6 +34,7 @@ export interface DevOptions {
   readonly open?: boolean;
   readonly quiet?: boolean;
   readonly remove?: boolean;
+  readonly translations?: boolean;
   readonly usePublicIp?: boolean;
   readonly variables?: string;
 }
@@ -71,7 +73,7 @@ const readPublicIpCache = (): PublicIpCache | null => {
     }
 
     return cache;
-  } catch{
+  } catch {
     return null;
   }
 };
@@ -180,7 +182,7 @@ const displayServerStatus = (port: number = 7001, host: string = 'localhost', qu
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -214,6 +216,24 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     await removeFiles(outputFullPath || '');
 
     spinner.succeed('Successfully cleaned output directory!');
+  }
+
+  // Process translations if flag is enabled (before starting dev server)
+  if(translations) {
+    spinner.start('Processing translations...');
+
+    try {
+      const sourcePath = LexConfig.config.sourceFullPath || process.cwd();
+      const outputPath = LexConfig.config.outputFullPath || 'dist';
+
+      await processTranslations(sourcePath, outputPath, quiet);
+      spinner.succeed('Translations processed successfully!');
+    } catch(translationError) {
+      log(`\n${cliName} Error: Failed to process translations: ${translationError.message}`, 'error', quiet);
+      spinner.fail('Failed to process translations.');
+      callback(1);
+      return 1;
+    }
   }
 
   let webpackConfig: string;
