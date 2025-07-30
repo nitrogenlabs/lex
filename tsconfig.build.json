@@ -21,7 +21,7 @@
     "noUnusedLocals": false,
     "pretty": true,
     "resolveJsonModule": true,
-    "outDir": "./dist",
+    "outDir": "./lib",
     "rootDir": "./src",
     "skipLibCheck": true,
     "target": "ESNext",
@@ -39,7 +39,7 @@
     "**/*.integration.*",
     "**/__tests__/**",
     "**/__mocks__/**",
-    "dist",
+    "lib",
     "node_modules",
     "jest.config.mjs"
   ]

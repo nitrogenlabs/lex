@@ -21,6 +21,7 @@ import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
 import {publish} from './commands/publish/publish.js';
+import {serverless} from './commands/serverless/serverless.js';
 import {storybook} from './commands/storybook/storybook.js';
 import {test} from './commands/test/test.js';
 import {update} from './commands/update/update.js';
@@ -186,6 +187,18 @@ program.command('publish')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--tag <tag>', 'Registers the published package with the given tag.')
   .action((cmd) => publish(cmd, process.exit).then(() => {}));
+
+program.command('serverless')
+  .option('--config <path>', 'Custom configuration file path (default: lex.config.mjs).')
+  .option('--host <host>', 'Host to bind the server to (default: localhost).')
+  .option('--httpPort <port>', 'HTTP server port (default: 3000).')
+  .option('--httpsPort <port>', 'HTTPS server port (default: 3001).')
+  .option('--wsPort <port>', 'WebSocket server port (default: 3002).')
+  .option('--quiet', 'No Lex notifications printed in the console.')
+  .option('--remove', 'Removes all files from the output directory before starting.')
+  .option('--usePublicIp', 'Force refresh the cached public IP address.')
+  .option('--variables <json>', 'Environment variables to set in process.env.')
+  .action((cmd) => serverless(cmd, process.exit).then(() => {}));
 
 program.command('storybook')
   .option('--config <path>', 'Custom Storybook configuration directory path (ie. .storybook).')
