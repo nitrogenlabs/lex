@@ -42,7 +42,7 @@
     "jest.setup.ts"
   ],
   "exclude": [
-    "dist",
+    "lib",
     "node_modules"
   ]
 }

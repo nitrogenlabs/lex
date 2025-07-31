@@ -294,7 +294,7 @@ npm install --save-dev @storybook/react @storybook/react-webpack5
 If no story files are detected:
 
 1. Make sure your story files follow the naming conventions
-2. Check that files are not in ignored directories (node_modules, dist, build)
+2. Check that files are not in ignored directories (node_modules, dist, lib, build)
 3. Create story files with `.stories.ts` or `.stories.js` extensions
 
 ### Port Already in Use

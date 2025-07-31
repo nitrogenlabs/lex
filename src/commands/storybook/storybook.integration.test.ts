@@ -112,15 +112,15 @@ describe('storybook.integration tests', () => {
 
     expect(globSync).toHaveBeenCalledWith('**/*.stories.{ts,tsx,js,jsx}', {
       cwd: tempDir,
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
     expect(globSync).toHaveBeenCalledWith('**/*.story.{ts,tsx,js,jsx}', {
       cwd: tempDir,
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
     expect(globSync).toHaveBeenCalledWith('**/stories/**/*.{ts,tsx,js,jsx}', {
       cwd: tempDir,
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
 
     jest.runAllTimers();

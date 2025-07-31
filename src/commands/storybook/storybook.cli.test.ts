@@ -88,7 +88,7 @@ describe('storybook.cli tests', () => {
 
     (LexConfig.parseConfig as jest.Mock).mockResolvedValue(undefined as never);
     LexConfig.config = {
-      outputFullPath: './dist',
+      outputFullPath: './lib',
       useTypescript: true
     };
 

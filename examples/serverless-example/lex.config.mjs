@@ -1,5 +1,5 @@
 export default {
-  outputFullPath: './dist',
+  outputFullPath: './lib',
   serverless: {
     custom: {
       'serverless-offline': {

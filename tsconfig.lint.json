@@ -38,7 +38,7 @@
     "src/**/*"
   ],
   "exclude": [
-    "dist",
+    "lib",
     "node_modules",
     "**/*.md"
   ]

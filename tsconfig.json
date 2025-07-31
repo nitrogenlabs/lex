@@ -29,7 +29,7 @@
   },
   "exclude": [
     "./.vscode",
-    "./dist",
+    "./lib",
     "./node_modules",
     "**/*.md"
   ],

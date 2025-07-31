@@ -54,7 +54,7 @@ describe('lex build integration', () => {
         join(__dirname, '../../../lex.js'),
         'build',
         '--bundler', 'webpack',
-        '--outputPath', './dist',
+        '--outputPath', './lib',
         '--quiet'
       ], {
         cwd: testDir,
@@ -75,7 +75,7 @@ describe('lex build integration', () => {
         'build',
         '--bundler', 'esbuild',
         '--format', 'cjs',
-        '--outputPath', './dist',
+        '--outputPath', './lib',
         '--quiet'
       ], {
         cwd: testDir,
@@ -118,7 +118,7 @@ describe('lex build integration', () => {
     const validOptionCombinations = [
       ['--bundler', 'webpack', '--mode', 'production'],
       ['--bundler', 'esbuild', '--format', 'esm', '--watch'],
-      ['--bundler', 'webpack', '--analyze', '--outputPath', './dist'],
+      ['--bundler', 'webpack', '--analyze', '--outputPath', './lib'],
       ['--quiet', '--remove', '--typescript'],
       ['--variables', '{"DEBUG":"true"}', '--sourcePath', './src']
     ];

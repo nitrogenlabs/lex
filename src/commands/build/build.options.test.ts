@@ -32,7 +32,7 @@ jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
     parseConfig: jest.fn(),
     config: {
-      outputFullPath: './dist',
+      outputFullPath: './lib',
       sourceFullPath: './src',
       useTypescript: false
     }

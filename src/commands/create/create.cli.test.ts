@@ -46,7 +46,7 @@ jest.mock('../../LexConfig.js', () => ({
     config: {
       useTypescript: false,
       sourcePath: './src',
-      outputPath: './dist'
+      outputPath: './lib'
     },
     checkTypescriptConfig: jest.fn()
   }

@@ -33,7 +33,7 @@ import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 import {merge} from 'webpack-merge';
 import {WebpackPluginServe} from 'webpack-plugin-serve';
 
-import {relativeFilePath, relativeNodePath} from './dist/utils/file.js';
+import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';

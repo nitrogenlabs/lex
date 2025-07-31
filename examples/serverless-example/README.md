@@ -66,7 +66,7 @@ The serverless configuration is defined in `lex.config.mjs`:
 
 ```javascript
 export default {
-  outputFullPath: './dist',
+  outputFullPath: './lib',
   serverless: {
     functions: {
       hello: {

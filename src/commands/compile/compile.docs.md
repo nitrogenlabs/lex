@@ -62,7 +62,7 @@ await compile({});
 await compile({
   cliName: 'MyTool',
   sourcePath: './src',
-  outputPath: './dist',
+  outputPath: './lib',
   watch: true,
   quiet: false,
   remove: true
@@ -71,7 +71,7 @@ await compile({
 // With callback
 await compile({
   sourcePath: './src',
-  outputPath: './dist'
+  outputPath: './lib'
 }, (exitCode) => {
   if (exitCode === 0) {
     console.log('Compilation succeeded');

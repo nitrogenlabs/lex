@@ -35,7 +35,7 @@ const findStoryFiles = (): string[] => {
   storyPatterns.forEach((pattern) => {
     const files = globSync(pattern, {
       cwd: process.cwd(),
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
     storyFiles.push(...files);
   });

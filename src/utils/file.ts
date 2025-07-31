@@ -201,7 +201,7 @@ export const findTailwindCssPath = (): string => {
   for(const pattern of tailwindPatterns) {
     const files = globSync(pattern, {
       cwd: process.cwd(),
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.storybook/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**', '**/.storybook/**']
     });
 
     if(files.length > 0) {

@@ -125,7 +125,7 @@ Lex comes with everything you need for modern React development:
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
 | [`lex clean`](#clean) | Clean project files | `lex clean` |
-| [`lex copy`](#copy) | Copy files/directories | `lex copy src dist` |
+| [`lex copy`](#copy) | Copy files/directories | `lex copy src lib` |
 | [`lex config`](#config) | Show configurations | `lex config webpack` |
 | [`lex versions`](#versions) | Show tool versions | `lex versions` |
 | [`lex link`](#link) | Check linked modules | `lex link` |
@@ -274,7 +274,7 @@ export default {
   // Project settings
   useTypescript: true,
   sourcePath: './src',
-  outputPath: './dist',
+  outputPath: './lib',
 
   // Package manager
   packageManager: 'npm',
@@ -314,9 +314,9 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `entryHTML` | `string` | `'index.html'` | HTML template file | `entryHTML: 'app.html'` |
 | `entryJs` | `string` | `'index.js'` | Main JavaScript entry file | `entryJs: 'main.tsx'` |
 | `outputFile` | `string` | `undefined` | Specific output filename | `outputFile: 'bundle.js'` |
-| `outputFullPath` | `string` | `path.resolve('./dist')` | Absolute output path for build artifacts. Used by webpack dev server for static file serving. | `outputFullPath: '/absolute/build'` |
+| `outputFullPath` | `string` | `path.resolve('./lib')` | Absolute output path for build artifacts. Used by webpack dev server for static file serving. | `outputFullPath: '/absolute/build'` |
 | `outputHash` | `boolean` | `false` | Add hash to output filenames | `outputHash: true` |
-| `outputPath` | `string` | `'./dist'` | Output directory path | `outputPath: './build'` |
+| `outputPath` | `string` | `'./lib'` | Output directory path | `outputPath: './build'` |
 | `packageManager` | `'npm' \| 'yarn'` | `'npm'` | Package manager to use | `packageManager: 'yarn'` |
 | `preset` | `'web' \| 'node' \| 'lambda' \| 'mobile'` | `'web'` | Project preset type | `preset: 'node'` |
 | `sourceFullPath` | `string` | `path.resolve('./src')` | Absolute source code path | `sourceFullPath: '/absolute/path'` |
@@ -410,7 +410,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 export default {
   useTypescript: true,
   sourcePath: './src',
-  outputPath: './dist',
+  outputPath: './lib',
   preset: 'web',
   targetEnvironment: 'web'
 };
@@ -481,7 +481,7 @@ export default {
 
 #### 404 Error with "Static Paths" Message
 
-If you see a 404 error with a message like "Static Paths /path/to/dist", this is likely because the webpack dev server is trying to serve static files from a directory that doesn't exist yet.
+If you see a 404 error with a message like "Static Paths /path/to/lib", this is likely because the webpack dev server is trying to serve static files from a directory that doesn't exist yet.
 
 **Solution**: The `outputFullPath` directory should exist before starting the dev server. You can:
 
@@ -511,11 +511,11 @@ If TypeScript compilation fails, ensure your `tsconfig.json` is properly configu
 ```json
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./lib",
     "rootDir": "./src"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "lib"]
 }
 ```
 

@@ -3,8 +3,7 @@ import {typescriptConfig} from 'eslint-config-styleguidejs';
 export default [
   ...typescriptConfig,
   {
-    ignores: ['README.md', '*.md'],
-    project: './tsconfig.lint.json',
+    ignores: ['*.md'],
     rules: {
       'keyword-spacing': ['error', {
         after: true,

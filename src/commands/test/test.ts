@@ -91,12 +91,12 @@ export const getTestFilePatterns = (testPathPattern?: string): string[] => {
 const findUncoveredSourceFiles = (): string[] => {
   const sourceFiles = globSync('src/**/*.{ts,tsx,js,jsx}', {
     cwd: process.cwd(),
-    ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*']
+    ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/*.test.*', '**/*.spec.*']
   });
 
   const testFiles = globSync('**/*.{test,spec}.{ts,tsx,js,jsx}', {
     cwd: process.cwd(),
-    ignore: ['**/node_modules/**', '**/dist/**']
+    ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**']
   });
 
   return sourceFiles.filter((sourceFile) => {

@@ -59,7 +59,7 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
     case 'generate':
       const files = globSync('src/**/*.{ts,tsx,js,jsx}', {
         cwd: process.cwd(),
-        ignore: ['**/node_modules/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
+        ignore: ['**/node_modules/**', '**/lib/**', '**/dist/**', '**/*.test.*', '**/*.spec.*'],
         maxDepth: 3
       });
       projectContext += `\n\nProject structure:\n${files.join('\n')}`;

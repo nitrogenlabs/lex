@@ -61,7 +61,7 @@ describe('translations', () => {
     writeFileSync(join(authTranslationsDir, 'en.json'), JSON.stringify(authEnTranslations, null, 2));
 
     // Create output directory
-    const outputDir = join(testDir, 'dist');
+    const outputDir = join(testDir, 'lib');
     mkdirSync(outputDir, {recursive: true});
 
     // Process translations
@@ -104,7 +104,7 @@ describe('translations', () => {
     writeFileSync(join(translationsDir, 'es.json'), JSON.stringify(secondTranslations, null, 2));
 
     // Create output directory
-    const outputDir = join(testDir, 'dist');
+    const outputDir = join(testDir, 'lib');
     mkdirSync(outputDir, {recursive: true});
 
     // Process translations
@@ -122,7 +122,7 @@ describe('translations', () => {
 
   it('should handle non-existent source path gracefully', async () => {
     const nonExistentPath = join(testDir, 'non-existent');
-    const outputDir = join(testDir, 'dist');
+    const outputDir = join(testDir, 'lib');
     mkdirSync(outputDir, {recursive: true});
 
     // Should not throw error
@@ -130,7 +130,7 @@ describe('translations', () => {
   });
 
   it('should handle empty source directory', async () => {
-    const outputDir = join(testDir, 'dist');
+    const outputDir = join(testDir, 'lib');
     mkdirSync(outputDir, {recursive: true});
 
     // Should not throw error

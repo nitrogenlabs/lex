@@ -777,7 +777,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     }
   };
 
-  const outputDir = outputFullPath || 'dist';
+  const outputDir = outputFullPath || 'lib';
   log(`Using output directory: ${outputDir}`, 'info', quiet);
 
   try {

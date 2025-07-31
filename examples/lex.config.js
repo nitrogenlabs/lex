@@ -6,7 +6,7 @@
 export default {
   // Source and output paths
   sourcePath: './src',
-  outputPath: './dist',
+  outputPath: './lib',
 
   // Project settings
   useTypescript: true,
@@ -46,7 +46,7 @@ export default {
   // Build configuration
   esbuild: {
     entryPoints: ['src/index.ts'],
-    outdir: 'dist',
+    outdir: 'lib',
     platform: 'node',
     target: 'es2020',
     format: 'esm'

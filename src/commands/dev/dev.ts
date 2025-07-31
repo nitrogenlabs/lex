@@ -231,7 +231,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
     try {
       const sourcePath = LexConfig.config.sourceFullPath || process.cwd();
-      const outputPath = LexConfig.config.outputFullPath || 'dist';
+      const outputPath = LexConfig.config.outputFullPath || 'lib';
 
       await processTranslations(sourcePath, outputPath, quiet);
       spinner.succeed('Translations processed successfully!');

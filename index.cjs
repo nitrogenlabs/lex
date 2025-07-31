@@ -12,9 +12,9 @@ module.exports = {
   LexConfig: require('./dist/LexConfig.js').LexConfig,
   // Export utility functions
   utils: {
-    aiService: require('./dist/utils/aiService.js'),
-    app: require('./dist/utils/app.js'),
-    file: require('./dist/utils/file.js'),
-    log: require('./dist/utils/log.js')
+    aiService: require('./lib/utils/aiService.js'),
+    app: require('./lib/utils/app.js'),
+    file: require('./lib/utils/file.js'),
+    log: require('./lib/utils/log.js')
   }
 };

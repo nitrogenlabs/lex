@@ -102,7 +102,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
 
       // Update Lex tsconfig template with source and output directories
       data = data.replace(/.\/src/g, sourcePath);
-      data = data.replace(/.\/dist/g, outputPath);
+      data = data.replace(/.\/lib/g, outputPath);
 
       // Save new tsconfig to app
       const destPath: string = pathResolve(cwd, './tsconfig.json');

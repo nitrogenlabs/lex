@@ -52,7 +52,7 @@ lex build --watch
 lex build --variables "{\"NODE_ENV\": \"production\", \"API_URL\": \"https://api.example.com\"}"
 
 # Specify output path
-lex build --outputPath ./dist
+lex build --outputPath ./lib
 
 # Specify source path
 lex build --sourcePath ./src

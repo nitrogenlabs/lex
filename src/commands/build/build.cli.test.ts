@@ -55,9 +55,9 @@ describe('build cli', () => {
     });
 
     it('should handle output path option', () => {
-      const args = generateEsbuildArgs({outputPath: './dist'});
+      const args = generateEsbuildArgs({outputPath: './lib'});
 
-      expect(args).toContain('--outdir=./dist');
+      expect(args).toContain('--outdir=./lib');
     });
 
     it('should handle platform option', () => {

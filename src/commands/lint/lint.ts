@@ -1159,7 +1159,7 @@ export const lint = async (cmd: LintOptions & {'remove-comments'?: boolean}, cal
       const glob = await import('glob');
       const files = glob.sync('{src,lib}/**/*.{js,jsx,ts,tsx}', {
         cwd,
-        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+        ignore: ['**/node_modules/**', '**/lib/**', '**/dist/**', '**/build/**']
       });
 
       let processedCount = 0;

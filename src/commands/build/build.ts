@@ -388,7 +388,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
         if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
         if(sizeMatch) buildStats.size = sizeMatch[1];
 
-        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
       }
     });
 
@@ -409,7 +409,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
         if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
         if(sizeMatch) buildStats.size = sizeMatch[1];
 
-        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
       }
     });
 
@@ -417,7 +417,7 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
 
     if(!buildCompleted) {
       spinner.succeed('Build completed successfully!');
-      displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'dist', quiet, buildStats);
+      displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
     }
 
     callback(0);
@@ -501,7 +501,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
 
     try {
       const sourcePath = LexConfig.config.sourceFullPath || process.cwd();
-      const outputPath = LexConfig.config.outputFullPath || 'dist';
+      const outputPath = LexConfig.config.outputFullPath || 'lib';
 
       await processTranslations(sourcePath, outputPath, quiet);
       spinner.succeed('Translations processed successfully!');

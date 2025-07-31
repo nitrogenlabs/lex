@@ -28,7 +28,7 @@ describe('Serverless Integration Tests', () => {
     jest.doMock('../../LexConfig.js', () => ({
       LexConfig: {
         config: {
-          outputFullPath: './dist'
+          outputFullPath: './lib'
         },
         parseConfig: jest.fn()
       }

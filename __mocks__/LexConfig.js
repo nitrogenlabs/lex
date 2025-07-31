@@ -5,7 +5,7 @@ const defaultConfigValues = {
   useGraphQl: false,
   targetEnvironment: 'web',
   sourcePath: './src',
-  outputPath: './dist'
+  outputPath: './lib'
 };
 
 const LexConfig = {
