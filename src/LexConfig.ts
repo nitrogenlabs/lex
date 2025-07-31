@@ -14,6 +14,7 @@ import type {Linter} from 'eslint';
 const cwd: string = process.cwd();
 
 export interface EsbuildConfig {
+  [key: string]: unknown;
   entryPoints?: string[];
   outdir?: string;
   platform?: 'node' | 'browser';
@@ -31,10 +32,10 @@ export interface EsbuildConfig {
   banner?: Record<string, string>;
   footer?: Record<string, string>;
   define?: Record<string, string>;
-  [key: string]: unknown;
 }
 
 export interface JestConfig {
+  [key: string]: unknown;
   roots?: string[];
   testEnvironment?: string;
   transform?: Record<string, [string, Record<string, unknown>]>;
@@ -42,16 +43,15 @@ export interface JestConfig {
   moduleNameMapper?: Record<string, string>;
   extensionsToTreatAsEsm?: string[];
   preset?: string;
-  [key: string]: unknown;
 }
 
 export interface WebpackConfig {
+  [key: string]: unknown;
   entry?: string | string[];
   output?: Record<string, unknown>;
   module?: Record<string, unknown>;
   plugins?: unknown[];
   publicPath?: string;
-  [key: string]: unknown;
 }
 
 export interface AIConfig {
@@ -63,9 +63,9 @@ export interface AIConfig {
 }
 
 export interface ESLintConfig {
+  [key: string]: unknown;
   extends?: string[];
   rules?: Linter.RulesRecord;
-  [key: string]: unknown;
 }
 
 export interface LexConfigType {
@@ -99,27 +99,27 @@ export type Config = LexConfigType;
 
 export const defaultConfigValues: LexConfigType = {
   ai: {
-    provider: 'none',
-    model: 'gpt-4o',
     maxTokens: 4000,
+    model: 'gpt-4o',
+    provider: 'none',
     temperature: 0.1
   },
   configFiles: [],
   copyFiles: [],
   entryHTML: 'index.html',
   entryJs: 'index.js',
-  eslint: {},
-  esbuild: {
-    minify: true,
-    treeShaking: true,
-    drop: ['console', 'debugger'],
-    pure: ['console.log', 'console.warn', 'console.error'],
-    legalComments: 'none',
-    splitting: true,
-    metafile: false,
-    sourcemap: false
-  },
   env: null,
+  esbuild: {
+    drop: ['console', 'debugger'],
+    legalComments: 'none',
+    metafile: false,
+    minify: true,
+    pure: ['console.log', 'console.warn', 'console.error'],
+    sourcemap: false,
+    splitting: true,
+    treeShaking: true
+  },
+  eslint: {},
   jest: {},
   outputFullPath: pathResolve(cwd, './dist'),
   outputHash: false,
@@ -136,28 +136,7 @@ export const defaultConfigValues: LexConfigType = {
   }
 };
 
-function findLexRoot(startDir: string): string {
-  let dir = startDir;
-  while(dir !== '/' && dir !== '.') {
-    const pkgPath = pathResolve(dir, 'package.json');
-    if(existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-        if(pkg.name === '@nlabs/lex') {
-          return dir;
-        }
-      } catch {}
-    }
-    const parent = dirname(dir);
-    if(parent === dir) {
-      break;
-    }
-    dir = parent;
-  }
-  throw new Error('Could not find @nlabs/lex root');
-}
-
-export function getTypeScriptConfigPath(configName: string): string {
+export const getTypeScriptConfigPath = (configName: string): string => {
   const cwd = process.cwd();
 
   if(configName === 'tsconfig.build.json') {
@@ -188,16 +167,12 @@ export function getTypeScriptConfigPath(configName: string): string {
 
   const lexDir = LexConfig.getLexDir();
   return pathResolve(lexDir, configName);
-}
+};
 
 export class LexConfig {
   static config: LexConfigType = {
     ...defaultConfigValues
   };
-
-  static getLexDir(): string {
-    return dirname(getLexPackageJsonPath());
-  }
 
   static set useTypescript(value: boolean) {
     LexConfig.config.useTypescript = value;
@@ -215,6 +190,10 @@ export class LexConfig {
         LexConfig.config.entryJs = 'index.ts';
       }
     }
+  }
+
+  static getLexDir(): string {
+    return dirname(getLexPackageJsonPath());
   }
 
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
@@ -318,7 +297,7 @@ export class LexConfig {
 
           try {
             configJson = JSON.parse(configContent)?.default || {};
-          } catch(error) {
+          } catch (error) {
             log(`\n${cliName} Error: Failed to parse JSON config: ${error.message}`, 'error', quiet);
             configJson = {};
           }
@@ -357,9 +336,10 @@ export class LexConfig {
           }
 
           LexConfig.addConfigParams(cmd, config || {});
-        } catch(error) {
+        } catch (error) {
           log(`\n${cliName} Error: Failed to load config file: ${error.message}`, 'error', quiet);
           if(debug) {
+            // eslint-disable-next-line no-console
             console.error(error);
           }
         }

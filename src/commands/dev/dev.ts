@@ -11,7 +11,7 @@ import {networkInterfaces, homedir} from 'os';
 import {dirname, resolve as pathResolve, join} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
-import {createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
+import {createSpinner, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {resolveWebpackPaths} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {processTranslations} from '../../utils/translations.js';
@@ -20,6 +20,7 @@ let currentFilename: string;
 let currentDirname: string;
 
 try {
+  // eslint-disable-next-line no-eval
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
 } catch {
@@ -146,7 +147,7 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (port: number = 7001, host: string = 'localhost', quiet: boolean, publicIp?: string) => {
+const displayServerStatus = (port: number = 7001, quiet: boolean, publicIp?: string) => {
   if(quiet) {
     return;
   }
@@ -154,7 +155,12 @@ const displayServerStatus = (port: number = 7001, host: string = 'localhost', qu
   const addresses = getNetworkAddresses();
   const localUrl = `http://localhost:${port}`;
   const privateUrl = addresses.private ? `http://${addresses.private}:${port}` : null;
-  const publicUrl = publicIp ? `http://${publicIp}:${port}` : (addresses.public ? `http://${addresses.public}:${port}` : null);
+  let publicUrl = null;
+  if(publicIp) {
+    publicUrl = `http://${publicIp}:${port}`;
+  } else if(addresses.public) {
+    publicUrl = `http://${addresses.public}:${port}`;
+  }
 
   let urlLines = `${chalk.green('Local:')}     ${chalk.underline(localUrl)}\n`;
 
@@ -170,14 +176,15 @@ const displayServerStatus = (port: number = 7001, host: string = 'localhost', qu
     `${chalk.cyan.bold('🚀 Development Server Running')}\n\n${urlLines}\n` +
     `${chalk.yellow('Press Ctrl+C to stop the server')}`,
     {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
+      backgroundColor: '#1a1a1a',
       borderColor: 'cyan',
-      backgroundColor: '#1a1a1a'
+      borderStyle: 'round',
+      margin: 1,
+      padding: 1
     }
   );
 
+  // eslint-disable-next-line no-console
   console.log(`\n${statusBox}\n`);
 };
 
@@ -197,7 +204,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   if(variables) {
     try {
       variablesObj = JSON.parse(variables);
-    } catch(_error) {
+    } catch (_error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       callback(1);
       return 1;
@@ -228,7 +235,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
       await processTranslations(sourcePath, outputPath, quiet);
       spinner.succeed('Translations processed successfully!');
-    } catch(translationError) {
+    } catch (translationError) {
       log(`\n${cliName} Error: Failed to process translations: ${translationError.message}`, 'error', quiet);
       spinner.fail('Failed to process translations.');
       callback(1);
@@ -237,7 +244,6 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   }
 
   let webpackConfig: string;
-  let webpackPath: string;
 
   if(config) {
     const isRelativeConfig: boolean = config.substr(0, 2) === './';
@@ -247,8 +253,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     webpackConfig = resolvedConfig;
   }
 
-  const {webpackPath: resolvedPath} = resolveWebpackPaths(currentDirname);
-  webpackPath = resolvedPath;
+  const {webpackPath} = resolveWebpackPaths(currentDirname);
 
   const webpackOptions: string[] = [
     '--color',
@@ -293,13 +298,13 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
           output.match(/listening on port (\d+)/) ||
           output.match(/WebpackPluginServe listening on port (\d+)/);
         if(portMatch) {
-          detectedPort = parseInt(portMatch[1], 10);
+          detectedPort = parseInt(portMatch[1]);
         }
 
-        displayServerStatus(detectedPort, 'localhost', quiet);
+        displayServerStatus(detectedPort, quiet);
         fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
-            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+            displayServerStatus(detectedPort, quiet, publicIp);
           }
         });
       }
@@ -321,13 +326,13 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
           output.match(/listening on port (\d+)/) ||
           output.match(/WebpackPluginServe listening on port (\d+)/);
         if(portMatch) {
-          detectedPort = parseInt(portMatch[1], 10);
+          detectedPort = parseInt(portMatch[1]);
         }
 
-        displayServerStatus(detectedPort, 'localhost', quiet);
+        displayServerStatus(detectedPort, quiet);
         fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
-            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+            displayServerStatus(detectedPort, quiet, publicIp);
           }
         });
       }
@@ -336,10 +341,10 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     setTimeout(() => {
       if(!serverStarted) {
         spinner.succeed('Development server started.');
-        displayServerStatus(detectedPort, 'localhost', quiet);
+        displayServerStatus(detectedPort, quiet);
         fetchPublicIp(usePublicIp).then((publicIp) => {
           if(publicIp) {
-            displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+            displayServerStatus(detectedPort, quiet, publicIp);
           }
         });
       }
@@ -349,17 +354,17 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
     if(!serverStarted) {
       spinner.succeed('Development server started.');
-      displayServerStatus(detectedPort, 'localhost', quiet);
+      displayServerStatus(detectedPort, quiet);
       fetchPublicIp(usePublicIp).then((publicIp) => {
         if(publicIp) {
-          displayServerStatus(detectedPort, 'localhost', quiet, publicIp);
+          displayServerStatus(detectedPort, quiet, publicIp);
         }
       });
     }
 
     callback(0);
     return 0;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     spinner.fail('There was an error while running Webpack.');

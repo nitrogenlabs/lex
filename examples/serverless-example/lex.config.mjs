@@ -1,73 +1,73 @@
 export default {
   outputFullPath: './dist',
   serverless: {
+    custom: {
+      'serverless-offline': {
+        cors: true,
+        host: 'localhost',
+        httpPort: 3000,
+        httpsPort: 3001,
+        wsPort: 3002
+      }
+    },
     functions: {
-      hello: {
-        handler: 'handlers/hello.js',
-        events: [
-          {
-            http: {
-              path: '/hello',
-              method: 'GET',
-              cors: true
-            }
-          }
-        ]
-      },
       echo: {
-        handler: 'handlers/echo.js',
         events: [
           {
             http: {
-              path: '/echo',
+              cors: true,
               method: 'POST',
-              cors: true
+              path: '/echo'
             }
           }
-        ]
+        ],
+        handler: 'handlers/echo.js'
       },
       graphql: {
-        handler: 'handlers/graphql.js',
         events: [
           {
             http: {
-              path: '/public',
+              cors: true,
               method: 'POST',
-              cors: true
+              path: '/public'
             }
           }
-        ]
+        ],
+        handler: 'handlers/graphql.js'
+      },
+      hello: {
+        events: [
+          {
+            http: {
+              cors: true,
+              method: 'GET',
+              path: '/hello'
+            }
+          }
+        ],
+        handler: 'handlers/hello.js'
       },
       test: {
-        handler: 'handlers/test.js',
         events: [
           {
             http: {
-              path: '/test',
+              cors: true,
               method: 'GET',
-              cors: true
+              path: '/test'
             }
           }
-        ]
+        ],
+        handler: 'handlers/test.js'
       },
       websocket: {
-        handler: 'handlers/websocket.js',
         events: [
           {
             websocket: {
               route: '$default'
             }
           }
-        ]
-      }
-    },
-    custom: {
-      'serverless-offline': {
-        httpPort: 3000,
-        httpsPort: 3001,
-        wsPort: 3002,
-        host: 'localhost',
-        cors: true
+        ],
+        handler: 'handlers/websocket.js'
       }
     }
   }

@@ -3,11 +3,9 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
-import {resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
-import {getDirName} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface UpdateOptions {
@@ -32,7 +30,6 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
   const {packageManager: configPackageManager} = LexConfig.config;
   const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const isNpm: boolean = packageManager === 'npm';
-  const dirName = getDirName();
 
   try {
     if(isNpm) {
@@ -106,7 +103,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
               encoding: 'utf8',
               stdio: 'inherit'
             });
-          } catch(installError) {
+          } catch (installError) {
             log(`Failed to install or use npm-check-updates: ${installError.message}`, 'error', quiet);
             log('Please install npm-check-updates manually: npm install -g npm-check-updates', 'info', quiet);
             throw installError;
@@ -143,7 +140,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
 
     callback(0);
     return 0;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     spinner.fail('Failed to update packages.');

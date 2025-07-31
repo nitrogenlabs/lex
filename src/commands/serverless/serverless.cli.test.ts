@@ -1,31 +1,31 @@
-import {execa} from 'execa';
-
 import {serverless} from './serverless.js';
 
 jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 
 // Mock the server creation to prevent actual server startup
 jest.mock('http', () => ({
   createServer: jest.fn(() => ({
+    close: jest.fn(),
     listen: jest.fn((port, host, callback) => {
-      if(callback) callback();
-    }),
-    close: jest.fn()
+      if(callback) {
+        callback();
+      }
+    })
   }))
 }));
 
 jest.mock('ws', () => ({
   WebSocketServer: jest.fn(() => ({
-    on: jest.fn(),
-    close: jest.fn()
+    close: jest.fn(),
+    on: jest.fn()
   }))
 }));
 

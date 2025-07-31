@@ -1,6 +1,6 @@
-import {existsSync, mkdirSync, writeFileSync, rmSync} from 'fs';
-import {join} from 'path';
+import {existsSync, mkdirSync, readFileSync, writeFileSync, rmSync} from 'fs';
 import {tmpdir} from 'os';
+import {join} from 'path';
 
 import {processTranslations} from './translations.js';
 
@@ -18,7 +18,7 @@ describe('translations', () => {
 
   afterEach(() => {
     try {
-      rmSync(testDir, {recursive: true, force: true});
+      rmSync(testDir, {force: true, recursive: true});
     } catch {
       // Ignore cleanup errors
     }
@@ -34,13 +34,13 @@ describe('translations', () => {
       auth: {
         signupTitle: 'Sign Up',
         validation: {
-          'invalid-email': 'Invalid email address',
-          'email-required': 'Email is required'
+          'email-required': 'Email is required',
+          'invalid-email': 'Invalid email address'
         }
       },
       common: {
-        submit: 'Submit',
-        cancel: 'Cancel'
+        cancel: 'Cancel',
+        submit: 'Submit'
       }
     };
 
@@ -52,9 +52,9 @@ describe('translations', () => {
 
     const authEnTranslations = {
       login: {
-        title: 'Login',
         email: 'Email',
-        password: 'Password'
+        password: 'Password',
+        title: 'Login'
       }
     };
 
@@ -69,10 +69,11 @@ describe('translations', () => {
 
     // Check if output file was created
     const outputFile = join(outputDir, 'translations.json');
+
     expect(existsSync(outputFile)).toBe(true);
 
     // Read and verify the flattened output
-    const outputContent = JSON.parse(require('fs').readFileSync(outputFile, 'utf8'));
+    const outputContent = JSON.parse(readFileSync(outputFile, 'utf8'));
 
     expect(outputContent['auth.signupTitle']).toBe('Sign Up');
     expect(outputContent['auth.validation.invalid-email']).toBe('Invalid email address');
@@ -111,7 +112,7 @@ describe('translations', () => {
 
     // Check output
     const outputFile = join(outputDir, 'translations.json');
-    const outputContent = JSON.parse(require('fs').readFileSync(outputFile, 'utf8'));
+    const outputContent = JSON.parse(readFileSync(outputFile, 'utf8'));
 
     expect(outputContent.hello).toBe('Hello');
     expect(outputContent.welcome).toBe('Welcome');
