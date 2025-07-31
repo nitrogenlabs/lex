@@ -21,7 +21,7 @@
       "import": "./lib/storybook/index.js",
       "require": "./lib/storybook/index.js"
     },
-    "./eslint.config.js": "./eslint.config.js"
+    "./eslint.config.mjs": "./eslint.config.mjs"
   },
   "types": "./lib/index.d.ts",
   "keywords": [

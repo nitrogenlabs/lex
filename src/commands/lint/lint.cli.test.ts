@@ -6,9 +6,9 @@ jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 
@@ -32,28 +32,28 @@ describe('lint cli', () => {
   });
 
   it('should lint with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await lint({});
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('eslint'), expect.arrayContaining(['src/**/*.{js,jsx}']), expect.any(Object));
   });
 
   it('should lint with fix option', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await lint({fix: true});
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('eslint'), expect.arrayContaining(['--fix']), expect.any(Object));
   });
 
   it('should lint with custom config', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
-    await lint({config: 'eslint.config.js'});
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    await lint({config: 'eslint.config.mjs'});
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('eslint'), expect.arrayContaining(['--config']), expect.any(Object));
   });
 
   it('should lint with quiet option', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await lint({quiet: true});
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('eslint'), expect.arrayContaining(['src/**/*.{js,jsx}']), expect.any(Object));

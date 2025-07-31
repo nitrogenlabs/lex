@@ -60,7 +60,7 @@ describe('lint options', () => {
   });
 
   it('should handle config option', async () => {
-    const result = await lint({config: 'eslint.config.js'});
+    const result = await lint({config: 'eslint.config.mjs'});
 
     expect(result).toBe(0);
   });

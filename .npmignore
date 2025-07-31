@@ -5,4 +5,4 @@ node_modules
 src
 website
 .eslintrc.json
-!eslint.config.js
+!eslint.config.mjs
