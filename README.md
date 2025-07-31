@@ -92,6 +92,7 @@ Lex comes with everything you need for modern React development:
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
 | [`lex dev`](#dev) | Start development server | `lex dev --open` |
+| [`lex serverless`](#serverless) | Start serverless development server | `lex serverless --host 0.0.0.0` |
 | [`lex compile`](#compile) | Compile TypeScript/JavaScript | `lex compile --watch` |
 | [`lex build`](#build) | Build for production | `lex build --mode production` |
 
@@ -108,8 +109,8 @@ Lex comes with everything you need for modern React development:
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
 | [`lex ai`](#ai) | AI code assistance | `lex ai --task generate --prompt "Create a button component"` |
-| [`lex ai`](#ai) | AI test generation | `lex test --generate` |
-| [`lex ai`](#ai) | AI error fixing | `lex build --assist` |
+| [`lex test`](#test) | AI test generation | `lex test --generate` |
+| [`lex build`](#build) | AI error fixing | `lex build --assist` |
 
 ### 📦 **Package Management**
 
@@ -152,6 +153,28 @@ lex dev --usePublicIp
 **📁 Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
 
 **🎨 Public Assets**: Use the `webpack.publicPath` configuration to specify a directory for public assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
+
+### 🚀 **Serverless Development Server** {#serverless}
+
+```bash
+# Start serverless development server
+lex serverless
+
+# With custom host and ports
+lex serverless --host 0.0.0.0 --httpPort 4000 --wsPort 4002
+
+# With environment variables
+lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
+
+# With GraphQL debug logging
+lex serverless --debug --printOutput
+```
+
+**🔧 AWS Lambda Simulation**: Lex provides a local development server similar to serverless-offline, allowing you to test AWS Lambda functions with HTTP and WebSocket support.
+
+**📄 Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless/serverless.docs.md) for detailed configuration options.
+
+**🌍 Environment Variables**: The serverless command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
 
 ### 🏗️ **Production Builds**
 
@@ -230,6 +253,7 @@ Lex works seamlessly with popular React frameworks and libraries:
 - ✅ **TypeScript** - Full TypeScript support out of the box
 - ✅ **Tailwind CSS** - Automatic Tailwind integration
 - ✅ **Storybook** - Built-in Storybook support
+- ✅ **Serverless** - Local AWS Lambda development with HTTP/WebSocket support
 
 ## 🚀 Performance
 

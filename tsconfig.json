@@ -30,7 +30,8 @@
   "exclude": [
     "./.vscode",
     "./dist",
-    "./node_modules"
+    "./node_modules",
+    "**/*.md"
   ],
   "include": [
     "./src",
