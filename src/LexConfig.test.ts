@@ -5,7 +5,7 @@ describe('LexConfig', () => {
     it('should have default publicPath in webpack config', () => {
       const {config} = LexConfig;
 
-      expect(config.webpack?.publicPath).toBe('./src/public');
+      expect(config.webpack?.publicPath).toBe('./src/static');
     });
 
     it('should allow custom publicPath configuration', () => {

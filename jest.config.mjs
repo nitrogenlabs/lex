@@ -2,22 +2,23 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {fileURLToPath} from 'url';
-import {dirname, resolve} from 'path';
-import {deepMerge} from './dist/utils/deepMerge.js';
-
 import {readFileSync} from 'fs';
+import merge from 'lodash/merge.js';
+import {dirname, resolve} from 'path';
+import {fileURLToPath} from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const pack = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf8'));
+const filename = fileURLToPath(import.meta.url);
+const dirnamePath = dirname(filename);
+const pack = JSON.parse(readFileSync(resolve(dirnamePath, 'package.json'), 'utf8'));
 
 let projectJestConfig = null;
+
 if(process.env.LEX_CONFIG) {
   try {
     const lexConfig = JSON.parse(process.env.LEX_CONFIG);
     projectJestConfig = lexConfig.jest;
-  } catch(error) {
+  } catch (error) {
+    // eslint-disable-next-line no-console
     console.warn('Failed to parse LEX_CONFIG:', error.message);
   }
 }
@@ -36,19 +37,19 @@ const baseConfig = {
   displayName: pack.name,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'node'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   rootDir: process.cwd(),
   testEnvironment: 'node',
   testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$',
   transform: {
-    '^.+\.js$|^.+\.jsx$': ['babel-jest', {
+    '^.+\\.js$|^.+\\.jsx$': ['babel-jest', {
       presets: [
         ['@babel/preset-env', {targets: {node: 'current'}}],
         '@babel/preset-typescript'
       ]
     }],
-    '^.+\.ts$|^.+\.tsx$': ['babel-jest', {
+    '^.+\\.ts$|^.+\\.tsx$': ['babel-jest', {
       presets: [
         ['@babel/preset-env', {targets: {node: 'current'}}],
         '@babel/preset-typescript',
@@ -60,7 +61,7 @@ const baseConfig = {
 };
 
 const finalConfig = projectJestConfig && Object.keys(projectJestConfig).length > 0
-  ? deepMerge(baseConfig, projectJestConfig)
+  ? merge(baseConfig, projectJestConfig)
   : baseConfig;
 
 export default finalConfig;

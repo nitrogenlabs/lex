@@ -21,7 +21,7 @@ const detectESM = (cwd: string): boolean => {
       const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
       const packageJson = JSON.parse(packageJsonContent);
       return packageJson.type === 'module';
-    } catch(_error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -113,7 +113,7 @@ const processTestResults = (outputFile?: string): any => {
   try {
     const content = readFileSync(outputFile, 'utf-8');
     return JSON.parse(content);
-  } catch(_error) {
+  } catch (_error) {
     return null;
   }
 };
@@ -212,7 +212,7 @@ export const test = async (
       } else {
         spinner.succeed('All source files appear to have corresponding test files');
       }
-    } catch(aiError) {
+    } catch (aiError) {
       spinner.fail('Could not generate AI test suggestions');
       if(!quiet) {
         // eslint-disable-next-line no-console
@@ -511,7 +511,7 @@ Please provide:
         });
 
         spinner.succeed('AI test analysis complete');
-      } catch(aiError) {
+      } catch (aiError) {
         spinner.fail('Could not generate AI test analysis');
         if(!quiet) {
           // eslint-disable-next-line no-console
@@ -522,7 +522,7 @@ Please provide:
 
     callback(0);
     return 0;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
 
     spinner.fail('Testing failed!');
@@ -551,7 +551,7 @@ Please provide:
         });
 
         spinner.succeed('AI debugging assistance complete');
-      } catch(aiError) {
+      } catch (aiError) {
         spinner.fail('Could not generate AI debugging assistance');
         if(!quiet) {
           // eslint-disable-next-line no-console

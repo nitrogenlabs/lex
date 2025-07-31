@@ -116,7 +116,7 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
   if(variables) {
     try {
       variablesObj = JSON.parse(variables);
-    } catch(_error) {
+    } catch (_error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       callback(1);
       return 1;
@@ -311,13 +311,13 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
       }
       callback(0);
       return 0;
-    } catch(error) {
+    } catch (error) {
       spinner.fail(chalk.red('There was an error while running storybook.'));
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
       callback(1);
       return 1;
     }
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     spinner.fail('There was an error while running storybook.');
     callback(1);

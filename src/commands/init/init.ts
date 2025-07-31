@@ -63,7 +63,7 @@ export const init = async (
 
     // Stop spinner and update status
     spinner.succeed('Successfully downloaded app!');
-  } catch(error) {
+  } catch (error) {
     console.log('error', error);
     log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
 
@@ -78,7 +78,7 @@ export const init = async (
   // Move into configured directory
   try {
     renameSync(`${tmpPath}/${appModule}`, appPath);
-  } catch(_error) {
+  } catch (_error) {
     log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
     callback(1);
     return 1;
@@ -104,7 +104,7 @@ export const init = async (
     // Update README
     const readmePath: string = `${appPath}/README.md`;
     writeFileSync(readmePath, `# ${appName}`);
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     callback(1);
     return 1;
@@ -125,7 +125,7 @@ export const init = async (
 
       // Stop spinner
       spinner.succeed('Successfully installed dependencies!');
-    } catch(error) {
+    } catch (error) {
       // Display error message
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 

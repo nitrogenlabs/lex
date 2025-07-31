@@ -14,7 +14,12 @@ export interface CopyOptions {
 
 export type CopyCallback = (status: number) => void;
 
-export const copy = (from: string, to: string, cmd: CopyOptions, callback: CopyCallback = () => ({})): Promise<number> => {
+export const copy = (
+  from: string,
+  to: string,
+  cmd: CopyOptions,
+  callback: CopyCallback = () => ({})
+): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;
 
   // Display message
@@ -30,7 +35,7 @@ export const copy = (from: string, to: string, cmd: CopyOptions, callback: CopyC
     try {
       // Copy directory
       copyFolderRecursiveSync(from, to);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
       callback(1);
       return Promise.resolve(1);
@@ -39,7 +44,7 @@ export const copy = (from: string, to: string, cmd: CopyOptions, callback: CopyC
     try {
       // Copy file
       copyFileSync(from, to);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
       callback(1);
       return Promise.resolve(1);

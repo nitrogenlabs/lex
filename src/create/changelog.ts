@@ -146,7 +146,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
 
     // Kill process
     return 0;
-  } catch(error) {
+  } catch (error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 

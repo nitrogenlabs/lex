@@ -85,7 +85,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
           callback(1);
           return 1;
         }
-      } catch(error) {
+      } catch (error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         callback(1);
         return 1;
@@ -158,7 +158,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
           callback(1);
           return 1;
         }
-      } catch(error) {
+      } catch (error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         callback(1);
         return 1;

@@ -53,7 +53,7 @@ export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_statu
     // Stop process
     callback(0);
     return 0;
-  } catch(error) {
+  } catch (error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 

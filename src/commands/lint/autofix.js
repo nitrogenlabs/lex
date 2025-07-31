@@ -37,7 +37,7 @@ const runEslintFix = async () => {
     await execa('eslint', [srcDir, '--fix'], {stdio: 'inherit'});
     log('ESLint --fix completed', 'success');
     return true;
-  } catch(_) {
+  } catch (_) {
     log('ESLint found issues that could not be automatically fixed', 'info');
     return false;
   }
@@ -61,7 +61,7 @@ const getFilesWithErrors = async () => {
 
     log(`Found ${filesWithErrors.length} files with remaining errors`, 'info');
     return filesWithErrors;
-  } catch(_) {
+  } catch (_) {
     log('Error identifying files with errors', 'error');
     return [];
   }
@@ -72,7 +72,7 @@ const isCursorAvailable = async () => {
   try {
     await execa('which', ['cursor']);
     return true;
-  } catch(_) {
+  } catch (_) {
     return false;
   }
 };
@@ -166,12 +166,12 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
     // Clean up
     try {
       await execa('rm', [promptFile]);
-    } catch(_) {
+    } catch (_) {
       // Ignore cleanup errors
     }
 
     return true;
-  } catch(_) {
+  } catch (_) {
     log(`Error fixing ${filePath}`, 'error');
     return false;
   }
@@ -221,7 +221,7 @@ const main = async () => {
     await execa('eslint', [srcDir], {stdio: 'inherit'});
     log('All issues fixed!', 'success');
     process.exit(0);
-  } catch(_) {
+  } catch (_) {
     log('Some issues remain. You may need to fix them manually.', 'info');
     process.exit(1);
   }

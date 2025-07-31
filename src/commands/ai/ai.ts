@@ -37,7 +37,7 @@ const getFileContext = (filePath: string): string => {
   try {
     const content = readFileSync(filePath, 'utf-8');
     return `File: ${filePath}\n\n${content}`;
-  } catch(_error) {
+  } catch (_error) {
     return `Error reading file: ${filePath}`;
   }
 };
@@ -286,7 +286,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
             context += `\n===FILE: ${file}===\n${content}\n`;
           }
         }
-      } catch(error) {
+      } catch (error) {
         log(`${chalk.yellow('Warning:')} Error reading file: ${error.message}`, 'warning');
       }
     }
@@ -296,7 +296,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
         const {execaSync} = await import('execa');
         const result = execaSync('find', [options.dir, '-type', 'f', '|', 'sort']);
         context += `\n===Project structure:===\n${result.stdout}\n`;
-      } catch(error) {
+      } catch (error) {
         log(`${chalk.yellow('Warning:')} Error reading directory: ${error.message}`, 'warning');
       }
     }
@@ -341,7 +341,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
     log(`\n${response}`, 'success');
 
     return {response};
-  } catch(error) {
+  } catch (error) {
     log(`${chalk.red('Error:')} ${error.message}`, 'error');
     return {error: error.message};
   }

@@ -82,7 +82,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       await execa(typescriptPath, typescriptOptions, {encoding: 'utf8'});
 
       spinner.succeed('Successfully completed type checking!');
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Type checking failed.');
@@ -199,7 +199,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     try {
       await execa(postcssPath, postcssOptions, {encoding: 'utf8'});
       spinner.succeed(`Successfully formatted ${cssFiles.length} css files!`);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed formatting css.');
@@ -218,7 +218,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(imageFiles.length) {
     try {
       await copyFiles(imageFiles, 'image', spinner, LexConfig.config);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move images to output directory.');
@@ -237,7 +237,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(fontFiles.length) {
     try {
       await copyFiles(fontFiles, 'font', spinner, LexConfig.config);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move fonts to output directory.');
@@ -252,7 +252,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(mdFiles.length) {
     try {
       await copyFiles(mdFiles, 'documents', spinner, LexConfig.config);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move docs to output directory.');
@@ -268,7 +268,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
 
     spinner.succeed('Compile completed successfully!');
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     if(!quiet) {
@@ -283,7 +283,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   try {
     await copyConfiguredFiles(spinner, LexConfig.config, quiet);
-  } catch(copyError) {
+  } catch (copyError) {
     log(`\n${cliName} Error: Failed to copy configured files: ${copyError.message}`, 'error', quiet);
 
     spinner.fail('Failed to copy configured files.');

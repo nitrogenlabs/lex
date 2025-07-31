@@ -60,7 +60,7 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     packageJson = getPackageJson(packagePath);
     packageName = packageJson.name;
     prevVersion = packageJson.version;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
     log(error.message, 'error');
     callback(1);
@@ -112,7 +112,7 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     try {
       // Save updated version
       setPackageJson({...packageJson, version: nextVersion}, packagePath);
-    } catch(error) {
+    } catch (error) {
       log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, 'error', quiet);
       callback(1);
       return 1;
@@ -132,7 +132,7 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     // Kill process
     callback(0);
     return 0;
-  } catch(error) {
+  } catch (error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 

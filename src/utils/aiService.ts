@@ -96,7 +96,7 @@ Then set your API key as an environment variable:
 export OPENAI_API_KEY=your_key_here
 \`\`\`
 `;
-  } catch(error) {
+  } catch (error) {
     throw new Error(`Cursor AI error: ${error.message}`);
   }
 };
@@ -132,7 +132,7 @@ export const callOpenAIAI = async (prompt: string, options: AIConfig): Promise<s
 
     const data = await response.json();
     return data.choices[0].message.content;
-  } catch(error) {
+  } catch (error) {
     throw new Error(`OpenAI AI error: ${error.message}`);
   }
 };
@@ -168,7 +168,7 @@ export const callAnthropicAI = async (prompt: string, options: AIConfig): Promis
 
     const data = await response.json();
     return data.content[0].text;
-  } catch(error) {
+  } catch (error) {
     throw new Error(`Anthropic AI error: ${error.message}`);
   }
 };
@@ -177,7 +177,7 @@ export const callCopilotAI = async (prompt: string, _options: AIConfig): Promise
   try {
     log('GitHub Copilot AI fixes not directly supported. Using manual fix mode.', 'info');
     return prompt;
-  } catch(error) {
+  } catch (error) {
     throw new Error(`GitHub Copilot AI error: ${error.message}`);
   }
 };
@@ -302,7 +302,7 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
             `ai: { provider: '${aiConfig.provider}' },`
           );
           writeFileSync(configPath, updatedConfig);
-        } catch(_error) {
+        } catch (_error) {
         }
       }
     }
@@ -330,7 +330,7 @@ export const callAIService = async (prompt: string, quiet = false): Promise<stri
 
     spinner.succeed('AI code fixes generated successfully');
     return result;
-  } catch(error) {
+  } catch (error) {
     spinner.fail(`AI service error: ${error.message}`);
     if(!quiet) {
       log(error, 'error');

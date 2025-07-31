@@ -220,11 +220,11 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
       log(`Handler found: ${typeof handler}`, 'info', false);
 
       return handler;
-    } catch(importError) {
+    } catch (importError) {
       log(`Import error for handler ${handlerPath}: ${importError.message}`, 'error', false);
       return null;
     }
-  } catch(error) {
+  } catch (error) {
     log(`Error loading handler ${handlerPath}: ${error.message}`, 'error', false);
     return null;
   }
@@ -335,7 +335,7 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
         return graphqlHandler;
       }
       return null;
-    } catch(error) {
+    } catch (error) {
       log(`Error loading GraphQL handler: ${error.message}`, 'error', quiet);
       return null;
     }
@@ -432,7 +432,7 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
           } else {
             res.json(result);
           }
-        } catch(error) {
+        } catch (error) {
           // Restore console.log
           console.log = originalConsoleLog;
           log(`GraphQL handler error: ${error.message}`, 'error', false);
@@ -442,7 +442,7 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
 
       log(`GraphQL endpoint available at http://${host}:${httpPort}${graphqlPath}`, 'info', quiet);
     }
-  } catch(error) {
+  } catch (error) {
     log(`Error setting up GraphQL: ${error.message}`, 'error', quiet);
   }
 
@@ -520,7 +520,7 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
             } else {
               res.json(result);
             }
-          } catch(error) {
+          } catch (error) {
             log(`Handler error: ${error.message}`, 'error', false);
             res.status(500).json({error: error.message});
           }
@@ -530,7 +530,7 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
       } else {
         res.status(404).json({error: 'Function not found'});
       }
-    } catch(error) {
+    } catch (error) {
       log(`Route handling error: ${error.message}`, 'error', false);
       res.status(500).json({error: error.message});
     }
@@ -616,7 +616,7 @@ const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPo
         } else {
           ws.send(JSON.stringify({error: 'WebSocket function not found'}));
         }
-      } catch(error) {
+      } catch (error) {
         log(`WebSocket error: ${error.message}`, 'error', false);
         ws.send(JSON.stringify({error: error.message}));
       }
@@ -663,7 +663,7 @@ const loadEnvFile = (envPath: string): Record<string, string> => {
         }
       }
     }
-  } catch(error) {
+  } catch (error) {
     log(`Warning: Could not load .env file at ${envPath}: ${error.message}`, 'warn', false);
   }
 
@@ -721,7 +721,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     try {
       const cliVars = JSON.parse(variables);
       variablesObj = {...variablesObj, ...cliVars};
-    } catch(_error) {
+    } catch (_error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       callback(1);
       return 1;
@@ -758,7 +758,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     } else {
       log(`No serverless config found at ${configPath}, using defaults`, 'warn', quiet);
     }
-  } catch(error) {
+  } catch (error) {
     log(`Error loading serverless config: ${error.message}`, 'error', quiet);
     // Don't exit, continue with empty config
   }
@@ -871,7 +871,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
 
     // Don't call callback here, let the process stay alive
     return 0;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     spinner.fail('Failed to start serverless development server.');
     callback(1);

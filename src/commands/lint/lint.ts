@@ -17,7 +17,7 @@ let currentDirname: string;
 try {
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
-} catch{
+} catch {
   currentFilename = process.cwd();
   currentDirname = process.cwd();
 }
@@ -133,7 +133,7 @@ const ensureModuleType = (cwd: string): void => {
       if(packageJson.type !== 'module') {
         log('Warning: package.json should have "type": "module" for ESM support. Please add this manually.', 'warn', false);
       }
-    } catch(_error) {
+    } catch (_error) {
       // Ignore errors
     }
   }
@@ -311,7 +311,7 @@ module.exports = lexConfig;`;
         if(debug) {
           log(`Removed temporary ESLint config at ${tempConfigPath}`, 'info', quiet);
         }
-      } catch(error) {
+      } catch (error) {
         // Ignore errors when cleaning up
         if(debug) {
           log(`Failed to remove temporary ESLint config: ${error.message}`, 'warn', quiet);
@@ -342,7 +342,7 @@ module.exports = lexConfig;`;
     spinner.fail('Linting failed!');
     log(`\n${cliName} Error: ESLint found issues in your code.`, 'error', quiet);
     return 1;
-  } catch(error) {
+  } catch (error) {
     spinner.fail('Linting failed!');
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     return 1;
@@ -527,17 +527,17 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
 
             try {
               unlinkSync(promptFile);
-            } catch(_error) {
+            } catch (_error) {
             }
 
             log(`Applied Cursor AI fixes to ${filePath}`, 'info', quiet);
-          } catch(error) {
+          } catch (error) {
             const wasModified = await applyDirectFixes(filePath, quiet);
             if(wasModified) {
               log(`Applied direct fixes to ${filePath}`, 'info', quiet);
             }
           }
-        } catch(error) {
+        } catch (error) {
           log(`Error using Cursor AI: ${error.message}`, 'error', quiet);
           await applyDirectFixes(filePath, quiet);
         }
@@ -658,7 +658,7 @@ Return only the properly formatted fixed code without any explanations.`;
               writeFileSync(filePath, fixedContent, 'utf8');
               log(`Applied AI fixes to ${filePath}`, 'info', quiet);
             }
-          } catch(error) {
+          } catch (error) {
             log(`Error applying AI fixes to ${filePath}: ${error.message}`, 'error', quiet);
           }
         }
@@ -666,7 +666,7 @@ Return only the properly formatted fixed code without any explanations.`;
     }
 
     spinner.succeed('AI fixes applied successfully!');
-  } catch(error) {
+  } catch (error) {
     spinner.fail('Failed to apply AI fixes');
     log(`Error: ${error.message}`, 'error', quiet);
     if(!quiet) {
@@ -840,7 +840,7 @@ const applyDirectFixes = async (filePath: string, quiet: boolean): Promise<boole
     }
 
     return wasModified;
-  } catch(error) {
+  } catch (error) {
     log(`Error applying direct fixes to ${filePath}: ${error.message}`, 'error', quiet);
     return false;
   }
@@ -873,7 +873,7 @@ const loadAIConfig = async (cwd: string, quiet: boolean, debug: boolean = false)
           if(debug) {
             log(`Using URL format for MJS import: ${importPath}`, 'info', quiet);
           }
-        } catch(urlError) {
+        } catch (urlError) {
           log(`Error creating URL for MJS import: ${urlError.message}`, 'warn', debug || !quiet);
           importPath = `file://${lexConfigPath}`;
         }
@@ -886,7 +886,7 @@ const loadAIConfig = async (cwd: string, quiet: boolean, debug: boolean = false)
       let lexConfig;
       try {
         lexConfig = await import(importPath);
-      } catch(importError) {
+      } catch (importError) {
         if(importError.message.includes('not defined in ES module scope')) {
           log(`ES Module syntax error in ${lexConfigPath}. Make sure you're using 'export' instead of 'module.exports'.`, 'error', quiet);
           if(debug) {
@@ -916,7 +916,7 @@ const loadAIConfig = async (cwd: string, quiet: boolean, debug: boolean = false)
         log(`Found AI configuration in ${pathResolve(cwd, lexConfigPath)}, applying settings...`, 'info', quiet);
         LexConfig.config.ai = {...LexConfig.config.ai, ...configData.ai};
       }
-    } catch(error) {
+    } catch (error) {
       log(`Error loading AI configuration from ${lexConfigPath}: ${error.message}`, 'warn', quiet);
       if(debug) {
         console.error(error);
@@ -955,7 +955,7 @@ const loadESLintConfig = async (cwd: string, quiet: boolean, debug: boolean): Pr
             if(debug) {
               log(`Using URL format for MJS import: ${importPath}`, 'info', quiet);
             }
-          } catch(urlError) {
+          } catch (urlError) {
             log(`Error creating URL for MJS import: ${urlError.message}`, 'warn', debug || !quiet);
             importPath = `file://${potentialPath}`;
           }
@@ -968,7 +968,7 @@ const loadESLintConfig = async (cwd: string, quiet: boolean, debug: boolean): Pr
         let lexConfig;
         try {
           lexConfig = await import(importPath);
-        } catch(importError) {
+        } catch (importError) {
           if(importError.message.includes('not defined in ES module scope')) {
             log(`ES Module syntax error in ${potentialPath}. Make sure you're using 'export' instead of 'module.exports'.`, 'error', quiet);
             if(debug) {
@@ -999,7 +999,7 @@ const loadESLintConfig = async (cwd: string, quiet: boolean, debug: boolean): Pr
           LexConfig.config.eslint = {...LexConfig.config.eslint, ...configData.eslint};
           return true;
         }
-      } catch(error) {
+      } catch (error) {
         log(`Error loading ESLint configuration from ${potentialPath}: ${error.message}`, 'warn', quiet);
         if(debug) {
           console.error(error);
@@ -1080,7 +1080,7 @@ const removeFileComments = (filePath: string, quiet: boolean): boolean => {
     }
 
     return false;
-  } catch(error) {
+  } catch (error) {
     log(`Error removing comments from ${filePath}: ${error.message}`, 'error', quiet);
     return false;
   }
@@ -1248,7 +1248,7 @@ export default {
 
     callback(result);
     return result;
-  } catch(error) {
+  } catch (error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
     if(spinner) {
       spinner.fail('Linting failed!');
@@ -1270,7 +1270,7 @@ export default {
           if(debug) {
             log(`Cleaned up temporary ESLint config at ${filePath}`, 'info', quiet);
           }
-        } catch(_error) {
+        } catch (_error) {
           // Ignore errors
         }
       }

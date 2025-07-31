@@ -39,6 +39,7 @@ export interface BuildOptions {
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly sourcePath?: string;
+  readonly test?: boolean;
   readonly translations?: boolean;
   readonly variables?: string;
   readonly watch?: boolean;
@@ -457,6 +458,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
     cliName = 'Lex',
     quiet = false,
     remove = false,
+    test = false,
     translations = false,
     variables = '{}'
   } = cmd;
@@ -485,6 +487,13 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   }
 
   process.env = {...process.env, ...variablesObj};
+
+  // If in test mode, exit early
+  if(test) {
+    log('Test mode: Build environment loaded, exiting', 'info', quiet);
+    callback(0);
+    return 0;
+  }
 
   // Process translations if flag is enabled (before building)
   if(translations) {
