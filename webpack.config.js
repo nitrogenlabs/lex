@@ -238,7 +238,7 @@ const cssLoaderPath = relativeNodePath('css-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
 const htmlLoaderPath = relativeNodePath('html-loader', dirName);
 const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
-const sourceMapLoaderPath = pathResolve(dirName, 'node_modules/source-map-loader');
+const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
 const styleLoaderPath = relativeNodePath('style-loader', dirName);
 const webpackPath = relativeNodePath('webpack', dirName);
 
