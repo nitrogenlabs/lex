@@ -18,7 +18,9 @@ lex serverless [options]
 - `--quiet` - No Lex notifications printed in the console
 - `--remove` - Removes all files from the output directory before starting
 - `--usePublicIp` - Force refresh the cached public IP address
-- `--variables <json>` - Environment variables to set in process.env
+- `--variables <json>` - Environment variables to set in process.env (overrides .env file variables)
+- `--debug` - Enable GraphQL debug logging to see queries, variables, and operations
+- `--printOutput` - Print GraphQL response output including status, headers, and body
 
 ## Configuration
 
@@ -175,8 +177,16 @@ lex serverless --httpPort 4000 --wsPort 4002
 
 ### With Environment Variables
 
+The serverless command automatically loads environment variables from `.env` files in the following order (later files override earlier ones):
+- `.env`
+- `.env.local`
+- `.env.development`
+
 ```bash
-# Start with environment variables
+# Start with automatic .env file loading
+lex serverless
+
+# Override with command line variables (takes precedence over .env files)
 lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
 ```
 
@@ -185,6 +195,18 @@ lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
 ```bash
 # Use custom configuration file
 lex serverless --config ./custom-serverless.config.mjs
+```
+
+### With GraphQL Debug Logging
+
+```bash
+# Enable GraphQL debug logging (similar to serverless npm module)
+lex serverless --debug --printOutput
+
+# Debug mode shows:
+# - GraphQL queries and operations
+# - Variables and operation names
+# - Response status, headers, and body
 ```
 
 ## Features
@@ -197,3 +219,4 @@ lex serverless --config ./custom-serverless.config.mjs
 - **Graceful Shutdown**: Handles SIGINT and SIGTERM signals properly
 - **Public IP Detection**: Shows public IP address for external access
 - **Configuration Merging**: Merges command line options with configuration file settings
+- **GraphQL Debug Mode**: Detailed logging of GraphQL queries, variables, operations, and responses (similar to serverless npm module)

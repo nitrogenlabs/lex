@@ -4,11 +4,10 @@
  */
 import boxen from 'boxen';
 import chalk from 'chalk';
+import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
-import {createServer} from 'http';
-import https, {createServer as createHttpsServer} from 'https';
 import {networkInterfaces, homedir} from 'os';
-import {dirname, resolve as pathResolve, join} from 'path';
+import {resolve as pathResolve, join} from 'path';
 import {WebSocketServer} from 'ws';
 
 import {LexConfig} from '../../LexConfig.js';
@@ -26,6 +25,9 @@ export interface ServerlessOptions {
   readonly remove?: boolean;
   readonly variables?: string;
   readonly usePublicIp?: boolean;
+  readonly debug?: boolean;
+  readonly printOutput?: boolean;
+  readonly test?: boolean;
 }
 
 export type ServerlessCallback = (status: number) => void;
@@ -112,17 +114,17 @@ const fetchPublicIp = (forceRefresh: boolean = false): Promise<string | undefine
     }
   }
 
-  https.get('https://api.ipify.org', (res) => {
-    let data = '';
-    res.on('data', (chunk) => (data += chunk));
-    res.on('end', () => {
+  // Use fetch instead of https
+  fetch('https://api.ipify.org')
+    .then((res) => res.text())
+    .then((data) => {
       const ip = data.trim();
       if(ip) {
         writePublicIpCache(ip);
       }
       resolve(ip);
-    });
-  }).on('error', () => resolve(undefined));
+    })
+    .catch(() => resolve(undefined));
 });
 
 const getNetworkAddresses = () => {
@@ -159,12 +161,18 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (httpPort: number, httpsPort: number, wsPort: number, host: string, quiet: boolean, publicIp?: string) => {
+const displayServerStatus = (
+  httpPort: number,
+  httpsPort: number,
+  wsPort: number,
+  host: string,
+  quiet: boolean,
+  publicIp?: string
+) => {
   if(quiet) {
     return;
   }
 
-  const addresses = getNetworkAddresses();
   const httpUrl = `http://${host}:${httpPort}`;
   const httpsUrl = `https://${host}:${httpsPort}`;
   const wsUrl = `ws://${host}:${wsPort}`;
@@ -203,14 +211,19 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
       throw new Error(`Handler file not found: ${fullPath}`);
     }
 
-    // Dynamic import of the handler
-    const handlerModule = await import(fullPath);
-    log(`Handler module loaded: ${Object.keys(handlerModule)}`, 'info', false);
+    // Dynamic import of the handler with better error handling
+    try {
+      const handlerModule = await import(fullPath);
+      log(`Handler module loaded: ${Object.keys(handlerModule)}`, 'info', false);
 
-    const handler = handlerModule.default || handlerModule.handler || handlerModule;
-    log(`Handler found: ${typeof handler}`, 'info', false);
+      const handler = handlerModule.default || handlerModule.handler || handlerModule;
+      log(`Handler found: ${typeof handler}`, 'info', false);
 
-    return handler;
+      return handler;
+    } catch(importError) {
+      log(`Import error for handler ${handlerPath}: ${importError.message}`, 'error', false);
+      return null;
+    }
   } catch(error) {
     log(`Error loading handler ${handlerPath}: ${error.message}`, 'error', false);
     return null;
@@ -272,38 +285,177 @@ const captureConsoleLogs = (handler: Function, quiet: boolean) => {
   };
 };
 
-const createHttpServer = (config: ServerlessConfig, outputDir: string, httpPort: number, host: string, quiet: boolean) => {
-  const server = createServer(async (req, res) => {
+const createExpressServer = async (config: ServerlessConfig, outputDir: string, httpPort: number, host: string, quiet: boolean, debug: boolean, printOutput: boolean) => {
+  const app = express();
+
+  // Enable CORS
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    if(req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+
+  // Parse JSON bodies
+  app.use(express.json());
+
+  // Load GraphQL handler
+  const loadGraphQLSchema = async () => {
+    try {
+      // Try to find a GraphQL handler
+      let graphqlHandler = null;
+
+      if(config.functions) {
+        for(const [functionName, functionConfig] of Object.entries(config.functions)) {
+          if(functionConfig.events) {
+            for(const event of functionConfig.events) {
+              if(event.http && event.http.path) {
+                // Look for GraphQL endpoints
+                if(event.http.path === '/public' || event.http.path === '/graphql') {
+                  graphqlHandler = await loadHandler(functionConfig.handler, outputDir);
+                  break;
+                }
+              }
+            }
+          }
+          if(graphqlHandler) {
+            break;
+          }
+        }
+      }
+
+      if(graphqlHandler) {
+        log('Found GraphQL handler', 'info', quiet);
+        return graphqlHandler;
+      }
+      return null;
+    } catch(error) {
+      log(`Error loading GraphQL handler: ${error.message}`, 'error', quiet);
+      return null;
+    }
+  };
+
+  // Set up GraphQL handler for GraphQL requests
+  try {
+    const graphqlHandler = await loadGraphQLSchema();
+    if(graphqlHandler) {
+      // Find the GraphQL path from the serverless config
+      let graphqlPath = '/graphql'; // default fallback
+
+      if(config.functions) {
+        for(const [_functionName, functionConfig] of Object.entries(config.functions)) {
+          if(functionConfig.events) {
+            for(const event of functionConfig.events) {
+              if(event?.http?.path) {
+                graphqlPath = event.http.path;
+                break;
+              }
+            }
+          }
+          if(graphqlPath !== '/graphql') {
+            break;
+          }
+        }
+      }
+
+      // Set up GraphQL endpoint with enhanced console.log capture
+      app.use(graphqlPath, async (req, res) => {
+        // GraphQL Debug Logging
+        if(debug && req.body && req.body.query) {
+          log('🔍 GraphQL Debug Mode: Analyzing request...', 'info', false);
+          log(`📝 GraphQL Query: ${req.body.query}`, 'info', false);
+          if(req.body.variables) {
+            log(`📊 GraphQL Variables: ${JSON.stringify(req.body.variables, null, 2)}`, 'info', false);
+          }
+          if(req.body.operationName) {
+            log(`🏷️  GraphQL Operation: ${req.body.operationName}`, 'info', false);
+          }
+        }
+
+        // Enhanced console.log capture
+        const originalConsoleLog = console.log;
+        const logs: string[] = [];
+
+        console.log = (...args) => {
+          const logMessage = args.map((arg) =>
+            (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))
+          ).join(' ');
+          logs.push(logMessage);
+          originalConsoleLog(`[GraphQL] ${logMessage}`);
+        };
+
+        // Create context for the handler
+        const context = {
+          req,
+          res,
+          functionName: 'graphql',
+          functionVersion: '$LATEST',
+          invokedFunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:graphql',
+          memoryLimitInMB: '128',
+          awsRequestId: 'test-request-id',
+          logGroupName: '/aws/lambda/graphql',
+          logStreamName: 'test-log-stream',
+          getRemainingTimeInMillis: () => 30000
+        };
+
+        // Wrap handler with console log capture
+        const wrappedHandler = captureConsoleLogs(graphqlHandler, quiet);
+
+        try {
+          // Call the handler with GraphQL parameters
+          const result = await wrappedHandler({
+            httpMethod: 'POST',
+            path: graphqlPath,
+            headers: req.headers,
+            queryStringParameters: {},
+            body: JSON.stringify(req.body)
+          }, context);
+
+          // Restore console.log
+          console.log = originalConsoleLog;
+
+          // Handle the result
+          if(result && typeof result === 'object' && result.statusCode) {
+            res.status(result.statusCode);
+            if(result.headers) {
+              Object.entries(result.headers).forEach(([key, value]) => {
+                res.setHeader(key, String(value));
+              });
+            }
+            res.send(result.body);
+          } else {
+            res.json(result);
+          }
+        } catch(error) {
+          // Restore console.log
+          console.log = originalConsoleLog;
+          log(`GraphQL handler error: ${error.message}`, 'error', false);
+          res.status(500).json({error: error.message});
+        }
+      });
+
+      log(`GraphQL endpoint available at http://${host}:${httpPort}${graphqlPath}`, 'info', quiet);
+    }
+  } catch(error) {
+    log(`Error setting up GraphQL: ${error.message}`, 'error', quiet);
+  }
+
+  // Fallback for non-GraphQL routes - handle all remaining routes
+  app.use('/', async (req, res) => {
     try {
       const url = req.url || '/';
       const method = req.method || 'GET';
 
       log(`${method} ${url}`, 'info', false);
 
-      // Handle CORS preflight requests - respond to all OPTIONS requests
-      if(method === 'OPTIONS') {
-        res.writeHead(200, {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-          'Access-Control-Allow-Headers': '*',
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Max-Age': '86400'
-        });
-        res.end();
-        return;
-      }
-
-      // Set CORS headers for all responses
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-
       // Find matching function
       let matchedFunction = null;
-      let matchedPath = null;
-
-      log(`Looking for function matching: ${method} ${url}`, 'info', false);
 
       if(config.functions) {
         for(const [functionName, functionConfig] of Object.entries(config.functions)) {
@@ -313,12 +465,9 @@ const createHttpServer = (config: ServerlessConfig, outputDir: string, httpPort:
                 const eventPath = event.http.path || '/';
                 const eventMethod = event.http.method || 'GET';
 
-                log(`Checking function ${functionName}: ${eventMethod} ${eventPath}`, 'info', false);
-
-                if(eventPath === url && eventMethod === method) {
+                // Simple path matching - avoid complex regex
+                if(eventPath && eventPath === url && eventMethod === method) {
                   matchedFunction = functionName;
-                  matchedPath = eventPath;
-                  log(`Found matching function: ${functionName}`, 'info', false);
                   break;
                 }
               }
@@ -330,24 +479,20 @@ const createHttpServer = (config: ServerlessConfig, outputDir: string, httpPort:
         }
       }
 
-      if(!matchedFunction) {
-        log(`No function found for ${method} ${url}`, 'warn', false);
-      }
-
       if(matchedFunction && config.functions[matchedFunction]) {
-        const handler = await loadHandler(config.functions[matchedFunction].handler, outputDir);
+        // Resolve handler path relative to output directory
+        const handlerPath = config.functions[matchedFunction].handler;
+        const handler = await loadHandler(handlerPath, outputDir);
 
         if(handler) {
-          // Wrap handler with console log capture
           const wrappedHandler = captureConsoleLogs(handler, quiet);
 
-          // Simulate AWS Lambda event and context
           const event = {
+            body: req.body,
+            headers: req.headers,
             httpMethod: method,
             path: url,
-            headers: req.headers,
-            queryStringParameters: {},
-            body: null
+            queryStringParameters: req.query
           };
 
           const context = {
@@ -361,67 +506,40 @@ const createHttpServer = (config: ServerlessConfig, outputDir: string, httpPort:
             getRemainingTimeInMillis: () => 30000
           };
 
-          // Parse query parameters
-          const urlObj = new URL(url, `http://${host}`);
-          event.queryStringParameters = Object.fromEntries(urlObj.searchParams);
-
-          // Parse body for POST/PUT requests
-          if(['POST', 'PUT', 'PATCH'].includes(method)) {
-            let body = '';
-            req.on('data', (chunk) => {
-              body += chunk.toString();
-            });
-            req.on('end', async () => {
-              event.body = body;
-
-              try {
-                const result = await wrappedHandler(event, context);
-
-                res.writeHead(200, {
-                  'Content-Type': 'application/json'
-                });
-
-                res.end(JSON.stringify(result));
-              } catch(error) {
-                log(`Handler error: ${error.message}`, 'error', false);
-                res.writeHead(500, {'Content-Type': 'application/json'});
-                res.end(JSON.stringify({error: error.message}));
-              }
-            });
-            return;
-          }
           try {
             const result = await wrappedHandler(event, context);
 
-            res.writeHead(200, {
-              'Content-Type': 'application/json'
-            });
-
-            res.end(JSON.stringify(result));
+            if(result && typeof result === 'object' && result.statusCode) {
+              res.status(result.statusCode);
+              if(result.headers) {
+                Object.entries(result.headers).forEach(([key, value]) => {
+                  res.setHeader(key, String(value));
+                });
+              }
+              res.send(result.body);
+            } else {
+              res.json(result);
+            }
           } catch(error) {
             log(`Handler error: ${error.message}`, 'error', false);
-            res.writeHead(500, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({error: error.message}));
+            res.status(500).json({error: error.message});
           }
         } else {
-          res.writeHead(404, {'Content-Type': 'application/json'});
-          res.end(JSON.stringify({error: 'Handler not found'}));
+          res.status(404).json({error: 'Handler not found'});
         }
       } else {
-        res.writeHead(404, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify({error: 'Function not found'}));
+        res.status(404).json({error: 'Function not found'});
       }
     } catch(error) {
-      log(`Server error: ${error.message}`, 'error', false);
-      res.writeHead(500, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({error: error.message}));
+      log(`Route handling error: ${error.message}`, 'error', false);
+      res.status(500).json({error: error.message});
     }
   });
 
-  return server;
+  return app;
 };
 
-const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPort: number, quiet: boolean) => {
+const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPort: number, quiet: boolean, debug: boolean, printOutput: boolean) => {
   const wss = new WebSocketServer({port: wsPort});
 
   wss.on('connection', async (ws, req) => {
@@ -482,7 +600,16 @@ const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPo
             };
 
             const result = await wrappedHandler(event, context);
-            ws.send(JSON.stringify(result));
+
+            // Handle Lambda response format for WebSocket
+            if(result && typeof result === 'object' && result.statusCode) {
+              // This is a Lambda response object, extract the body
+              const body = result.body || '';
+              ws.send(body);
+            } else {
+              // This is a direct response, stringify it
+              ws.send(JSON.stringify(result));
+            }
           } else {
             ws.send(JSON.stringify({error: 'Handler not found'}));
           }
@@ -503,6 +630,46 @@ const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPo
   return wss;
 };
 
+const loadEnvFile = (envPath: string): Record<string, string> => {
+  const envVars: Record<string, string> = {};
+
+  if(!existsSync(envPath)) {
+    return envVars;
+  }
+
+  try {
+    const envContent = readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+
+    for(const line of lines) {
+      const trimmedLine = line.trim();
+
+      // Skip empty lines and comments
+      if(!trimmedLine || trimmedLine.startsWith('#')) {
+        continue;
+      }
+
+      // Parse KEY=value format
+      const equalIndex = trimmedLine.indexOf('=');
+      if(equalIndex > 0) {
+        const key = trimmedLine.substring(0, equalIndex).trim();
+        const value = trimmedLine.substring(equalIndex + 1).trim();
+
+        // Remove quotes if present
+        const cleanValue = value.replace(/^["']|["']$/g, '');
+
+        if(key) {
+          envVars[key] = cleanValue;
+        }
+      }
+    }
+  } catch(error) {
+    log(`Warning: Could not load .env file at ${envPath}: ${error.message}`, 'warn', false);
+  }
+
+  return envVars;
+};
+
 export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCallback = () => ({})): Promise<number> => {
   const {
     cliName = 'Lex',
@@ -514,7 +681,10 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     quiet = false,
     remove = false,
     usePublicIp,
-    variables
+    variables,
+    debug = false,
+    printOutput = false,
+    test = false
   } = cmd;
 
   const spinner = createSpinner(quiet);
@@ -525,11 +695,32 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
 
   const {outputFullPath} = LexConfig.config;
 
-  let variablesObj: object = {NODE_ENV: 'development'};
+  // Load environment variables from .env files
+  const envPaths = [
+    pathResolve(process.cwd(), '.env'),
+    pathResolve(process.cwd(), '.env.local'),
+    pathResolve(process.cwd(), '.env.development')
+  ];
 
+  let envVars: Record<string, string> = {};
+
+  // Load from .env files in order (later files override earlier ones)
+  for(const envPath of envPaths) {
+    const fileEnvVars = loadEnvFile(envPath);
+    if(Object.keys(fileEnvVars).length > 0) {
+      log(`Loaded environment variables from: ${envPath}`, 'info', quiet);
+    }
+    envVars = {...envVars, ...fileEnvVars};
+  }
+
+  // Start with default NODE_ENV and loaded .env variables
+  let variablesObj: object = {NODE_ENV: 'development', ...envVars};
+
+  // Override with command line variables if provided
   if(variables) {
     try {
-      variablesObj = JSON.parse(variables);
+      const cliVars = JSON.parse(variables);
+      variablesObj = {...variablesObj, ...cliVars};
     } catch(_error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       callback(1);
@@ -538,6 +729,13 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
   }
 
   process.env = {...process.env, ...variablesObj};
+
+  // If in test mode, exit early after loading environment variables
+  if(test) {
+    log('Test mode: Environment variables loaded, exiting', 'info', quiet);
+    callback(0);
+    return 0;
+  }
 
   if(remove) {
     spinner.start('Cleaning output directory...');
@@ -556,6 +754,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       const configModule = await import(configPath);
       serverlessConfig = configModule.default?.serverless || configModule.serverless || {};
       log('Serverless config loaded successfully', 'info', quiet);
+      log(`Loaded functions: ${Object.keys(serverlessConfig.functions || {}).join(', ')}`, 'info', quiet);
     } else {
       log(`No serverless config found at ${configPath}, using defaults`, 'warn', quiet);
     }
@@ -591,13 +790,15 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     log(`Creating HTTP server on ${host}:${httpPort}`, 'info', quiet);
     log(`Creating WebSocket server on port ${wsPort}`, 'info', quiet);
 
-    // Create HTTP server
-    const httpServer = createHttpServer(
+    // Create Express server
+    const expressApp = await createExpressServer(
       finalConfig,
       outputDir,
       httpPort,
       host,
-      quiet
+      quiet,
+      debug,
+      printOutput
     );
 
     // Create WebSocket server
@@ -605,17 +806,12 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       finalConfig,
       outputDir,
       wsPort,
-      quiet
+      quiet,
+      debug,
+      printOutput
     );
 
     // Handle server errors
-    httpServer.on('error', (error) => {
-      log(`HTTP server error: ${error.message}`, 'error', quiet);
-      spinner.fail('Failed to start HTTP server.');
-      callback(1);
-      return;
-    });
-
     wsServer.on('error', (error) => {
       log(`WebSocket server error: ${error.message}`, 'error', quiet);
       spinner.fail('Failed to start WebSocket server.');
@@ -623,8 +819,8 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       return;
     });
 
-    // Start servers
-    httpServer.listen(httpPort, host, () => {
+    // Start Express server
+    const server = expressApp.listen(httpPort, host, () => {
       spinner.succeed('Serverless development server started.');
 
       displayServerStatus(
@@ -649,10 +845,18 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       });
     });
 
+    // Handle Express server errors
+    server.on('error', (error) => {
+      log(`Express server error: ${error.message}`, 'error', quiet);
+      spinner.fail('Failed to start Express server.');
+      callback(1);
+      return;
+    });
+
     // Handle graceful shutdown
     const shutdown = () => {
       log('\nShutting down serverless development server...', 'info', quiet);
-      httpServer.close();
+      server.close();
       wsServer.close();
       callback(0);
     };

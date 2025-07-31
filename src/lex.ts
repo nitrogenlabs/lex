@@ -198,6 +198,8 @@ program.command('serverless')
   .option('--remove', 'Removes all files from the output directory before starting.')
   .option('--usePublicIp', 'Force refresh the cached public IP address.')
   .option('--variables <json>', 'Environment variables to set in process.env.')
+  .option('--debug', 'Enable GraphQL debug logging to see queries, variables, and operations.')
+  .option('--printOutput', 'Print GraphQL response output including status, headers, and body.')
   .action((cmd) => serverless(cmd, process.exit).then(() => {}));
 
 program.command('storybook')

@@ -26,6 +26,30 @@ export default {
           }
         ]
       },
+      graphql: {
+        handler: 'handlers/graphql.js',
+        events: [
+          {
+            http: {
+              path: '/public',
+              method: 'POST',
+              cors: true
+            }
+          }
+        ]
+      },
+      test: {
+        handler: 'handlers/test.js',
+        events: [
+          {
+            http: {
+              path: '/test',
+              method: 'GET',
+              cors: true
+            }
+          }
+        ]
+      },
       websocket: {
         handler: 'handlers/websocket.js',
         events: [
