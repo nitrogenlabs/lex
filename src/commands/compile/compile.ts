@@ -98,8 +98,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).ts*`, globOptions);
-  const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
+  const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).ts*`, globOptions);
+  const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
   const esbuildConfig = LexConfig.config.esbuild || {};
   const isProduction = process.env.NODE_ENV === 'production';

@@ -6,7 +6,7 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
-import {networkInterfaces, homedir} from 'os';
+import {homedir} from 'os';
 import {resolve as pathResolve, join} from 'path';
 import {WebSocketServer} from 'ws';
 
@@ -17,17 +17,16 @@ import {log} from '../../utils/log.js';
 export interface ServerlessOptions {
   readonly cliName?: string;
   readonly config?: string;
+  readonly debug?: boolean;
   readonly host?: string;
   readonly httpPort?: number;
   readonly httpsPort?: number;
-  readonly wsPort?: number;
   readonly quiet?: boolean;
   readonly remove?: boolean;
-  readonly variables?: string;
-  readonly usePublicIp?: boolean;
-  readonly debug?: boolean;
-  readonly printOutput?: boolean;
   readonly test?: boolean;
+  readonly usePublicIp?: boolean;
+  readonly variables?: string;
+  readonly wsPort?: number;
 }
 
 export type ServerlessCallback = (status: number) => void;
@@ -41,9 +40,9 @@ interface ServerlessHandler {
   readonly handler: string;
   readonly events?: Array<{
     readonly http?: {
-      readonly path?: string;
-      readonly method?: string;
       readonly cors?: boolean;
+      readonly method?: string;
+      readonly path?: string;
     };
     readonly websocket?: {
       readonly route?: string;
@@ -52,16 +51,16 @@ interface ServerlessHandler {
 }
 
 interface ServerlessConfig {
-  readonly functions?: Record<string, ServerlessHandler>;
   readonly custom?: {
     readonly 'serverless-offline'?: {
+      readonly cors?: boolean;
+      readonly host?: string;
       readonly httpPort?: number;
       readonly httpsPort?: number;
       readonly wsPort?: number;
-      readonly host?: string;
-      readonly cors?: boolean;
     };
   };
+  readonly functions?: Record<string, ServerlessHandler>;
 }
 
 const getCacheDir = (): string => {
@@ -127,40 +126,6 @@ const fetchPublicIp = (forceRefresh: boolean = false): Promise<string | undefine
     .catch(() => resolve(undefined));
 });
 
-const getNetworkAddresses = () => {
-  const interfaces = networkInterfaces();
-  const addresses = {
-    local: 'localhost',
-    private: null,
-    public: null
-  };
-
-  for(const name of Object.keys(interfaces)) {
-    const networkInterface = interfaces[name];
-    if(!networkInterface) {
-      continue;
-    }
-
-    for(const iface of networkInterface) {
-      if(iface.family === 'IPv4' && !iface.internal) {
-        const ip = iface.address;
-
-        if(ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('172.')) {
-          if(!addresses.private) {
-            addresses.private = ip;
-          }
-        } else {
-          if(!addresses.public) {
-            addresses.public = ip;
-          }
-        }
-      }
-    }
-  }
-
-  return addresses;
-};
-
 const displayServerStatus = (
   httpPort: number,
   httpsPort: number,
@@ -191,11 +156,11 @@ const displayServerStatus = (
     `${chalk.cyan.bold('🚀 Serverless Development Server Running')}\n\n${urlLines}\n` +
     `${chalk.yellow('Press Ctrl+C to stop the server')}`,
     {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
+      backgroundColor: '#1a1a1a',
       borderColor: 'cyan',
-      backgroundColor: '#1a1a1a'
+      borderStyle: 'round',
+      margin: 1,
+      padding: 1
     }
   );
 
@@ -230,7 +195,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
   }
 };
 
-const captureConsoleLogs = (handler: Function, quiet: boolean) => {
+const captureConsoleLogs = (handler: (event: any, context: any) => Promise<any>, quiet: boolean) => {
   if(quiet) {
     return handler;
   }
@@ -285,7 +250,14 @@ const captureConsoleLogs = (handler: Function, quiet: boolean) => {
   };
 };
 
-const createExpressServer = async (config: ServerlessConfig, outputDir: string, httpPort: number, host: string, quiet: boolean, debug: boolean, printOutput: boolean) => {
+const createExpressServer = async (
+  config: ServerlessConfig,
+  outputDir: string,
+  httpPort: number,
+  host: string,
+  quiet: boolean,
+  debug: boolean
+) => {
   const app = express();
 
   // Enable CORS
@@ -392,16 +364,15 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
 
         // Create context for the handler
         const context = {
-          req,
-          res,
+          awsRequestId: 'test-request-id',
           functionName: 'graphql',
           functionVersion: '$LATEST',
+          getRemainingTimeInMillis: () => 30000,
           invokedFunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:graphql',
-          memoryLimitInMB: '128',
-          awsRequestId: 'test-request-id',
           logGroupName: '/aws/lambda/graphql',
           logStreamName: 'test-log-stream',
-          getRemainingTimeInMillis: () => 30000
+          req,
+          res
         };
 
         // Wrap handler with console log capture
@@ -410,11 +381,11 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
         try {
           // Call the handler with GraphQL parameters
           const result = await wrappedHandler({
+            body: JSON.stringify(req.body),
+            headers: req.headers,
             httpMethod: 'POST',
             path: graphqlPath,
-            headers: req.headers,
-            queryStringParameters: {},
-            body: JSON.stringify(req.body)
+            queryStringParameters: {}
           }, context);
 
           // Restore console.log
@@ -451,8 +422,9 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
     try {
       const url = req.url || '/';
       const method = req.method || 'GET';
+      const pathname = req.path || url.split('?')[0]; // Extract pathname without query string
 
-      log(`${method} ${url}`, 'info', false);
+      log(`${method} ${url} (pathname: ${pathname})`, 'info', false);
 
       // Find matching function
       let matchedFunction = null;
@@ -465,8 +437,8 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
                 const eventPath = event.http.path || '/';
                 const eventMethod = event.http.method || 'GET';
 
-                // Simple path matching - avoid complex regex
-                if(eventPath && eventPath === url && eventMethod === method) {
+                // Improved path matching - compare pathname without query string
+                if(eventPath && eventPath === pathname && eventMethod === method) {
                   matchedFunction = functionName;
                   break;
                 }
@@ -496,14 +468,14 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
           };
 
           const context = {
+            awsRequestId: 'test-request-id',
             functionName: matchedFunction,
             functionVersion: '$LATEST',
+            getRemainingTimeInMillis: () => 30000,
             invokedFunctionArn: `arn:aws:lambda:us-east-1:123456789012:function:${matchedFunction}`,
-            memoryLimitInMB: '128',
-            awsRequestId: 'test-request-id',
             logGroupName: `/aws/lambda/${matchedFunction}`,
             logStreamName: 'test-log-stream',
-            getRemainingTimeInMillis: () => 30000
+            memoryLimitInMB: '128'
           };
 
           try {
@@ -539,7 +511,13 @@ const createExpressServer = async (config: ServerlessConfig, outputDir: string, 
   return app;
 };
 
-const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPort: number, quiet: boolean, debug: boolean, printOutput: boolean) => {
+const createWebSocketServer = (
+  config: ServerlessConfig,
+  outputDir: string,
+  wsPort: number,
+  quiet: boolean,
+  debug: boolean
+) => {
   const wss = new WebSocketServer({port: wsPort});
 
   wss.on('connection', async (ws, req) => {
@@ -578,25 +556,25 @@ const createWebSocketServer = (config: ServerlessConfig, outputDir: string, wsPo
             // Wrap handler with console log capture
             const wrappedHandler = captureConsoleLogs(handler, quiet);
             const event = {
+              body: data.body || null,
               requestContext: {
-                routeKey: data.action || '$default',
-                connectionId: 'test-connection-id',
                 apiGateway: {
                   endpoint: `ws://localhost:${wsPort}`
-                }
-              },
-              body: data.body || null
+                },
+                connectionId: 'test-connection-id',
+                routeKey: data.action || '$default'
+              }
             };
 
             const context = {
+              awsRequestId: 'test-request-id',
               functionName: matchedFunction,
               functionVersion: '$LATEST',
+              getRemainingTimeInMillis: () => 30000,
               invokedFunctionArn: `arn:aws:lambda:us-east-1:123456789012:function:${matchedFunction}`,
-              memoryLimitInMB: '128',
-              awsRequestId: 'test-request-id',
               logGroupName: `/aws/lambda/${matchedFunction}`,
               logStreamName: 'test-log-stream',
-              getRemainingTimeInMillis: () => 30000
+              memoryLimitInMB: '128'
             };
 
             const result = await wrappedHandler(event, context);
@@ -670,21 +648,23 @@ const loadEnvFile = (envPath: string): Record<string, string> => {
   return envVars;
 };
 
-export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCallback = () => ({})): Promise<number> => {
+export const serverless = async (
+  cmd: ServerlessOptions,
+  callback: ServerlessCallback = () => ({})
+): Promise<number> => {
   const {
     cliName = 'Lex',
     config,
+    debug = false,
     host = 'localhost',
     httpPort = 3000,
     httpsPort = 3001,
-    wsPort = 3002,
     quiet = false,
     remove = false,
+    test = false,
     usePublicIp,
     variables,
-    debug = false,
-    printOutput = false,
-    test = false
+    wsPort = 3002
   } = cmd;
 
   const spinner = createSpinner(quiet);
@@ -768,11 +748,11 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
     ...serverlessConfig,
     custom: {
       'serverless-offline': {
+        cors: serverlessConfig.custom?.['serverless-offline']?.cors !== false,
+        host: serverlessConfig.custom?.['serverless-offline']?.host || host,
         httpPort: serverlessConfig.custom?.['serverless-offline']?.httpPort || httpPort,
         httpsPort: serverlessConfig.custom?.['serverless-offline']?.httpsPort || httpsPort,
-        wsPort: serverlessConfig.custom?.['serverless-offline']?.wsPort || wsPort,
-        host: serverlessConfig.custom?.['serverless-offline']?.host || host,
-        cors: serverlessConfig.custom?.['serverless-offline']?.cors !== false
+        wsPort: serverlessConfig.custom?.['serverless-offline']?.wsPort || wsPort
       }
     }
   };
@@ -797,8 +777,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       httpPort,
       host,
       quiet,
-      debug,
-      printOutput
+      debug
     );
 
     // Create WebSocket server
@@ -807,8 +786,7 @@ export const serverless = async (cmd: ServerlessOptions, callback: ServerlessCal
       outputDir,
       wsPort,
       quiet,
-      debug,
-      printOutput
+      debug
     );
 
     // Handle server errors
