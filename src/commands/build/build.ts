@@ -77,7 +77,7 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
 export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
-    format = 'cjs',
+    format = 'esm',
     outputPath,
     quiet,
     sourcePath,

@@ -14,6 +14,7 @@ The main function that starts a development server using webpack.
   - `bundleAnalyzer?: boolean` - Whether to enable the bundle analyzer (defaults to false)
   - `cliName?: string` - Custom name for the CLI tool in output messages (defaults to "Lex")
   - `config?: string` - Path to a custom webpack configuration file
+  - `format?: string` - Output format for generated JavaScript files (`cjs` or `esm`, defaults to "esm")
   - `open?: boolean` - Whether to open the browser automatically (defaults to false)
   - `quiet?: boolean` - Whether to suppress output
   - `remove?: boolean` - Whether to clean the output directory before starting (defaults to false)
@@ -34,6 +35,7 @@ export interface DevOptions {
   readonly bundleAnalyzer?: boolean;
   readonly cliName?: string;
   readonly config?: string;
+  readonly format?: string;
   readonly open?: boolean;
   readonly quiet?: boolean;
   readonly remove?: boolean;

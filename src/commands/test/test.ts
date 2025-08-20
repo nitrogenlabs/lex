@@ -9,7 +9,7 @@ import {resolve as pathResolve} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
-import {getDirName, resolveBinaryPath} from '../../utils/file.js';
+import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 import {aiFunction} from '../ai/ai.js';
 
@@ -78,6 +78,14 @@ export interface TestOptions {
 
 export type TestCallback = typeof process.exit;
 
+const defaultExit = ((code?: number) => {
+  if(process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
+    return undefined as never;
+  }
+
+  process.exit(code);
+}) as typeof process.exit;
+
 export const getTestFilePatterns = (testPathPattern?: string): string[] => {
   const defaultPatterns = ['**/*.test.*', '**/*.spec.*', '**/*.integration.*'];
 
@@ -120,9 +128,20 @@ const processTestResults = (outputFile?: string): any => {
 
 export const test = async (
   options: TestOptions,
-  args: string[],
-  callback: TestCallback = process.exit
+  args?: string[],
+  filesOrCallback?: string[] | TestCallback,
+  callbackParam?: TestCallback
 ): Promise<number> => {
+  // Backward-compat argument normalization: allow callback as third param
+  let files: string[] | undefined;
+  let callback: TestCallback = defaultExit;
+
+  if(typeof filesOrCallback === 'function') {
+    callback = filesOrCallback as TestCallback;
+  } else {
+    files = filesOrCallback as string[] | undefined;
+    callback = callbackParam || defaultExit;
+  }
   const {
     analyze = false,
     aiAnalyze = false,
@@ -220,8 +239,6 @@ export const test = async (
       }
     }
   }
-
-  const dirName = getDirName();
 
   const projectJestBin = pathResolve(process.cwd(), 'node_modules/.bin/jest');
   let jestPath: string;
@@ -467,6 +484,10 @@ export const test = async (
     jestOptions.push(...args);
   }
 
+  if(files && files.length > 0) {
+    jestOptions.push(...files);
+  }
+
   if(debug) {
     log(`Jest options: ${jestOptions.join(' ')}`, 'info', quiet);
     log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
@@ -480,8 +501,8 @@ export const test = async (
 
     await execa(jestPath, jestOptions, {
       encoding: 'utf8',
-      stdio: 'inherit',
-      env
+      env,
+      stdio: 'inherit'
     });
 
     spinner.succeed('Testing completed!');
@@ -494,6 +515,7 @@ export const test = async (
         const filePatterns = getTestFilePatterns(testPathPattern);
 
         await aiFunction({
+          context: true,
           prompt: `Analyze these Jest test results and suggest test coverage improvements:
 
 ${JSON.stringify(testResults, null, 2)}
@@ -505,9 +527,8 @@ Please provide:
 2. Suggestions for improving test cases
 3. Recommendations for additional integration test scenarios
 4. Best practices for increasing test effectiveness`,
-          task: 'optimize',
-          context: true,
-          quiet
+          quiet,
+          task: 'optimize'
         });
 
         spinner.succeed('AI test analysis complete');

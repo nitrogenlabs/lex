@@ -2,7 +2,7 @@
  * Copyright (c) 2025-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {existsSync, readFileSync, writeFileSync} from 'fs';
+import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
 
@@ -43,8 +43,7 @@ const findTranslationFiles = (sourcePath: string): string[] => {
         nodir: true
       });
       files.push(...matches);
-    } catch (error) {
-      // Pattern not found, continue
+    } catch {
     }
   });
 
@@ -91,9 +90,31 @@ export const processTranslations = async (
   const outputFile = pathResolve(outputPath, 'translations.json');
 
   try {
+    const outputDir = pathResolve(outputPath);
+
+    if(!existsSync(outputDir)) {
+      mkdirSync(outputDir, {recursive: true});
+    }
+
     writeFileSync(outputFile, JSON.stringify(flattenedTranslations, null, 2), 'utf8');
     log(`Translations written to: ${outputFile}`, 'info', quiet);
   } catch (error) {
     log(`Error writing translations file: ${error.message}`, 'error', quiet);
+  }
+
+  const srcDir = pathResolve(sourcePath, 'src');
+  const srcOutputFile = existsSync(srcDir) ? pathResolve(srcDir, 'translations.json') : pathResolve(sourcePath, 'translations.json');
+
+  try {
+    const ensureDir = existsSync(srcDir) ? srcDir : sourcePath;
+
+    if(!existsSync(ensureDir)) {
+      mkdirSync(ensureDir, {recursive: true});
+    }
+
+    writeFileSync(srcOutputFile, JSON.stringify(flattenedTranslations, null, 2), 'utf8');
+    log(`Translations written to: ${srcOutputFile}`, 'info', quiet);
+  } catch (error) {
+    log(`Error writing translations file to src: ${error.message}`, 'error', quiet);
   }
 };

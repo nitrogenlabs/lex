@@ -13,7 +13,7 @@ describe('build cli', () => {
   const generateEsbuildArgs = (options: any) => {
     const args = ['--bundle', '--color=true'];
 
-    if(options.format) args.push(`--format=${options.format}`);
+    args.push(`--format=${options.format || 'esm'}`);
     if(options.watch) args.push('--watch');
     if(options.outputPath) args.push(`--outdir=${options.outputPath}`);
     if(options.sourcemap !== false) args.push('--sourcemap=inline');
@@ -200,6 +200,13 @@ describe('build cli', () => {
     it('should ensure comprehensive CLI coverage', () => {
       const totalOptions = 16 + 18;
       expect(totalOptions).toBe(34);
+    });
+  });
+
+  describe('Format Default', () => {
+    it('should default to esm format when no format option is provided', () => {
+      const args = generateEsbuildArgs({});
+      expect(args).toContain('--format=esm');
     });
   });
 });

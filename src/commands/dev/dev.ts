@@ -32,6 +32,7 @@ export interface DevOptions {
   readonly bundleAnalyzer?: boolean;
   readonly cliName?: string;
   readonly config?: string;
+  readonly format?: string;
   readonly open?: boolean;
   readonly quiet?: boolean;
   readonly remove?: boolean;
@@ -66,9 +67,8 @@ const readPublicIpCache = (): PublicIpCache | null => {
   try {
     const cacheData = readFileSync(cachePath, 'utf8');
     const cache: PublicIpCache = JSON.parse(cacheData);
-
-    // Check if cache is older than 1 week (7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
     if(Date.now() - cache.timestamp > oneWeekMs) {
       return null;
     }
@@ -89,7 +89,6 @@ const writePublicIpCache = (ip: string): void => {
 };
 
 const fetchPublicIp = (forceRefresh: boolean = false): Promise<string | undefined> => new Promise((resolve) => {
-  // Check cache first unless force refresh is requested
   if(!forceRefresh) {
     const cached = readPublicIpCache();
     if(cached) {
@@ -129,13 +128,11 @@ const getNetworkAddresses = () => {
       if(iface.family === 'IPv4' && !iface.internal) {
         const ip = iface.address;
 
-        // Private IP ranges
         if(ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('172.')) {
           if(!addresses.private) {
             addresses.private = ip;
           }
         } else {
-          // Public IP (not in private ranges)
           if(!addresses.public) {
             addresses.public = ip;
           }
@@ -189,7 +186,7 @@ const displayServerStatus = (port: number = 7001, quiet: boolean, publicIp?: str
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, open = false, quiet, remove, translations = false, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -225,7 +222,6 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     spinner.succeed('Successfully cleaned output directory!');
   }
 
-  // Process translations if flag is enabled (before starting dev server)
   if(translations) {
     spinner.start('Processing translations...');
 
@@ -280,6 +276,20 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     } as any);
 
     let serverStarted = false;
+    let statusShown = false;
+    const showStatusOnce = (portToShow: number) => {
+      if(statusShown) {
+        return;
+      }
+      statusShown = true;
+      if(usePublicIp) {
+        fetchPublicIp(usePublicIp).then((publicIp) => {
+          displayServerStatus(portToShow, quiet, publicIp);
+        });
+      } else {
+        displayServerStatus(portToShow, quiet);
+      }
+    };
     let detectedPort = 7001;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
@@ -291,7 +301,6 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         serverStarted = true;
         spinner.succeed('Development server started.');
 
-        // Try multiple patterns to detect the port
         const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
           output.match(/http:\/\/localhost:(\d+)/) ||
           output.match(/port:\s*(\d+)/) ||
@@ -301,12 +310,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
           detectedPort = parseInt(portMatch[1]);
         }
 
-        displayServerStatus(detectedPort, quiet);
-        fetchPublicIp(usePublicIp).then((publicIp) => {
-          if(publicIp) {
-            displayServerStatus(detectedPort, quiet, publicIp);
-          }
-        });
+        showStatusOnce(detectedPort);
       }
     });
 
@@ -319,7 +323,6 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         serverStarted = true;
         spinner.succeed('Development server started.');
 
-        // Try multiple patterns to detect the port
         const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
           output.match(/http:\/\/localhost:(\d+)/) ||
           output.match(/port:\s*(\d+)/) ||
@@ -329,24 +332,14 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
           detectedPort = parseInt(portMatch[1]);
         }
 
-        displayServerStatus(detectedPort, quiet);
-        fetchPublicIp(usePublicIp).then((publicIp) => {
-          if(publicIp) {
-            displayServerStatus(detectedPort, quiet, publicIp);
-          }
-        });
+        showStatusOnce(detectedPort);
       }
     });
 
     setTimeout(() => {
       if(!serverStarted) {
         spinner.succeed('Development server started.');
-        displayServerStatus(detectedPort, quiet);
-        fetchPublicIp(usePublicIp).then((publicIp) => {
-          if(publicIp) {
-            displayServerStatus(detectedPort, quiet, publicIp);
-          }
-        });
+        showStatusOnce(detectedPort);
       }
     }, 5000);
 
@@ -354,12 +347,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
     if(!serverStarted) {
       spinner.succeed('Development server started.');
-      displayServerStatus(detectedPort, quiet);
-      fetchPublicIp(usePublicIp).then((publicIp) => {
-        if(publicIp) {
-          displayServerStatus(detectedPort, quiet, publicIp);
-        }
-      });
+      showStatusOnce(detectedPort);
     }
 
     callback(0);

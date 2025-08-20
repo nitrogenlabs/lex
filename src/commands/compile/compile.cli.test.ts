@@ -124,4 +124,19 @@ describe('compile cli', () => {
 
     expect(result).toBe(1);
   });
+
+  it('should accept format option and default to esm', async () => {
+    (execa as jest.MockedFunction<typeof execa>)
+      .mockResolvedValueOnce({stdout: '', stderr: '', exitCode: 0} as any) // tsc success
+      .mockResolvedValueOnce({stdout: '', stderr: '', exitCode: 0} as any); // esbuild success
+
+    const result = await compile({format: 'cjs'});
+
+    expect(result).toBe(0);
+    expect(execa).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.arrayContaining(['--format=cjs']),
+      expect.any(Object)
+    );
+  });
 });

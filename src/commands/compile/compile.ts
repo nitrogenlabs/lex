@@ -36,6 +36,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const {
     cliName = 'Lex',
     config,
+    format = 'esm',
     outputPath,
     quiet,
     remove,
@@ -122,7 +123,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const esbuildOptions: string[] = [
     ...sourceFiles,
     '--color=true',
-    `--format=${esbuildConfig.format || 'esm'}`,
+    `--format=${format || esbuildConfig.format || 'esm'}`,
     `--outdir=${outputDir}`,
     `--platform=${esbuildConfig.platform || 'node'}`,
     `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`,

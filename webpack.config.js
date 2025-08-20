@@ -324,13 +324,30 @@ export default (webpackEnv, webpackOptions) => {
           include: sourceFullPath,
           loader: esbuildLoaderPath,
           options: {
+            loader: 'ts',
+            target: targetEnvironment === 'node' ? 'node16' : 'es2016'
+          },
+          resolve: {
+            symlinks: true
+          },
+          test: /\.(ts|js)$/
+        },
+        {
+          exclude: [
+            /node_modules\/(?!(react-native))/,
+            `${sourceFullPath}/**/*.test.js*`,
+            `${sourceFullPath}/**/*.test.ts*`
+          ],
+          include: sourceFullPath,
+          loader: esbuildLoaderPath,
+          options: {
             loader: 'tsx',
             target: targetEnvironment === 'node' ? 'node16' : 'es2016'
           },
           resolve: {
             symlinks: true
           },
-          test: /\.(ts|tsx|js)$/
+          test: /\.tsx$/
         },
         {
           exclude: [pathResolve(sourceFullPath, lexConfig.entryHTML)],

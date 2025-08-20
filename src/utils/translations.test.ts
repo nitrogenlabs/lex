@@ -20,16 +20,13 @@ describe('translations', () => {
     try {
       rmSync(testDir, {force: true, recursive: true});
     } catch {
-      // Ignore cleanup errors
     }
   });
 
   it('should process translation files and create flattened output', async () => {
-    // Create test translation files
     const translationsDir = join(testDir, 'src', 'translations');
     mkdirSync(translationsDir, {recursive: true});
 
-    // Create nested translation file
     const enTranslations = {
       auth: {
         signupTitle: 'Sign Up',
@@ -46,7 +43,6 @@ describe('translations', () => {
 
     writeFileSync(join(translationsDir, 'en.json'), JSON.stringify(enTranslations, null, 2));
 
-    // Create another translation file in a different location
     const authTranslationsDir = join(testDir, 'src', 'pages', 'Auth', 'translations');
     mkdirSync(authTranslationsDir, {recursive: true});
 
@@ -60,21 +56,21 @@ describe('translations', () => {
 
     writeFileSync(join(authTranslationsDir, 'en.json'), JSON.stringify(authEnTranslations, null, 2));
 
-    // Create output directory
     const outputDir = join(testDir, 'lib');
     mkdirSync(outputDir, {recursive: true});
 
-    // Process translations
     await processTranslations(testDir, outputDir, true);
 
-    // Check if output file was created
     const outputFile = join(outputDir, 'translations.json');
+    const srcOutputFile = join(testDir, 'src', 'translations.json');
 
     expect(existsSync(outputFile)).toBe(true);
+    expect(existsSync(srcOutputFile)).toBe(true);
 
-    // Read and verify the flattened output
     const outputContent = JSON.parse(readFileSync(outputFile, 'utf8'));
+    const srcOutputContent = JSON.parse(readFileSync(srcOutputFile, 'utf8'));
 
+    expect(outputContent).toEqual(srcOutputContent);
     expect(outputContent['auth.signupTitle']).toBe('Sign Up');
     expect(outputContent['auth.validation.invalid-email']).toBe('Invalid email address');
     expect(outputContent['auth.validation.email-required']).toBe('Email is required');
@@ -110,10 +106,16 @@ describe('translations', () => {
     // Process translations
     await processTranslations(testDir, outputDir, true);
 
-    // Check output
     const outputFile = join(outputDir, 'translations.json');
-    const outputContent = JSON.parse(readFileSync(outputFile, 'utf8'));
+    const srcOutputFile = join(testDir, 'src', 'translations.json');
 
+    expect(existsSync(outputFile)).toBe(true);
+    expect(existsSync(srcOutputFile)).toBe(true);
+
+    const outputContent = JSON.parse(readFileSync(outputFile, 'utf8'));
+    const srcOutputContent = JSON.parse(readFileSync(srcOutputFile, 'utf8'));
+
+    expect(outputContent).toEqual(srcOutputContent);
     expect(outputContent.hello).toBe('Hello');
     expect(outputContent.welcome).toBe('Welcome');
     expect(outputContent.goodbye).toBe('Goodbye');

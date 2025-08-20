@@ -71,7 +71,7 @@ lex build --typescript
 | `--analyze` | boolean | `false` | Enable AI analysis for build optimization suggestions or invoke webpack-bundle-analyzer plugin |
 | `--bundler` | string | `webpack` | Bundler to use (`webpack` or `esbuild`) |
 | `--cliName` | string | `Lex` | Custom name for the CLI tool in output messages |
-| `--format` | string | `cjs` | Output format for generated JavaScript files (`cjs` or `esm`) |
+| `--format` | string | `esm` | Output format for generated JavaScript files (`cjs` or `esm`) |
 | `--outputPath` | string | - | The output directory as absolute path |
 | `--quiet` | boolean | `false` | No Lex notifications printed in the console |
 | `--remove` | boolean | `false` | Removes all files from the output directory before compiling |
@@ -133,7 +133,7 @@ When using esbuild as the bundler, the following configuration options are avail
 When using esbuild as the bundler, the following options apply:
 
 ```bash
-lex build --bundler esbuild --format esm --typescript
+lex build --bundler esbuild --format cjs --typescript
 ```
 
 esbuild is optimized for speed and produces smaller bundles, making it ideal for library projects or when you want faster build times.

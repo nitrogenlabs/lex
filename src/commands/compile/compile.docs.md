@@ -100,6 +100,7 @@ await compile({
 |--------|-------------|---------|
 | `cliName` | Name of the CLI tool | "Lex" |
 | `config` | Path to custom TypeScript config | null |
+| `format` | Output format for generated JavaScript files (`cjs` or `esm`) | "esm" |
 | `outputPath` | Custom output directory | From LexConfig |
 | `quiet` | Suppress console output | false |
 | `remove` | Clean output directory before compilation | false |
