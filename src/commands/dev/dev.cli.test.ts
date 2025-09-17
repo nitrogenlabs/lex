@@ -41,4 +41,11 @@ describe('dev cli', () => {
 
     expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
   });
+
+  it('should start dev server with custom port', async () => {
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    await dev({port: 3000});
+
+    expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String), '--port', '3000'], expect.any(Object));
+  });
 });

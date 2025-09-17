@@ -34,6 +34,7 @@ export interface DevOptions {
   readonly config?: string;
   readonly format?: string;
   readonly open?: boolean;
+  readonly port?: number;
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly translations?: boolean;
@@ -186,7 +187,7 @@ const displayServerStatus = (port: number = 7001, quiet: boolean, publicIp?: str
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, quiet, remove, translations = false, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port = 7001, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -259,6 +260,10 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
   if(bundleAnalyzer) {
     webpackOptions.push('--bundleAnalyzer');
+  }
+
+  if(port !== 7001) {
+    webpackOptions.push('--port', port.toString());
   }
 
   try {

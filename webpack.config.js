@@ -263,7 +263,7 @@ const alias = aliasKeys.reduce((aliases, key) => {
 }, {});
 
 export default (webpackEnv, webpackOptions) => {
-  const {bundleAnalyzer, watch, entry: cliEntry, mode: cliMode} = webpackOptions;
+  const {bundleAnalyzer, watch, entry: cliEntry, mode: cliMode, port} = webpackOptions;
   const entryValue = Array.isArray(cliEntry) ? cliEntry[0] : cliEntry;
 
   // Debug printout for environment and mode
@@ -623,7 +623,7 @@ export default (webpackEnv, webpackOptions) => {
             await next();
           }),
         open: process.env.WEBPACK_DEV_OPEN === 'true',
-        port: 7001,
+        port: port || 7001,
         progress: 'minimal',
         static: existsSync(outputFullPath) ? [outputFullPath] : [],
         status: true
