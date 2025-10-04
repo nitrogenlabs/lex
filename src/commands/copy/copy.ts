@@ -35,7 +35,7 @@ export const copy = (
     try {
       // Copy directory
       copyFolderRecursiveSync(from, to);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: Cannot copy "${from}". ${error.message}`, 'error', quiet);
       callback(1);
       return Promise.resolve(1);
@@ -44,7 +44,7 @@ export const copy = (
     try {
       // Copy file
       copyFileSync(from, to);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: Cannot copy "${from}" ${error.message}`, 'error', quiet);
       callback(1);
       return Promise.resolve(1);

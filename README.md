@@ -22,7 +22,7 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 
 ### ⚡ **Lightning Fast**
 
-- ESBuild-powered compilation
+- SWC-powered compilation (10-100x faster than Babel)
 - Hot reloading development server
 - Optimized production builds
 - Parallel test execution
@@ -69,7 +69,7 @@ Lex comes with everything you need for modern React development:
 
 | Tool | Purpose | Version |
 |------|---------|---------|
-| **ESBuild** | Lightning-fast bundler | Latest |
+| **SWC** | Lightning-fast TypeScript/JavaScript compiler | Latest |
 | **Jest** | Testing framework | Latest |
 | **TypeScript** | Type safety | Latest |
 | **Webpack** | Advanced bundling | Latest |
@@ -152,7 +152,7 @@ lex dev --usePublicIp
 
 **📁 Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
 
-**🎨 Public Assets**: Use the `webpack.publicPath` configuration to specify a directory for public assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
+**🎨 Static Assets**: Use the `webpack.staticPath` configuration to specify a directory for static assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
 
 ### 🚀 **Serverless Development Server** {#serverless}
 
@@ -182,8 +182,8 @@ lex serverless --debug --printOutput
 # Standard production build
 lex build --mode production
 
-# With ESBuild (faster)
-lex build --bundler esbuild
+# With SWC (faster)
+lex build --bundler swc
 
 # With AI optimization analysis
 lex build --analyze
@@ -259,7 +259,7 @@ Lex works seamlessly with popular React frameworks and libraries:
 
 Lex is designed for speed and efficiency:
 
-- **⚡ ESBuild Integration** - 10-100x faster than traditional bundlers
+- **⚡ SWC Integration** - 10-100x faster than Babel, faster than esbuild
 - **🧠 Smart Caching** - Intelligent caching for faster rebuilds
 - **🔄 Hot Reloading** - Instant feedback during development
 - **📦 Tree Shaking** - Automatic dead code elimination
@@ -285,12 +285,8 @@ export default {
     model: 'gpt-4'
   },
 
-  // ESBuild configuration
-  esbuild: {
-    minify: true,
-    sourcemap: true,
-    target: 'es2020'
-  },
+  // SWC configuration (defaults to ESM format)
+  // SWC is now the default transpiler for all compilation tasks
 
   // Jest configuration (merged with Lex defaults)
   jest: {
@@ -335,27 +331,26 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `ai.provider` | `'cursor' \| 'copilot' \| 'openai' \| 'anthropic' \| 'none'` | `'none'` | AI service provider | `ai: { provider: 'openai' }` |
 | `ai.temperature` | `number` | `0.1` | AI response creativity (0-1) | `ai: { temperature: 0.7 }` |
 
-### ⚡ **ESBuild Configuration**
+### ⚡ **SWC Configuration**
 
-| Option | Type | Default | Description | Example |
-|--------|------|---------|-------------|---------|
-| `esbuild.banner` | `Record<string, string>` | `undefined` | Banner text for output files | `esbuild: { banner: { js: '// My Banner' } }` |
-| `esbuild.define` | `Record<string, string>` | `undefined` | Global variable definitions | `esbuild: { define: { 'process.env.NODE_ENV': '"production"' } }` |
-| `esbuild.drop` | `string[]` | `['console', 'debugger']` | Code to drop in production | `esbuild: { drop: ['console'] }` |
-| `esbuild.entryPoints` | `string[]` | `undefined` | Entry points for ESBuild | `esbuild: { entryPoints: ['src/index.ts'] }` |
-| `esbuild.external` | `string[]` | `undefined` | External dependencies | `esbuild: { external: ['react'] }` |
-| `esbuild.footer` | `Record<string, string>` | `undefined` | Footer text for output files | `esbuild: { footer: { js: '// My Footer' } }` |
-| `esbuild.format` | `'cjs' \| 'esm'` | `undefined` | Output format | `esbuild: { format: 'esm' }` |
-| `esbuild.legalComments` | `'none' \| 'inline' \| 'eof' \| 'linked' \| 'separate'` | `'none'` | Legal comments handling | `esbuild: { legalComments: 'inline' }` |
-| `esbuild.metafile` | `boolean` | `false` | Generate metafile | `esbuild: { metafile: true }` |
-| `esbuild.minify` | `boolean` | `true` | Enable minification | `esbuild: { minify: false }` |
-| `esbuild.outdir` | `string` | `undefined` | Output directory for ESBuild | `esbuild: { outdir: './build' }` |
-| `esbuild.platform` | `'node' \| 'browser'` | `undefined` | Target platform | `esbuild: { platform: 'browser' }` |
-| `esbuild.pure` | `string[]` | `['console.log', 'console.warn', 'console.error']` | Pure function calls | `esbuild: { pure: ['console.log'] }` |
-| `esbuild.sourcemap` | `boolean \| 'inline' \| 'external'` | `false` | Source map generation | `esbuild: { sourcemap: true }` |
-| `esbuild.splitting` | `boolean` | `true` | Enable code splitting | `esbuild: { splitting: false }` |
-| `esbuild.target` | `string` | `undefined` | Target environment | `esbuild: { target: 'es2020' }` |
-| `esbuild.treeShaking` | `boolean` | `true` | Enable tree shaking | `esbuild: { treeShaking: false }` |
+SWC (Speedy Web Compiler) is now the default transpiler for all TypeScript and JavaScript compilation in Lex. SWC provides:
+
+- **10-100x faster** compilation than Babel
+- **Faster than esbuild** for TypeScript compilation
+- **Zero configuration** - works out of the box
+- **ESM by default** - modern module format
+- **Automatic React JSX** transformation
+- **TypeScript decorators** support
+
+SWC is automatically configured and doesn't require additional configuration in most cases. The default settings provide optimal performance and compatibility.
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| **Output Format** | JavaScript module format | `esm` |
+| **Target** | JavaScript target version | `es2020` |
+| **JSX Runtime** | React JSX transformation | `automatic` |
+| **Decorators** | TypeScript decorators support | `enabled` |
+| **Source Maps** | Debug information | `inline` |
 
 ### 🧪 **Jest Configuration**
 
@@ -384,7 +379,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `webpack.module` | `object` | `undefined` | Webpack module configuration | `webpack: { module: { rules: [...] } }` |
 | `webpack.output` | `object` | `undefined` | Webpack output configuration | `webpack: { output: { filename: 'bundle.js' } }` |
 | `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
-| `webpack.publicPath` | `string` | `'./src/static'` | Path to public assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { publicPath: './assets' }` |
+| `webpack.staticPath` | `string` | `'./src/static'` | Path to static assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { staticPath: './assets' }` |
 
 ### 🔗 **Library Configuration**
 
@@ -424,12 +419,8 @@ export default {
   preset: 'node',
   targetEnvironment: 'node',
   libraryName: 'MyLibrary',
-  libraryTarget: 'umd',
-  esbuild: {
-    format: 'cjs',
-    platform: 'node',
-    external: ['lodash']
-  }
+  libraryTarget: 'umd'
+  // SWC automatically handles Node.js compilation with optimal settings
 };
 ```
 
@@ -452,26 +443,19 @@ export default {
 };
 ```
 
-#### Advanced ESBuild Configuration
+#### Advanced SWC Configuration
 
 ```javascript
 export default {
   useTypescript: true,
-  esbuild: {
-    minify: true,
-    sourcemap: 'inline',
-    target: 'es2020',
-    format: 'esm',
-    splitting: true,
-    metafile: true,
-    define: {
-      'process.env.NODE_ENV': '"production"',
-      'global': 'globalThis'
-    },
-    banner: {
-      js: '// My Awesome Library v1.0.0'
-    }
-  }
+  // SWC provides optimal defaults for all compilation tasks
+  // No additional configuration needed for most use cases
+  // SWC automatically handles:
+  // - ESM output format (default)
+  // - ES2020 target
+  // - React JSX transformation
+  // - TypeScript decorators
+  // - Source map generation
 };
 ```
 
@@ -490,13 +474,13 @@ If you see a 404 error with a message like "Static Paths /path/to/lib", this is 
 
 #### Port Already in Use
 
-If you get an "address already in use" error, another process is using the default port (7001).
+If you get an "address already in use" error, another process is using the default port (3000).
 
 **Solution**: Kill the existing process or use a different port:
 
 ```bash
-# Kill processes on port 7001
-lsof -ti:7001 | xargs kill -9
+# Kill processes on port 3000
+lsof -ti:3000 | xargs kill -9
 
 # Or use a different port
 lex dev --port 3000
@@ -583,7 +567,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **ESBuild** - For lightning-fast bundling
+- **SWC** - For lightning-fast TypeScript/JavaScript compilation
 - **Jest** - For comprehensive testing
 - **TypeScript** - For type safety
 - **Webpack** - For advanced bundling features

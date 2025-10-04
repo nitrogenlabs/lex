@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import GraphqlLoaderPlugin from '@luckycatfactory/esbuild-graphql-loader';
+import {transform} from '@swc/core';
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
@@ -31,7 +31,7 @@ try {
 export interface BuildOptions {
   readonly assist?: boolean;
   readonly analyze?: boolean;
-  readonly bundler?: 'webpack' | 'esbuild';
+  readonly bundler?: 'webpack' | 'swc';
   readonly cliName?: string;
   readonly entry?: string; // <-- add entry
   readonly format?: string;
@@ -74,7 +74,9 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
   console.log('\n' + statusBox + '\n');
 };
 
-export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
+// Removed buildWithEsBuild function - using SWC instead
+
+export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
     format = 'esm',
@@ -86,25 +88,12 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
   const {
     outputFullPath,
     sourceFullPath,
+    swc: swcConfig,
     targetEnvironment,
     useGraphQl,
     useTypescript
   } = LexConfig.config;
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
-  const loader = {
-    '.js': 'js'
-  };
-
-  if(useTypescript) {
-    loader['.ts'] = 'ts';
-    loader['.tsx'] = 'tsx';
-  }
-
-  const plugins = [];
-
-  if(useGraphQl) {
-    plugins.push((GraphqlLoaderPlugin as unknown as () => never)());
-  }
 
   const globOptions = {
     cwd: sourceDir,
@@ -116,131 +105,71 @@ export const buildWithEsBuild = async (spinner, commandOptions: BuildOptions, ca
   const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
-  const packageJsonData = readFileSync(pathResolve(process.cwd(), './package.json'));
-  const packageJson = JSON.parse(packageJsonData.toString());
-  const external = [
-    ...Object.keys(packageJson.dependencies || {}),
-    ...Object.keys(packageJson.peerDependencies || {})
-  ];
-
-  const dirName = getDirName();
-  const dirPath: string = pathResolve(dirName, '../..');
   const outputDir: string = outputPath || outputFullPath || '';
-  const esbuildPath: string = relativeNodePath('esbuild/bin/esbuild', dirPath);
-  const esbuildConfig = LexConfig.config.esbuild || {};
-
-  const esbuildOptions: string[] = [
-    ...sourceFiles,
-    '--bundle',
-    '--color=true',
-    `--format=${format}`,
-    `--outdir=${outputDir}`,
-    `--platform=${esbuildConfig.platform || 'node'}`,
-    `--target=${esbuildConfig.target || (targetEnvironment === 'node' ? 'node20' : 'es2020')}`,
-    `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`
-  ];
-
-  if(esbuildConfig.minify !== false) {
-    esbuildOptions.push('--minify');
-  }
-
-  if(esbuildConfig.treeShaking !== false) {
-    esbuildOptions.push('--tree-shaking=true');
-  }
-
-  if(esbuildConfig.drop && esbuildConfig.drop.length > 0) {
-    esbuildConfig.drop.forEach(item => {
-      esbuildOptions.push(`--drop:${item}`);
-    });
-  }
-
-  if(esbuildConfig.pure && esbuildConfig.pure.length > 0) {
-    esbuildConfig.pure.forEach(item => {
-      esbuildOptions.push(`--pure:${item}`);
-    });
-  }
-
-  if(esbuildConfig.legalComments) {
-    esbuildOptions.push(`--legal-comments=${esbuildConfig.legalComments}`);
-  }
-
-  if(esbuildConfig.splitting !== false) {
-    esbuildOptions.push('--splitting');
-  }
-
-  if(esbuildConfig.metafile) {
-    esbuildOptions.push('--metafile');
-  }
-
-  if(esbuildConfig.banner) {
-    Object.entries(esbuildConfig.banner).forEach(([type, content]) => {
-      esbuildOptions.push(`--banner:${type}=${content}`);
-    });
-  }
-
-  if(esbuildConfig.footer) {
-    Object.entries(esbuildConfig.footer).forEach(([type, content]) => {
-      esbuildOptions.push(`--footer:${type}=${content}`);
-    });
-  }
-
-  if(esbuildConfig.define) {
-    Object.entries(esbuildConfig.define).forEach(([key, value]) => {
-      esbuildOptions.push(`--define:${key}=${value}`);
-    });
-  }
-
-  if(external.length) {
-    esbuildOptions.push(`--external:${external.join(',')}`);
-  }
-
-  if(plugins.length) {
-    esbuildOptions.push(`--plugins=${plugins.join(',')}`);
-  }
-  if(watch) {
-    esbuildOptions.push('--watch');
-  }
 
   try {
-    await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
+    spinner.start('Building with SWC...');
 
-    spinner.succeed('Build completed successfully!');
-    displayBuildStatus('esbuild', outputDir, quiet);
+    for(const file of sourceFiles) {
+      const sourcePath = pathResolve(sourceDir, file);
+      const outputPath = pathResolve(outputDir, file.replace(/\.(ts|tsx)$/, '.js'));
+
+      // Ensure output directory exists
+      const outputDirPath = dirname(outputPath);
+      if(!existsSync(outputDirPath)) {
+        const {mkdirSync} = await import('fs');
+        mkdirSync(outputDirPath, {recursive: true});
+      }
+
+      const sourceCode = readFileSync(sourcePath, 'utf8');
+
+      const isTSX = file.endsWith('.tsx');
+
+      // Merge SWC config with command-specific overrides
+      const swcOptions = {
+        filename: file,
+        ...swcConfig,
+        jsc: {
+          ...swcConfig?.jsc,
+          parser: {
+            syntax: 'typescript' as const,
+            tsx: isTSX,
+            decorators: swcConfig?.jsc?.parser?.decorators ?? true,
+            dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true
+          },
+          target: swcConfig?.jsc?.target ?? 'es2020',
+          transform: isTSX ? {
+            ...swcConfig?.jsc?.transform,
+            react: {
+              runtime: 'automatic' as const,
+              ...swcConfig?.jsc?.transform?.react
+            }
+          } : swcConfig?.jsc?.transform
+        },
+        module: {
+          ...swcConfig?.module,
+          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
+        }
+      };
+
+      const result = await transform(sourceCode, swcOptions);
+
+      const {writeFileSync} = await import('fs');
+      writeFileSync(outputPath, result.code);
+    }
+
+    spinner.succeed('Build completed with SWC');
+    displayBuildStatus('SWC', outputDir, quiet);
+    callback(0);
+    return 0;
   } catch(error) {
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
-
+    spinner.fail('Build failed with SWC');
     if(!quiet) {
       console.error(error);
     }
-
-    spinner.fail('Code build failed.');
-
-    if(commandOptions.assist) {
-      spinner.start('AI is analyzing the error...');
-
-      try {
-        await aiFunction({
-          prompt: `Fix this esbuild error: ${error.message}\n\nError details:\n${error.toString()}`,
-          task: 'help',
-          context: true,
-          quiet
-        });
-
-        spinner.succeed('AI analysis complete');
-      } catch(aiError) {
-        spinner.fail('Could not generate AI assistance');
-        if(!quiet) {
-          console.error('AI assistance error:', aiError);
-        }
-      }
-    }
-
     callback(1);
     return 1;
   }
-
-  callback(0);
-  return 0;
 };
 
 export const buildWithWebpack = async (spinner, cmd, callback) => {
@@ -530,8 +459,8 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
 
   let buildResult = 0;
 
-  if(bundler === 'esbuild') {
-    buildResult = await buildWithEsBuild(spinner, cmd, (status) => {
+  if(bundler === 'swc') {
+    buildResult = await buildWithSWC(spinner, cmd, (status) => {
       buildResult = status;
     });
   } else {
@@ -546,7 +475,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
     try {
       const stats = {
         outputPath: LexConfig.config.outputFullPath,
-        entryPoints: bundler === 'esbuild' ?
+        entryPoints: bundler === 'swc' ?
           `Source files: ${LexConfig.config.sourceFullPath}/**/*.{ts,js}` :
           LexConfig.config.webpack?.entry || 'Unknown entry points'
       };

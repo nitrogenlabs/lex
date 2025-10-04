@@ -12,7 +12,7 @@ import {LexConfig} from '../LexConfig.js';
 export const getDirName = (): string => {
   try {
     return eval('new URL(".", import.meta.url).pathname');
-  } catch {
+  } catch{
     return process.cwd();
   }
 };
@@ -20,7 +20,7 @@ export const getDirName = (): string => {
 export const getFilePath = (relativePath: string): string => {
   try {
     return eval('require("url").fileURLToPath(new URL(relativePath, import.meta.url))');
-  } catch {
+  } catch{
     if(relativePath === '../../../package.json') {
       return pathResolve(process.cwd(), 'package.json');
     }
@@ -44,20 +44,20 @@ export const getLexPackageJsonPath = (): string => {
   } else {
     try {
       startDir = eval('new URL(".", import.meta.url).pathname');
-    } catch {
+    } catch{
       try {
         startDir = eval('__filename ? require("path").dirname(__filename) : null');
         if(!startDir) {
           throw new Error('__filename not available');
         }
-      } catch {
+      } catch{
         try {
           if(process.argv[1] && !process.argv[1].includes('node')) {
             startDir = dirname(process.argv[1]);
           } else {
             throw new Error('process.argv[1] not suitable');
           }
-        } catch {
+        } catch{
           startDir = process.cwd();
         }
       }
@@ -73,7 +73,7 @@ export const getLexPackageJsonPath = (): string => {
         if(pkg.name === LEX_PACKAGE_NAME) {
           return pkgPath;
         }
-      } catch {
+      } catch{
       }
     }
     const parent = dirname(dir);

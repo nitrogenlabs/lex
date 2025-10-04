@@ -7,8 +7,8 @@ jest.mock('../../utils/app.js', () => ({
     start: jest.fn(),
     succeed: jest.fn()
   })),
-  removeModules: jest.fn().mockResolvedValue(undefined),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  removeFiles: jest.fn().mockResolvedValue(undefined),
+  removeModules: jest.fn().mockResolvedValue(undefined)
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js', () => ({

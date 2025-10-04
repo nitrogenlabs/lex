@@ -1,0 +1,268 @@
+/**
+ * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
+
+import {DataLayer, handler} from './DataLayer.js';
+
+describe('DataLayer', () => {
+  let dataLayer;
+  let mockContext;
+
+  beforeEach(() => {
+    dataLayer = new DataLayer({
+      tableName: 'test-table',
+      region: 'us-east-1'
+    });
+
+    mockContext = {
+      awsRequestId: 'test-request-id',
+      functionName: 'test-function',
+      functionVersion: '$LATEST',
+      getRemainingTimeInMillis: () => 30000,
+      invokedFunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:test-function',
+      logGroupName: '/aws/lambda/test-function',
+      logStreamName: 'test-log-stream',
+      memoryLimitInMB: '128'
+    };
+  });
+
+  describe('getItem', () => {
+    it('should get an item by ID', async () => {
+      const result = await dataLayer.getItem('test-id');
+
+      expect(result).toEqual({
+        id: 'test-id',
+        data: 'sample data',
+        timestamp: expect.any(String)
+      });
+    });
+  });
+
+  describe('createItem', () => {
+    it('should create a new item', async () => {
+      const itemData = {
+        name: 'Test Item',
+        description: 'A test item'
+      };
+
+      const result = await dataLayer.createItem(itemData);
+
+      expect(result).toEqual({
+        id: expect.stringMatching(/^item-\d+$/),
+        name: 'Test Item',
+        description: 'A test item',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String)
+      });
+    });
+
+    it('should create an item with custom ID', async () => {
+      const itemData = {
+        id: 'custom-id',
+        name: 'Test Item'
+      };
+
+      const result = await dataLayer.createItem(itemData);
+
+      expect(result.id).toBe('custom-id');
+      expect(result.name).toBe('Test Item');
+    });
+  });
+
+  describe('updateItem', () => {
+    it('should update an existing item', async () => {
+      const updateData = {
+        name: 'Updated Item',
+        description: 'Updated description'
+      };
+
+      const result = await dataLayer.updateItem('test-id', updateData);
+
+      expect(result).toEqual({
+        id: 'test-id',
+        name: 'Updated Item',
+        description: 'Updated description',
+        updatedAt: expect.any(String)
+      });
+    });
+  });
+
+  describe('deleteItem', () => {
+    it('should delete an item by ID', async () => {
+      const result = await dataLayer.deleteItem('test-id');
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('listItems', () => {
+    it('should list items without filters', async () => {
+      const result = await dataLayer.listItems();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0]).toHaveProperty('id');
+      expect(result[0]).toHaveProperty('data');
+      expect(result[0]).toHaveProperty('timestamp');
+    });
+
+    it('should list items with filters', async () => {
+      const filters = {
+        status: 'active'
+      };
+
+      const result = await dataLayer.listItems(filters);
+
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe('handleRequest', () => {
+    it('should handle GET request for single item', async () => {
+      const event = {
+        httpMethod: 'GET',
+        pathParameters: {id: 'test-id'},
+        body: null,
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      expect(result.headers['Content-Type']).toBe('application/json');
+      expect(result.headers['Access-Control-Allow-Origin']).toBe('*');
+
+      const body = JSON.parse(result.body);
+      expect(body.id).toBe('test-id');
+    });
+
+    it('should handle GET request for list items', async () => {
+      const event = {
+        httpMethod: 'GET',
+        pathParameters: null,
+        body: null,
+        queryStringParameters: {status: 'active'}
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
+      expect(Array.isArray(body)).toBe(true);
+    });
+
+    it('should handle POST request', async () => {
+      const event = {
+        httpMethod: 'POST',
+        pathParameters: null,
+        body: JSON.stringify({
+          name: 'New Item',
+          description: 'A new item'
+        }),
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
+      expect(body.name).toBe('New Item');
+      expect(body.description).toBe('A new item');
+    });
+
+    it('should handle PUT request', async () => {
+      const event = {
+        httpMethod: 'PUT',
+        pathParameters: {id: 'test-id'},
+        body: JSON.stringify({
+          name: 'Updated Item'
+        }),
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
+      expect(body.id).toBe('test-id');
+      expect(body.name).toBe('Updated Item');
+    });
+
+    it('should handle DELETE request', async () => {
+      const event = {
+        httpMethod: 'DELETE',
+        pathParameters: {id: 'test-id'},
+        body: null,
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
+      expect(body.message).toBe('Item deleted successfully');
+    });
+
+    it('should return 400 for PUT without ID', async () => {
+      const event = {
+        httpMethod: 'PUT',
+        pathParameters: null,
+        body: JSON.stringify({name: 'Updated Item'}),
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(400);
+      const body = JSON.parse(result.body);
+      expect(body.error).toBe('ID is required for update operations');
+    });
+
+    it('should return 400 for DELETE without ID', async () => {
+      const event = {
+        httpMethod: 'DELETE',
+        pathParameters: null,
+        body: null,
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(400);
+      const body = JSON.parse(result.body);
+      expect(body.error).toBe('ID is required for delete operations');
+    });
+
+    it('should return 405 for unsupported method', async () => {
+      const event = {
+        httpMethod: 'OPTIONS',
+        pathParameters: null,
+        body: null,
+        queryStringParameters: null
+      };
+
+      const result = await dataLayer.handleRequest(event, mockContext);
+
+      expect(result.statusCode).toBe(405);
+      const body = JSON.parse(result.body);
+      expect(body.error).toBe('Method not allowed');
+    });
+  });
+
+  describe('handler function', () => {
+    it('should work as Lambda handler', async () => {
+      const event = {
+        httpMethod: 'GET',
+        pathParameters: {id: 'test-id'},
+        body: null,
+        queryStringParameters: null
+      };
+
+      const result = await handler(event, mockContext);
+
+      expect(result.statusCode).toBe(200);
+      expect(result.headers['Content-Type']).toBe('application/json');
+    });
+  });
+});

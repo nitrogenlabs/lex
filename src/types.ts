@@ -7,8 +7,8 @@
 export type {
   AIConfig,
   Config,
-  EsbuildConfig,
   JestConfig,
   LexConfigType,
+  SWCConfig,
   WebpackConfig
 } from './LexConfig.js';

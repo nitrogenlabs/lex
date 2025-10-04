@@ -23,7 +23,7 @@ try {
   // eslint-disable-next-line no-eval
   currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
   currentDirname = dirname(currentFilename);
-} catch {
+} catch{
   currentFilename = process.cwd();
   currentDirname = process.cwd();
 }
@@ -75,7 +75,7 @@ const readPublicIpCache = (): PublicIpCache | null => {
     }
 
     return cache;
-  } catch {
+  } catch{
     return null;
   }
 };
@@ -145,7 +145,7 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (port: number = 7001, quiet: boolean, publicIp?: string) => {
+const displayServerStatus = (port: number = 3000, quiet: boolean, publicIp?: string) => {
   if(quiet) {
     return;
   }
@@ -187,7 +187,7 @@ const displayServerStatus = (port: number = 7001, quiet: boolean, publicIp?: str
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port = 7001, quiet, remove, translations = false, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port = 3000, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -202,7 +202,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   if(variables) {
     try {
       variablesObj = JSON.parse(variables);
-    } catch (_error) {
+    } catch(_error) {
       log(`\n${cliName} Error: Environment variables option is not a valid JSON object.`, 'error', quiet);
       callback(1);
       return 1;
@@ -232,7 +232,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
       await processTranslations(sourcePath, outputPath, quiet);
       spinner.succeed('Translations processed successfully!');
-    } catch (translationError) {
+    } catch(translationError) {
       log(`\n${cliName} Error: Failed to process translations: ${translationError.message}`, 'error', quiet);
       spinner.fail('Failed to process translations.');
       callback(1);
@@ -262,7 +262,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     webpackOptions.push('--bundleAnalyzer');
   }
 
-  if(port !== 7001) {
+  if(port !== 3000) {
     webpackOptions.push('--port', port.toString());
   }
 
@@ -295,7 +295,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         displayServerStatus(portToShow, quiet);
       }
     };
-    let detectedPort = 7001;
+    let detectedPort = 3000;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString();
@@ -357,7 +357,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
     callback(0);
     return 0;
-  } catch (error) {
+  } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     spinner.fail('There was an error while running Webpack.');

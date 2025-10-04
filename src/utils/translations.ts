@@ -43,7 +43,7 @@ const findTranslationFiles = (sourcePath: string): string[] => {
         nodir: true
       });
       files.push(...matches);
-    } catch {
+    } catch{
     }
   });
 
@@ -81,7 +81,7 @@ export const processTranslations = async (
       allTranslations = {...allTranslations, ...data};
 
       log(`Processed: ${filePath}`, 'info', quiet);
-    } catch (error) {
+    } catch(error) {
       log(`Error processing ${filePath}: ${error.message}`, 'error', quiet);
     }
   }
@@ -98,7 +98,7 @@ export const processTranslations = async (
 
     writeFileSync(outputFile, JSON.stringify(flattenedTranslations, null, 2), 'utf8');
     log(`Translations written to: ${outputFile}`, 'info', quiet);
-  } catch (error) {
+  } catch(error) {
     log(`Error writing translations file: ${error.message}`, 'error', quiet);
   }
 
@@ -114,7 +114,7 @@ export const processTranslations = async (
 
     writeFileSync(srcOutputFile, JSON.stringify(flattenedTranslations, null, 2), 'utf8');
     log(`Translations written to: ${srcOutputFile}`, 'info', quiet);
-  } catch (error) {
+  } catch(error) {
     log(`Error writing translations file to src: ${error.message}`, 'error', quiet);
   }
 };

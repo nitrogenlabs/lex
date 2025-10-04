@@ -23,14 +23,14 @@ jest.mock('../../utils/file.js', () => ({
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkCompileTypescriptConfig: jest.fn(),
     config: {
       outputFullPath: '/mock/output',
       sourceFullPath: '/mock/source',
-      useTypescript: true,
-      esbuild: {}
+      useTypescript: true
+      // SWC configuration is handled automatically with optimal defaults
     },
-    checkCompileTypescriptConfig: jest.fn()
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   },
   getTypeScriptConfigPath: jest.fn(() => 'tsconfig.build.json')
 }));
@@ -61,9 +61,9 @@ describe('compile integration', () => {
 
   it('should compile successfully', async () => {
     (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
-      stdout: '',
+      exitCode: 0,
       stderr: '',
-      exitCode: 0
+      stdout: ''
     } as any);
 
     const result = await compile({});
@@ -93,11 +93,10 @@ describe('compile integration', () => {
     expect(result).toBe(1);
   });
 
-  it('should handle missing ESBuild binary', async () => {
+  it('should handle missing TypeScript binary', async () => {
     const {resolveBinaryPath} = require('../../utils/file.js');
     resolveBinaryPath
-      .mockReturnValueOnce('/mock/path/to/tsc') // tsc found
-      .mockReturnValueOnce(null); // esbuild not found
+      .mockReturnValueOnce(null); // tsc not found
 
     const result = await compile({});
 

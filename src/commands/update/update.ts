@@ -56,7 +56,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
           encoding: 'utf8',
           stdio: 'inherit'
         });
-      } catch {
+      } catch{
         try {
           ncuCommand = 'npm-check-updates';
           ncuArgs = [
@@ -76,7 +76,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
             encoding: 'utf8',
             stdio: 'inherit'
           });
-        } catch {
+        } catch{
           log('npm-check-updates not found. Installing it globally...', 'info', quiet);
 
           try {
@@ -103,7 +103,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
               encoding: 'utf8',
               stdio: 'inherit'
             });
-          } catch (installError) {
+          } catch(installError) {
             log(`Failed to install or use npm-check-updates: ${installError.message}`, 'error', quiet);
             log('Please install npm-check-updates manually: npm install -g npm-check-updates', 'info', quiet);
             throw installError;
@@ -140,7 +140,7 @@ export const update = async (cmd: UpdateOptions, callback: UpdateCallback = proc
 
     callback(0);
     return 0;
-  } catch (error) {
+  } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     spinner.fail('Failed to update packages.');

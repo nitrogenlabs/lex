@@ -2,10 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import {transform} from '@swc/core';
 import {execa} from 'execa';
-import {existsSync, lstatSync, readdirSync} from 'fs';
+import {existsSync, lstatSync, readdirSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {extname as pathExtname, join as pathJoin, resolve as pathResolve} from 'path';
+import {extname as pathExtname, join as pathJoin, resolve as pathResolve, dirname} from 'path';
 
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
@@ -50,7 +51,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   await LexConfig.parseConfig(cmd);
 
-  const {outputFullPath, sourceFullPath, useTypescript} = LexConfig.config;
+  const {outputFullPath, sourceFullPath, swc: swcConfig, useTypescript} = LexConfig.config;
   const outputDir: string = outputPath || outputFullPath;
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
   const dirName = getDirName();
@@ -83,7 +84,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       await execa(typescriptPath, typescriptOptions, {encoding: 'utf8'});
 
       spinner.succeed('Successfully completed type checking!');
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Type checking failed.');
@@ -102,79 +103,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).ts*`, globOptions);
   const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
-  const esbuildConfig = LexConfig.config.esbuild || {};
-  const isProduction = process.env.NODE_ENV === 'production';
-  let shouldMinify: boolean;
-
-  if(typeof esbuildConfig.minify === 'boolean') {
-    shouldMinify = esbuildConfig.minify;
-  } else {
-    shouldMinify = isProduction;
-  }
-
-  const esbuildPath: string = resolveBinaryPath('esbuild', 'esbuild');
-
-  if(!esbuildPath) {
-    log(`\n${cliName} Error: esbuild binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
-    log('Please reinstall Lex or check your installation.', 'info', quiet);
-    return 1;
-  }
-
-  const esbuildOptions: string[] = [
-    ...sourceFiles,
-    '--color=true',
-    `--format=${format || esbuildConfig.format || 'esm'}`,
-    `--outdir=${outputDir}`,
-    `--platform=${esbuildConfig.platform || 'node'}`,
-    `--sourcemap=${esbuildConfig.sourcemap || 'inline'}`,
-    `--target=${esbuildConfig.target || 'node20'}`
-  ];
-
-  if(shouldMinify) {
-    esbuildOptions.push('--minify');
-  }
-
-  if(esbuildConfig.treeShaking !== false) {
-    esbuildOptions.push('--tree-shaking=true');
-  }
-
-  if(esbuildConfig.drop && esbuildConfig.drop.length > 0) {
-    esbuildConfig.drop.forEach((item) => {
-      esbuildOptions.push(`--drop:${item}`);
-    });
-  }
-
-  if(esbuildConfig.pure && esbuildConfig.pure.length > 0) {
-    esbuildConfig.pure.forEach((item) => {
-      esbuildOptions.push(`--pure:${item}`);
-    });
-  }
-
-  if(esbuildConfig.legalComments) {
-    esbuildOptions.push(`--legal-comments=${esbuildConfig.legalComments}`);
-  }
-
-  if(esbuildConfig.banner) {
-    Object.entries(esbuildConfig.banner).forEach(([type, content]) => {
-      esbuildOptions.push(`--banner:${type}=${content}`);
-    });
-  }
-
-  if(esbuildConfig.footer) {
-    Object.entries(esbuildConfig.footer).forEach(([type, content]) => {
-      esbuildOptions.push(`--footer:${type}=${content}`);
-    });
-  }
-
-  if(esbuildConfig.define) {
-    Object.entries(esbuildConfig.define).forEach(([key, value]) => {
-      esbuildOptions.push(`--define:${key}=${value}`);
-    });
-  }
-
-  if(watch) {
-    esbuildOptions.push('--watch');
-  }
 
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
 
@@ -200,7 +128,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     try {
       await execa(postcssPath, postcssOptions, {encoding: 'utf8'});
       spinner.succeed(`Successfully formatted ${cssFiles.length} css files!`);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed formatting css.');
@@ -219,7 +147,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(imageFiles.length) {
     try {
       await copyFiles(imageFiles, 'image', spinner, LexConfig.config);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move images to output directory.');
@@ -238,7 +166,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(fontFiles.length) {
     try {
       await copyFiles(fontFiles, 'font', spinner, LexConfig.config);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move fonts to output directory.');
@@ -253,7 +181,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   if(mdFiles.length) {
     try {
       await copyFiles(mdFiles, 'documents', spinner, LexConfig.config);
-    } catch (error) {
+    } catch(error) {
       log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
       spinner.fail('Failed to move docs to output directory.');
@@ -263,13 +191,58 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     }
   }
 
-  spinner.start(watch ? 'Watching for changes...' : 'Compiling with ESBuild...');
+  spinner.start(watch ? 'Watching for changes...' : 'Compiling with SWC...');
 
   try {
-    await execa(esbuildPath, esbuildOptions, {encoding: 'utf8'});
+    // Compile each file with SWC
+    for(const file of sourceFiles) {
+      const sourcePath = pathResolve(sourceDir, file);
+      const outputPath = pathResolve(outputDir, file.replace(/\.(ts|tsx)$/, '.js'));
+
+      // Ensure output directory exists
+      const outputDirPath = dirname(outputPath);
+      if(!existsSync(outputDirPath)) {
+        mkdirSync(outputDirPath, {recursive: true});
+      }
+
+      const sourceCode = readFileSync(sourcePath, 'utf8');
+
+      const isTSX = file.endsWith('.tsx');
+
+      // Merge SWC config with command-specific overrides
+      const swcOptions = {
+        filename: file,
+        ...swcConfig,
+        jsc: {
+          ...swcConfig?.jsc,
+          parser: {
+            decorators: swcConfig?.jsc?.parser?.decorators ?? true,
+            dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true,
+            syntax: 'typescript' as const,
+            tsx: isTSX
+          },
+          target: swcConfig?.jsc?.target ?? 'es2020',
+          transform: isTSX ? {
+            ...swcConfig?.jsc?.transform,
+            react: {
+              runtime: 'automatic' as const,
+              ...swcConfig?.jsc?.transform?.react
+            }
+          } : swcConfig?.jsc?.transform
+        },
+        module: {
+          ...swcConfig?.module,
+          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
+        }
+      };
+
+      const result = await transform(sourceCode, swcOptions);
+
+      writeFileSync(outputPath, result.code);
+    }
 
     spinner.succeed('Compile completed successfully!');
-  } catch (error) {
+  } catch(error) {
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 
     if(!quiet) {
@@ -284,7 +257,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   try {
     await copyConfiguredFiles(spinner, LexConfig.config, quiet);
-  } catch (copyError) {
+  } catch(copyError) {
     log(`\n${cliName} Error: Failed to copy configured files: ${copyError.message}`, 'error', quiet);
 
     spinner.fail('Failed to copy configured files.');

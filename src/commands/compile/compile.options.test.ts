@@ -23,14 +23,14 @@ jest.mock('../../utils/file.js', () => ({
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkCompileTypescriptConfig: jest.fn(),
     config: {
       outputFullPath: '/mock/output',
       sourceFullPath: '/mock/source',
-      useTypescript: true,
-      esbuild: {}
+      useTypescript: true
+      // SWC configuration is handled automatically with optimal defaults
     },
-    checkCompileTypescriptConfig: jest.fn()
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   },
   getTypeScriptConfigPath: jest.fn(() => 'tsconfig.build.json')
 }));
@@ -61,9 +61,9 @@ describe('compile options', () => {
 
   it('should compile with default options', async () => {
     (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
-      stdout: '',
+      exitCode: 0,
       stderr: '',
-      exitCode: 0
+      stdout: ''
     } as any);
 
     const result = await compile({});
@@ -74,9 +74,9 @@ describe('compile options', () => {
 
   it('should compile with quiet mode', async () => {
     (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
-      stdout: '',
+      exitCode: 0,
       stderr: '',
-      exitCode: 0
+      stdout: ''
     } as any);
 
     const result = await compile({quiet: true});
@@ -86,9 +86,9 @@ describe('compile options', () => {
 
   it('should compile with custom output path', async () => {
     (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
-      stdout: '',
+      exitCode: 0,
       stderr: '',
-      exitCode: 0
+      stdout: ''
     } as any);
 
     const result = await compile({outputPath: '/custom/output'});
@@ -98,9 +98,9 @@ describe('compile options', () => {
 
   it('should compile with remove option', async () => {
     (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
-      stdout: '',
+      exitCode: 0,
       stderr: '',
-      exitCode: 0
+      stdout: ''
     } as any);
 
     const result = await compile({remove: true});

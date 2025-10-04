@@ -1,12 +1,12 @@
 # LEX Compilation Module
 
-The compile module is responsible for compiling TypeScript and JavaScript code using ESBuild and managing assets in a Lex project.
+The compile module is responsible for compiling TypeScript and JavaScript code using SWC and managing assets in a Lex project.
 
 ## Overview
 
 The compile module provides functionality to:
 
-- Compile TypeScript and JavaScript files using ESBuild
+- Compile TypeScript and JavaScript files using SWC
 - Run TypeScript type checking
 - Process CSS files with PostCSS
 - Copy static assets (images, fonts, and documents)
@@ -91,7 +91,7 @@ await compile({
    - Run static type checking
 5. Process CSS files with PostCSS
 6. Copy images, fonts, and markdown documents
-7. Compile source code with ESBuild
+7. Compile source code with SWC
 8. Call the callback function with the result status
 
 ## Options Reference
@@ -107,24 +107,19 @@ await compile({
 | `sourcePath` | Custom source directory | From LexConfig |
 | `watch` | Enable watch mode | false |
 
-## ESBuild Configuration
+## SWC Configuration
 
-The compile command uses ESBuild with the following configuration options available through the `esbuild` section in your `lex.config.js`:
+The compile command uses SWC (Speedy Web Compiler) with optimal defaults for fast compilation. SWC provides:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `format` | string | `esm` | Output format (`esm`, `cjs`) |
-| `platform` | string | `node` | Target platform (`node`, `browser`) |
-| `sourcemap` | string | `inline` | Source map generation |
-| `target` | string | `node20` | Target environment |
-| `minify` | boolean | `false` | Enable minification (more conservative for compile) |
-| `treeShaking` | boolean | `true` | Enable tree shaking |
-| `drop` | string[] | - | Console and debugger statements to drop |
-| `pure` | string[] | - | Functions to mark as pure |
-| `legalComments` | string | - | Legal comments handling |
-| `banner` | object | - | Banner text for output files |
-| `footer` | object | - | Footer text for output files |
-| `define` | object | - | Global variable definitions |
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `format` | Output format | `esm` |
+| `target` | JavaScript target version | `es2020` |
+| `jsx` | React JSX transformation | `automatic` |
+| `decorators` | TypeScript decorators support | `enabled` |
+| `sourcemap` | Source map generation | `inline` |
+
+SWC is 10-100x faster than Babel and provides faster TypeScript compilation than esbuild, with zero configuration required.
 
 ## TypeScript Support
 
@@ -163,6 +158,6 @@ When watch mode is enabled:
 The compile command provides detailed error messages for:
 
 - TypeScript compilation errors
-- ESBuild compilation errors
+- SWC compilation errors
 - Missing dependencies
 - Configuration issues

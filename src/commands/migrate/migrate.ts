@@ -54,7 +54,7 @@ export const migrate = async (cmd: MigrateOptions, callback: MigrateCallback = p
     // Kill process
     callback(0);
     return 0;
-  } catch (error) {
+  } catch(error) {
     // Display error message
     log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
 

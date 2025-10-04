@@ -68,12 +68,12 @@ describe('lex build integration', () => {
     }
   }, 35000);
 
-  it('should build with esbuild bundler', async () => {
+  it('should build with swc bundler', async () => {
     try {
       const result = await execa('node', [
         join(__dirname, '../../../lex.js'),
         'build',
-        '--bundler', 'esbuild',
+        '--bundler', 'swc',
         '--format', 'cjs',
         '--outputPath', './lib',
         '--quiet'
@@ -85,7 +85,7 @@ describe('lex build integration', () => {
       expect(result.exitCode).toBe(0);
     } catch {
 
-      console.log('ESBuild build test skipped - esbuild may not be available');
+      console.log('SWC build test skipped - swc may not be available');
     }
   }, 35000);
 
@@ -94,7 +94,7 @@ describe('lex build integration', () => {
       const result = await execa('node', [
         join(__dirname, '../../../lex.js'),
         'build',
-        '--bundler', 'esbuild',
+        '--bundler', 'swc',
         '--format', 'esm',
         '--sourcePath', './src',
         '--outputPath', './build',
@@ -117,7 +117,7 @@ describe('lex build integration', () => {
     // Test various CLI option combinations that should be valid
     const validOptionCombinations = [
       ['--bundler', 'webpack', '--mode', 'production'],
-      ['--bundler', 'esbuild', '--format', 'esm', '--watch'],
+      ['--bundler', 'swc', '--format', 'esm', '--watch'],
       ['--bundler', 'webpack', '--analyze', '--outputPath', './lib'],
       ['--quiet', '--remove', '--typescript'],
       ['--variables', '{"DEBUG":"true"}', '--sourcePath', './src']
@@ -163,8 +163,8 @@ describe('lex build integration', () => {
   });
 
   it('should validate bundler option choices', () => {
-    const validBundlers = ['webpack', 'esbuild'];
-    expect(validBundlers).toEqual(['webpack', 'esbuild']);
+    const validBundlers = ['webpack', 'swc'];
+    expect(validBundlers).toEqual(['webpack', 'swc']);
   });
 
   it('should validate format option choices', () => {

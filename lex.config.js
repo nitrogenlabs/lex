@@ -1,6 +1,9 @@
 /**
  * Lex configuration file
  * This file contains configuration options for the Lex CLI tool
+ *
+ * Note: SWC has replaced esbuild as the default transpiler.
+ * The 'swc' configuration section below replaces the old 'esbuild' configuration.
  */
 
 export default {
@@ -33,13 +36,37 @@ export default {
     temperature: 0.1
   },
 
-  // Build configuration
-  esbuild: {
-    entryPoints: ['src/index.ts'],
-    outdir: 'lib',
-    platform: 'node',
-    target: 'es2020',
-    format: 'esm'
+  // SWC configuration (replaces esbuild)
+  // SWC is now the default transpiler for all TypeScript/JavaScript compilation
+  swc: {
+    jsc: {
+      parser: {
+        syntax: 'typescript',
+        tsx: true,
+        decorators: true,
+        dynamicImport: true
+      },
+      target: 'es2020',
+      transform: {
+        react: {
+          runtime: 'automatic'
+        }
+      },
+      externalHelpers: false,
+      keepClassNames: false,
+      loose: false
+    },
+    module: {
+      type: 'es6',
+      strict: false,
+      strictMode: true,
+      lazy: false,
+      noInterop: false
+    },
+    minify: false,
+    sourceMaps: 'inline',
+    inlineSourcesContent: true,
+    isModule: true
   },
 
   // Test configuration

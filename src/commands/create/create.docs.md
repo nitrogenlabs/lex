@@ -12,6 +12,7 @@ The main function that handles the creation of various project assets.
 
 - `type`: The type of asset to create. Supported values:
   - `'changelog'`: Creates a changelog file
+  - `'datalayer'`: Creates a data layer for Lambda functions with test files
   - `'store'`: Creates a store with test files
   - `'tsconfig'`: Creates a TypeScript configuration file
   - `'view'`: Creates a view component with test files
@@ -49,6 +50,7 @@ export type CreateCallback = (status: number) => void;
 ## Features
 
 - **Changelog Creation**: Creates a changelog file based on git history
+- **Data Layer Creation**: Creates a data layer for Lambda functions with CRUD operations and test files
 - **Store Creation**: Creates a store with appropriate test files
 - **TSConfig Creation**: Creates a TypeScript configuration file
 - **View Creation**: Creates a view component with CSS and test files
@@ -65,6 +67,12 @@ import { create } from '@nlabs/lex';
 // Create a changelog
 await create('changelog', {
   outputFile: 'CHANGELOG.md',
+  quiet: false
+});
+
+// Create a data layer
+await create('datalayer', {
+  outputName: 'user',
   quiet: false
 });
 
@@ -98,4 +106,59 @@ await create('changelog', {}, (status) => {
     console.error('Creation failed');
   }
 });
-``` 
+```
+
+## Data Layer Features
+
+The data layer creation generates a complete Lambda function with:
+
+- **CRUD Operations**: Create, Read, Update, Delete operations for data management
+- **HTTP Handler**: Built-in API Gateway integration with proper HTTP status codes
+- **Error Handling**: Comprehensive error handling with proper Lambda response format
+- **CORS Support**: Built-in CORS headers for web applications
+- **TypeScript Support**: Full TypeScript support with proper AWS Lambda types
+- **Test Coverage**: Complete test suite with Jest for all operations
+- **Environment Configuration**: Support for environment variables and configuration
+
+### Generated Files
+
+When you create a data layer named "user", it generates:
+
+- `UserDataLayer/UserDataLayer.ts` (or `.js`) - Main data layer class
+- `UserDataLayer/UserDataLayer.test.ts` (or `.js`) - Complete test suite
+
+### Usage in Lambda
+
+The generated data layer can be used directly as a Lambda handler:
+
+```typescript
+// In your lex.config.mjs
+export default {
+  serverless: {
+    functions: {
+      userApi: {
+        handler: 'UserDataLayer/UserDataLayer.handler',
+        events: [
+          {
+            http: {
+              path: '/users/{id}',
+              method: 'ANY',
+              cors: true
+            }
+          }
+        ]
+      }
+    }
+  }
+};
+```
+
+### API Endpoints
+
+The data layer automatically handles these HTTP methods:
+
+- `GET /users` - List all users
+- `GET /users/{id}` - Get a specific user
+- `POST /users` - Create a new user
+- `PUT /users/{id}` - Update a user
+- `DELETE /users/{id}` - Delete a user

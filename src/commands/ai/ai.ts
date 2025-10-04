@@ -37,7 +37,7 @@ const getFileContext = (filePath: string): string => {
   try {
     const content = readFileSync(filePath, 'utf-8');
     return `File: ${filePath}\n\n${content}`;
-  } catch (_error) {
+  } catch(_error) {
     return `Error reading file: ${filePath}`;
   }
 };
@@ -88,13 +88,13 @@ const constructPrompt = (options: AIOptions, projectContext: string): string => 
   const {task = 'help', prompt = ''} = options;
 
   const taskInstructions: Record<string, string> = {
-    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
-    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
-    test: 'Generate comprehensive unit tests for the following code:',
-    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
-    help: 'Provide guidance on the following development question:',
+    analyze: 'Analyze the following code:',
     ask: 'Provide guidance on the following development question:',
-    analyze: 'Analyze the following code:'
+    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
+    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
+    help: 'Provide guidance on the following development question:',
+    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
+    test: 'Generate comprehensive unit tests for the following code:'
   };
 
   const taskInstruction = taskInstructions[task] || taskInstructions.help;
@@ -116,9 +116,11 @@ const displayResponse = (response: any, options: AIOptions): void => {
   if(typeof response === 'string') {
     content = response;
   } else if(response.choices?.[0]?.message?.content) {
-    content = response.choices[0].message.content;
+    const {content: messageContent} = response.choices[0].message;
+    content = messageContent;
   } else if(response.content) {
-    content = response.content;
+    const {content: responseContent} = response;
+    content = responseContent;
   } else {
     content = 'No response received from AI model';
   }
@@ -163,13 +165,13 @@ const cleanResponse = (content: string, options: AIOptions): string => {
   let cleanedContent = content;
 
   const taskInstructions: Record<string, string> = {
-    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
-    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
-    test: 'Generate comprehensive unit tests for the following code:',
-    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
-    help: 'Provide guidance on the following development question:',
+    analyze: 'Analyze the following code:',
     ask: 'Provide guidance on the following development question:',
-    analyze: 'Analyze the following code:'
+    explain: 'Explain the following code in detail, including any patterns, potential issues, and improvement suggestions:',
+    generate: 'Generate code according to the following request. Make sure it follows best practices and is well documented:',
+    help: 'Provide guidance on the following development question:',
+    optimize: 'Analyze the following code/configuration and suggest optimization improvements:',
+    test: 'Generate comprehensive unit tests for the following code:'
   };
 
   const instruction = taskInstructions[task] || '';
@@ -286,7 +288,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
             context += `\n===FILE: ${file}===\n${content}\n`;
           }
         }
-      } catch (error) {
+      } catch(error) {
         log(`${chalk.yellow('Warning:')} Error reading file: ${error.message}`, 'warning');
       }
     }
@@ -296,7 +298,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
         const {execaSync} = await import('execa');
         const result = execaSync('find', [options.dir, '-type', 'f', '|', 'sort']);
         context += `\n===Project structure:===\n${result.stdout}\n`;
-      } catch (error) {
+      } catch(error) {
         log(`${chalk.yellow('Warning:')} Error reading directory: ${error.message}`, 'warning');
       }
     }
@@ -341,7 +343,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
     log(`\n${response}`, 'success');
 
     return {response};
-  } catch (error) {
+  } catch(error) {
     log(`${chalk.red('Error:')} ${error.message}`, 'error');
     return {error: error.message};
   }

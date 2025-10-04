@@ -1,0 +1,35 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "target": "es2020",
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      }
+    },
+    "externalHelpers": false,
+    "keepClassNames": false,
+    "loose": false
+  },
+  "module": {
+    "type": "es6",
+    "strict": false,
+    "strictMode": true,
+    "lazy": false,
+    "noInterop": false
+  },
+  "minify": false,
+  "sourceMaps": "inline",
+  "inlineSourcesContent": true,
+  "isModule": true
+}
+
+
+
+
+

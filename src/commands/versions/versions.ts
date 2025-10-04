@@ -13,9 +13,9 @@ const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '') || 'N/A';
 
 export const packages = {
-  esbuild: parseVersion(packageJson?.dependencies?.esbuild),
   jest: parseVersion(packageJson?.dependencies?.jest),
   lex: packageJson.version,
+  swc: parseVersion(packageJson?.dependencies?.['@swc/core']),
   typescript: parseVersion(packageJson?.dependencies?.typescript),
   webpack: parseVersion(packageJson?.dependencies?.webpack)
 };
@@ -36,7 +36,7 @@ export const versions = (cmd: VersionsCmd, callback: (status: number) => void): 
     log('Versions:', 'info', false);
     log(`  Lex: ${packages.lex}`, 'info', false);
     log('  ----------', 'note', false);
-    log(`  ESBuild: ${packages.esbuild}`, 'info', false);
+    log(`  SWC: ${packages.swc}`, 'info', false);
     log(`  Jest: ${packages.jest}`, 'info', false);
     log(`  Typescript: ${packages.typescript}`, 'info', false);
     log(`  Webpack: ${packages.webpack}`, 'info', false);

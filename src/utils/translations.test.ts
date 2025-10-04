@@ -19,7 +19,7 @@ describe('translations', () => {
   afterEach(() => {
     try {
       rmSync(testDir, {force: true, recursive: true});
-    } catch {
+    } catch{
     }
   });
 

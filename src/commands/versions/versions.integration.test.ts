@@ -37,15 +37,15 @@ describe('versions.integration', () => {
 
   it('should create JSON versions correctly', () => {
     const mockPackages = {
-      esbuild: '1.0.0',
-      jest: '2.0.0'
+      jest: '2.0.0',
+      swc: '1.0.0'
     };
 
     const result = jsonVersions(mockPackages);
 
     expect(result).toEqual({
-      esbuild: packages.esbuild,
-      jest: packages.jest
+      jest: packages.jest,
+      swc: packages.swc
     });
   });
 
@@ -55,7 +55,7 @@ describe('versions.integration', () => {
     expect(mockLog).toHaveBeenCalledWith('Versions:', 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Lex: ${packages.lex}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith('  ----------', 'note', false);
-    expect(mockLog).toHaveBeenCalledWith(`  ESBuild: ${packages.esbuild}`, 'info', false);
+    expect(mockLog).toHaveBeenCalledWith(`  SWC: ${packages.swc}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Jest: ${packages.jest}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Typescript: ${packages.typescript}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Webpack: ${packages.webpack}`, 'info', false);

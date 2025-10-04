@@ -9,7 +9,7 @@ import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import cssnano from 'cssnano';
 import DotenvPlugin from 'dotenv-webpack';
-import {EsbuildPlugin} from 'esbuild-loader';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
@@ -34,6 +34,7 @@ import {merge} from 'webpack-merge';
 import {WebpackPluginServe} from 'webpack-plugin-serve';
 
 import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
+import {LexConfig} from './lib/LexConfig.js';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,7 +54,7 @@ const {
   webpack: webpackCustom
 } = lexConfig;
 
-const webpackPublicPath = webpackCustom?.publicPath || './src/static';
+const webpackStaticPath = webpackCustom?.staticPath || './src/static';
 
 const { publicPath: _, ...webpackConfigFiltered } = webpackCustom || {};
 
@@ -153,13 +154,13 @@ const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
-const publicPathFull = pathResolve(process.cwd(), webpackPublicPath);
-if(existsSync(publicPathFull)) {
+const staticPathFull = pathResolve(process.cwd(), webpackStaticPath);
+if(existsSync(staticPathFull)) {
   staticPaths.push({
-    from: publicPathFull,
+    from: staticPathFull,
     to: './'
   });
-  watchIgnorePaths.push(publicPathFull);
+  watchIgnorePaths.push(staticPathFull);
 }
 
 if(existsSync(imagePath)) {
@@ -233,7 +234,7 @@ if(existsSync(`${sourceFullPath}/tsconfig.json`)) {
   }));
 }
 
-const esbuildLoaderPath = relativeNodePath('esbuild-loader', dirName);
+const swcLoaderPath = relativeNodePath('swc-loader', dirName);
 const cssLoaderPath = relativeNodePath('css-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
 const htmlLoaderPath = relativeNodePath('html-loader', dirName);
@@ -322,10 +323,16 @@ export default (webpackEnv, webpackOptions) => {
             `${sourceFullPath}/**/*.test.ts*`
           ],
           include: sourceFullPath,
-          loader: esbuildLoaderPath,
+          loader: swcLoaderPath,
           options: {
-            loader: 'ts',
-            target: targetEnvironment === 'node' ? 'node16' : 'es2016'
+            ...LexConfig.config.swc,
+            jsc: {
+              ...LexConfig.config.swc?.jsc,
+              parser: {
+                ...LexConfig.config.swc?.jsc?.parser,
+                tsx: false
+              }
+            }
           },
           resolve: {
             symlinks: true
@@ -339,10 +346,23 @@ export default (webpackEnv, webpackOptions) => {
             `${sourceFullPath}/**/*.test.ts*`
           ],
           include: sourceFullPath,
-          loader: esbuildLoaderPath,
+          loader: swcLoaderPath,
           options: {
-            loader: 'tsx',
-            target: targetEnvironment === 'node' ? 'node16' : 'es2016'
+            ...LexConfig.config.swc,
+            jsc: {
+              ...LexConfig.config.swc?.jsc,
+              parser: {
+                ...LexConfig.config.swc?.jsc?.parser,
+                tsx: true
+              },
+              transform: {
+                ...LexConfig.config.swc?.jsc?.transform,
+                react: {
+                  ...LexConfig.config.swc?.jsc?.transform?.react,
+                  runtime: 'automatic'
+                }
+              }
+            }
           },
           resolve: {
             symlinks: true
@@ -433,13 +453,6 @@ export default (webpackEnv, webpackOptions) => {
                   ]
                 }
               }
-            },
-            {
-              loader: esbuildLoaderPath,
-              options: {
-                loader: 'css',
-                minify: isProduction
-              }
             }
           ]
         },
@@ -451,7 +464,7 @@ export default (webpackEnv, webpackOptions) => {
         },
         {
           test: /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac)$/,
-          include: publicPathFull,
+          include: staticPathFull,
           type: 'asset/resource',
           generator: {
             filename: '[name].[hash][ext]'
@@ -504,10 +517,7 @@ export default (webpackEnv, webpackOptions) => {
       isProduction && isWeb
         ? {
           minimizer: [
-            new EsbuildPlugin({
-              css: true,
-              target: targetEnvironment
-            })
+            new CssMinimizerPlugin()
           ],
           runtimeChunk: 'single',
           splitChunks: {
@@ -605,7 +615,7 @@ export default (webpackEnv, webpackOptions) => {
               }
             },
             {
-              from: /\.[css,gif,ico,jpg,json,png,svg]/,
+              from: /\\.(css|gif|ico|jpg|json|png|svg)$/,
               to: ({parsedUrl: {pathname}}) => pathname
             }
           ],
@@ -623,7 +633,7 @@ export default (webpackEnv, webpackOptions) => {
             await next();
           }),
         open: process.env.WEBPACK_DEV_OPEN === 'true',
-        port: port || 7001,
+        port: port || 3000,
         progress: 'minimal',
         static: existsSync(outputFullPath) ? [outputFullPath] : [],
         status: true

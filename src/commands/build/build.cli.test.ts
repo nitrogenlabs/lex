@@ -33,8 +33,8 @@ describe('build cli', () => {
     return args;
   };
 
-  describe('ESBuild CLI Arguments', () => {
-    it('should generate default esbuild arguments', () => {
+  describe('SWC CLI Arguments', () => {
+    it('should generate default SWC arguments', () => {
       const args = generateEsbuildArgs({});
 
       expect(args).toContain('--bundle');
@@ -134,10 +134,10 @@ describe('build cli', () => {
 
   describe('CLI Option Validation', () => {
     it('should validate bundler options', () => {
-      const validBundlers = ['webpack', 'esbuild'];
+      const validBundlers = ['webpack', 'swc'];
 
       validBundlers.forEach(bundler => {
-        expect(['webpack', 'esbuild']).toContain(bundler);
+        expect(['webpack', 'swc']).toContain(bundler);
       });
     });
 

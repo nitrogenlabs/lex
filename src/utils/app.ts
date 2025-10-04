@@ -147,7 +147,7 @@ export const copyFiles = async (files: string[], typeName: string, spinner, conf
       }
     )));
     spinner.succeed(`Successfully copied ${files.length} ${typeName} files!`);
-  } catch (error) {
+  } catch(error) {
     spinner.fail(`Copying of ${typeName} files failed.`);
     log(`Error: ${error.message}`, 'error');
     log(error, 'error');
@@ -205,7 +205,7 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
     } else {
       spinner.succeed('No configured files to copy');
     }
-  } catch (error) {
+  } catch(error) {
     spinner.fail('Failed to copy configured files');
     log(`Error copying configured files: ${error.message}`, 'error', quiet);
     throw error;
@@ -277,7 +277,7 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
   try {
     rimrafSync(filePath);
     return resolve(null);
-  } catch (error) {
+  } catch(error) {
     return reject(error);
   }
 });
@@ -294,7 +294,7 @@ export const removeModules = () => new Promise(async (resolve, reject) => {
     await removeFiles('./package-lock.json', true);
 
     resolve(null);
-  } catch (error) {
+  } catch(error) {
     reject(error);
   }
 });
@@ -340,7 +340,7 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
       }
 
       return list;
-    } catch {
+    } catch{
       // Skip files that don't exist or can't be accessed
       return list;
     }

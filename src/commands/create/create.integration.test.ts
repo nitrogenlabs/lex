@@ -3,14 +3,15 @@ import {create} from './create.js';
 jest.mock('execa');
 jest.mock('fs', () => ({
   existsSync: (path) => {
-    if(typeof path === 'string' && (path.includes('TestStore') || path.includes('TestView'))) {
+    if(typeof path === 'string' && (path.includes('TestStore') || path.includes('TestView') || path.includes('TestDataLayer'))) {
       return false;
     }
     return true;
   },
   readFileSync: jest.fn(() => '{}'),
   writeFileSync: jest.fn(),
-  renameSync: jest.fn()
+  renameSync: jest.fn(),
+  mkdirSync: jest.fn()
 }));
 jest.mock('path', () => ({
   resolve: jest.fn((...args) => args.join('/'))
@@ -96,6 +97,12 @@ describe('create integration', () => {
 
   it('should create vscode config', async () => {
     const result = await create('vscode', {});
+
+    expect(result).toBe(0);
+  });
+
+  it('should create datalayer', async () => {
+    const result = await create('datalayer', {outputName: 'test-datalayer'});
 
     expect(result).toBe(0);
   });

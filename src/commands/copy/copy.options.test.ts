@@ -15,9 +15,9 @@ jest.mock('../../utils/app.js', () => ({
   copyFileSync: jest.fn(),
   copyFolderRecursiveSync: jest.fn(),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');

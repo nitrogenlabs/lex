@@ -11,15 +11,39 @@
     "maxTokens": 4000,
     "temperature": 0.1
   },
-  "esbuild": {
+  "swc": {
+    "jsc": {
+      "parser": {
+        "syntax": "typescript",
+        "tsx": true,
+        "decorators": true,
+        "dynamicImport": true
+      },
+      "target": "es2020",
+      "transform": {
+        "react": {
+          "runtime": "automatic"
+        }
+      },
+      "externalHelpers": false,
+      "keepClassNames": false,
+      "loose": false,
+      "minify": {
+        "compress": true,
+        "mangle": true
+      }
+    },
+    "module": {
+      "type": "es6",
+      "strict": false,
+      "strictMode": true,
+      "lazy": false,
+      "noInterop": false
+    },
     "minify": true,
-    "treeShaking": true,
-    "drop": [],
-    "pure": [],
-    "legalComments": "none",
-    "splitting": true,
-    "metafile": false,
-    "sourcemap": false
+    "sourceMaps": false,
+    "inlineSourcesContent": true,
+    "isModule": true
   },
   "webpack": {},
   "jest": {},

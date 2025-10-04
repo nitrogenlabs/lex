@@ -25,7 +25,7 @@ The CLI tests focus on:
 
 The integration tests cover:
 
-- Compilation workflow with TypeScript and ESBuild
+- Compilation workflow with TypeScript and SWC
 - File processing with PostCSS
 - Asset copying operations (images, fonts, markdown)
 - Error handling during compilation process
@@ -94,8 +94,8 @@ const result = await compile(cmdOptions, mockCallback);
 
 // Verify command was executed
 expect(execa).toHaveBeenCalledWith(
-  '/node_modules/esbuild/bin/esbuild',
-  expect.arrayContaining(['--color=true']),
+  expect.stringContaining('tsc'),
+  expect.arrayContaining(['-p', 'tsconfig.build.json']),
   expect.anything()
 );
 ```
@@ -122,4 +122,4 @@ Key edge cases tested include:
 - Processing empty file lists
 - Handling compilation errors
 - Customizing toolchain configurations
-- Supporting various project structures 
+- Supporting various project structures

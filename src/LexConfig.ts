@@ -13,26 +13,6 @@ import type {Linter} from 'eslint';
 
 const cwd: string = process.cwd();
 
-export interface EsbuildConfig {
-  [key: string]: unknown;
-  entryPoints?: string[];
-  outdir?: string;
-  platform?: 'node' | 'browser';
-  target?: string;
-  format?: 'cjs' | 'esm';
-  minify?: boolean;
-  treeShaking?: boolean;
-  drop?: string[];
-  pure?: string[];
-  external?: string[];
-  splitting?: boolean;
-  metafile?: boolean;
-  sourcemap?: boolean | 'inline' | 'external';
-  legalComments?: 'none' | 'inline' | 'eof' | 'linked' | 'separate';
-  banner?: Record<string, string>;
-  footer?: Record<string, string>;
-  define?: Record<string, string>;
-}
 
 export interface JestConfig {
   [key: string]: unknown;
@@ -51,7 +31,7 @@ export interface WebpackConfig {
   output?: Record<string, unknown>;
   module?: Record<string, unknown>;
   plugins?: unknown[];
-  publicPath?: string;
+  staticPath?: string;
 }
 
 export interface AIConfig {
@@ -68,6 +48,65 @@ export interface ESLintConfig {
   rules?: Linter.RulesRecord;
 }
 
+export interface SWCConfig {
+  jsc?: {
+    parser?: {
+      syntax?: 'typescript' | 'ecmascript';
+      tsx?: boolean;
+      decorators?: boolean;
+      dynamicImport?: boolean;
+    };
+    target?: 'es3' | 'es5' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020' | 'es2021' | 'es2022' | 'es2023';
+    transform?: {
+      react?: {
+        runtime?: 'automatic' | 'classic';
+        pragma?: string;
+        pragmaFrag?: string;
+        throwIfNamespace?: boolean;
+        development?: boolean;
+        useBuiltins?: boolean;
+        refresh?: boolean;
+      };
+    };
+    externalHelpers?: boolean;
+    keepClassNames?: boolean;
+    loose?: boolean;
+    minify?: {
+      compress?: boolean;
+      mangle?: boolean;
+    };
+  };
+  module?: {
+    type?: 'es6' | 'commonjs' | 'amd' | 'umd' | 'systemjs';
+    strict?: boolean;
+    strictMode?: boolean;
+    lazy?: boolean;
+    noInterop?: boolean;
+  };
+  minify?: boolean;
+  sourceMaps?: boolean | 'inline';
+  inlineSourcesContent?: boolean;
+  isModule?: boolean;
+  filename?: string;
+  configFile?: string;
+  swcrc?: boolean;
+  env?: {
+    targets?: string | string[] | Record<string, string>;
+    mode?: 'usage' | 'entry';
+    coreJs?: string;
+    path?: string;
+    debug?: boolean;
+    dynamicImport?: boolean;
+    loose?: boolean;
+    bugfixes?: boolean;
+    include?: string[];
+    exclude?: string[];
+    forceAllTransforms?: boolean;
+    modules?: 'amd' | 'umd' | 'systemjs' | 'auto' | false;
+    shippedProposals?: boolean;
+  };
+}
+
 export interface LexConfigType {
   ai?: AIConfig;
   configFiles?: string[];
@@ -75,7 +114,6 @@ export interface LexConfigType {
   entryHTML?: string;
   entryJs?: string;
   env?: object;
-  esbuild?: EsbuildConfig;
   eslint?: ESLintConfig;
   gitUrl?: string;
   jest?: JestConfig;
@@ -89,6 +127,7 @@ export interface LexConfigType {
   preset?: 'web' | 'node' | 'lambda' | 'mobile';
   sourceFullPath?: string;
   sourcePath?: string;
+  swc?: SWCConfig;
   targetEnvironment?: 'node' | 'web';
   useGraphQl?: boolean;
   useTypescript?: boolean;
@@ -109,16 +148,6 @@ export const defaultConfigValues: LexConfigType = {
   entryHTML: 'index.html',
   entryJs: 'index.js',
   env: null,
-  esbuild: {
-    drop: ['console', 'debugger'],
-    legalComments: 'none',
-    metafile: false,
-    minify: true,
-    pure: ['console.log', 'console.warn', 'console.error'],
-    sourcemap: false,
-    splitting: true,
-    treeShaking: true
-  },
   eslint: {},
   jest: {},
   outputFullPath: pathResolve(cwd, './lib'),
@@ -128,11 +157,41 @@ export const defaultConfigValues: LexConfigType = {
   preset: 'web',
   sourceFullPath: pathResolve(cwd, './src'),
   sourcePath: './src',
+  swc: {
+    jsc: {
+      externalHelpers: false,
+      keepClassNames: false,
+      loose: false,
+      parser: {
+        decorators: true,
+        dynamicImport: true,
+        syntax: 'typescript',
+        tsx: true
+      },
+      target: 'es2020',
+      transform: {
+        react: {
+          runtime: 'automatic'
+        }
+      }
+    },
+    module: {
+      lazy: false,
+      noInterop: false,
+      strict: false,
+      strictMode: true,
+      type: 'es6'
+    },
+    inlineSourcesContent: true,
+    isModule: true,
+    minify: false,
+    sourceMaps: 'inline'
+  },
   targetEnvironment: 'web',
   useGraphQl: false,
   useTypescript: false,
   webpack: {
-    publicPath: './src/static'
+    staticPath: './src/static'
   }
 };
 
@@ -297,7 +356,7 @@ export class LexConfig {
 
           try {
             configJson = JSON.parse(configContent)?.default || {};
-          } catch (error) {
+          } catch(error) {
             log(`\n${cliName} Error: Failed to parse JSON config: ${error.message}`, 'error', quiet);
             configJson = {};
           }
@@ -336,7 +395,7 @@ export class LexConfig {
           }
 
           LexConfig.addConfigParams(cmd, config || {});
-        } catch (error) {
+        } catch(error) {
           log(`\n${cliName} Error: Failed to load config file: ${error.message}`, 'error', quiet);
           if(debug) {
             // eslint-disable-next-line no-console

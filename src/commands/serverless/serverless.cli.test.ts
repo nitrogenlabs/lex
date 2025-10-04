@@ -2,6 +2,31 @@ import {serverless} from './serverless.js';
 import {log} from '../../utils/log.js';
 
 jest.mock('execa');
+jest.mock('boxen', () => jest.fn((text) => text));
+jest.mock('chalk', () => ({
+  blue: jest.fn((text) => text),
+  bold: jest.fn((text) => text),
+  cyan: jest.fn((text) => text),
+  dim: jest.fn((text) => text),
+  gray: jest.fn((text) => text),
+  green: jest.fn((text) => text),
+  magenta: jest.fn((text) => text),
+  red: jest.fn((text) => text),
+  white: jest.fn((text) => text),
+  yellow: jest.fn((text) => text)
+}));
+jest.mock('express', () => {
+  const mockApp = {
+    delete: jest.fn(),
+    get: jest.fn(),
+    listen: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    static: jest.fn(),
+    use: jest.fn()
+  };
+  return jest.fn(() => mockApp);
+});
 jest.mock('../../utils/app.js', () => ({
   createSpinner: jest.fn(() => ({
     fail: jest.fn(),

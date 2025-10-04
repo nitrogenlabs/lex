@@ -11,20 +11,20 @@ jest.mock('path', () => ({
 }));
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
     config: {
-      useTypescript: true,
+      outputPath: './lib',
       sourcePath: './src',
-      outputPath: './lib'
-    }
+      useTypescript: true
+    },
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   }
 }));
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');

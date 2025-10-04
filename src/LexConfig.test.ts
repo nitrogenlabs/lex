@@ -1,23 +1,23 @@
 import {LexConfig} from './LexConfig.js';
 
 describe('LexConfig', () => {
-  describe('publicPath configuration', () => {
-    it('should have default publicPath in webpack config', () => {
+  describe('staticPath configuration', () => {
+    it('should have default staticPath in webpack config', () => {
       const {config} = LexConfig;
 
-      expect(config.webpack?.publicPath).toBe('./src/static');
+      expect(config.webpack?.staticPath).toBe('./src/static');
     });
 
-    it('should allow custom publicPath configuration', () => {
+    it('should allow custom staticPath configuration', () => {
       const customConfig = {
         webpack: {
-          publicPath: './assets'
+          staticPath: './assets'
         }
       };
 
       const updatedConfig = LexConfig.updateConfig(customConfig);
 
-      expect(updatedConfig.webpack?.publicPath).toBe('./assets');
+      expect(updatedConfig.webpack?.staticPath).toBe('./assets');
     });
 
     it('should merge webpack config with existing options', () => {
@@ -30,7 +30,7 @@ describe('LexConfig', () => {
 
       const newConfig = {
         webpack: {
-          publicPath: './public'
+          staticPath: './public'
         }
       };
 
@@ -43,7 +43,7 @@ describe('LexConfig', () => {
       // Then update with new config
       updatedConfig = LexConfig.updateConfig(newConfig);
 
-      expect(updatedConfig.webpack?.publicPath).toBe('./public');
+      expect(updatedConfig.webpack?.staticPath).toBe('./public');
     });
   });
 });

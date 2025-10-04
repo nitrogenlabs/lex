@@ -11,48 +11,39 @@ jest.mock('path', () => ({
 }));
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
     config: {
-      useTypescript: true,
-      sourcePath: './src',
-      outputPath: './lib',
-      targetEnvironment: 'web',
-      preset: 'web',
-      packageManager: 'npm',
       ai: {
-        provider: 'none',
-        model: 'gpt-4o',
         maxTokens: 4000,
+        model: 'gpt-4o',
+        provider: 'none',
         temperature: 0.1
       },
-      esbuild: {
-        minify: true,
-        treeShaking: true,
-        drop: [],
-        pure: [],
-        legalComments: 'none',
-        splitting: true,
-        metafile: false,
-        sourcemap: false
-      },
-      webpack: {},
-      jest: {},
-      outputHash: false,
-      useGraphQl: false,
       configFiles: [],
       copyFiles: [],
       entryHTML: 'index.html',
       entryJs: 'index.js',
-      env: null
-    }
+      env: null,
+      jest: {},
+      outputHash: false,
+      outputPath: './lib',
+      packageManager: 'npm',
+      preset: 'web',
+      sourcePath: './src',
+      targetEnvironment: 'web',
+      useGraphQl: false,
+      useTypescript: true,
+      webpack: {}
+      // SWC configuration is handled automatically with optimal defaults
+    },
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   }
 }));
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');

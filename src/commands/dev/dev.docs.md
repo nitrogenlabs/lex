@@ -16,7 +16,7 @@ The main function that starts a development server using webpack.
   - `config?: string` - Path to a custom webpack configuration file
   - `format?: string` - Output format for generated JavaScript files (`cjs` or `esm`, defaults to "esm")
   - `open?: boolean` - Whether to open the browser automatically (defaults to false)
-  - `port?: number` - Port number for the development server (defaults to 7001)
+  - `port?: number` - Port number for the development server (defaults to 3000)
   - `quiet?: boolean` - Whether to suppress output
   - `remove?: boolean` - Whether to clean the output directory before starting (defaults to false)
   - `usePublicIp?: boolean` - Force refresh the cached public IP address (defaults to false)
@@ -110,7 +110,7 @@ await dev({
 
 // With custom port
 await dev({
-  port: 3000,
+  port: 8080,
   quiet: false
 });
 

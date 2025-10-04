@@ -14,7 +14,7 @@ export const versions = (cmd: VersionsCmd, callback: (status: number) => void): 
 export const parseVersion = (packageVersion: string): string
 
 export const packages = {
-  esbuild: string,
+  swc: string,
   jest: string,
   lex: string,
   typescript: string,
@@ -57,4 +57,4 @@ Returns a Promise that resolves to:
 
 - `parseVersion`: Removes the caret (^) from a package version string
 - `packages`: An object containing the versions of Lex and its main dependencies
-- `jsonVersions`: Converts an object of package versions to a JSON-friendly format 
+- `jsonVersions`: Converts an object of package versions to a JSON-friendly format

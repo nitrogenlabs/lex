@@ -18,8 +18,8 @@ Lex supports multiple bundling engines:
 # Using webpack (default)
 lex build
 
-# Using esbuild
-lex build --bundler esbuild
+# Using SWC
+lex build --bundler swc
 ```
 
 ## AI-Assisted Features
@@ -69,7 +69,7 @@ lex build --typescript
 |--------|------|---------|-------------|
 | `--assist` | boolean | `false` | Enable AI assistance for fixing build errors |
 | `--analyze` | boolean | `false` | Enable AI analysis for build optimization suggestions or invoke webpack-bundle-analyzer plugin |
-| `--bundler` | string | `webpack` | Bundler to use (`webpack` or `esbuild`) |
+| `--bundler` | string | `swc` | Bundler to use (`webpack` or `swc`) |
 | `--cliName` | string | `Lex` | Custom name for the CLI tool in output messages |
 | `--format` | string | `esm` | Output format for generated JavaScript files (`cjs` or `esm`) |
 | `--outputPath` | string | - | The output directory as absolute path |
@@ -108,35 +108,29 @@ lex build --typescript
 | `--typescript` | boolean | `false` | Transpile as TypeScript |
 | `--watchOptionsStdin` | boolean | `false` | Stop watching when stdin stream has ended |
 
-### ESBuild-Specific Options
+### SWC-Specific Options
 
-When using esbuild as the bundler, the following configuration options are available through the `esbuild` section in your `lex.config.js`:
+SWC (Speedy Web Compiler) is now the default transpiler and provides optimal performance with zero configuration. SWC automatically handles:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `platform` | string | `node` | Target platform (`node`, `browser`) |
-| `target` | string | `node20` | Target environment |
-| `sourcemap` | string | `inline` | Source map generation |
-| `minify` | boolean | `true` | Enable minification |
-| `treeShaking` | boolean | `true` | Enable tree shaking |
-| `drop` | string[] | - | Console and debugger statements to drop |
-| `pure` | string[] | - | Functions to mark as pure |
-| `legalComments` | string | - | Legal comments handling |
-| `splitting` | boolean | `true` | Enable code splitting |
-| `metafile` | boolean | `false` | Generate metafile |
-| `banner` | object | - | Banner text for output files |
-| `footer` | object | - | Footer text for output files |
-| `define` | object | - | Global variable definitions |
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `format` | Output format | `esm` |
+| `target` | JavaScript target version | `es2020` |
+| `jsx` | React JSX transformation | `automatic` |
+| `decorators` | TypeScript decorators support | `enabled` |
+| `sourcemap` | Source map generation | `inline` |
 
-## Using with esbuild
+SWC provides 10-100x faster compilation than Babel and is faster than esbuild for TypeScript compilation.
 
-When using esbuild as the bundler, the following options apply:
+## Using with SWC
+
+When using SWC as the bundler, the following options apply:
 
 ```bash
-lex build --bundler esbuild --format cjs --typescript
+lex build --bundler swc --format cjs --typescript
 ```
 
-esbuild is optimized for speed and produces smaller bundles, making it ideal for library projects or when you want faster build times.
+SWC is optimized for speed and provides the fastest TypeScript/JavaScript compilation available, making it ideal for all project types.
 
 ## Using with webpack
 
@@ -195,7 +189,7 @@ lex build --variables "{\"API_URL\": \"https://prod.api.example.com\", \"FEATURE
 ### ESM Output for Node Libraries
 
 ```bash
-lex build --bundler esbuild --format esm --target node22
+lex build --bundler swc --format esm --target node22
 ```
 
 ### Webpack with Custom Configuration

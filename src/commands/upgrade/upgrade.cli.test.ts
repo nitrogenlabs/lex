@@ -14,7 +14,7 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(() => true),
   readFileSync: jest.fn(() => JSON.stringify({
     dependencies: {
-      esbuild: '1.0.0',
+      '@swc/core': '1.0.0',
       jest: '27.0.0',
       typescript: '4.0.0'
     },

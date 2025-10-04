@@ -85,7 +85,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
           callback(1);
           return 1;
         }
-      } catch (error) {
+      } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         callback(1);
         return 1;
@@ -158,7 +158,7 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
           callback(1);
           return 1;
         }
-      } catch (error) {
+      } catch(error) {
         log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
         callback(1);
         return 1;
@@ -171,6 +171,61 @@ export const create = async (type: string, cmd: CreateOptions, callback: CreateC
 
       // Copy vscode configuration
       copyFolderRecursiveSync(pathResolve(dirName, '../../../.vscode'), cwd);
+      break;
+    }
+    case 'datalayer': {
+      try {
+        const result = getFilenames({
+          cliName,
+          name: outputName,
+          quiet,
+          type,
+          useTypescript
+        });
+
+        if(!result) {
+          return 1;
+        }
+
+        const {nameCaps, templateExt, templatePath} = result;
+        const dataLayerPath: string = `${cwd}/${nameCaps}DataLayer`;
+
+        if(!existsSync(dataLayerPath)) {
+          // Create data layer directory
+          const fs = await import('fs');
+          fs.mkdirSync(dataLayerPath, {recursive: true});
+
+          // Copy and rename main data layer file
+          const sourceFile = pathResolve(dirName, templatePath, `./DataLayer${templateExt}.txt`);
+          const targetFile = `${dataLayerPath}/${nameCaps}DataLayer${templateExt}`;
+
+          if(existsSync(sourceFile)) {
+            const content = readFileSync(sourceFile, 'utf8');
+            const updatedContent = content.replace(/DataLayer/g, nameCaps);
+            writeFileSync(targetFile, updatedContent);
+          }
+
+          // Copy and rename test file
+          const sourceTestFile = pathResolve(dirName, templatePath, `./DataLayer.test${templateExt}.txt`);
+          const targetTestFile = `${dataLayerPath}/${nameCaps}DataLayer.test${templateExt}`;
+
+          if(existsSync(sourceTestFile)) {
+            const testContent = readFileSync(sourceTestFile, 'utf8');
+            const updatedTestContent = testContent.replace(/DataLayer/g, nameCaps);
+            writeFileSync(targetTestFile, updatedTestContent);
+          }
+
+          log(`\n${cliName} Success: Created ${nameCaps}DataLayer with test files.`, 'info', quiet);
+        } else {
+          log(`\n${cliName} Error: Cannot create new ${type}. Directory, ${dataLayerPath} already exists.`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
+      } catch(error) {
+        log(`\n${cliName} Error: Cannot create new ${type}. ${error.message}`, 'error', quiet);
+        callback(1);
+        return 1;
+      }
       break;
     }
   }
