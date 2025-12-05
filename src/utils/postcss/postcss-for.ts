@@ -85,10 +85,10 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
 
   const checkParams = (rule: postcss.AtRule, params: string[]) => {
     if (
-      !params[0]?.match(/(^|[^\w])\$([\w\d-_]+)/) ||
+      !params[0]?.startsWith('$') ||
       params[1] !== 'from' ||
       params[3] !== 'to' ||
-      (params[5] !== 'by' && params[5] !== undefined)
+      (params[5] && params[5] !== 'by')
     ) {
       throw rule.error('Wrong loop syntax', {
         plugin: 'postcss-for'
@@ -113,7 +113,15 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
     for (let i = index; i * dir <= top * dir; i = i + by) {
       const content = rule.clone();
       value[iterator] = i;
-      postcssSimpleVars({only: value})(content);
+      const simpleVarsPlugin = postcssSimpleVars({only: value});
+      if (simpleVarsPlugin.prepare) {
+        const prepared = simpleVarsPlugin.prepare({} as any);
+        if (prepared.Once) {
+          prepared.Once(content, {} as any);
+        }
+      } else if (typeof simpleVarsPlugin === 'function') {
+        simpleVarsPlugin(content);
+      }
       if (options.nested) {
         processLoops(content);
       }

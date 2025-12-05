@@ -56,7 +56,7 @@ const {
 
 const webpackStaticPath = webpackCustom?.staticPath || './src/static';
 
-const { publicPath: _, ...webpackConfigFiltered } = webpackCustom || {};
+const { publicPath: _, staticPath: __, ...webpackConfigFiltered } = webpackCustom || {};
 
 const plugins = [
   new ProgressPlugin({

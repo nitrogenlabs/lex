@@ -68,6 +68,7 @@
     "test:commands": "NODE_ENV=test && npm run test:cli && npm run test:integration",
     "test:coverage": "NODE_ENV=test && npx jest --coverage --coverageDirectory=coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html",
     "test:coverage:upload": "codecov",
+    "test:webpack": "node scripts/test-webpack.js",
     "type-check": "tsc --noEmit --project tsconfig.lint.json",
     "type-check:build": "tsc --noEmit --project tsconfig.build.json",
     "type-check:test": "tsc --noEmit --project tsconfig.test.json",
