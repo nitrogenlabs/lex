@@ -731,5 +731,24 @@ export default (webpackEnv, webpackOptions) => {
     }
   }
 
-  return merge(webpackConfig, webpackConfigFiltered);
+  const mergedConfig = merge(webpackConfig, webpackConfigFiltered);
+
+  // Filter out PostCSS plugin objects from webpack plugins array
+  // PostCSS plugins have 'postcssPlugin' property and should only be in postcssOptions
+  if (Array.isArray(mergedConfig.plugins)) {
+    mergedConfig.plugins = mergedConfig.plugins.filter((plugin) => {
+      // Keep webpack plugins (have 'apply' method or are instances with constructor)
+      if (typeof plugin === 'function' || (plugin && typeof plugin.apply === 'function')) {
+        return true;
+      }
+      // Filter out PostCSS plugin objects (have 'postcssPlugin' property)
+      if (plugin && typeof plugin === 'object' && 'postcssPlugin' in plugin) {
+        return false;
+      }
+      // Keep other valid webpack plugins
+      return true;
+    });
+  }
+
+  return mergedConfig;
 };
