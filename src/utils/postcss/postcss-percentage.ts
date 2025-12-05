@@ -5,9 +5,12 @@
  * PostCSS 8-compatible version of postcss-percentage plugin
  * Original: https://github.com/antyakushev/postcss-percentage
  */
+import {fileURLToPath} from 'url';
+import {createRequire} from 'module';
 import postcss from 'postcss';
 import parser from 'postcss-value-parser';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
+const require = createRequire(fileURLToPath(import.meta.url));
 const evaluator = require('math-expression-evaluator');
 
 interface PostcssPercentageOptions {
