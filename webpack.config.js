@@ -155,26 +155,31 @@ const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
 
 const staticPathFull = pathResolve(process.cwd(), webpackStaticPath);
+
 if(existsSync(staticPathFull)) {
   staticPaths.push({
     from: staticPathFull,
+    globOptions: {
+      ignore: ['**/.DS_Store']
+    },
+    noErrorOnMissing: true,
     to: './'
   });
   watchIgnorePaths.push(staticPathFull);
 }
 
 if(existsSync(imagePath)) {
-  staticPaths.push({from: imagePath, to: './images/'});
+  staticPaths.push({from: imagePath, noErrorOnMissing: true, to: './images/'});
   watchIgnorePaths.push(imagePath);
 }
 
 if(existsSync(fontPath)) {
-  staticPaths.push({from: fontPath, to: './fonts/'});
+  staticPaths.push({from: fontPath, noErrorOnMissing: true, to: './fonts/'});
   watchIgnorePaths.push(fontPath);
 }
 
 if(existsSync(docPath)) {
-  staticPaths.push({from: docPath, to: './docs/'});
+  staticPaths.push({from: docPath, noErrorOnMissing: true, to: './docs/'});
 }
 
 if(staticPaths.length) {
