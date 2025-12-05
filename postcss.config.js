@@ -7,18 +7,19 @@ import cssnano from 'cssnano';
 import postcssBrowserReporter from 'postcss-browser-reporter';
 import postcssCustomProperties from 'postcss-custom-properties';
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
-import postcssFor from 'postcss-for';
 import postcssHash from 'postcss-hash';
 import postcssImport from 'postcss-import';
 import postcssNesting from 'postcss-nesting';
 import tailwindcss from '@tailwindcss/postcss';
 import tailwindNesting from '@tailwindcss/nesting';
-import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssSimpleVars from 'postcss-simple-vars';
 import postcssSvgo from 'postcss-svgo';
 import postcssUrl from 'postcss-url';
 import {default as webpack} from 'webpack';
+
+import postcssFor from './lib/utils/postcss/postcss-for.js';
+import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
 
 const config = {
   plugins: [

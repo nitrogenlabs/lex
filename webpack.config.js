@@ -19,10 +19,8 @@ import {resolve as pathResolve} from 'path';
 import postcssBrowserReporter from 'postcss-browser-reporter';
 import postcssCustomProperties from 'postcss-custom-properties';
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
-import postcssFor from 'postcss-for';
 import postcssImport from 'postcss-import';
 import postcssNesting from 'postcss-nesting';
-import postcssPercentage from 'postcss-percentage';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
 import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
@@ -35,6 +33,8 @@ import {WebpackPluginServe} from 'webpack-plugin-serve';
 
 import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 import {LexConfig} from './lib/LexConfig.js';
+import postcssFor from './lib/utils/postcss/postcss-for.js';
+import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
