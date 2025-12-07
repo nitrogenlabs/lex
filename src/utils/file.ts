@@ -234,7 +234,22 @@ export const resolveWebpackPaths = (currentDirname: string): {webpackPath: strin
   }
 
   if(!webpackPath) {
-    webpackPath = 'npx';
+    try {
+      const lexPackagePath = getLexPackageJsonPath();
+      const lexPackageDir = dirname(lexPackagePath);
+      const lexWebpackCli = pathResolve(lexPackageDir, 'node_modules/webpack-cli/bin/cli.js');
+      const lexWebpackBin = pathResolve(lexPackageDir, 'node_modules/.bin/webpack');
+
+      if(existsSync(lexWebpackCli)) {
+        webpackPath = lexWebpackCli;
+      } else if(existsSync(lexWebpackBin)) {
+        webpackPath = lexWebpackBin;
+      } else {
+        webpackPath = 'npx';
+      }
+    } catch{
+      webpackPath = 'npx';
+    }
   }
 
   const possibleWebpackConfigPaths = [
@@ -258,7 +273,15 @@ export const resolveWebpackPaths = (currentDirname: string): {webpackPath: strin
   }
 
   if(!webpackConfig) {
-    webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
+    const lexPackagePath = getLexPackageJsonPath();
+    const lexPackageDir = dirname(lexPackagePath);
+    const lexWebpackConfig = pathResolve(lexPackageDir, 'webpack.config.js');
+
+    if(existsSync(lexWebpackConfig)) {
+      webpackConfig = lexWebpackConfig;
+    } else {
+      webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
+    }
   }
 
   return {webpackConfig, webpackPath};

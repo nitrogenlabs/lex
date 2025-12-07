@@ -278,20 +278,25 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   try {
     const {webpackPath} = resolveWebpackPaths(currentDirname);
 
-    // Fix: Ensure finalWebpackOptions is always an array of strings
+    let executablePath = webpackPath;
     let finalWebpackOptions: string[];
+
     if(webpackPath === 'npx') {
       finalWebpackOptions = ['webpack', ...webpackOptions];
+    } else if(webpackPath.endsWith('.js')) {
+      executablePath = 'node';
+      finalWebpackOptions = [webpackPath, ...webpackOptions];
     } else {
       finalWebpackOptions = [...webpackOptions];
     }
 
     console.log('webpackPath:', webpackPath);
+    console.log('executablePath:', executablePath);
     console.log('finalWebpackOptions:', JSON.stringify(finalWebpackOptions));
     console.log('finalWebpackOptions type:', Array.isArray(finalWebpackOptions) ? 'Array' : typeof finalWebpackOptions);
 
     // Make sure we're passing an array of strings to execa
-    const childProcess = execa(webpackPath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
+    const childProcess = execa(executablePath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
 
     let buildCompleted = false;
     let buildStats = {

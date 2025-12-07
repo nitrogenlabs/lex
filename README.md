@@ -13,35 +13,35 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 
 ## ✨ Why Lex?
 
-### 🎯 **Zero Configuration**
+### **Zero Configuration**
 
 - Works out of the box with any React project
 - No webpack configs to write
 - No testing setup to configure
 - No build tools to manage
 
-### ⚡ **Lightning Fast**
+### **Lightning Fast**
 
 - SWC-powered compilation (10-100x faster than Babel)
 - Hot reloading development server
 - Optimized production builds
 - Parallel test execution
 
-### 🧠 **AI-Powered Development**
+### **AI-Powered Development**
 
 - AI-assisted error fixing
 - Intelligent test generation
 - Code optimization suggestions
 - Smart linting with auto-fix
 
-### 🛠️ **Enterprise Ready**
+### **Enterprise Ready**
 
 - TypeScript support out of the box
 - Jest testing framework included
 - Storybook integration
 - Production-optimized builds
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Install Lex globally
@@ -63,7 +63,7 @@ lex test
 lex build --mode production
 ```
 
-## 📦 What's Included
+## What's Included
 
 Lex comes with everything you need for modern React development:
 
@@ -77,9 +77,9 @@ Lex comes with everything you need for modern React development:
 | **PostCSS** | CSS processing | Latest |
 | **ESLint** | Code linting | Latest |
 
-## 🎮 Commands Overview
+## Commands Overview
 
-### 🏗️ **Project Setup**
+### **Project Setup**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -87,7 +87,7 @@ Lex comes with everything you need for modern React development:
 | [`lex create`](#create) | Generate project assets | `lex create view Dashboard` |
 | [`lex migrate`](#migrate) | Migrate existing projects | `lex migrate` |
 
-### 🛠️ **Development**
+### **Development**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -96,7 +96,7 @@ Lex comes with everything you need for modern React development:
 | [`lex compile`](#compile) | Compile TypeScript/JavaScript | `lex compile --watch` |
 | [`lex build`](#build) | Build for production | `lex build --mode production` |
 
-### 🧪 **Testing & Quality**
+### **Testing & Quality**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -104,7 +104,7 @@ Lex comes with everything you need for modern React development:
 | [`lex lint`](#lint) | Lint code with ESLint | `lex lint --fix` |
 | [`lex storybook`](#storybook) | Start Storybook | `lex storybook --open` |
 
-### 🤖 **AI-Powered Features**
+### **AI-Powered Features**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -112,7 +112,7 @@ Lex comes with everything you need for modern React development:
 | [`lex test`](#test) | AI test generation | `lex test --generate` |
 | [`lex build`](#build) | AI error fixing | `lex build --assist` |
 
-### 📦 **Package Management**
+### **Package Management**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -120,7 +120,7 @@ Lex comes with everything you need for modern React development:
 | [`lex upgrade`](#upgrade) | Upgrade Lex itself | `lex upgrade` |
 | [`lex publish`](#publish) | Publish to npm | `lex publish --bump minor` |
 
-### 🔧 **Utilities**
+### **Utilities**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
@@ -130,9 +130,9 @@ Lex comes with everything you need for modern React development:
 | [`lex versions`](#versions) | Show tool versions | `lex versions` |
 | [`lex link`](#link) | Check linked modules | `lex link` |
 
-## 🎯 Core Features
+## Core Features
 
-### 🚀 **Development Server**
+### **Development Server**
 
 ```bash
 # Start with hot reloading
@@ -148,13 +148,13 @@ lex dev --config ./custom.webpack.js
 lex dev --usePublicIp
 ```
 
-**🌐 Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
+**Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
-**📁 Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
+**Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
 
-**🎨 Static Assets**: Use the `webpack.staticPath` configuration to specify a directory for static assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
+**Static Assets**: Use the `webpack.staticPath` configuration to specify a directory for static assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
 
-### 🚀 **Serverless Development Server** {#serverless}
+### **Serverless Development Server** {#serverless}
 
 ```bash
 # Start serverless development server
@@ -170,13 +170,13 @@ lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
 lex serverless --debug --printOutput
 ```
 
-**🔧 AWS Lambda Simulation**: Lex provides a local development server similar to serverless-offline, allowing you to test AWS Lambda functions with HTTP and WebSocket support.
+**AWS Lambda Simulation**: Lex provides a local development server similar to serverless-offline, allowing you to test AWS Lambda functions with HTTP and WebSocket support.
 
-**📄 Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless/serverless.docs.md) for detailed configuration options.
+**Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless/serverless.docs.md) for detailed configuration options.
 
-**🌍 Environment Variables**: The serverless command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
+**Environment Variables**: The serverless command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
 
-### 🏗️ **Production Builds**
+### **Production Builds**
 
 ```bash
 # Standard production build
@@ -189,7 +189,7 @@ lex build --bundler swc
 lex build --analyze
 ```
 
-### 🧪 **Testing Suite**
+### **Testing Suite**
 
 ```bash
 # Run all tests
@@ -216,7 +216,7 @@ lex test --config ./jest.config.js
 - **React JSX Automatic Runtime**: No need to import React in your test files
 - **TypeScript-First**: Optimized for TypeScript projects with specialized configs
 
-### 🎨 **Storybook Integration**
+### **Storybook Integration**
 
 ```bash
 # Start Storybook
@@ -229,7 +229,7 @@ lex storybook --useLexConfig
 lex storybook --static
 ```
 
-### 🤖 **AI-Powered Development**
+### **AI-Powered Development**
 
 ```bash
 # Generate code
@@ -242,7 +242,7 @@ lex ai --task explain --file src/components/Button.tsx
 lex ai --task help --prompt "Fix this TypeScript error"
 ```
 
-## 🎨 Framework Support
+## Framework Support
 
 Lex works seamlessly with popular React frameworks and libraries:
 
@@ -259,13 +259,13 @@ Lex works seamlessly with popular React frameworks and libraries:
 
 Lex is designed for speed and efficiency:
 
-- **⚡ SWC Integration** - 10-100x faster than Babel, faster than esbuild
-- **🧠 Smart Caching** - Intelligent caching for faster rebuilds
-- **🔄 Hot Reloading** - Instant feedback during development
-- **📦 Tree Shaking** - Automatic dead code elimination
-- **🎯 Code Splitting** - Automatic code splitting for optimal loading
+- **SWC Integration** - 10-100x faster than Babel, faster than esbuild
+- **Smart Caching** - Intelligent caching for faster rebuilds
+- **Hot Reloading** - Instant feedback during development
+- **Tree Shaking** - Automatic dead code elimination
+- **Code Splitting** - Automatic code splitting for optimal loading
 
-## 🛠️ Configuration
+## Configuration
 
 Lex works out of the box, but you can customize it with a `lex.config.js` file:
 
@@ -299,11 +299,11 @@ export default {
 };
 ```
 
-## 📋 Configuration Options Reference
+## Configuration Options Reference
 
 Lex provides extensive configuration options through the `lex.config.js` file. Here's a comprehensive reference of all available options:
 
-### 🎯 **Project Settings**
+### **Project Settings**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
@@ -321,7 +321,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `useGraphQl` | `boolean` | `false` | Enable GraphQL support | `useGraphQl: true` |
 | `useTypescript` | `boolean` | `false` | Enable TypeScript support | `useTypescript: true` |
 
-### 🤖 **AI Configuration**
+### **AI Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
@@ -331,7 +331,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `ai.provider` | `'cursor' \| 'copilot' \| 'openai' \| 'anthropic' \| 'none'` | `'none'` | AI service provider | `ai: { provider: 'openai' }` |
 | `ai.temperature` | `number` | `0.1` | AI response creativity (0-1) | `ai: { temperature: 0.7 }` |
 
-### ⚡ **SWC Configuration**
+### **SWC Configuration**
 
 SWC (Speedy Web Compiler) is now the default transpiler for all TypeScript and JavaScript compilation in Lex. SWC provides:
 
@@ -352,7 +352,7 @@ SWC is automatically configured and doesn't require additional configuration in 
 | **Decorators** | TypeScript decorators support | `enabled` |
 | **Source Maps** | Debug information | `inline` |
 
-### 🧪 **Jest Configuration**
+### **Jest Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
@@ -364,14 +364,45 @@ SWC is automatically configured and doesn't require additional configuration in 
 | `jest.transform` | `Record<string, [string, object]>` | `undefined` | Transform configurations | `jest: { transform: { '^.+\\.tsx?$': ['ts-jest'] } }` |
 | `jest.transformIgnorePatterns` | `string[]` | `undefined` | Patterns to ignore in transforms | `jest: { transformIgnorePatterns: ['node_modules'] }` |
 
-### 🔧 **ESLint Configuration**
+### **ESLint Configuration**
+
+Lex provides a default ESLint configuration optimized for React and TypeScript projects. To extend Lex's ESLint config, create an `eslint.config.mjs` file in your project root that imports and spreads Lex's configuration.
+
+**How it works:**
+- Lex uses ESLint's flat config format (array-based configuration)
+- Create an `eslint.config.mjs` file that imports `@nlabs/lex/eslint.config.mjs` and spreads it
+- Add your custom rules as additional objects in the array
+- If you don't create an `eslint.config.mjs`, Lex will use its default configuration automatically
+
+**Recommended approach - Create `eslint.config.mjs`:**
+
+```javascript
+// eslint.config.mjs
+import lexConfig from '@nlabs/lex/eslint.config.mjs';
+
+export default [
+  ...lexConfig,
+  {
+    rules: {
+      'no-console': 'warn',
+      '@typescript-eslint/no-unused-vars': 'error'
+    }
+  }
+];
+```
+
+**Alternative - Use `lex.config.*` (limited):**
+
+You can also specify ESLint rules in your `lex.config.js` file, but this is less flexible:
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
-| `eslint.extends` | `string[]` | `undefined` | ESLint extends configurations | `eslint: { extends: ['@typescript-eslint/recommended'] }` |
-| `eslint.rules` | `Linter.RulesRecord` | `undefined` | ESLint rules | `eslint: { rules: { 'no-console': 'warn' } }` |
+| `eslint.extends` | `string[]` | `undefined` | Additional ESLint configs to extend | `eslint: { extends: ['@typescript-eslint/recommended'] }` |
+| `eslint.rules` | `Linter.RulesRecord` | `undefined` | Custom ESLint rules | `eslint: { rules: { 'no-console': 'warn' } }` |
 
-### 📦 **Webpack Configuration**
+**Note:** Creating an `eslint.config.mjs` file gives you full control and is the recommended approach. The `lex.config.*` approach is provided for simple rule overrides only.
+
+### **Webpack Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
@@ -381,14 +412,14 @@ SWC is automatically configured and doesn't require additional configuration in 
 | `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
 | `webpack.staticPath` | `string` | `'./src/static'` | Path to static assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { staticPath: './assets' }` |
 
-### 🔗 **Library Configuration**
+### **Library Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
 | `libraryName` | `string` | `undefined` | Library name for UMD builds | `libraryName: 'MyLibrary'` |
 | `libraryTarget` | `string` | `undefined` | Library target format | `libraryTarget: 'umd'` |
 
-### 📁 **File Management**
+### **File Management**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
@@ -397,7 +428,7 @@ SWC is automatically configured and doesn't require additional configuration in 
 | `env` | `object` | `null` | Environment variables | `env: { NODE_ENV: 'development' }` |
 | `gitUrl` | `string` | `undefined` | Git repository URL | `gitUrl: 'https://github.com/user/repo'` |
 
-### 📝 **Usage Examples**
+### **Usage Examples**
 
 #### Basic TypeScript Project
 
@@ -459,7 +490,42 @@ export default {
 };
 ```
 
-## 🚨 Troubleshooting
+#### Custom ESLint Configuration
+
+**Option 1: Create `eslint.config.mjs` (Recommended)**
+
+```javascript
+// eslint.config.mjs
+import lexConfig from '@nlabs/lex/eslint.config.mjs';
+
+export default [
+  ...lexConfig,
+  {
+    rules: {
+      'no-console': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      'react/prop-types': 'off' // Not needed with TypeScript
+    }
+  }
+];
+```
+
+**Option 2: Use `lex.config.*` (Simple overrides only)**
+
+```javascript
+// lex.config.js
+export default {
+  useTypescript: true,
+  eslint: {
+    rules: {
+      'no-console': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off'
+    }
+  }
+};
+```
+
+## Troubleshooting
 
 ### Common Issues
 
@@ -527,7 +593,7 @@ touch src/manifest.json
 mkdir -p src/images && touch src/images/logo-icon-64.png
 ```
 
-## 📚 Documentation
+## Documentation
 
 - 📖 **[Full Documentation](http://lex.nitrogenlabs.com)** - Complete API reference
 - 🎯 **[Getting Started Guide](http://lex.nitrogenlabs.com/getting-started)** - Step-by-step tutorial
@@ -535,7 +601,7 @@ mkdir -p src/images && touch src/images/logo-icon-64.png
 - 🤖 **[AI Features Guide](http://lex.nitrogenlabs.com/ai-features)** - AI-powered development
 - 🧪 **[Testing Guide](http://lex.nitrogenlabs.com/testing)** - Testing best practices
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! Here's how you can help:
 
@@ -561,7 +627,7 @@ npm test
 npm run build
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -574,12 +640,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Storybook** - For component development
 - **OpenAI/Anthropic** - For AI-powered features
 
-## 📞 Support
+## Support
 
-- 🐛 **Issues** - [GitHub Issues](https://github.com/nitrogenlabs/lex/issues)
-- 💬 **Discussions** - [GitHub Discussions](https://github.com/nitrogenlabs/lex/discussions)
-- 📧 **Email** - <support@nitrogenlabs.com>
-- 🐦 **Twitter** - [@NitrogenLabs](https://twitter.com/NitrogenLabs)
+- **Issues** - [GitHub Issues](https://github.com/nitrogenlabs/lex/issues)
+- **Discussions** - [GitHub Discussions](https://github.com/nitrogenlabs/lex/discussions)
+- **Email** - <support@nitrogenlabs.com>
+- **Twitter** - [@NitrogenLabs](https://twitter.com/NitrogenLabs)
 
 ---
 

@@ -15,7 +15,9 @@ import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
 import isEmpty from 'lodash/isEmpty.js';
+import {createRequire} from 'module';
 import {resolve as pathResolve} from 'path';
+import {fileURLToPath} from 'url';
 import postcssBrowserReporter from 'postcss-browser-reporter';
 import postcssCustomProperties from 'postcss-custom-properties';
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
@@ -40,6 +42,7 @@ const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const dirName = new URL('.', import.meta.url).pathname;
+const require = createRequire(fileURLToPath(import.meta.url));
 
 const {
   isStatic,
@@ -99,6 +102,48 @@ const plugins = [
         } else {
           console.log('\x1b[32m[webpack]\x1b[0m Build complete. Watching for changes...');
         }
+      });
+      compiler.hooks.normalModuleFactory.tap('ImportMetaTransform', (normalModuleFactory) => {
+        normalModuleFactory.hooks.parser.for('javascript/auto').tap('ImportMetaTransform', (parser) => {
+          parser.hooks.expression.for('import.meta').tap('ImportMetaTransform', (expr) => {
+            const dep = new webpack.dependencies.ConstDependency(
+              '({ url: typeof document !== "undefined" && document.currentScript && document.currentScript.src ? new URL(document.currentScript.src, window.location.href).href : (typeof window !== "undefined" ? new URL("", window.location.href).href : "") })',
+              expr.range
+            );
+            dep.loc = expr.loc;
+            parser.state.module.addPresentationalDependency(dep);
+            return true;
+          });
+          parser.hooks.expression.for('import.meta.url').tap('ImportMetaTransform', (expr) => {
+            const dep = new webpack.dependencies.ConstDependency(
+              '(typeof document !== "undefined" && document.currentScript && document.currentScript.src ? new URL(document.currentScript.src, window.location.href).href : (typeof window !== "undefined" ? new URL("", window.location.href).href : ""))',
+              expr.range
+            );
+            dep.loc = expr.loc;
+            parser.state.module.addPresentationalDependency(dep);
+            return true;
+          });
+        });
+        normalModuleFactory.hooks.parser.for('javascript/esm').tap('ImportMetaTransform', (parser) => {
+          parser.hooks.expression.for('import.meta').tap('ImportMetaTransform', (expr) => {
+            const dep = new webpack.dependencies.ConstDependency(
+              '({ url: typeof document !== "undefined" && document.currentScript && document.currentScript.src ? new URL(document.currentScript.src, window.location.href).href : (typeof window !== "undefined" ? new URL("", window.location.href).href : "") })',
+              expr.range
+            );
+            dep.loc = expr.loc;
+            parser.state.module.addPresentationalDependency(dep);
+            return true;
+          });
+          parser.hooks.expression.for('import.meta.url').tap('ImportMetaTransform', (expr) => {
+            const dep = new webpack.dependencies.ConstDependency(
+              '(typeof document !== "undefined" && document.currentScript && document.currentScript.src ? new URL(document.currentScript.src, window.location.href).href : (typeof window !== "undefined" ? new URL("", window.location.href).href : ""))',
+              expr.range
+            );
+            dep.loc = expr.loc;
+            parser.state.module.addPresentationalDependency(dep);
+            return true;
+          });
+        });
       });
     }
   }
@@ -312,7 +357,41 @@ export default (webpackEnv, webpackOptions) => {
         {
           test: /\.js$/,
           include: /node_modules/,
+          exclude: [
+            /[\\/]websocket\.js$/,
+            /[\\/]websocket.*\.js$/
+          ],
           type: 'javascript/auto'
+        },
+        {
+          test: /[\\/]websocket(.*)?\.js$/,
+          include: /node_modules/,
+          use: {
+            loader: swcLoaderPath,
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'ecmascript',
+                  dynamicImport: true,
+                  importAssertions: true
+                },
+                target: 'es2020',
+                transform: {
+                  legacyDecorator: false,
+                  decoratorMetadata: false
+                }
+              },
+              module: {
+                type: 'es6',
+                strict: false,
+                strictMode: true,
+                lazy: false,
+                noInterop: true
+              },
+              minify: false,
+              sourceMaps: false
+            }
+          }
         },
         {
           enforce: 'pre',
@@ -328,6 +407,7 @@ export default (webpackEnv, webpackOptions) => {
             `${sourceFullPath}/**/*.test.ts*`
           ],
           include: sourceFullPath,
+          type: 'javascript/esm',
           loader: swcLoaderPath,
           options: {
             ...LexConfig.config.swc,
@@ -335,8 +415,14 @@ export default (webpackEnv, webpackOptions) => {
               ...LexConfig.config.swc?.jsc,
               parser: {
                 ...LexConfig.config.swc?.jsc?.parser,
-                tsx: false
-              }
+                tsx: false,
+                dynamicImport: true
+              },
+              target: LexConfig.config.swc?.jsc?.target || 'es2020'
+            },
+            module: {
+              ...LexConfig.config.swc?.module,
+              type: 'es6'
             }
           },
           resolve: {
@@ -351,6 +437,7 @@ export default (webpackEnv, webpackOptions) => {
             `${sourceFullPath}/**/*.test.ts*`
           ],
           include: sourceFullPath,
+          type: 'javascript/esm',
           loader: swcLoaderPath,
           options: {
             ...LexConfig.config.swc,
@@ -543,7 +630,10 @@ export default (webpackEnv, webpackOptions) => {
       library: libraryName,
       libraryTarget,
       path: outputFullPath,
-      publicPath: '/'
+      publicPath: '/',
+      environment: {
+        module: true
+      }
     },
     plugins,
     recordsPath: relativeFilePath('webpack.records.json', process.cwd()),
@@ -620,7 +710,7 @@ export default (webpackEnv, webpackOptions) => {
               }
             },
             {
-              from: /\\.(css|gif|ico|jpg|json|png|svg)$/,
+              from: /\\.(css|gif|ico|jpg|json|png|svg|txt)$/,
               to: ({parsedUrl: {pathname}}) => pathname
             }
           ],
@@ -628,15 +718,50 @@ export default (webpackEnv, webpackOptions) => {
         },
         hmr: false,
         log: {level: 'trace'},
-        middleware: (app) =>
+        middleware: (app, builtins) => {
+          if(existsSync(staticPathFull)) {
+            if (process.env.LEX_CONFIG_DEBUG) {
+              console.log(`[LEX_DEBUG] Setting up static file serving from: ${staticPathFull}`);
+            }
+
+            const koaStatic = require('koa-static');
+
+            app.use(koaStatic(staticPathFull, {
+              index: false, // Don't auto-serve index files
+              defer: false, // CRITICAL: Don't defer - serve immediately if file exists
+              hidden: false,
+              gzip: true,
+              br: false
+            }));
+
+            if (process.env.LEX_CONFIG_DEBUG) {
+              app.use(async (ctx, next) => {
+                const path = ctx.path || ctx.url || '';
+                if (path && !path.match(/^\/wps/) && !path.match(/^\/webpack/)) {
+                  console.log(`[LEX_DEBUG] Request: ${path}`);
+                }
+                await next();
+                if (ctx.status === 404 && path && path.includes('.')) {
+                  console.log(`[LEX_DEBUG] 404 for: ${path}, body set: ${ctx.body !== undefined}`);
+                }
+              });
+            }
+          } else {
+            if (process.env.LEX_CONFIG_DEBUG) {
+              console.log(`[LEX_DEBUG] Static path does not exist: ${staticPathFull}`);
+            }
+          }
+
           app.use(async (ctx, next) => {
-            if(ctx.path.match(/^\/wps/)) {
+            const path = ctx.path || ctx.url || (ctx.request && ctx.request.path) || '';
+            if(path && path.match(/^\/wps/)) {
               const {accept, Accept, ...remainingHeaders} =
                 ctx.request.header;
               ctx.request.header = remainingHeaders;
             }
             await next();
-          }),
+          });
+        },
         open: process.env.WEBPACK_DEV_OPEN === 'true',
         port: port || 3000,
         progress: 'minimal',

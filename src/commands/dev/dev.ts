@@ -267,11 +267,21 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
   }
 
   try {
-    const finalWebpackOptions = webpackPath === 'npx' ? ['webpack', ...webpackOptions] : webpackOptions;
+    let executablePath = webpackPath;
+    let finalWebpackOptions: string[];
+
+    if(webpackPath === 'npx') {
+      finalWebpackOptions = ['webpack', ...webpackOptions];
+    } else if(webpackPath.endsWith('.js')) {
+      executablePath = 'node';
+      finalWebpackOptions = [webpackPath, ...webpackOptions];
+    } else {
+      finalWebpackOptions = webpackOptions;
+    }
 
     spinner.start('Starting development server...');
 
-    const childProcess = execa(webpackPath, finalWebpackOptions, {
+    const childProcess = execa(executablePath, finalWebpackOptions, {
       encoding: 'utf8',
       env: {
         LEX_QUIET: quiet,
