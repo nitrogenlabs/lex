@@ -29,7 +29,7 @@ export interface ServerlessOptions {
   readonly wsPort?: number;
 }
 
-export type ServerlessCallback = (status: number) => void;
+export type ServerlessCallback = (status: number)=> void;
 
 interface PublicIpCache {
   ip: string;
@@ -195,7 +195,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
   }
 };
 
-const captureConsoleLogs = (handler: (event: any, context: any) => Promise<any>, quiet: boolean) => {
+const captureConsoleLogs = (handler: (event: any, context: any)=> Promise<any>, quiet: boolean) => {
   if(quiet) {
     return handler;
   }

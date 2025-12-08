@@ -19,7 +19,7 @@ export interface InitOptions {
   readonly typescript?: boolean;
 }
 
-export type InitCallback = (status: number) => void;
+export type InitCallback = (status: number)=> void;
 
 export const init = async (
   appName: string,

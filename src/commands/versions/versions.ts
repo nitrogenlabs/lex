@@ -29,7 +29,7 @@ export interface VersionsCmd {
   readonly json?: boolean;
 }
 
-export const versions = (cmd: VersionsCmd, callback: (status: number) => void): Promise<number> => {
+export const versions = (cmd: VersionsCmd, callback: (status: number)=> void): Promise<number> => {
   if(cmd.json) {
     console.log(JSON.stringify(jsonVersions(packages)));
   } else {

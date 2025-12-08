@@ -6,9 +6,9 @@ jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 
@@ -29,23 +29,39 @@ describe('dev cli', () => {
   });
 
   it('should start dev server with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({});
 
-    expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
+    expect(execa).toHaveBeenCalledWith(
+      'node',
+      [expect.stringContaining('webpack-cli/bin/cli.js'), '--color', '--watch', '--config', expect.any(String)],
+      expect.any(Object)
+    );
   });
 
   it('should start dev server with usePublicIp option', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({usePublicIp: true});
 
-    expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String)], expect.any(Object));
+    expect(execa).toHaveBeenCalledWith(
+      'node',
+      [expect.stringContaining('webpack-cli/bin/cli.js'), '--color', '--watch', '--config', expect.any(String)],
+      expect.any(Object)
+    );
   });
 
   it('should start dev server with custom port', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({port: 8080});
 
-    expect(execa).toHaveBeenCalledWith(expect.stringContaining('webpack-cli'), ['--color', '--watch', '--config', expect.any(String), '--port', '8080'], expect.any(Object));
+    expect(execa).toHaveBeenCalledWith(
+      'node',
+      [expect.stringContaining('webpack-cli/bin/cli.js'), '--color', '--watch', '--config', expect.any(String)],
+      expect.objectContaining({
+        env: expect.objectContaining({
+          WEBPACK_DEV_PORT: '8080'
+        })
+      })
+    );
   });
 });

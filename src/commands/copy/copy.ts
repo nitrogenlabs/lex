@@ -12,7 +12,7 @@ export interface CopyOptions {
   readonly quiet?: boolean;
 }
 
-export type CopyCallback = (status: number) => void;
+export type CopyCallback = (status: number)=> void;
 
 export const copy = (
   from: string,

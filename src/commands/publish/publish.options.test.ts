@@ -31,7 +31,7 @@ describe('publish options', () => {
   });
 
   it('should publish with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await publish({});
 
     expect(execa).toHaveBeenCalled();

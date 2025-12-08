@@ -21,7 +21,7 @@ export interface StorybookOptions {
   readonly verbose?: boolean;
 }
 
-export type StorybookCallback = (status: number) => void;
+export type StorybookCallback = (status: number)=> void;
 
 const findStoryFiles = (): string[] => {
   const storyPatterns = [

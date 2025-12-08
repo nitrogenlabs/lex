@@ -24,10 +24,10 @@ describe('dev webpack integration', () => {
     process.chdir(testDir);
 
     writeFileSync(join(testDir, 'package.json'), JSON.stringify({
-      name: 'test-webpack-project',
-      version: '1.0.0',
       dependencies: {},
-      peerDependencies: {}
+      name: 'test-webpack-project',
+      peerDependencies: {},
+      version: '1.0.0'
     }, null, 2));
 
     mkdirSync(join(testDir, 'src'), {recursive: true});
@@ -96,8 +96,8 @@ describe('dev webpack integration', () => {
     jest.restoreAllMocks();
     process.chdir(originalCwd);
     try {
-      rmSync(testDir, {recursive: true, force: true});
-    } catch {
+      rmSync(testDir, {force: true, recursive: true});
+    } catch{
     }
   });
 
@@ -118,29 +118,34 @@ describe('dev webpack integration', () => {
       expect(result.exitCode).toBe(0);
 
       const buildDir = join(testDir, 'build');
+
       expect(existsSync(buildDir)).toBe(true);
 
       const indexHtml = join(buildDir, 'index.html');
+
       expect(existsSync(indexHtml)).toBe(true);
 
       const htmlContent = readFileSync(indexHtml, 'utf8');
+
       expect(htmlContent).toContain('Test App');
 
       const cssFiles = ['index.css'];
-      for (const cssFile of cssFiles) {
+      for(const cssFile of cssFiles) {
         const cssPath = join(buildDir, cssFile);
-        if (existsSync(cssPath)) {
+        if(existsSync(cssPath)) {
           const cssContent = readFileSync(cssPath, 'utf8');
+
           expect(cssContent).toBeTruthy();
         }
       }
 
       const staticFile = join(buildDir, 'test.txt');
-      if (existsSync(staticFile)) {
+      if(existsSync(staticFile)) {
         const staticContent = readFileSync(staticFile, 'utf8');
+
         expect(staticContent).toBe('Static file content');
       }
-    } catch (error) {
+    } catch(error) {
       console.log('Webpack build test skipped:', error.message);
     }
   }, 70000);
@@ -164,21 +169,21 @@ describe('dev webpack integration', () => {
       const buildDir = join(testDir, 'build');
       const cssFiles = ['index.css'];
 
-      for (const cssFile of cssFiles) {
+      for(const cssFile of cssFiles) {
         const cssPath = join(buildDir, cssFile);
-        if (existsSync(cssPath)) {
+        if(existsSync(cssPath)) {
           const cssContent = readFileSync(cssPath, 'utf8');
 
-          if (cssContent.includes('test-for-loop')) {
+          if(cssContent.includes('test-for-loop')) {
             expect(cssContent).toMatch(/width:\s*calc\([^)]*25px\)/);
           }
 
-          if (cssContent.includes('test-percentage')) {
+          if(cssContent.includes('test-percentage')) {
             expect(cssContent).toMatch(/width:\s*[\d.]+%/);
           }
         }
       }
-    } catch (error) {
+    } catch(error) {
       console.log('PostCSS verification test skipped:', error.message);
     }
   }, 70000);
@@ -202,13 +207,14 @@ describe('dev webpack integration', () => {
       const buildDir = join(testDir, 'build');
 
       const staticFile = join(buildDir, 'test.txt');
-      if (existsSync(staticFile)) {
+      if(existsSync(staticFile)) {
         const staticContent = readFileSync(staticFile, 'utf8');
+
         expect(staticContent).toBe('Static file content');
       } else {
         console.log('Static file test skipped - static file may not be copied in this configuration');
       }
-    } catch (error) {
+    } catch(error) {
       console.log('Static file verification test skipped:', error.message);
     }
   }, 70000);

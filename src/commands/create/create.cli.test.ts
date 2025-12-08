@@ -4,8 +4,8 @@ jest.mock('execa');
 jest.mock('fs', () => ({
   existsSync: jest.fn(() => true),
   readFileSync: jest.fn(() => '{}'),
-  writeFileSync: jest.fn(),
-  renameSync: jest.fn()
+  renameSync: jest.fn(),
+  writeFileSync: jest.fn()
 }));
 jest.mock('glob', () => ({
   sync: jest.fn(() => [])
@@ -22,12 +22,12 @@ jest.mock('../../create/changelog.js', () => ({
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   })),
-  removeFiles: jest.fn().mockResolvedValue(undefined),
   copyFolderRecursiveSync: jest.fn(),
+  removeFiles: jest.fn().mockResolvedValue(undefined),
   getFilenames: jest.fn(() => ({
     nameCaps: 'Test',
     templateExt: '.ts',
@@ -42,13 +42,13 @@ jest.mock('../../utils/file.js', () => ({
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkTypescriptConfig: jest.fn(),
     config: {
-      useTypescript: false,
+      outputPath: './lib',
       sourcePath: './src',
-      outputPath: './lib'
+      useTypescript: false
     },
-    checkTypescriptConfig: jest.fn()
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   }
 }));
 

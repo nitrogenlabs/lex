@@ -14,18 +14,18 @@ jest.mock('../../utils/app.js', () => ({
 jest.mock('../../utils/file.js', () => ({
   ...jest.requireActual('../../utils/file.js'),
   resolveWebpackPaths: jest.fn(() => ({
-    webpackPath: '/mock/path/to/webpack-cli',
-    webpackConfig: '/mock/path/to/webpack.config.js'
+    webpackConfig: '/mock/path/to/webpack.config.js',
+    webpackPath: '/mock/path/to/webpack-cli'
   }))
 }));
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkTypescriptConfig: jest.fn(),
     config: {
       outputFullPath: '/mock/output',
       useTypescript: false
     },
-    checkTypescriptConfig: jest.fn()
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   }
 }));
 
@@ -47,9 +47,9 @@ describe('dev integration', () => {
 
   it('should start development server successfully', async () => {
     const mockChildProcess = {
-      stdout: {on: jest.fn()},
+      on: jest.fn(),
       stderr: {on: jest.fn()},
-      on: jest.fn()
+      stdout: {on: jest.fn()}
     };
     (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
 

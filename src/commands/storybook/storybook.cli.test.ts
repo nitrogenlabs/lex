@@ -16,17 +16,17 @@ jest.mock('path');
 jest.mock('../../LexConfig.js', () => ({
   ...jest.requireActual('../../LexConfig.js'),
   LexConfig: {
+    getLexDir: jest.fn(() => '/mock/lex/dir'),
     getTypeScriptConfigPath: jest.fn(),
-    parseConfig: jest.fn(),
-    getLexDir: jest.fn(() => '/mock/lex/dir')
+    parseConfig: jest.fn()
   }
 }));
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/file.js');
@@ -76,15 +76,15 @@ describe('storybook.cli tests', () => {
     (path.resolve as jest.Mock).mockImplementation((...args) => args.join('/'));
 
     mockSpinner = {
+      fail: jest.fn(),
       start: jest.fn(),
-      succeed: jest.fn(),
-      fail: jest.fn()
+      succeed: jest.fn()
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 
     (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
 
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     (LexConfig.parseConfig as jest.Mock).mockResolvedValue(undefined as never);
     LexConfig.config = {
@@ -206,8 +206,8 @@ describe('storybook.cli tests', () => {
 
   it('should build static site when static option is true', async () => {
     const options: StorybookOptions = {
-      static: true,
-      quiet: false
+      quiet: false,
+      static: true
     };
 
     (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
@@ -229,8 +229,8 @@ describe('storybook.cli tests', () => {
 
   it('should handle environment variables when provided as valid JSON', async () => {
     const options: StorybookOptions = {
-      variables: '{"STORYBOOK_THEME": "dark", "DEBUG": true}',
-      quiet: false
+      quiet: false,
+      variables: '{"STORYBOOK_THEME": "dark", "DEBUG": true}'
     };
 
     await storybook(options, mockCallback);
@@ -239,16 +239,16 @@ describe('storybook.cli tests', () => {
     await Promise.resolve();
 
     expect(process.env).toEqual(expect.objectContaining({
+      DEBUG: true,
       NODE_ENV: 'test',
-      STORYBOOK_THEME: 'dark',
-      DEBUG: true
+      STORYBOOK_THEME: 'dark'
     }));
   });
 
   it('should handle invalid environment variables JSON', async () => {
     const options: StorybookOptions = {
-      variables: '{invalid-json}',
-      quiet: false
+      quiet: false,
+      variables: '{invalid-json}'
     };
 
     const result = await storybook(options, mockCallback);

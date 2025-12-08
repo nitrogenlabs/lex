@@ -16,9 +16,13 @@ export interface ConfigOptions {
   readonly quiet?: boolean;
 }
 
-export type ConfigCallback = (status: number) => void;
+export type ConfigCallback = (status: number)=> void;
 
-export const config = async (type: string, cmd: ConfigOptions, callback: ConfigCallback = () => ({})): Promise<number> => {
+export const config = async (
+  type: string,
+  cmd: ConfigOptions,
+  callback: ConfigCallback = () => ({})
+): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
   const validTypes: string[] = ['app', 'jest', 'webpack'];
 

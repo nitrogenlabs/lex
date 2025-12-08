@@ -12,9 +12,12 @@ export interface CleanOptions {
   readonly snapshots?: boolean;
 }
 
-export type CleanCallback = (status: number) => void;
+export type CleanCallback = (status: number)=> void;
 
-export const clean = async (cmd: CleanOptions, callback: CleanCallback = (_status: number) => ({})): Promise<number> => {
+export const clean = async (
+  cmd: CleanOptions,
+  callback: CleanCallback = (_status: number) => ({})
+): Promise<number> => {
   const {cliName = 'Lex', quiet, snapshots} = cmd;
 
   // Spinner

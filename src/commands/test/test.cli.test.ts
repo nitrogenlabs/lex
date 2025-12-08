@@ -13,29 +13,28 @@ jest.mock('fs', () => ({
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkTestTypescriptConfig: jest.fn(),
+    checkTypescriptConfig: jest.fn(),
     config: {
       useTypescript: true
     },
-    checkTypescriptConfig: jest.fn(),
-    checkTestTypescriptConfig: jest.fn(),
-    getLexDir: jest.fn(() => '/mock/lex/dir')
+    getLexDir: jest.fn(() => '/mock/lex/dir'),
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json'),
-  getLexDir: jest.fn(() => '/mock/lex/dir')
+  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
 }));
 jest.mock('../../utils/file.js', () => ({
   getDirName: jest.fn(() => '/mock/dir'),
-  resolveBinaryPath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
-  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js')
+  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
+  resolveBinaryPath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js')
 }));
 jest.mock('glob', () => ({
   sync: jest.fn(() => ['test1.js', 'test2.js'])
@@ -51,12 +50,12 @@ describe('test.cli', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     mockSpinner = {
+      fail: jest.fn(),
       start: jest.fn(),
-      succeed: jest.fn(),
-      fail: jest.fn()
+      succeed: jest.fn()
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 

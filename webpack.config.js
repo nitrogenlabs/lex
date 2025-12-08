@@ -315,6 +315,8 @@ const alias = aliasKeys.reduce((aliases, key) => {
 
 export default (webpackEnv, webpackOptions) => {
   const {bundleAnalyzer, watch, entry: cliEntry, mode: cliMode, port} = webpackOptions;
+  const envPort = process.env.WEBPACK_DEV_PORT ? parseInt(process.env.WEBPACK_DEV_PORT, 10) : null;
+  const finalPort = port || envPort || 3000;
   const entryValue = Array.isArray(cliEntry) ? cliEntry[0] : cliEntry;
 
   // Debug printout for environment and mode
@@ -763,7 +765,7 @@ export default (webpackEnv, webpackOptions) => {
           });
         },
         open: process.env.WEBPACK_DEV_OPEN === 'true',
-        port: port || 3000,
+        port: finalPort,
         progress: 'minimal',
         static: existsSync(outputFullPath) ? [outputFullPath] : [],
         status: true

@@ -2,9 +2,11 @@ jest.mock('execa');
 
 describe('build cli', () => {
   let consoleLogSpy;
+
   beforeAll(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
+
   afterAll(() => {
     consoleLogSpy.mockRestore();
     jest.restoreAllMocks();
@@ -14,6 +16,7 @@ describe('build cli', () => {
     const args = ['--bundle', '--color=true'];
 
     args.push(`--format=${options.format || 'esm'}`);
+
     if(options.watch) args.push('--watch');
     if(options.outputPath) args.push(`--outdir=${options.outputPath}`);
     if(options.sourcemap !== false) args.push('--sourcemap=inline');

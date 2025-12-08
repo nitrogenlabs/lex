@@ -6,12 +6,12 @@ jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   })),
-  removeModules: jest.fn().mockResolvedValue(undefined),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  removeFiles: jest.fn().mockResolvedValue(undefined),
+  removeModules: jest.fn().mockResolvedValue(undefined)
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');
@@ -25,7 +25,7 @@ describe('migrate cli', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {

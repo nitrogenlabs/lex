@@ -18,9 +18,13 @@ export interface CreateOptions {
   readonly quiet?: boolean;
 }
 
-export type CreateCallback = (status: number) => void;
+export type CreateCallback = (status: number)=> void;
 
-export const create = async (type: string, cmd: CreateOptions, callback: CreateCallback = () => ({})): Promise<number> => {
+export const create = async (
+  type: string,
+  cmd: CreateOptions,
+  callback: CreateCallback = () => ({})
+): Promise<number> => {
   const {cliName = 'Lex', outputFile = '', outputName = '', quiet} = cmd;
   const cwd: string = process.cwd();
   log(`${cliName} creating ${type}...`, 'info', quiet);

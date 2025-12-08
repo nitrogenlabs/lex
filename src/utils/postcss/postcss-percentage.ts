@@ -5,13 +5,8 @@
  * PostCSS 8-compatible version of postcss-percentage plugin
  * Original: https://github.com/antyakushev/postcss-percentage
  */
-import {fileURLToPath} from 'url';
-import {createRequire} from 'module';
-import postcss from 'postcss';
+import Mexp from 'math-expression-evaluator';
 import parser from 'postcss-value-parser';
-
-const require = createRequire(fileURLToPath(import.meta.url));
-const evaluator = require('math-expression-evaluator');
 
 interface PostcssPercentageOptions {
   floor?: boolean;
@@ -25,16 +20,18 @@ const transformPercentage = (
   floor: boolean | undefined,
   trimTrailingZero: boolean | undefined
 ): string => {
+  // @ts-expect-error - Mexp default export type issue
+  const evaluator = new Mexp();
   return parser(value).walk((node) => {
-    if (node.type !== 'function' || node.value !== 'percentage') {
+    if(node.type !== 'function' || node.value !== 'percentage') {
       return;
     }
 
-    let result = evaluator.eval(parser.stringify(node.nodes)) * 100;
+    const result = evaluator.eval(parser.stringify(node.nodes)) * 100;
     let resultStr: string;
-    if (result === 0) {
+    if(result === 0) {
       resultStr = '0';
-    } else if (floor) {
+    } else if(floor) {
       const resultString = result.toString();
       const index = resultString.indexOf('.');
       resultStr = index === -1
@@ -43,12 +40,13 @@ const transformPercentage = (
     } else {
       resultStr = result.toFixed(precision);
     }
-    if (trimTrailingZero) {
+    if(trimTrailingZero) {
       resultStr = resultStr
         .replace(/\.0+$/, '')
         .replace(/(\.\d*[1-9])0+$/, '$1');
     }
     resultStr += '%';
+    // eslint-disable-next-line no-restricted-properties
     Object.assign(node, {
       type: 'word' as const,
       value: resultStr
@@ -58,20 +56,20 @@ const transformPercentage = (
 
 const postcssPercentage = (opts: PostcssPercentageOptions = {}) => {
   const options = {
-    precision: opts.precision == null || opts.precision > 20 || opts.precision < 0
+    floor: opts.floor,
+    precision: opts.precision === null || opts.precision === undefined || opts.precision > 20 || opts.precision < 0
       ? 6
       : opts.precision,
-    trimTrailingZero: opts.trimTrailingZero == null
+    trimTrailingZero: opts.trimTrailingZero === null || opts.trimTrailingZero === undefined
       ? true
-      : opts.trimTrailingZero,
-    floor: opts.floor
+      : opts.trimTrailingZero
   };
 
   return {
-    postcssPlugin: 'postcss-percentage',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Once(root, {result}) {
       root.walkDecls((decl) => {
-        if (!decl.value || !/percentage\s*\(/.test(decl.value)) {
+        if(!decl.value || !/percentage\s*\(/.test(decl.value)) {
           return;
         }
 
@@ -82,15 +80,16 @@ const postcssPercentage = (opts: PostcssPercentageOptions = {}) => {
             options.floor,
             options.trimTrailingZero
           );
-        } catch (e) {
+        } catch(e) {
           const error = e as Error;
           decl.warn(result, error.message, {
-            word: decl.value,
-            index: decl.index
+            index: decl.index,
+            word: decl.value
           });
         }
       });
-    }
+    },
+    postcssPlugin: 'postcss-percentage'
   };
 };
 

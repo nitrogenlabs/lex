@@ -9,16 +9,17 @@ jest.mock('../../utils/app.js', () => ({
     succeed: jest.fn(),
     fail: jest.fn()
   })),
+  copyFileSync: jest.fn(),
   getPackageJson: jest.fn(() => ({
-    name: 'test-package',
-    version: '1.0.0',
     dependencies: {},
-    devDependencies: {}
+    devDependencies: {},
+    name: 'test-package',
+    version: '1.0.0'
   })),
-  setPackageJson: jest.fn(),
-  removeModules: jest.fn().mockResolvedValue(undefined),
+  removeConflictModules: jest.fn((modules) => modules),
   removeFiles: jest.fn().mockResolvedValue(undefined),
-  removeConflictModules: jest.fn((modules) => modules)
+  removeModules: jest.fn().mockResolvedValue(undefined),
+  setPackageJson: jest.fn()
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');
@@ -42,7 +43,7 @@ describe('migrate integration', () => {
   });
 
   it('should migrate successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await migrate({});
 
     expect(execa).toHaveBeenCalled();

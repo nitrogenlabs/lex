@@ -21,7 +21,7 @@ import type {LexConfigType} from '../LexConfig.js';
 export const cwd: string = process.cwd();
 
 export interface GetFilenamesProps {
-  readonly callback?: (status: number) => void;
+  readonly callback?: (status: number)=> void;
   readonly cliName?: string;
   readonly name?: string;
   readonly quiet?: boolean;
@@ -36,7 +36,7 @@ interface FilenamesResult {
   templateReact: string;
 }
 
-export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void => {
+export const getFilenames = (props: GetFilenamesProps): FilenamesResult | undefined => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
 
   let nameCaps: string;
@@ -45,7 +45,8 @@ export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void =
   if(!name) {
     if(itemTypes.includes(type)) {
       log(`\n${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
-      return callback?.(1);
+      callback?.(1);
+      return undefined;
     }
   } else {
     nameCaps = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
@@ -76,9 +77,9 @@ export const getFilenames = (props: GetFilenamesProps): FilenamesResult | void =
 };
 
 export interface Spinner {
-  fail: (text?: string) => void;
-  start: (text?: string) => void;
-  succeed: (text?: string) => void;
+  fail: (text?: string)=> void;
+  start: (text?: string)=> void;
+  succeed: (text?: string)=> void;
   text?: string;
 }
 
@@ -105,20 +106,26 @@ export const createProgressBar = (percentage: number): string => {
   return filledBar + emptyBar;
 };
 
-export const handleWebpackProgress = (output: string, spinner: Spinner, quiet: boolean, emoji: string, action: string): void => {
+export const handleWebpackProgress = (
+  output: string,
+  spinner: Spinner,
+  quiet: boolean,
+  emoji: string,
+  action: string
+): void => {
   if(quiet) {
     return;
   }
 
   const progressMatch = output.match(/\[webpack\.Progress\] (\d+)%/);
   if(progressMatch) {
-    const progress = parseInt(progressMatch[1], 10);
+    const progress = parseInt(progressMatch[1]);
     const progressBar = createProgressBar(progress);
     spinner.text = `${emoji} ${action}: ${progressBar} ${progress}%`;
   } else if(output.includes('[webpack.Progress]')) {
     const generalProgressMatch = output.match(/(\d+)%/);
     if(generalProgressMatch) {
-      const progress = parseInt(generalProgressMatch[1], 10);
+      const progress = parseInt(generalProgressMatch[1]);
       const progressBar = createProgressBar(progress);
       spinner.text = `${emoji} ${action}: ${progressBar} ${progress}%`;
     }
@@ -165,6 +172,7 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
     let totalCopied = 0;
 
     const baseDir = sourceFullPath || (sourcePath ? pathResolve(cwd, sourcePath) : cwd);
+    const allCopyPromises: Promise<unknown>[] = [];
 
     for(const pattern of copyFilesConfig) {
       const resolvedPattern = pathResolve(baseDir, pattern);
@@ -172,6 +180,7 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
         absolute: true,
         nodir: true
       });
+
       if(matchingFiles.length === 0) {
         if(!quiet) {
           log(`Warning: No files found matching pattern: ${pattern}`, 'warn', quiet);
@@ -179,16 +188,13 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
         continue;
       }
 
-      for(const sourceFile of matchingFiles) {
-        // Calculate relative path from source directory
+      const copyPromises = matchingFiles.map((sourceFile) => {
         const relativePath = pathRelative(baseDir, sourceFile);
-        // Determine destination path in output directory
         const destPath = pathResolve(outputFullPath, relativePath);
-        // Create destination directory if it doesn't exist
         const destDir = pathResolve(destPath, '..');
         mkdirSync(destDir, {recursive: true});
 
-        await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
           copyFile(sourceFile, destPath, (copyError) => {
             if(copyError) {
               reject(copyError);
@@ -197,9 +203,14 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
             }
           });
         });
-        totalCopied++;
-      }
+      });
+
+      allCopyPromises.push(...copyPromises);
+      totalCopied += matchingFiles.length;
     }
+
+    await Promise.all(allCopyPromises);
+
     if(totalCopied > 0) {
       spinner.succeed(`Successfully copied ${totalCopied} configured files!`);
     } else {
@@ -249,14 +260,18 @@ export const copyFolderRecursiveSync = (source: string, target: string): void =>
 
 export const getPackageJson = (packagePath?: string) => {
   const formatPath: string = packagePath || `${process.cwd()}/package.json`;
-
   const packageData: string = readFileSync(formatPath).toString();
+
   return JSON.parse(packageData);
 };
 
 export const getFilesByExt = (ext: string, config: LexConfigType): string[] => {
   const {sourceFullPath} = config;
-  return globSync(`${sourceFullPath}/**/**${ext}`);
+  return globSync(`**/**${ext}`, {
+    absolute: true,
+    cwd: sourceFullPath,
+    nodir: true
+  });
 };
 
 export const removeConflictModules = (moduleList: object) => {
@@ -274,6 +289,7 @@ export const removeConflictModules = (moduleList: object) => {
 
 export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
   const filePath: string = isRelative ? pathResolve(cwd, fileName) : fileName;
+
   try {
     rimrafSync(filePath);
     return resolve(null);
@@ -284,13 +300,8 @@ export const removeFiles = (fileName: string, isRelative: boolean = false) => ne
 
 export const removeModules = () => new Promise(async (resolve, reject) => {
   try {
-    // Remove node_modules
     await removeFiles('./node_modules', true);
-
-    // Remove yarn lock
     await removeFiles('./yarn.lock', true);
-
-    // Remove npm lock
     await removeFiles('./package-lock.json', true);
 
     resolve(null);
@@ -326,7 +337,12 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
     modulePath = pathJoin(workingPath, 'node_modules');
   }
 
-  const foundPaths: string[] = globSync(`${modulePath}/*`);
+  const foundPaths: string[] = globSync('*', {
+    absolute: true,
+    cwd: modulePath,
+    nodir: false
+  });
+
   return foundPaths.reduce((list: LinkedModuleType[], foundPath: string) => {
     try {
       const stats = lstatSync(foundPath);
@@ -341,7 +357,6 @@ export const linkedModules = (startPath?: string): LinkedModuleType[] => {
 
       return list;
     } catch{
-      // Skip files that don't exist or can't be accessed
       return list;
     }
   }, []);
@@ -357,6 +372,7 @@ export const checkLinkedModules = () => {
         `${msg}\n * ${linkedModule.name}`,
       `Linked ${msgModule}:`
     );
+
     log(boxen(linkedMsg, {dimBorder: true, padding: 1}), 'warn');
   }
 };

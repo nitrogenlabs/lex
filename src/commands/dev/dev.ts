@@ -42,7 +42,7 @@ export interface DevOptions {
   readonly variables?: string;
 }
 
-export type DevCallback = (status: number) => void;
+export type DevCallback = (status: number)=> void;
 
 interface PublicIpCache {
   ip: string;
@@ -262,10 +262,6 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     webpackOptions.push('--bundleAnalyzer');
   }
 
-  if(port !== 3000) {
-    webpackOptions.push('--port', port.toString());
-  }
-
   try {
     let executablePath = webpackPath;
     let finalWebpackOptions: string[];
@@ -284,8 +280,10 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     const childProcess = execa(executablePath, finalWebpackOptions, {
       encoding: 'utf8',
       env: {
+        ...process.env,
         LEX_QUIET: quiet,
-        WEBPACK_DEV_OPEN: open
+        WEBPACK_DEV_OPEN: open,
+        WEBPACK_DEV_PORT: port.toString()
       },
       stdio: 'pipe'
     } as any);
@@ -305,7 +303,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         displayServerStatus(portToShow, quiet);
       }
     };
-    let detectedPort = 3000;
+    let detectedPort = port;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString();

@@ -6,9 +6,9 @@ jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/log.js');
@@ -16,12 +16,12 @@ jest.mock('../../LexConfig.js');
 jest.mock('fs', () => ({
   existsSync: jest.fn(() => true),
   readFileSync: jest.fn(() => '{"type": "module"}'),
-  writeFileSync: jest.fn(),
-  unlinkSync: jest.fn()
+  unlinkSync: jest.fn(),
+  writeFileSync: jest.fn()
 }));
 jest.mock('path', () => ({
-  resolve: jest.fn((...args) => args.join('/')),
-  dirname: jest.fn(() => '/mock/dir')
+  dirname: jest.fn(() => '/mock/dir'),
+  resolve: jest.fn((...args) => args.join('/'))
 }));
 jest.mock('glob', () => ({
   sync: jest.fn()
@@ -38,7 +38,7 @@ describe('lint options', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {

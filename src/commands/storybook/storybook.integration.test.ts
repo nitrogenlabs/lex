@@ -16,23 +16,22 @@ jest.mock('glob', () => ({
 }));
 jest.mock('../../LexConfig.js', () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined),
+    checkTestTypescriptConfig: jest.fn(),
+    checkTypescriptConfig: jest.fn(),
     config: {
       useTypescript: true
     },
-    checkTypescriptConfig: jest.fn(),
-    checkTestTypescriptConfig: jest.fn(),
-    getLexDir: jest.fn(() => '/mock/lex/dir')
+    getLexDir: jest.fn(() => '/mock/lex/dir'),
+    parseConfig: jest.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json'),
-  getLexDir: jest.fn(() => '/mock/lex/dir')
+  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
 }));
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   }))
 }));
 jest.mock('../../utils/file.js');
@@ -73,9 +72,9 @@ describe('storybook.integration tests', () => {
     };
 
     mockSpinner = {
+      fail: jest.fn(),
       start: jest.fn(),
-      succeed: jest.fn(),
-      fail: jest.fn()
+      succeed: jest.fn()
     };
     (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
 
@@ -93,7 +92,7 @@ describe('storybook.integration tests', () => {
     });
     (readFileSync as jest.Mock).mockReturnValue('{"dependencies": {"@storybook/react": "^7.0.0"}}');
     (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     (globSync as unknown as jest.Mock).mockReturnValue(['src/Component.stories.ts', 'src/Button.stories.tsx']);
   });
 
@@ -144,7 +143,7 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {};
     const mockCallback = jest.fn();
 
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await storybook(options, mockCallback);
 
@@ -224,8 +223,8 @@ describe('storybook.integration tests', () => {
 
   it('should handle multiple options together', async () => {
     const options: StorybookOptions = {
-      port: 6007,
-      open: true
+      open: true,
+      port: 6007
     };
     const mockCallback = jest.fn();
 
@@ -246,8 +245,8 @@ describe('storybook.integration tests', () => {
 
   it('should handle environment variables integration', async () => {
     const options: StorybookOptions = {
-      variables: '{"STORYBOOK_THEME": "dark", "DEBUG": true, "NODE_ENV": "development"}',
-      quiet: false
+      quiet: false,
+      variables: '{"STORYBOOK_THEME": "dark", "DEBUG": true, "NODE_ENV": "development"}'
     };
     const mockCallback = jest.fn();
 

@@ -20,39 +20,39 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
   const iterStack: string[] = [];
 
   const parentsHaveIterator = (rule: postcss.AtRule, param: string): boolean => {
-    if (rule.parent == null) {
+    if(rule.parent === null) {
       return false;
     }
-    if (rule.parent.type === 'root') {
+    if(rule.parent.type === 'root') {
       return false;
     }
-    if (rule.parent.type !== 'atrule' || !rule.parent.params) {
+    if(rule.parent.type !== 'atrule' || !rule.parent.params) {
       return false;
     }
 
     const parentIterVar = rule.parent.params.split(/\s+/)[0];
-    if (!parentIterVar) {
+    if(!parentIterVar) {
       return false;
     }
-    if (parentIterVar === param) {
+    if(parentIterVar === param) {
       return true;
     }
-    if (iterStack.indexOf(param) !== -1) {
+    if(iterStack.indexOf(param) !== -1) {
       return true;
     }
     return parentsHaveIterator(rule.parent as postcss.AtRule, param);
   };
 
   const manageIterStack = (rule: postcss.AtRule) => {
-    if (rule.parent && rule.parent.type !== 'root') {
+    if(rule.parent && rule.parent.type !== 'root') {
       const parentIterVar = rule.parent.type === 'atrule' && rule.parent.params
         ? rule.parent.params.split(/\s+/)[0]
         : null;
-      if (parentIterVar && iterStack.indexOf(parentIterVar) === -1) {
+      if(parentIterVar && iterStack.indexOf(parentIterVar) === -1) {
         iterStack.splice(0, iterStack.length);
-      } else if (parentIterVar) {
+      } else if(parentIterVar) {
         const parentIndex = iterStack.indexOf(parentIterVar);
-        if (parentIndex !== -1) {
+        if(parentIndex !== -1) {
           iterStack.splice(parentIndex + 1, iterStack.length - parentIndex - 1);
         }
       }
@@ -60,31 +60,29 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
       iterStack.splice(0, iterStack.length);
     }
     const currentIterVar = rule.params.split(/\s+/)[0];
-    if (currentIterVar) {
+    if(currentIterVar) {
       iterStack.push(currentIterVar);
     }
   };
 
-  const checkNumber = (rule: postcss.AtRule) => {
-    return (param: string) => {
-      if (isNaN(parseInt(param, 10)) || !param.match(/^-?\d+\.?\d*$/)) {
-        if (param.indexOf('$') !== -1) {
-          if (!parentsHaveIterator(rule, param)) {
-            throw rule.error('External variable (not from a parent for loop) cannot be used as a range parameter', {
-              plugin: 'postcss-for'
-            });
-          }
-        } else {
-          throw rule.error('Range parameter should be a number', {
+  const checkNumber = (rule: postcss.AtRule) => (param: string) => {
+    if(isNaN(Number(param)) || !param.match(/^-?\d+\.?\d*$/)) {
+      if(param.indexOf('$') !== -1) {
+        if(!parentsHaveIterator(rule, param)) {
+          throw rule.error('External variable (not from a parent for loop) cannot be used as a range parameter', {
             plugin: 'postcss-for'
           });
         }
+      } else {
+        throw rule.error('Range parameter should be a number', {
+          plugin: 'postcss-for'
+        });
       }
-    };
+    }
   };
 
   const checkParams = (rule: postcss.AtRule, params: string[]) => {
-    if (
+    if(
       !params[0]?.startsWith('$') ||
       params[1] !== 'from' ||
       params[3] !== 'to' ||
@@ -110,33 +108,33 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
     const by = (+(params[6] || 1)) * dir;
 
     const value: Record<string, number> = {};
-    for (let i = index; i * dir <= top * dir; i = i + by) {
+    for(let i = index; i * dir <= top * dir; i = i + by) {
       const content = rule.clone();
       value[iterator] = i;
       const simpleVarsPlugin = postcssSimpleVars({only: value});
-      if (simpleVarsPlugin.prepare) {
+      if(simpleVarsPlugin.prepare) {
         const prepared = simpleVarsPlugin.prepare({} as any);
-        if (prepared.Once) {
+        if(prepared.Once) {
           prepared.Once(content, {} as any);
         }
-      } else if (typeof simpleVarsPlugin === 'function') {
+      } else if(typeof simpleVarsPlugin === 'function') {
         simpleVarsPlugin(content);
       }
-      if (options.nested) {
+      if(options.nested) {
         processLoops(content);
       }
-      if (rule.parent) {
+      if(rule.parent) {
         rule.parent.insertBefore(rule, content.nodes);
       }
     }
-    if (rule.parent) {
+    if(rule.parent) {
       rule.remove();
     }
   };
 
   const processLoops = (css: postcss.Container) => {
     css.walkAtRules((rule) => {
-      if (rule.name === 'for') {
+      if(rule.name === 'for') {
         unrollLoop(rule);
       }
     });
@@ -144,8 +142,8 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
 
   const processOriginalLoops = (css: postcss.Root) => {
     css.walkAtRules((rule) => {
-      if (rule.name === 'for') {
-        if (rule.parent) {
+      if(rule.name === 'for') {
+        if(rule.parent) {
           manageIterStack(rule);
         }
         unrollLoop(rule);
@@ -154,10 +152,10 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
   };
 
   return {
-    postcssPlugin: 'postcss-for',
     Once(root) {
       processOriginalLoops(root);
-    }
+    },
+    postcssPlugin: 'postcss-for'
   };
 };
 

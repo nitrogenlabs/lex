@@ -10,8 +10,8 @@ jest.mock('../../utils/app.js', () => ({
     succeed: jest.fn(),
     fail: jest.fn()
   })),
-  removeModules: jest.fn().mockResolvedValue(undefined),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  removeFiles: jest.fn().mockResolvedValue(undefined),
+  removeModules: jest.fn().mockResolvedValue(undefined)
 }));
 jest.mock('../../utils/log.js');
 jest.mock('../../LexConfig.js');
@@ -33,7 +33,7 @@ describe('migrate options', () => {
   });
 
   it('should migrate with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await migrate({});
 
     expect(execa).toHaveBeenCalled();

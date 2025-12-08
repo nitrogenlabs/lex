@@ -5,13 +5,13 @@ import {compile} from './compile.js';
 jest.mock('execa');
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),
+  checkLinkedModules: jest.fn(),
+  copyConfiguredFiles: jest.fn().mockResolvedValue(undefined),
   createSpinner: jest.fn(() => ({
     fail: jest.fn(),
     start: jest.fn(),
     succeed: jest.fn()
   })),
-  checkLinkedModules: jest.fn(),
-  copyConfiguredFiles: jest.fn().mockResolvedValue(undefined),
   copyFiles: jest.fn().mockResolvedValue(undefined),
   getFilesByExt: jest.fn().mockReturnValue([]),
   removeFiles: jest.fn().mockResolvedValue(undefined)
@@ -28,8 +28,24 @@ jest.mock('../../LexConfig.js', () => ({
       outputFullPath: '/mock/output',
       sourceFullPath: '/mock/source',
       useTypescript: true
-      // SWC configuration is handled automatically with optimal defaults
     },
+    getTypeScriptDeclarationFlags: jest.fn(() => [
+      '--emitDeclarationOnly',
+      '--declaration',
+      '--declarationMap',
+      '--outDir', './lib',
+      '--rootDir', './src',
+      '--skipLibCheck',
+      '--esModuleInterop',
+      '--allowSyntheticDefaultImports',
+      '--module', 'NodeNext',
+      '--moduleResolution', 'NodeNext',
+      '--target', 'ESNext',
+      '--jsx', 'react-jsx',
+      '--isolatedModules',
+      '--resolveJsonModule',
+      '--allowJs'
+    ]),
     parseConfig: jest.fn().mockResolvedValue(undefined)
   },
   getTypeScriptConfigPath: jest.fn(() => 'tsconfig.build.json')

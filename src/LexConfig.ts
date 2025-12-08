@@ -3,7 +3,12 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {existsSync, readFileSync, writeFileSync} from 'fs';
-import {dirname, extname as pathExtname, resolve as pathResolve} from 'path';
+import {
+  dirname,
+  extname as pathExtname,
+  relative as pathRelative,
+  resolve as pathResolve
+} from 'path';
 import {URL} from 'url';
 
 import {getDirName, getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
@@ -158,6 +163,8 @@ export const defaultConfigValues: LexConfigType = {
   sourceFullPath: pathResolve(cwd, './src'),
   sourcePath: './src',
   swc: {
+    inlineSourcesContent: true,
+    isModule: true,
     jsc: {
       externalHelpers: false,
       keepClassNames: false,
@@ -175,6 +182,7 @@ export const defaultConfigValues: LexConfigType = {
         }
       }
     },
+    minify: false,
     module: {
       lazy: false,
       noInterop: false,
@@ -182,9 +190,6 @@ export const defaultConfigValues: LexConfigType = {
       strictMode: true,
       type: 'es6'
     },
-    inlineSourcesContent: true,
-    isModule: true,
-    minify: false,
     sourceMaps: 'inline'
   },
   targetEnvironment: 'web',
@@ -424,16 +429,34 @@ export class LexConfig {
     }
   }
 
-  static checkCompileTypescriptConfig() {
-    const lexDir = LexConfig.getLexDir();
-    const tsconfigCompilePath: string = pathResolve(lexDir, './tsconfig.build.json');
+  static getTypeScriptDeclarationFlags(): string[] {
+    const cwd = process.cwd();
+    const outputPath = LexConfig.config.outputPath || './lib';
+    const outputFullPath = LexConfig.config.outputFullPath || pathResolve(cwd, outputPath);
+    const sourcePath = LexConfig.config.sourcePath || './src';
+    const sourceFullPath = LexConfig.config.sourceFullPath || pathResolve(cwd, sourcePath);
+    const relativeOutDir = pathRelative(cwd, outputFullPath) || './lib';
+    const relativeRootDir = pathRelative(cwd, sourceFullPath) || './src';
 
-    if(!existsSync(tsconfigCompilePath)) {
-      const templatePath = pathResolve(lexDir, 'tsconfig.build.json');
-      if(existsSync(templatePath)) {
-        writeFileSync(tsconfigCompilePath, readFileSync(templatePath));
-      }
-    }
+    return [
+      '--emitDeclarationOnly', // CRITICAL: Only emit .d.ts files, no JS files
+      '--declaration', // Generate declaration files
+      '--declarationMap', // Generate source maps for declarations
+      '--outDir', relativeOutDir,
+      '--rootDir', relativeRootDir,
+      '--skipLibCheck', // Skip type checking of declaration files (faster, more lenient)
+      '--esModuleInterop',
+      '--allowSyntheticDefaultImports',
+      '--module', 'NodeNext',
+      '--moduleResolution', 'NodeNext',
+      '--target', 'ESNext',
+      '--jsx', 'react-jsx',
+      '--isolatedModules',
+      '--resolveJsonModule',
+      '--allowJs'
+      // Note: --noUnusedLocals and --noUnusedParameters are not needed for declaration generation
+      // and would actually enable strict checking, which we want to avoid for faster declaration generation
+    ];
   }
 
   static checkLintTypescriptConfig() {

@@ -125,7 +125,7 @@ const runEslintWithLex = async (
   fix: boolean,
   debug: boolean,
   useTypescript: boolean,
-  captureOutput?: (output: string) => void
+  captureOutput?: (output: string)=> void
 ): Promise<number> => {
   const spinner = createSpinner(quiet);
 

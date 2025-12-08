@@ -8,19 +8,19 @@ jest.mock('path');
 jest.mock('../../LexConfig.js');
 jest.mock('../../utils/app.js', () => ({
   createSpinner: jest.fn(() => ({
+    fail: jest.fn(),
     start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+    succeed: jest.fn()
   })),
-  getPackageJson: jest.fn(() => ({
-    name: 'test-package',
-    version: '1.0.0',
-    dependencies: {},
-    devDependencies: {}
-  })),
-  setPackageJson: jest.fn(),
   copyFileSync: jest.fn(),
   copyFolderRecursiveSync: jest.fn(),
+  getPackageJson: jest.fn(() => ({
+    dependencies: {},
+    devDependencies: {},
+    name: 'test-package',
+    version: '1.0.0'
+  })),
+  setPackageJson: jest.fn(),
   updateTemplateName: jest.fn()
 }));
 jest.mock('../../utils/log.js');
@@ -37,7 +37,7 @@ describe('init integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {

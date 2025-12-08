@@ -6,9 +6,9 @@ import {transform} from '@swc/core';
 import {execa} from 'execa';
 import {existsSync, lstatSync, readdirSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {extname as pathExtname, join as pathJoin, resolve as pathResolve, dirname} from 'path';
+import {extname as pathExtname, join as pathJoin, relative as pathRelative, resolve as pathResolve, dirname} from 'path';
 
-import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
+import {LexConfig} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
 import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
@@ -55,7 +55,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   const outputDir: string = outputPath || outputFullPath;
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
   const dirName = getDirName();
-  const dirPath: string = pathResolve(dirName, '../..');
 
   checkLinkedModules();
 
@@ -64,8 +63,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   }
 
   if(useTypescript) {
-    LexConfig.checkCompileTypescriptConfig();
-
     const typescriptPath: string = resolveBinaryPath('tsc', 'typescript');
 
     if(!typescriptPath) {
@@ -74,34 +71,98 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       return 1;
     }
 
-    const typescriptOptions: string[] = config ?
-      ['-p', config] :
-      ['-p', getTypeScriptConfigPath('tsconfig.build.json')];
+    const typescriptOptions: string[] = config
+      ? ['-p', config, '--emitDeclarationOnly', '--skipLibCheck'] // User provided custom config, but still only emit declarations
+      : (() => {
+        const globOptions = {
+          absolute: true,
+          cwd: sourceDir,
+          dot: false,
+          nodir: true
+        };
+        const tsFiles = globSync('**/!(*.spec|*.test|*.integration).ts', globOptions);
+        const tsxFiles = globSync('**/!(*.spec|*.test|*.integration).tsx', globOptions);
+        const allSourceFiles = [...tsFiles, ...tsxFiles];
 
-    spinner.start('Static type checking with Typescript...');
+        return [
+          ...LexConfig.getTypeScriptDeclarationFlags(),
+          ...allSourceFiles
+        ];
+      })();
+
+    spinner.start('Generating TypeScript declarations...');
 
     try {
-      await execa(typescriptPath, typescriptOptions, {encoding: 'utf8'});
+      const result = await execa(typescriptPath, typescriptOptions, {
+        all: true,
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        reject: false
+      });
 
-      spinner.succeed('Successfully completed type checking!');
+      if(result.exitCode !== 0) {
+        const hasDeclarations = result.all?.includes('Writing') || result.all?.includes('Declaration') || false;
+        const errorOutput = result.stderr || result.stdout || result.all || 'Unknown error';
+
+        if(!hasDeclarations) {
+          log(`\n${cliName} Error: TypeScript declaration generation failed`, 'error', quiet);
+          log(`\nExit Code: ${result.exitCode}`, 'error', quiet);
+          log(`\nTypeScript Command: ${typescriptPath} ${typescriptOptions.join(' ')}`, 'error', quiet);
+          log(`\nError Output:\n${errorOutput}`, 'error', quiet);
+
+          const errorLines = errorOutput.split('\n').filter((line) =>
+            line.includes('error TS') ||
+            line.includes('Error:') ||
+            line.trim().startsWith('src/') ||
+            line.trim().startsWith('TS')
+          );
+
+          if(errorLines.length > 0) {
+            log('\nKey Errors:', 'error', quiet);
+
+            errorLines.slice(0, 10).forEach((line) => {
+              log(`  ${line}`, 'error', quiet);
+            });
+
+            if(errorLines.length > 10) {
+              log(`  ... and ${errorLines.length - 10} more errors`, 'error', quiet);
+            }
+          }
+
+          spinner.fail('TypeScript declaration generation failed.');
+        } else {
+          log(`\n${cliName} Warning: TypeScript declaration generation completed with errors`, 'warn', quiet);
+
+          if(!quiet && errorOutput) {
+            log(`\nWarnings:\n${errorOutput}`, 'warn', quiet);
+          }
+
+          spinner.succeed('TypeScript declarations generated (with warnings).');
+        }
+      } else {
+        spinner.succeed('Successfully generated TypeScript declarations!');
+      }
     } catch(error) {
-      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+      log(`\n${cliName} Error: TypeScript declaration generation exception`, 'error', quiet);
+      log(`\nError: ${error.message}`, 'error', quiet);
 
-      spinner.fail('Type checking failed.');
+      if(error instanceof Error && error.stack) {
+        log(`\nStack:\n${error.stack}`, 'error', quiet);
+      }
 
-      callback(1);
-      return 1;
+      spinner.fail('TypeScript declaration generation had issues, continuing...');
     }
   }
 
   const globOptions = {
+    absolute: true,
     cwd: sourceDir,
     dot: false,
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).ts*`, globOptions);
-  const jsFiles: string[] = globSync(`${sourceDir}/**/!(*.spec|*.test|*.integration).js`, globOptions);
+  const tsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration).ts*', globOptions);
+  const jsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration).js', globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);
@@ -191,36 +252,42 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     }
   }
 
+  if(sourceFiles.length === 0) {
+    log(`\n${cliName} Warning: No source files found to compile in ${sourceDir}`, 'warn', quiet);
+    spinner.succeed('No files to compile.');
+    callback(0);
+    return 0;
+  }
+
   spinner.start(watch ? 'Watching for changes...' : 'Compiling with SWC...');
 
   try {
-    // Compile each file with SWC
     for(const file of sourceFiles) {
-      const sourcePath = pathResolve(sourceDir, file);
-      const outputPath = pathResolve(outputDir, file.replace(/\.(ts|tsx)$/, '.js'));
-
-      // Ensure output directory exists
+      const fileRelativeToSource = pathRelative(sourceDir, pathResolve(sourceDir, file));
+      const sourcePath = pathResolve(sourceDir, fileRelativeToSource);
+      const outputFile = fileRelativeToSource.replace(/\.(ts|tsx)$/, '.js');
+      const outputPath = pathResolve(outputDir, outputFile);
       const outputDirPath = dirname(outputPath);
+
       if(!existsSync(outputDirPath)) {
         mkdirSync(outputDirPath, {recursive: true});
       }
 
       const sourceCode = readFileSync(sourcePath, 'utf8');
-
       const isTSX = file.endsWith('.tsx');
-
-      // Merge SWC config with command-specific overrides
       const swcOptions = {
         filename: file,
         ...swcConfig,
         jsc: {
           ...swcConfig?.jsc,
           parser: {
+            comments: false,
             decorators: swcConfig?.jsc?.parser?.decorators ?? true,
             dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true,
             syntax: 'typescript' as const,
             tsx: isTSX
           },
+          preserveAllComments: false,
           target: swcConfig?.jsc?.target ?? 'es2020',
           transform: isTSX ? {
             ...swcConfig?.jsc?.transform,
@@ -230,10 +297,12 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
             }
           } : swcConfig?.jsc?.transform
         },
+        minify: false,
         module: {
           ...swcConfig?.module,
           type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
-        }
+        },
+        sourceMaps: swcConfig?.sourceMaps || 'inline'
       };
 
       const result = await transform(sourceCode, swcOptions);
@@ -243,10 +312,21 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
     spinner.succeed('Compile completed successfully!');
   } catch(error) {
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: SWC compilation failed`, 'error', quiet);
+    log(`\nError: ${error.message}`, 'error', quiet);
+
+    if(error instanceof Error) {
+      if(error.stack) {
+        log(`\nStack Trace:\n${error.stack}`, 'error', quiet);
+      }
+
+      if('filename' in error || 'file' in error) {
+        log(`\nFile: ${(error as any).filename || (error as any).file}`, 'error', quiet);
+      }
+    }
 
     if(!quiet) {
-      console.error(error);
+      console.error('\nFull Error Details:', error);
     }
 
     spinner.fail('Code compiling failed.');

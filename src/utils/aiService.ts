@@ -236,7 +236,7 @@ export const promptForAPIKey = async (provider: string, _quiet = false): Promise
 export const getAIService = (
   provider: string,
   _options: AIConfig
-): (prompt: string, options: AIConfig) => Promise<string> => {
+): (prompt: string, options: AIConfig)=> Promise<string> => {
   switch(provider) {
     case 'cursor':
       return callCursorAI;

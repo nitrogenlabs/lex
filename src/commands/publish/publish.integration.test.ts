@@ -10,10 +10,10 @@ jest.mock('../../utils/app.js', () => ({
     fail: jest.fn()
   })),
   getPackageJson: jest.fn(() => ({
-    name: 'test-package',
-    version: '1.0.0',
     dependencies: {},
-    devDependencies: {}
+    devDependencies: {},
+    name: 'test-package',
+    version: '1.0.0'
   })),
   setPackageJson: jest.fn()
 }));
@@ -39,7 +39,7 @@ describe('publish integration', () => {
   });
 
   it('should publish successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await publish({});
 
     expect(execa).toHaveBeenCalled();
