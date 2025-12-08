@@ -6,7 +6,12 @@ import {transform} from '@swc/core';
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {dirname, resolve as pathResolve} from 'path';
+import {
+  dirname,
+  relative as pathRelative,
+  resolve as pathResolve,
+  join as pathJoin
+} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
@@ -37,9 +42,9 @@ export interface BuildOptions {
   readonly analyze?: boolean;
   readonly bundler?: 'webpack' | 'swc';
   readonly cliName?: string;
-  readonly entry?: string; // <-- add entry
+  readonly entry?: string;
   readonly format?: string;
-  readonly outputPath?: string; // <-- already present
+  readonly outputPath?: string;
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly sourcePath?: string;
@@ -78,8 +83,6 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
   console.log('\n' + statusBox + '\n');
 };
 
-// Removed buildWithEsBuild function - using SWC instead
-
 export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
@@ -100,24 +103,28 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
 
   const globOptions = {
+    absolute: true,
     cwd: sourceDir,
     dot: false,
     nodir: true,
-    nosort: true,
-    absolute: true
+    nosort: true
   };
   const tsFiles: string[] = globSync(`**/!(*.spec|*.test).ts*`, globOptions);
   const jsFiles: string[] = globSync(`**/!(*.spec|*.test).js`, globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
-  const outputDir: string = outputPath || outputFullPath || '';
+  const outputDir: string = outputPath
+    ? pathResolve(process.cwd(), outputPath)
+    : (outputFullPath || pathResolve(process.cwd(), './lib'));
 
   try {
     spinner.start('Building with SWC...');
 
-    for(const file of sourceFiles) {
-      const sourcePath = pathResolve(sourceDir, file);
-      const outputPath = pathResolve(outputDir, file.replace(/\.(ts|tsx)$/, '.js'));
+    const transformPromises = sourceFiles.map(async (file) => {
+      const fileRelativeToSource = pathRelative(sourceDir, file);
+      const sourcePath = file; // file is already absolute
+      const outputFile = fileRelativeToSource.replace(/\.(ts|tsx)$/, '.js');
+      const outputPath = pathResolve(outputDir, outputFile);
       const outputDirPath = dirname(outputPath);
 
       if(!existsSync(outputDirPath)) {
@@ -133,12 +140,13 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
         jsc: {
           ...swcConfig?.jsc,
           parser: {
-            syntax: 'typescript' as const,
-            tsx: isTSX,
+            comments: false,
             decorators: swcConfig?.jsc?.parser?.decorators ?? true,
             dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true,
-            comments: false // Remove comments during transformation
+            syntax: 'typescript' as const,
+            tsx: isTSX
           },
+          preserveAllComments: false,
           target: swcConfig?.jsc?.target ?? 'es2020',
           transform: isTSX ? {
             ...swcConfig?.jsc?.transform,
@@ -146,14 +154,13 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
               runtime: 'automatic' as const,
               ...swcConfig?.jsc?.transform?.react
             }
-          } : swcConfig?.jsc?.transform,
-          preserveAllComments: false
+          } : swcConfig?.jsc?.transform
         },
+        minify: false,
         module: {
           ...swcConfig?.module,
           type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
         },
-        minify: false,
         sourceMaps: swcConfig?.sourceMaps || 'inline'
       };
 
@@ -161,7 +168,9 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
 
       const {writeFileSync} = await import('fs');
       writeFileSync(outputPath, result.code);
-    }
+    });
+
+    await Promise.all(transformPromises);
 
     spinner.succeed('Build completed with SWC');
     displayBuildStatus('SWC', outputDir, quiet);
@@ -176,7 +185,6 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
         log(`\nStack Trace:\n${error.stack}`, 'error', quiet);
       }
 
-      // Try to extract file information if available
       if('filename' in error || 'file' in error) {
         log(`\nFile: ${(error as any).filename || (error as any).file}`, 'error', quiet);
       }
@@ -274,7 +282,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
   if(defineProcessEnvNodeEnv) webpackOptions.push('--defineProcessEnvNodeEnv', defineProcessEnvNodeEnv);
   if(devtool) webpackOptions.push('--devtool', devtool);
   if(disableInterpret) webpackOptions.push('--disableInterpret');
-  // Pass entry directly as CLI flag
   if(entryValue) webpackOptions.push('--entry', entryValue.toString());
   if(env) webpackOptions.push('--env', env);
   if(failOnWarnings) webpackOptions.push('--failOnWarnings');
@@ -314,7 +321,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     console.log('finalWebpackOptions:', JSON.stringify(finalWebpackOptions));
     console.log('finalWebpackOptions type:', Array.isArray(finalWebpackOptions) ? 'Array' : typeof finalWebpackOptions);
 
-    // Make sure we're passing an array of strings to execa
     const childProcess = execa(executablePath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
 
     let buildCompleted = false;
@@ -454,14 +460,12 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
 
   process.env = {...process.env, ...variablesObj};
 
-  // If in test mode, exit early
   if(test) {
     log('Test mode: Build environment loaded, exiting', 'info', quiet);
     callback(0);
     return 0;
   }
 
-  // Process translations if flag is enabled (before building)
   if(translations) {
     spinner.start('Processing translations...');
 
@@ -562,8 +566,8 @@ What are the key optimization opportunities for this build configuration? Consid
             const result = await execa(typescriptPath, typescriptOptions, {
               encoding: 'utf8',
               cwd: process.cwd(),
-              reject: false, // Don't throw on errors, we'll check exit code
-              all: true // Capture both stdout and stderr
+              reject: false,
+              all: true
             });
 
             if(result.exitCode !== 0) {
@@ -573,13 +577,11 @@ What are the key optimization opportunities for this build configuration? Consid
               const errorOutput = result.stderr || result.stdout || result.all || 'Unknown error';
 
               if(!hasDeclarations) {
-                // Show detailed error information
                 log(`\n${cliName} Error: TypeScript declaration generation failed`, 'error', quiet);
                 log(`\nExit Code: ${result.exitCode}`, 'error', quiet);
                 log(`\nTypeScript Command: ${typescriptPath} ${typescriptOptions.slice(0, 10).join(' ')}...`, 'error', quiet);
                 log(`\nError Output:\n${errorOutput}`, 'error', quiet);
 
-                // Try to extract and highlight specific errors
                 const errorLines = errorOutput.split('\n').filter(line =>
                   line.includes('error TS') ||
                   line.includes('Error:') ||
@@ -609,14 +611,12 @@ What are the key optimization opportunities for this build configuration? Consid
               spinner.succeed('TypeScript declarations generated!');
             }
           } catch(error) {
-            // If execa throws (shouldn't with reject: false), log and continue
             log(`\n${cliName} Error: TypeScript declaration generation exception`, 'error', quiet);
             log(`\nError: ${error.message}`, 'error', quiet);
             if(error instanceof Error && error.stack) {
               log(`\nStack:\n${error.stack}`, 'error', quiet);
             }
             spinner.fail('TypeScript declaration generation had issues (continuing anyway).');
-            // Don't fail the build if declarations fail
           }
         }
       }

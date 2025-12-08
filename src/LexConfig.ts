@@ -292,15 +292,20 @@ export class LexConfig {
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
     const {environment, outputPath, sourcePath, typescript} = cmd;
+    const currentCwd = process.cwd();
 
     if(outputPath !== undefined) {
       params.outputPath = outputPath;
-      params.outputFullPath = pathResolve(cwd, outputPath);
+      params.outputFullPath = pathResolve(currentCwd, outputPath);
+    } else if(params.outputPath && !params.outputFullPath) {
+      params.outputFullPath = pathResolve(currentCwd, params.outputPath);
     }
 
     if(sourcePath !== undefined) {
       params.sourcePath = sourcePath;
-      params.sourceFullPath = pathResolve(cwd, sourcePath);
+      params.sourceFullPath = pathResolve(currentCwd, sourcePath);
+    } else if(params.sourcePath && !params.sourceFullPath) {
+      params.sourceFullPath = pathResolve(currentCwd, params.sourcePath);
     }
 
     if(typescript !== undefined) {

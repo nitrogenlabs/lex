@@ -52,7 +52,9 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   await LexConfig.parseConfig(cmd);
 
   const {outputFullPath, sourceFullPath, swc: swcConfig, useTypescript} = LexConfig.config;
-  const outputDir: string = outputPath || outputFullPath;
+  const outputDir: string = outputPath
+    ? pathResolve(process.cwd(), outputPath)
+    : (outputFullPath || pathResolve(process.cwd(), './lib'));
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
   const dirName = getDirName();
 
@@ -262,9 +264,9 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
   spinner.start(watch ? 'Watching for changes...' : 'Compiling with SWC...');
 
   try {
-    for(const file of sourceFiles) {
-      const fileRelativeToSource = pathRelative(sourceDir, pathResolve(sourceDir, file));
-      const sourcePath = pathResolve(sourceDir, fileRelativeToSource);
+    const transformPromises = sourceFiles.map(async (file) => {
+      const fileRelativeToSource = pathRelative(sourceDir, file);
+      const sourcePath = file;
       const outputFile = fileRelativeToSource.replace(/\.(ts|tsx)$/, '.js');
       const outputPath = pathResolve(outputDir, outputFile);
       const outputDirPath = dirname(outputPath);
@@ -308,7 +310,9 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       const result = await transform(sourceCode, swcOptions);
 
       writeFileSync(outputPath, result.code);
-    }
+    });
+
+    await Promise.all(transformPromises);
 
     spinner.succeed('Compile completed successfully!');
   } catch(error) {
@@ -326,6 +330,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     }
 
     if(!quiet) {
+      // eslint-disable-next-line no-console
       console.error('\nFull Error Details:', error);
     }
 
