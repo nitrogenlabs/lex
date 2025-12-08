@@ -652,6 +652,9 @@ export default (webpackEnv, webpackOptions) => {
         '.gql',
         '.graphql'
       ],
+      extensionAlias: {
+        '.js': ['.ts', '.tsx', '.js', '.jsx']
+      },
       fallback: {
         assert: relativeNodePath('assert', dirName),
         buffer: relativeNodePath('buffer', dirName),
