@@ -14,6 +14,7 @@ import {URL} from 'url';
 import {getDirName, getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
 
+import type {Options} from '@swc/core';
 import type {Linter} from 'eslint';
 
 const cwd: string = process.cwd();
@@ -53,65 +54,6 @@ export interface ESLintConfig {
   rules?: Linter.RulesRecord;
 }
 
-export interface SWCConfig {
-  jsc?: {
-    parser?: {
-      syntax?: 'typescript' | 'ecmascript';
-      tsx?: boolean;
-      decorators?: boolean;
-      dynamicImport?: boolean;
-    };
-    target?: 'es3' | 'es5' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020' | 'es2021' | 'es2022' | 'es2023';
-    transform?: {
-      react?: {
-        runtime?: 'automatic' | 'classic';
-        pragma?: string;
-        pragmaFrag?: string;
-        throwIfNamespace?: boolean;
-        development?: boolean;
-        useBuiltins?: boolean;
-        refresh?: boolean;
-      };
-    };
-    externalHelpers?: boolean;
-    keepClassNames?: boolean;
-    loose?: boolean;
-    minify?: {
-      compress?: boolean;
-      mangle?: boolean;
-    };
-  };
-  module?: {
-    type?: 'es6' | 'commonjs' | 'amd' | 'umd' | 'systemjs';
-    strict?: boolean;
-    strictMode?: boolean;
-    lazy?: boolean;
-    noInterop?: boolean;
-  };
-  minify?: boolean;
-  sourceMaps?: boolean | 'inline';
-  inlineSourcesContent?: boolean;
-  isModule?: boolean;
-  filename?: string;
-  configFile?: string;
-  swcrc?: boolean;
-  env?: {
-    targets?: string | string[] | Record<string, string>;
-    mode?: 'usage' | 'entry';
-    coreJs?: string;
-    path?: string;
-    debug?: boolean;
-    dynamicImport?: boolean;
-    loose?: boolean;
-    bugfixes?: boolean;
-    include?: string[];
-    exclude?: string[];
-    forceAllTransforms?: boolean;
-    modules?: 'amd' | 'umd' | 'systemjs' | 'auto' | false;
-    shippedProposals?: boolean;
-  };
-}
-
 export interface LexConfigType {
   ai?: AIConfig;
   configFiles?: string[];
@@ -132,7 +74,7 @@ export interface LexConfigType {
   preset?: 'web' | 'node' | 'lambda' | 'mobile';
   sourceFullPath?: string;
   sourcePath?: string;
-  swc?: SWCConfig;
+  swc?: SWCOptions;
   targetEnvironment?: 'node' | 'web';
   useGraphQl?: boolean;
   useTypescript?: boolean;
@@ -175,7 +117,7 @@ export const defaultConfigValues: LexConfigType = {
         syntax: 'typescript',
         tsx: true
       },
-      target: 'es2020',
+      target: 'es2023',
       transform: {
         react: {
           runtime: 'automatic'
@@ -240,9 +182,7 @@ export class LexConfig {
 
   static set useTypescript(value: boolean) {
     LexConfig.config.useTypescript = value;
-    const {sourceFullPath} = LexConfig.config;
-
-    const {entryJs} = LexConfig.config;
+    const {entryJs, sourceFullPath, targetEnvironment} = LexConfig.config;
 
     if(entryJs === 'index.js' && value) {
       const indexPath: string = pathResolve(cwd, sourceFullPath, 'index.tsx');
@@ -253,6 +193,19 @@ export class LexConfig {
       } else {
         LexConfig.config.entryJs = 'index.ts';
       }
+    }
+
+    LexConfig.config.swc.jsc.parser = {
+      syntax: 'typescript',
+      tsx: true
+    };
+
+    if(targetEnvironment === 'web') {
+      LexConfig.config.swc.jsc.transform = {
+        react: {
+          runtime: 'automatic'
+        }
+      };
     }
   }
 
@@ -488,3 +441,5 @@ export class LexConfig {
     }
   }
 }
+
+export type SWCOptions = Options;

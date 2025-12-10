@@ -11,7 +11,7 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![Chat](https://img.shields.io/discord/446122412715802649.svg)](https://discord.gg/nitrogenlabs)
 
-## ✨ Why Lex?
+## Why Lex?
 
 ### **Zero Configuration**
 

@@ -13,6 +13,8 @@ import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFi
 import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
+import type {SWCOptions} from '../../LexConfig.js';
+
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
   if(!existsSync(startPath)) {
     return false;
@@ -44,7 +46,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     sourcePath,
     watch
   } = cmd;
-
   const spinner = createSpinner(quiet);
 
   log(`${cliName} compiling...`, 'info', quiet);
@@ -277,32 +278,12 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
       const sourceCode = readFileSync(sourcePath, 'utf8');
       const isTSX = file.endsWith('.tsx');
-      const swcOptions = {
-        filename: file,
+      const swcOptions: Partial<SWCOptions> = {
         ...swcConfig,
-        jsc: {
-          ...swcConfig?.jsc,
-          parser: {
-            comments: false,
-            decorators: swcConfig?.jsc?.parser?.decorators ?? true,
-            dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true,
-            syntax: 'typescript' as const,
-            tsx: isTSX
-          },
-          preserveAllComments: false,
-          target: swcConfig?.jsc?.target ?? 'es2020',
-          transform: isTSX ? {
-            ...swcConfig?.jsc?.transform,
-            react: {
-              runtime: 'automatic' as const,
-              ...swcConfig?.jsc?.transform?.react
-            }
-          } : swcConfig?.jsc?.transform
-        },
-        minify: false,
+        filename: file,
         module: {
-          ...swcConfig?.module,
-          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
+          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6'),
+          ...swcConfig?.module
         },
         sourceMaps: swcConfig?.sourceMaps || 'inline'
       };

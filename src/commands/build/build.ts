@@ -9,8 +9,7 @@ import {sync as globSync} from 'glob';
 import {
   dirname,
   relative as pathRelative,
-  resolve as pathResolve,
-  join as pathJoin
+  resolve as pathResolve
 } from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
@@ -25,6 +24,8 @@ import {processTranslations} from '../../utils/translations.js';
 import {aiFunction} from '../ai/ai.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
+
+import type {SWCOptions} from '../../LexConfig.js';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -67,7 +68,7 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
   }
 
   const statusBox = boxen(
-    `${chalk.cyan.bold('🏗️  Build Completed Successfully')}\n\n` +
+    `${chalk.cyan.bold('🏗️  Build Completed Successfully ')}\n\n` +
     `${chalk.green('Bundler:')}    ${chalk.cyan(bundler)}\n` +
     `${chalk.green('Output:')}     ${chalk.underline(outputPath)}${statsInfo}\n` +
     `${chalk.yellow('Ready for deployment! 🚀')}`,
@@ -133,36 +134,14 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
       }
 
       const sourceCode = readFileSync(sourcePath, 'utf8');
-      const isTSX = file.endsWith('.tsx');
       const swcOptions = {
-        filename: file,
         ...swcConfig,
-        jsc: {
-          ...swcConfig?.jsc,
-          parser: {
-            comments: false,
-            decorators: swcConfig?.jsc?.parser?.decorators ?? true,
-            dynamicImport: swcConfig?.jsc?.parser?.dynamicImport ?? true,
-            syntax: 'typescript' as const,
-            tsx: isTSX
-          },
-          preserveAllComments: false,
-          target: swcConfig?.jsc?.target ?? 'es2020',
-          transform: isTSX ? {
-            ...swcConfig?.jsc?.transform,
-            react: {
-              runtime: 'automatic' as const,
-              ...swcConfig?.jsc?.transform?.react
-            }
-          } : swcConfig?.jsc?.transform
-        },
-        minify: false,
+        filename: file,
         module: {
-          ...swcConfig?.module,
-          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6')
+          type: format === 'cjs' ? 'commonjs' as const : (swcConfig?.module?.type as 'es6' || 'es6'),
+          ...swcConfig?.module
         },
-        sourceMaps: swcConfig?.sourceMaps || 'inline'
-      };
+      } as Partial<SWCOptions>;
 
       const result = await transform(sourceCode, swcOptions);
 

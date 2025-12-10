@@ -657,14 +657,14 @@ export const serverless = async (
     config,
     debug = false,
     host = 'localhost',
-    httpPort = 3000,
-    httpsPort = 3001,
+    httpPort = 5000,
+    httpsPort = 5001,
     quiet = false,
     remove = false,
     test = false,
     usePublicIp,
     variables,
-    wsPort = 3002
+    wsPort = 5002
   } = cmd;
 
   const spinner = createSpinner(quiet);

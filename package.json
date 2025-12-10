@@ -127,6 +127,7 @@
     "core-js": "^3.47.0",
     "crypto-js": "^4.2.0",
     "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.3",
     "cssnano": "^7.1.2",
     "dotenv-webpack": "^8.1.1",
     "download-npm-package": "^3.1.12",
@@ -226,8 +227,7 @@
     "@types/node": "^24.10.1",
     "@types/ora": "^3.2.0",
     "@types/react": "^19.2.7",
-    "@types/webpack": "^5.28.5",
-    "css-minimizer-webpack-plugin": "^7.0.3"
+    "@types/webpack": "^5.28.5"
   },
   "resolutions": {
     "css-loader": "7.1.2"

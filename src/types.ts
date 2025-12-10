@@ -9,6 +9,6 @@ export type {
   Config,
   JestConfig,
   LexConfigType,
-  SWCConfig,
+  SWCOptions,
   WebpackConfig
 } from './LexConfig.js';

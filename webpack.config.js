@@ -442,21 +442,7 @@ export default (webpackEnv, webpackOptions) => {
           type: 'javascript/esm',
           loader: swcLoaderPath,
           options: {
-            ...LexConfig.config.swc,
-            jsc: {
-              ...LexConfig.config.swc?.jsc,
-              parser: {
-                ...LexConfig.config.swc?.jsc?.parser,
-                tsx: true
-              },
-              transform: {
-                ...LexConfig.config.swc?.jsc?.transform,
-                react: {
-                  ...LexConfig.config.swc?.jsc?.transform?.react,
-                  runtime: 'automatic'
-                }
-              }
-            }
+            ...LexConfig.config.swc
           },
           resolve: {
             symlinks: true
@@ -653,7 +639,8 @@ export default (webpackEnv, webpackOptions) => {
         '.graphql'
       ],
       extensionAlias: {
-        '.js': ['.ts', '.tsx', '.js', '.jsx']
+        '.js': ['.ts', '.tsx', '.js', '.jsx'],
+        '.jsx': ['.tsx', '.jsx']
       },
       fallback: {
         assert: relativeNodePath('assert', dirName),
