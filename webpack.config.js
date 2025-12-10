@@ -15,9 +15,7 @@ import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
 import isEmpty from 'lodash/isEmpty.js';
-import {createRequire} from 'module';
 import {resolve as pathResolve} from 'path';
-import {fileURLToPath} from 'url';
 import postcssBrowserReporter from 'postcss-browser-reporter';
 import postcssCustomProperties from 'postcss-custom-properties';
 import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
@@ -42,7 +40,6 @@ const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const dirName = new URL('.', import.meta.url).pathname;
-const require = createRequire(fileURLToPath(import.meta.url));
 
 const {
   isStatic,
@@ -234,7 +231,8 @@ if(staticPaths.length) {
 if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
   plugins.push(
     new HtmlWebPackPlugin({
-      filename: './index.html',
+      chunks: ['index'],
+      filename: lexConfig.entryHTML || './index.html',
       minify: isProduction,
       scriptLoading: 'defer',
       showErrors: !isProduction,
@@ -686,7 +684,7 @@ export default (webpackEnv, webpackOptions) => {
         historyFallback: {
           disableDotRule: true,
           htmlAcceptHeaders: ['text/html', '*/*'],
-          index: '/index.html',
+          index: '/index.html', // Always point to the output HTML file (webpack always outputs index.html)
           logger: console.log.bind(console),
           rewrites: [
             {
@@ -757,7 +755,7 @@ export default (webpackEnv, webpackOptions) => {
         open: process.env.WEBPACK_DEV_OPEN === 'true',
         port: finalPort,
         progress: 'minimal',
-        static: existsSync(outputFullPath) ? [outputFullPath] : [],
+        static: outputFullPath ? [outputFullPath] : [], // Always include output path to serve generated HTML
         status: true
       })
     );
