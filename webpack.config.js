@@ -14,6 +14,7 @@ import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import isEmpty from 'lodash/isEmpty.js';
 import {resolve as pathResolve} from 'path';
 import postcssBrowserReporter from 'postcss-browser-reporter';
@@ -231,38 +232,13 @@ if(staticPaths.length) {
 if(existsSync(`${sourceFullPath}/${lexConfig.entryHTML}`)) {
   plugins.push(
     new HtmlWebPackPlugin({
-      chunks: ['index'],
-      filename: lexConfig.entryHTML || './index.html',
+      filename: 'index.html',
       minify: isProduction,
-      scriptLoading: 'defer',
       showErrors: !isProduction,
       template: `${sourceFullPath}/${lexConfig.entryHTML}`,
       inject: true
     })
   );
-
-  const missingAssets = [];
-  const requiredAssets = ['favicon.ico', 'images/logo-icon-64.png', 'manifest.json'];
-
-  requiredAssets.forEach(asset => {
-    if (!existsSync(`${sourceFullPath}/${asset}`)) {
-      missingAssets.push(asset);
-    }
-  });
-
-  if (missingAssets.length > 0) {
-    plugins.push(
-      new CopyWebpackPlugin({
-        patterns: missingAssets.map(asset => ({
-          from: pathResolve(dirName, 'emptyModule.js'),
-          to: `${outputFullPath}/${asset}`,
-          transform() {
-            return '';
-          }
-        }))
-      })
-    );
-  }
 }
 
 let outputFilename = outputFile;
@@ -286,6 +262,7 @@ const swcLoaderPath = relativeNodePath('swc-loader', dirName);
 const cssLoaderPath = relativeNodePath('css-loader', dirName);
 const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
 const htmlLoaderPath = relativeNodePath('html-loader', dirName);
+const miniCssExtractPluginPath = relativeNodePath('mini-css-extract-plugin', dirName);
 const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
 const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
 const styleLoaderPath = relativeNodePath('style-loader', dirName);
@@ -486,7 +463,13 @@ export default (webpackEnv, webpackOptions) => {
         {
           test: /\.css$/,
           use: [
-            styleLoaderPath,
+            // In production, extract CSS to separate files for injection into HTML
+            // In development, inject CSS via style-loader for HMR
+            ...(isProduction && isWeb
+              ? [{
+                  loader: require(miniCssExtractPluginPath).loader
+                }]
+              : [styleLoaderPath]),
             {
               loader: cssLoaderPath,
               options: {
@@ -684,7 +667,7 @@ export default (webpackEnv, webpackOptions) => {
         historyFallback: {
           disableDotRule: true,
           htmlAcceptHeaders: ['text/html', '*/*'],
-          index: '/index.html', // Always point to the output HTML file (webpack always outputs index.html)
+          index: '/index.html',
           logger: console.log.bind(console),
           rewrites: [
             {
@@ -755,7 +738,7 @@ export default (webpackEnv, webpackOptions) => {
         open: process.env.WEBPACK_DEV_OPEN === 'true',
         port: finalPort,
         progress: 'minimal',
-        static: outputFullPath ? [outputFullPath] : [], // Always include output path to serve generated HTML
+        static: outputFullPath ? [outputFullPath] : [],
         status: true
       })
     );
@@ -774,6 +757,18 @@ export default (webpackEnv, webpackOptions) => {
       };
     }
   } else {
+    // In production, extract CSS to separate files for injection into HTML
+    if(isProduction && isWeb) {
+      const MiniCssExtractPlugin = require(miniCssExtractPluginPath);
+      plugins.push(
+        new MiniCssExtractPlugin({
+          filename: outputHash ? 'css/[name].[contenthash].css' : 'css/[name].css',
+          chunkFilename: outputHash ? 'css/[name].[contenthash].chunk.css' : 'css/[name].chunk.css'
+        })
+      );
+      webpackConfig.optimization.moduleIds = 'deterministic';
+    }
+
     const siteLogo = `${sourceFullPath}/images/logo.png`;
 
     if(existsSync(siteLogo)) {
@@ -800,10 +795,6 @@ export default (webpackEnv, webpackOptions) => {
       webpackConfig.plugins.push(
         new StaticSitePlugin()
       );
-    }
-
-    if(isProduction && isWeb) {
-      webpackConfig.optimization.moduleIds = 'deterministic';
     }
   }
 
@@ -853,19 +844,16 @@ export default (webpackEnv, webpackOptions) => {
 
   const mergedConfig = merge(webpackConfig, webpackConfigFiltered);
 
-  // Filter out PostCSS plugin objects from webpack plugins array
-  // PostCSS plugins have 'postcssPlugin' property and should only be in postcssOptions
   if (Array.isArray(mergedConfig.plugins)) {
     mergedConfig.plugins = mergedConfig.plugins.filter((plugin) => {
-      // Keep webpack plugins (have 'apply' method or are instances with constructor)
       if (typeof plugin === 'function' || (plugin && typeof plugin.apply === 'function')) {
         return true;
       }
-      // Filter out PostCSS plugin objects (have 'postcssPlugin' property)
+
       if (plugin && typeof plugin === 'object' && 'postcssPlugin' in plugin) {
         return false;
       }
-      // Keep other valid webpack plugins
+
       return true;
     });
   }

@@ -1,6 +1,6 @@
 // Mock implementation of LexConfig
 const defaultConfigValues = {
-  bundler: 'webpack',
+  bundler: 'swc',
   useTypescript: false,
   useGraphQl: false,
   targetEnvironment: 'web',

@@ -208,9 +208,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     watchOptionsStdin
   } = cmd;
 
-  console.log('entry:', entry, 'type:', typeof entry);
-  console.log('outputPath:', outputPath, 'type:', typeof outputPath);
-
   const entryValue = Array.isArray(entry) ? entry[0] : entry;
 
   let webpackConfig: string;
@@ -230,9 +227,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
       webpackConfig = resolvedConfig;
     }
   }
-
-  console.log('webpackConfig path:', webpackConfig);
-  console.log('webpackConfig exists:', existsSync(webpackConfig));
 
   if(!existsSync(webpackConfig)) {
     const lexPackagePath = getLexPackageJsonPath();
@@ -294,11 +288,6 @@ export const buildWithWebpack = async (spinner, cmd, callback) => {
     } else {
       finalWebpackOptions = [...webpackOptions];
     }
-
-    console.log('webpackPath:', webpackPath);
-    console.log('executablePath:', executablePath);
-    console.log('finalWebpackOptions:', JSON.stringify(finalWebpackOptions));
-    console.log('finalWebpackOptions type:', Array.isArray(finalWebpackOptions) ? 'Array' : typeof finalWebpackOptions);
 
     const childProcess = execa(executablePath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
 
@@ -550,8 +539,6 @@ What are the key optimization opportunities for this build configuration? Consid
             });
 
             if(result.exitCode !== 0) {
-              // TypeScript may have errors but still generate some declarations
-              // Log warnings but don't fail if declarations were generated
               const hasDeclarations = result.all?.includes('Writing') || result.all?.includes('Declaration') || false;
               const errorOutput = result.stderr || result.stdout || result.all || 'Unknown error';
 
