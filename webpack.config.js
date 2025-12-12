@@ -26,6 +26,7 @@ import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
 import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import {createRequire} from 'module';
 import {URL} from 'url';
 import {default as webpack} from 'webpack';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
@@ -41,6 +42,7 @@ const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
 const lexConfig = JSON.parse(process.env.LEX_CONFIG) || {};
 const dirName = new URL('.', import.meta.url).pathname;
+const require = createRequire(import.meta.url);
 
 const {
   isStatic,
