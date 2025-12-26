@@ -459,11 +459,18 @@ export class LexConfig {
   }
 
   static checkTypescriptConfig() {
-    const tsconfigPath: string = pathResolve(cwd, './tsconfig.json');
+    const packageDir = getPackageDir();
+    const tsconfigPath: string = pathResolve(packageDir, './tsconfig.json');
 
     if(!existsSync(tsconfigPath)) {
-      const dirName = getDirName();
-      writeFileSync(tsconfigPath, readFileSync(pathResolve(dirName, '../../../tsconfig.base.json')));
+      const lexDir = LexConfig.getLexDir();
+      const baseConfigPath = pathResolve(lexDir, 'tsconfig.base.json');
+      const templateConfigPath = pathResolve(lexDir, 'tsconfig.template.json');
+      const sourcePath = existsSync(baseConfigPath) ? baseConfigPath : templateConfigPath;
+
+      if(existsSync(sourcePath)) {
+        writeFileSync(tsconfigPath, readFileSync(sourcePath));
+      }
     }
   }
 
