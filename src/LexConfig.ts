@@ -2,6 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import findFileUp from 'find-file-up';
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {
   dirname,
@@ -142,36 +143,115 @@ export const defaultConfigValues: LexConfigType = {
   }
 };
 
+const getPackageDir = (): string => {
+  const cwd = process.cwd();
+  const currentPkgPath = pathResolve(cwd, 'package.json');
+
+  if(existsSync(currentPkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(currentPkgPath, 'utf8'));
+      if(!pkg.workspaces) {
+        return cwd;
+      }
+    } catch{
+      return cwd;
+    }
+  }
+
+  let searchDir = cwd;
+
+  for(let i = 0; i < 10; i++) {
+    const pkgPath = pathResolve(searchDir, 'package.json');
+    if(existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+
+        if(!pkg.workspaces) {
+          return searchDir;
+        }
+      } catch{
+        // Continue searching
+      }
+    }
+
+    const parent = dirname(searchDir);
+
+    if(parent === searchDir) {
+      break;
+    }
+    searchDir = parent;
+  }
+
+  const configFormats = ['js', 'mjs', 'cjs', 'ts', 'json'];
+
+  for(const format of configFormats) {
+    const configPath = findFileUp.sync(`lex.config.${format}`, cwd, 5);
+
+    if(configPath) {
+      return dirname(configPath);
+    }
+  }
+
+  return cwd;
+};
+
 export const getTypeScriptConfigPath = (configName: string): string => {
+  const packageDir = getPackageDir();
   const cwd = process.cwd();
 
   if(configName === 'tsconfig.build.json') {
-    const projectBuildConfig = pathResolve(cwd, 'tsconfig.build.json');
+    const projectBuildConfig = pathResolve(packageDir, 'tsconfig.build.json');
+
     if(existsSync(projectBuildConfig)) {
       return projectBuildConfig;
+    }
+
+    const rootBuildConfig = pathResolve(cwd, 'tsconfig.build.json');
+    if(existsSync(rootBuildConfig)) {
+      return rootBuildConfig;
     }
   }
 
   if(configName === 'tsconfig.lint.json') {
-    const projectLintConfig = pathResolve(cwd, 'tsconfig.eslint.json');
+    const projectLintConfig = pathResolve(packageDir, 'tsconfig.eslint.json');
     if(existsSync(projectLintConfig)) {
       return projectLintConfig;
+    }
+
+    const rootLintConfig = pathResolve(cwd, 'tsconfig.eslint.json');
+
+    if(existsSync(rootLintConfig)) {
+      return rootLintConfig;
     }
   }
 
   if(configName === 'tsconfig.test.json') {
-    const projectTestConfig = pathResolve(cwd, 'tsconfig.test.json');
+    const projectTestConfig = pathResolve(packageDir, 'tsconfig.test.json');
     if(existsSync(projectTestConfig)) {
       return projectTestConfig;
     }
+
+    const rootTestConfig = pathResolve(cwd, 'tsconfig.test.json');
+
+    if(existsSync(rootTestConfig)) {
+      return rootTestConfig;
+    }
   }
 
-  const projectConfigPath = pathResolve(cwd, configName);
+  const projectConfigPath = pathResolve(packageDir, configName);
+
   if(existsSync(projectConfigPath)) {
     return projectConfigPath;
   }
 
+  const rootConfigPath = pathResolve(cwd, configName);
+
+  if(existsSync(rootConfigPath)) {
+    return rootConfigPath;
+  }
+
   const lexDir = LexConfig.getLexDir();
+
   return pathResolve(lexDir, configName);
 };
 

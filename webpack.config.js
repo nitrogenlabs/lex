@@ -4,6 +4,7 @@
  */
 import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
 import tailwindcss from '@tailwindcss/postcss';
+import tailwindNesting from '@tailwindcss/nesting';
 import autoprefixer from 'autoprefixer';
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -465,8 +466,6 @@ export default (webpackEnv, webpackOptions) => {
         {
           test: /\.css$/,
           use: [
-            // In production, extract CSS to separate files for injection into HTML
-            // In development, inject CSS via style-loader for HMR
             ...(isProduction && isWeb
               ? [{
                   loader: require(miniCssExtractPluginPath).loader
@@ -504,6 +503,7 @@ export default (webpackEnv, webpackOptions) => {
                       strict: false,
                       warnings: false
                     }),
+                    tailwindNesting(),
                     postcssNesting(),
                     tailwindcss(),
                     autoprefixer(),
