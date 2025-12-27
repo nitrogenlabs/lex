@@ -17,7 +17,7 @@ if(process.env.LEX_CONFIG) {
   try {
     const lexConfig = JSON.parse(process.env.LEX_CONFIG);
     projectJestConfig = lexConfig.jest;
-  } catch (error) {
+  } catch(error) {
     // eslint-disable-next-line no-console
     console.warn('Failed to parse LEX_CONFIG:', error.message);
   }
@@ -44,12 +44,18 @@ const baseConfig = {
   testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$',
   transform: {
     '^.+\\.js$|^.+\\.jsx$': ['babel-jest', {
+      plugins: [
+        'babel-plugin-transform-import-meta'
+      ],
       presets: [
         ['@babel/preset-env', {targets: {node: 'current'}}],
         '@babel/preset-typescript'
       ]
     }],
     '^.+\\.ts$|^.+\\.tsx$': ['babel-jest', {
+      plugins: [
+        'babel-plugin-transform-import-meta'
+      ],
       presets: [
         ['@babel/preset-env', {targets: {node: 'current'}}],
         '@babel/preset-typescript',
