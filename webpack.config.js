@@ -15,7 +15,6 @@ import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import isEmpty from 'lodash/isEmpty.js';
 import {resolve as pathResolve} from 'path';
 import postcssBrowserReporter from 'postcss-browser-reporter';
@@ -199,6 +198,7 @@ const watchIgnorePaths = [
 const imagePath = `${sourceFullPath}/images/`;
 const fontPath = `${sourceFullPath}/fonts/`;
 const docPath = `${sourceFullPath}/docs/`;
+const iconPath = `${sourceFullPath}/icons/`;
 
 const staticPathFull = pathResolve(process.cwd(), webpackStaticPath);
 
@@ -226,6 +226,18 @@ if(existsSync(fontPath)) {
 
 if(existsSync(docPath)) {
   staticPaths.push({from: docPath, noErrorOnMissing: true, to: './docs/'});
+}
+
+if(existsSync(iconPath)) {
+  staticPaths.push({
+    from: iconPath,
+    globOptions: {
+      ignore: ['**/*.svg']
+    },
+    noErrorOnMissing: true,
+    to: './icons/'
+  });
+  watchIgnorePaths.push(iconPath);
 }
 
 if(staticPaths.length) {
@@ -683,10 +695,6 @@ export default (webpackEnv, webpackOptions) => {
                 const fileIndex = pathUrl.length > 1 ? pathUrl.length - 1 : 0;
                 return `/${pathUrl[fileIndex]}`;
               }
-            },
-            {
-              from: /\\.(css|gif|ico|jpg|json|png|svg|txt)$/,
-              to: ({parsedUrl: {pathname}}) => pathname
             }
           ],
           verbose: !(process.env.LEX_QUIET === 'true')
@@ -694,12 +702,58 @@ export default (webpackEnv, webpackOptions) => {
         hmr: false,
         log: {level: 'trace'},
         middleware: (app, builtins) => {
+          const koaStatic = require('koa-static');
+          const {readFileSync} = require('fs');
+
+          app.use(async (ctx, next) => {
+            const path = ctx.path || ctx.url || '';
+            const isStaticFile = path && /\.(css|gif|ico|jpg|jpeg|json|png|svg|txt|woff|woff2|ttf|eot)$/i.test(path);
+
+            if(isStaticFile && outputFullPath) {
+              const filePath = pathResolve(outputFullPath, path.replace(/^\//, ''));
+              if(existsSync(filePath)) {
+                try {
+                  ctx.type = path.match(/\.svg$/i) ? 'image/svg+xml' :
+                             path.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image/' + path.split('.').pop() :
+                             path.match(/\.css$/i) ? 'text/css' :
+                             'application/octet-stream';
+                  ctx.body = readFileSync(filePath);
+                  ctx.status = 200;
+
+                  return;
+                } catch(err) {
+                  if (process.env.LEX_CONFIG_DEBUG) {
+                    console.log(`[LEX_DEBUG] Error reading file ${filePath}:`, err.message);
+                  }
+                }
+              } else {
+                if (process.env.LEX_CONFIG_DEBUG) {
+                  console.log(`[LEX_DEBUG] File not found at: ${filePath}, outputFullPath: ${outputFullPath}, path: ${path}`);
+                }
+              }
+            }
+
+            await next();
+          });
+
+          if(outputFullPath && existsSync(outputFullPath)) {
+            if (process.env.LEX_CONFIG_DEBUG) {
+              console.log(`[LEX_DEBUG] Setting up static file serving from output: ${outputFullPath}`);
+            }
+
+            app.use(koaStatic(outputFullPath, {
+              index: false,
+              defer: false,
+              hidden: false,
+              gzip: true,
+              br: false
+            }));
+          }
+
           if(existsSync(staticPathFull)) {
             if (process.env.LEX_CONFIG_DEBUG) {
               console.log(`[LEX_DEBUG] Setting up static file serving from: ${staticPathFull}`);
             }
-
-            const koaStatic = require('koa-static');
 
             app.use(koaStatic(staticPathFull, {
               index: false, // Don't auto-serve index files
@@ -726,6 +780,18 @@ export default (webpackEnv, webpackOptions) => {
               console.log(`[LEX_DEBUG] Static path does not exist: ${staticPathFull}`);
             }
           }
+
+          app.use(async (ctx, next) => {
+            const path = ctx.path || ctx.url || '';
+            const isStaticFile = path && /\.(css|gif|ico|jpg|jpeg|json|png|svg|txt|woff|woff2|ttf|eot)$/i.test(path);
+
+            await next();
+
+            if(isStaticFile && ctx.status === 404) {
+              ctx.body = 'File not found';
+              return;
+            }
+          });
 
           app.use(async (ctx, next) => {
             const path = ctx.path || ctx.url || (ctx.request && ctx.request.path) || '';
