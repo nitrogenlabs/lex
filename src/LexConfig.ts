@@ -12,7 +12,7 @@ import {
 } from 'path';
 import {URL} from 'url';
 
-import {getDirName, getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
+import {getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
 
 import type {Options} from '@swc/core';
@@ -295,18 +295,18 @@ export class LexConfig {
 
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
     const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript, ai} = updatedConfig;
-    const cwd: string = process.cwd();
+    const packageDir = getPackageDir();
 
     if(useTypescript !== undefined) {
       LexConfig.useTypescript = useTypescript;
     }
 
     if(outputPath !== undefined && outputFullPath === undefined) {
-      updatedConfig.outputFullPath = pathResolve(cwd, outputPath);
+      updatedConfig.outputFullPath = pathResolve(packageDir, outputPath);
     }
 
     if(sourcePath !== undefined && sourceFullPath === undefined) {
-      updatedConfig.sourceFullPath = pathResolve(cwd, sourcePath);
+      updatedConfig.sourceFullPath = pathResolve(packageDir, sourcePath);
     }
 
     if(ai) {
@@ -325,20 +325,20 @@ export class LexConfig {
   static addConfigParams(cmd, params: LexConfigType) {
     const nameProperty: string = '_name';
     const {environment, outputPath, sourcePath, typescript} = cmd;
-    const currentCwd = process.cwd();
+    const packageDir = getPackageDir();
 
     if(outputPath !== undefined) {
       params.outputPath = outputPath;
-      params.outputFullPath = pathResolve(currentCwd, outputPath);
+      params.outputFullPath = pathResolve(packageDir, outputPath);
     } else if(params.outputPath && !params.outputFullPath) {
-      params.outputFullPath = pathResolve(currentCwd, params.outputPath);
+      params.outputFullPath = pathResolve(packageDir, params.outputPath);
     }
 
     if(sourcePath !== undefined) {
       params.sourcePath = sourcePath;
-      params.sourceFullPath = pathResolve(currentCwd, sourcePath);
+      params.sourceFullPath = pathResolve(packageDir, sourcePath);
     } else if(params.sourcePath && !params.sourceFullPath) {
-      params.sourceFullPath = pathResolve(currentCwd, params.sourcePath);
+      params.sourceFullPath = pathResolve(packageDir, params.sourcePath);
     }
 
     if(typescript !== undefined) {
