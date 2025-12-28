@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
 import {homedir} from 'os';
-import {resolve as pathResolve, join} from 'path';
+import {resolve as pathResolve, join, isAbsolute} from 'path';
 import {WebSocketServer} from 'ws';
 
 import {LexConfig, getPackageDir} from '../../LexConfig.js';
@@ -169,28 +169,66 @@ const displayServerStatus = (
 
 const loadHandler = async (handlerPath: string, outputDir: string) => {
   try {
-    const fullPath = pathResolve(outputDir, handlerPath);
-    log(`Loading handler from: ${fullPath}`, 'info', false);
+    // Handle both relative paths and absolute paths
+    // If handlerPath includes a file extension, use it as-is
+    // Otherwise, try .js, .mjs, .cjs extensions
+    let fullPath: string;
+
+    if(isAbsolute(handlerPath)) {
+      fullPath = handlerPath;
+    } else {
+      fullPath = pathResolve(outputDir, handlerPath);
+    }
+
+    // Try different extensions if file doesn't exist
+    if(!existsSync(fullPath)) {
+      const extensions = ['.js', '.mjs', '.cjs', '.ts'];
+      const pathWithoutExt = fullPath.replace(/\.(js|mjs|cjs|ts)$/, '');
+      for(const ext of extensions) {
+        const candidatePath = pathWithoutExt + ext;
+        if(existsSync(candidatePath)) {
+          fullPath = candidatePath;
+          break;
+        }
+      }
+    }
+
+    console.log(`[Serverless] Loading handler from: ${fullPath}`);
+    console.log(`[Serverless] File exists: ${existsSync(fullPath)}`);
 
     if(!existsSync(fullPath)) {
+      console.error(`[Serverless] Handler file not found: ${fullPath}`);
+      console.error(`[Serverless] Output directory: ${outputDir}`);
+      console.error(`[Serverless] Handler path from config: ${handlerPath}`);
       throw new Error(`Handler file not found: ${fullPath}`);
     }
 
     // Dynamic import of the handler with better error handling
     try {
-      const handlerModule = await import(fullPath);
-      log(`Handler module loaded: ${Object.keys(handlerModule)}`, 'info', false);
+      // Add .js extension if importing TypeScript compiled output
+      const importPath = fullPath.endsWith('.ts') ? fullPath.replace(/\.ts$/, '.js') : fullPath;
+      console.log(`[Serverless] Importing handler from: ${importPath}`);
+
+      const handlerModule = await import(importPath);
+      console.log(`[Serverless] Handler module loaded. Exports: ${Object.keys(handlerModule).join(', ')}`);
 
       const handler = handlerModule.default || handlerModule.handler || handlerModule;
-      log(`Handler found: ${typeof handler}`, 'info', false);
+      console.log(`[Serverless] Handler found: ${typeof handler}, isFunction: ${typeof handler === 'function'}`);
+
+      if(typeof handler !== 'function') {
+        console.error(`[Serverless] Handler is not a function. Type: ${typeof handler}, Value:`, handler);
+        return null;
+      }
 
       return handler;
-    } catch(importError) {
-      log(`Import error for handler ${handlerPath}: ${importError.message}`, 'error', false);
+    } catch(importError: any) {
+      console.error(`[Serverless] Import error for handler ${handlerPath}:`, importError.message);
+      console.error('[Serverless] Import error stack:', importError.stack);
       return null;
     }
-  } catch(error) {
-    log(`Error loading handler ${handlerPath}: ${error.message}`, 'error', false);
+  } catch(error: any) {
+    console.error(`[Serverless] Error loading handler ${handlerPath}:`, error.message);
+    console.error('[Serverless] Error stack:', error.stack);
     return null;
   }
 };
@@ -424,32 +462,35 @@ const createExpressServer = async (
       const method = req.method || 'GET';
       const pathname = req.path || url.split('?')[0]; // Extract pathname without query string
 
-      log(`${method} ${url} (pathname: ${pathname})`, 'info', false);
+      // Always log requests (not affected by quiet flag for debugging)
+      console.log(`[Serverless] ${method} ${url} (pathname: ${pathname})`);
 
       // Find matching function
       let matchedFunction = null;
 
       if(config.functions) {
-        if(debug) {
-          log(`Available functions: ${Object.keys(config.functions).join(', ')}`, 'info', false);
-        }
+        const functionNames = Object.keys(config.functions);
+        console.log(`[Serverless] Available functions: ${functionNames.join(', ')}`);
+        console.log('[Serverless] Config functions:', JSON.stringify(config.functions, null, 2));
+
         for(const [functionName, functionConfig] of Object.entries(config.functions)) {
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
               if(event.http) {
                 const eventPath = event.http.path || '/';
-                const eventMethod = event.http.method || 'GET';
+                const eventMethod = (event.http.method || 'GET').toUpperCase();
+                const requestMethod = method.toUpperCase();
 
-                if(debug) {
-                  log(`Checking function ${functionName}: path=${eventPath}, method=${eventMethod} against pathname=${pathname}, method=${method}`, 'info', false);
-                }
+                console.log(`[Serverless] Checking function ${functionName}: path="${eventPath}", method="${eventMethod}" against pathname="${pathname}", method="${requestMethod}"`);
 
                 // Improved path matching - compare pathname without query string
-                if(eventPath && eventPath === pathname && eventMethod === method) {
+                // Normalize paths (remove trailing slashes for comparison)
+                const normalizedEventPath = eventPath.replace(/\/$/, '') || '/';
+                const normalizedPathname = pathname.replace(/\/$/, '') || '/';
+
+                if(normalizedEventPath === normalizedPathname && eventMethod === requestMethod) {
                   matchedFunction = functionName;
-                  if(debug) {
-                    log(`Matched function: ${matchedFunction}`, 'info', false);
-                  }
+                  console.log(`[Serverless] ✓ Matched function: ${matchedFunction}`);
                   break;
                 }
               }
@@ -460,17 +501,17 @@ const createExpressServer = async (
           }
         }
       } else {
-        if(debug) {
-          log('No functions found in config', 'info', false);
-        }
+        console.log('[Serverless] No functions found in config');
       }
 
       if(matchedFunction && config.functions[matchedFunction]) {
         // Resolve handler path relative to output directory
         const handlerPath = config.functions[matchedFunction].handler;
+        console.log(`[Serverless] Loading handler: ${handlerPath} from outputDir: ${outputDir}`);
         const handler = await loadHandler(handlerPath, outputDir);
 
         if(handler) {
+          console.log(`[Serverless] Handler loaded successfully, type: ${typeof handler}`);
           const wrappedHandler = captureConsoleLogs(handler, quiet);
 
           const event = {
@@ -493,7 +534,9 @@ const createExpressServer = async (
           };
 
           try {
+            console.log('[Serverless] Calling handler with event:', JSON.stringify(event, null, 2));
             const result = await wrappedHandler(event, context);
+            console.log('[Serverless] Handler returned:', JSON.stringify(result, null, 2));
 
             if(result && typeof result === 'object' && result.statusCode) {
               res.status(result.statusCode);
@@ -506,14 +549,20 @@ const createExpressServer = async (
             } else {
               res.json(result);
             }
-          } catch(error) {
+          } catch(error: any) {
+            console.error('[Serverless] Handler error:', error.message);
+            console.error('[Serverless] Handler error stack:', error.stack);
             log(`Handler error: ${error.message}`, 'error', false);
             res.status(500).json({error: error.message});
           }
         } else {
+          console.error(`[Serverless] Handler not found for function: ${matchedFunction}`);
+          console.error(`[Serverless] Handler path: ${handlerPath}, Output dir: ${outputDir}`);
           res.status(404).json({error: 'Handler not found'});
         }
       } else {
+        console.error(`[Serverless] Function not found for pathname: ${pathname}, method: ${method}`);
+        console.error(`[Serverless] Available functions: ${config.functions ? Object.keys(config.functions).join(', ') : 'none'}`);
         res.status(404).json({error: 'Function not found'});
       }
     } catch(error) {
@@ -743,19 +792,43 @@ export const serverless = async (
   try {
     // Use getPackageDir to handle npm workspaces correctly
     const packageDir = getPackageDir();
-    const configPath = config || pathResolve(packageDir, 'lex.config.mjs');
-    log(`Loading serverless config from: ${configPath}`, 'info', quiet);
 
-    if(existsSync(configPath)) {
+    // Try multiple config file formats
+    const configFormats = config ? [config] : [
+      pathResolve(packageDir, 'lex.config.mjs'),
+      pathResolve(packageDir, 'lex.config.js'),
+      pathResolve(packageDir, 'lex.config.cjs'),
+      pathResolve(packageDir, 'lex.config.ts')
+    ];
+
+    let configPath: string | null = null;
+    for(const candidatePath of configFormats) {
+      if(existsSync(candidatePath)) {
+        configPath = candidatePath;
+        break;
+      }
+    }
+
+    if(configPath) {
+      log(`Loading serverless config from: ${configPath}`, 'info', quiet);
       const configModule = await import(configPath);
       serverlessConfig = configModule.default?.serverless || configModule.serverless || {};
       log('Serverless config loaded successfully', 'info', quiet);
-      log(`Loaded functions: ${Object.keys(serverlessConfig.functions || {}).join(', ')}`, 'info', quiet);
+      const functionNames = Object.keys(serverlessConfig.functions || {});
+      log(`Loaded functions: ${functionNames.length > 0 ? functionNames.join(', ') : 'none'}`, 'info', quiet);
+
+      // Debug: Print full config if debug mode
+      if(debug) {
+        log(`Full serverless config: ${JSON.stringify(serverlessConfig, null, 2)}`, 'info', false);
+      }
     } else {
-      log(`No serverless config found at ${configPath}, using defaults`, 'warn', quiet);
+      log(`No serverless config found. Tried: ${configFormats.join(', ')}`, 'warn', quiet);
     }
   } catch(error) {
     log(`Error loading serverless config: ${error.message}`, 'error', quiet);
+    if(debug) {
+      log(`Config error stack: ${error.stack}`, 'error', false);
+    }
     // Don't exit, continue with empty config
   }
 
