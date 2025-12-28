@@ -143,7 +143,7 @@ export const defaultConfigValues: LexConfigType = {
   }
 };
 
-const getPackageDir = (): string => {
+export const getPackageDir = (): string => {
   const cwd = process.cwd();
   const currentPkgPath = pathResolve(cwd, 'package.json');
 

@@ -10,7 +10,7 @@ import {homedir} from 'os';
 import {resolve as pathResolve, join} from 'path';
 import {WebSocketServer} from 'ws';
 
-import {LexConfig} from '../../LexConfig.js';
+import {LexConfig, getPackageDir} from '../../LexConfig.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
 
@@ -430,6 +430,9 @@ const createExpressServer = async (
       let matchedFunction = null;
 
       if(config.functions) {
+        if(debug) {
+          log(`Available functions: ${Object.keys(config.functions).join(', ')}`, 'info', false);
+        }
         for(const [functionName, functionConfig] of Object.entries(config.functions)) {
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
@@ -437,9 +440,16 @@ const createExpressServer = async (
                 const eventPath = event.http.path || '/';
                 const eventMethod = event.http.method || 'GET';
 
+                if(debug) {
+                  log(`Checking function ${functionName}: path=${eventPath}, method=${eventMethod} against pathname=${pathname}, method=${method}`, 'info', false);
+                }
+
                 // Improved path matching - compare pathname without query string
                 if(eventPath && eventPath === pathname && eventMethod === method) {
                   matchedFunction = functionName;
+                  if(debug) {
+                    log(`Matched function: ${matchedFunction}`, 'info', false);
+                  }
                   break;
                 }
               }
@@ -448,6 +458,10 @@ const createExpressServer = async (
           if(matchedFunction) {
             break;
           }
+        }
+      } else {
+        if(debug) {
+          log('No functions found in config', 'info', false);
         }
       }
 
@@ -727,7 +741,9 @@ export const serverless = async (
   let serverlessConfig: ServerlessConfig = {};
 
   try {
-    const configPath = config || pathResolve(process.cwd(), 'lex.config.mjs');
+    // Use getPackageDir to handle npm workspaces correctly
+    const packageDir = getPackageDir();
+    const configPath = config || pathResolve(packageDir, 'lex.config.mjs');
     log(`Loading serverless config from: ${configPath}`, 'info', quiet);
 
     if(existsSync(configPath)) {
