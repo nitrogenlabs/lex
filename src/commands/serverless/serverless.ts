@@ -8,6 +8,7 @@ import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
 import {homedir} from 'os';
 import {resolve as pathResolve, join, isAbsolute} from 'path';
+import {pathToFileURL} from 'url';
 import {WebSocketServer} from 'ws';
 
 import {LexConfig, getPackageDir} from '../../LexConfig.js';
@@ -169,31 +170,74 @@ const displayServerStatus = (
 
 const loadHandler = async (handlerPath: string, outputDir: string) => {
   try {
-    // Handle both relative paths and absolute paths
-    // If handlerPath includes a file extension, use it as-is
-    // Otherwise, try .js, .mjs, .cjs extensions
-    let fullPath: string;
+    console.log(`[Serverless] Parsing handler path: ${handlerPath}`);
+    
+    // Parse AWS Lambda handler format: "path/to/file.exportName" or "file.exportName"
+    // Examples: "index.handler", "handlers/api.handler", "src/index.default"
+    const handlerParts = handlerPath.split('.');
+    console.log(`[Serverless] Handler parts after split:`, handlerParts);
+    
+    let filePath: string;
+    let exportName: string | null = null;
 
-    if(isAbsolute(handlerPath)) {
-      fullPath = handlerPath;
+    if(handlerParts.length > 1) {
+      // AWS Lambda format: "file.exportName"
+      // Take the last part as export name, rest as file path
+      // Handle cases like "index.handler" -> file: "index", export: "handler"
+      // Or "handlers/api.handler" -> file: "handlers/api", export: "handler"
+      exportName = handlerParts[handlerParts.length - 1] || null;
+      filePath = handlerParts.slice(0, -1).join('.');
+      console.log(`[Serverless] Parsed AWS Lambda format - filePath: "${filePath}", exportName: "${exportName}"`);
     } else {
-      fullPath = pathResolve(outputDir, handlerPath);
+      // Simple format: just the file path
+      filePath = handlerPath;
+      console.log(`[Serverless] Simple format - filePath: "${filePath}"`);
     }
-
-    // Try different extensions if file doesn't exist
-    if(!existsSync(fullPath)) {
-      const extensions = ['.js', '.mjs', '.cjs', '.ts'];
-      const pathWithoutExt = fullPath.replace(/\.(js|mjs|cjs|ts)$/, '');
-      for(const ext of extensions) {
-        const candidatePath = pathWithoutExt + ext;
-        if(existsSync(candidatePath)) {
-          fullPath = candidatePath;
-          break;
+    
+    // Ensure filePath doesn't have the export name in it
+    if(filePath.includes('.handler') || filePath.includes('.default')) {
+      console.error(`[Serverless] WARNING: filePath still contains export name! filePath: "${filePath}"`);
+      // Try to fix it - remove the last part if it looks like an export name
+      const pathParts = filePath.split('.');
+      if(pathParts.length > 1) {
+        const lastPart = pathParts[pathParts.length - 1];
+        if(['handler', 'default', 'index'].includes(lastPart) && !exportName) {
+          exportName = lastPart;
+          filePath = pathParts.slice(0, -1).join('.');
+          console.log(`[Serverless] Fixed - filePath: "${filePath}", exportName: "${exportName}"`);
         }
       }
     }
 
-    console.log(`[Serverless] Loading handler from: ${fullPath}`);
+    // Handle both relative paths and absolute paths
+    let fullPath: string;
+    if(isAbsolute(filePath)) {
+      fullPath = filePath;
+    } else {
+      fullPath = pathResolve(outputDir, filePath);
+    }
+    console.log(`[Serverless] Resolved fullPath (before extensions): ${fullPath}`);
+
+    // Try different extensions if file doesn't exist
+    if(!existsSync(fullPath)) {
+      const extensions = ['.js', '.mjs', '.cjs'];
+      const pathWithoutExt = fullPath.replace(/\.(js|mjs|cjs)$/, '');
+      console.log(`[Serverless] Trying extensions. Base path: ${pathWithoutExt}`);
+      for(const ext of extensions) {
+        const candidatePath = pathWithoutExt + ext;
+        console.log(`[Serverless] Checking: ${candidatePath} (exists: ${existsSync(candidatePath)})`);
+        if(existsSync(candidatePath)) {
+          fullPath = candidatePath;
+          console.log(`[Serverless] Found file with extension: ${fullPath}`);
+          break;
+        }
+      }
+    } else {
+      console.log(`[Serverless] File exists without trying extensions: ${fullPath}`);
+    }
+
+    console.log(`[Serverless] Final fullPath: ${fullPath}`);
+    console.log(`[Serverless] Export name: ${exportName || 'default/handler'}`);
     console.log(`[Serverless] File exists: ${existsSync(fullPath)}`);
 
     if(!existsSync(fullPath)) {
@@ -204,15 +248,35 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
     }
 
     // Dynamic import of the handler with better error handling
+    // Add .js extension if importing TypeScript compiled output
+    const importPath = fullPath.endsWith('.ts') ? fullPath.replace(/\.ts$/, '.js') : fullPath;
+    
     try {
-      // Add .js extension if importing TypeScript compiled output
-      const importPath = fullPath.endsWith('.ts') ? fullPath.replace(/\.ts$/, '.js') : fullPath;
-      console.log(`[Serverless] Importing handler from: ${importPath}`);
+      // Convert to file:// URL for ES module imports (required for absolute paths)
+      // Use pathToFileURL to ensure proper file:// URL format
+      const importUrl = pathToFileURL(importPath).href;
+      console.log(`[Serverless] Importing handler from: ${importUrl}`);
+      console.log(`[Serverless] File path: ${importPath}`);
 
-      const handlerModule = await import(importPath);
-      console.log(`[Serverless] Handler module loaded. Exports: ${Object.keys(handlerModule).join(', ')}`);
+      // Use import() with the file URL
+      // Note: If the handler file has import errors (like missing dependencies),
+      // those will surface here, but that's a handler code issue, not a loader issue
+      const handlerModule = await import(importUrl);
+      console.log(`[Serverless] Handler module loaded successfully. Exports: ${Object.keys(handlerModule).join(', ')}`);
 
-      const handler = handlerModule.default || handlerModule.handler || handlerModule;
+      // Get the handler based on export name or try defaults
+      let handler: any;
+      if(exportName) {
+        handler = handlerModule[exportName];
+        if(!handler) {
+          console.error(`[Serverless] Export "${exportName}" not found in module. Available exports: ${Object.keys(handlerModule).join(', ')}`);
+          return null;
+        }
+      } else {
+        // Try default, handler, or the module itself
+        handler = handlerModule.default || handlerModule.handler || handlerModule;
+      }
+
       console.log(`[Serverless] Handler found: ${typeof handler}, isFunction: ${typeof handler === 'function'}`);
 
       if(typeof handler !== 'function') {
@@ -224,6 +288,16 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
     } catch(importError: any) {
       console.error(`[Serverless] Import error for handler ${handlerPath}:`, importError.message);
       console.error('[Serverless] Import error stack:', importError.stack);
+      
+      // Check if this is a dependency resolution error (common with ES modules)
+      if(importError.message && importError.message.includes('Cannot find module')) {
+        console.error('[Serverless] This appears to be a dependency resolution error.');
+        console.error('[Serverless] The handler file exists, but one of its imports is failing.');
+        console.error('[Serverless] Check that all dependencies in the handler file are properly installed.');
+        console.error(`[Serverless] Handler file: ${importPath}`);
+        console.error('[Serverless] Make sure the handler and its dependencies are compiled correctly.');
+      }
+      
       return null;
     }
   } catch(error: any) {

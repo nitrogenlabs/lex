@@ -486,7 +486,16 @@ export default (webpackEnv, webpackOptions) => {
             {
               loader: cssLoaderPath,
               options: {
-                importLoaders: 1
+                importLoaders: 1,
+                url: {
+                  filter: (url, resourcePath) => {
+                    if(url.startsWith('/')) {
+                      return false;
+                    }
+
+                    return true;
+                  }
+                }
               }
             },
             {
@@ -498,7 +507,18 @@ export default (webpackEnv, webpackOptions) => {
                       addDependencyTo: webpack,
                       path: [relativeNodePath('', dirName)]
                     }),
-                    postcssUrl(),
+                    postcssUrl({
+                      // Skip processing absolute URLs (starting with /) - let them pass through as-is
+                      filter: (asset) => {
+                        const url = asset.url || '';
+                        // If URL starts with /, it's an absolute path - don't process it
+                        if(url.startsWith('/')) {
+                          return false;
+                        }
+                        // Process relative URLs
+                        return true;
+                      }
+                    }),
                     postcssFor(),
                     postcssPercentage({
                       floor: true,
