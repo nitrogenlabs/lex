@@ -171,12 +171,12 @@ const displayServerStatus = (
 const loadHandler = async (handlerPath: string, outputDir: string) => {
   try {
     console.log(`[Serverless] Parsing handler path: ${handlerPath}`);
-    
+
     // Parse AWS Lambda handler format: "path/to/file.exportName" or "file.exportName"
     // Examples: "index.handler", "handlers/api.handler", "src/index.default"
     const handlerParts = handlerPath.split('.');
-    console.log(`[Serverless] Handler parts after split:`, handlerParts);
-    
+    console.log('[Serverless] Handler parts after split:', handlerParts);
+
     let filePath: string;
     let exportName: string | null = null;
 
@@ -193,7 +193,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
       filePath = handlerPath;
       console.log(`[Serverless] Simple format - filePath: "${filePath}"`);
     }
-    
+
     // Ensure filePath doesn't have the export name in it
     if(filePath.includes('.handler') || filePath.includes('.default')) {
       console.error(`[Serverless] WARNING: filePath still contains export name! filePath: "${filePath}"`);
@@ -250,7 +250,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
     // Dynamic import of the handler with better error handling
     // Add .js extension if importing TypeScript compiled output
     const importPath = fullPath.endsWith('.ts') ? fullPath.replace(/\.ts$/, '.js') : fullPath;
-    
+
     try {
       // Convert to file:// URL for ES module imports (required for absolute paths)
       // Use pathToFileURL to ensure proper file:// URL format
@@ -288,7 +288,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
     } catch(importError: any) {
       console.error(`[Serverless] Import error for handler ${handlerPath}:`, importError.message);
       console.error('[Serverless] Import error stack:', importError.stack);
-      
+
       // Check if this is a dependency resolution error (common with ES modules)
       if(importError.message && importError.message.includes('Cannot find module')) {
         console.error('[Serverless] This appears to be a dependency resolution error.');
@@ -297,7 +297,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
         console.error(`[Serverless] Handler file: ${importPath}`);
         console.error('[Serverless] Make sure the handler and its dependencies are compiled correctly.');
       }
-      
+
       return null;
     }
   } catch(error: any) {
