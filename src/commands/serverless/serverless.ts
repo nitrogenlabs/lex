@@ -793,15 +793,15 @@ export const serverless = async (
     cliName = 'Lex',
     config,
     debug = false,
-    host = 'localhost',
-    httpPort = 5000,
-    httpsPort = 5001,
+    host: cliHost,
+    httpPort: cliHttpPort,
+    httpsPort: cliHttpsPort,
     quiet = false,
     remove = false,
     test = false,
     usePublicIp,
     variables,
-    wsPort = 5002
+    wsPort: cliWsPort
   } = cmd;
 
   const spinner = createSpinner(quiet);
@@ -907,15 +907,30 @@ export const serverless = async (
   }
 
   // Merge config with command line options
+  // Determine effective host/ports with correct precedence: CLI > config > defaults
+  const configOffline = serverlessConfig.custom?.['serverless-offline'] || {};
+  const effectiveHost = (cliHost ?? configOffline.host ?? 'localhost') as string;
+  const toNumber = (v: any, fallback: number): number => {
+    if(v === undefined || v === null || v === '') {
+      return fallback;
+    }
+
+    const n = typeof v === 'number' ? v : parseInt(String(v));
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const effectiveHttpPort = toNumber(cliHttpPort ?? configOffline.httpPort, 5000);
+  const effectiveHttpsPort = toNumber(cliHttpsPort ?? configOffline.httpsPort, 5001);
+  const effectiveWsPort = toNumber(cliWsPort ?? configOffline.wsPort, 5002);
+
   const finalConfig: ServerlessConfig = {
     ...serverlessConfig,
     custom: {
       'serverless-offline': {
         cors: serverlessConfig.custom?.['serverless-offline']?.cors !== false,
-        host: serverlessConfig.custom?.['serverless-offline']?.host || host,
-        httpPort: serverlessConfig.custom?.['serverless-offline']?.httpPort || httpPort,
-        httpsPort: serverlessConfig.custom?.['serverless-offline']?.httpsPort || httpsPort,
-        wsPort: serverlessConfig.custom?.['serverless-offline']?.wsPort || wsPort
+        host: effectiveHost,
+        httpPort: effectiveHttpPort,
+        httpsPort: effectiveHttpsPort,
+        wsPort: effectiveWsPort
       }
     }
   };
