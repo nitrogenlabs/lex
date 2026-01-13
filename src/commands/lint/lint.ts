@@ -448,10 +448,6 @@ SORT-KEYS RULE (HIGHEST PRIORITY):
 - Preserve the original formatting and line breaks when sorting
 
 Example of CORRECT formatting (DO NOT CHANGE):
-export class UserConstants {
-  static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
-  static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
-}
 
 constructor(flux: FluxFramework, CustomAdapter: typeof Event = Event) {
   this.CustomAdapter = CustomAdapter;
@@ -477,7 +473,6 @@ const config = {
 };
 
 Example of INCORRECT formatting (FIX THIS):
-export class UserConstants {static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
   static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
 }
 
@@ -585,7 +580,6 @@ WHAT NOT TO FIX:
 - Do not modify code that is not mentioned in the ESLint errors
 
 Example of CORRECT formatting (DO NOT CHANGE):
-export class UserConstants {
   static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
   static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
 }
@@ -614,7 +608,6 @@ const config = {
 };
 
 Example of INCORRECT formatting (FIX THIS):
-export class UserConstants {static readonly ADD_ITEM_ERROR: string = 'USER_ADD_ITEM_ERROR';
   static readonly OTHER_CONSTANT: string = 'OTHER_CONSTANT';
 }
 

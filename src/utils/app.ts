@@ -18,8 +18,6 @@ import {log} from './log.js';
 import type {LexConfigType} from '../LexConfig.js';
 
 
-export const cwd: string = process.cwd();
-
 export interface GetFilenamesProps {
   readonly callback?: (status: number)=> void;
   readonly cliName?: string;
@@ -171,7 +169,7 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
     spinner.start('Copying configured files...');
     let totalCopied = 0;
 
-    const baseDir = sourceFullPath || (sourcePath ? pathResolve(cwd, sourcePath) : cwd);
+    const baseDir = sourceFullPath || (sourcePath ? pathResolve(process.cwd(), sourcePath) : process.cwd());
     const allCopyPromises: Promise<unknown>[] = [];
 
     for(const pattern of copyFilesConfig) {
@@ -288,7 +286,7 @@ export const removeConflictModules = (moduleList: object) => {
 };
 
 export const removeFiles = (fileName: string, isRelative: boolean = false) => new Promise((resolve, reject) => {
-  const filePath: string = isRelative ? pathResolve(cwd, fileName) : fileName;
+  const filePath: string = isRelative ? pathResolve(process.cwd(), fileName) : fileName;
 
   try {
     rimrafSync(filePath);

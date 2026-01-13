@@ -40,7 +40,36 @@ jest.mock('../../LexConfig.js', () => ({
     config: {
       outputFullPath: '/mock/output',
       sourceFullPath: '/mock/source',
-      swc: {},
+      swc: {
+        inlineSourcesContent: true,
+        isModule: true,
+        jsc: {
+          externalHelpers: false,
+          keepClassNames: false,
+          loose: false,
+          parser: {
+            decorators: true,
+            dynamicImport: true,
+            syntax: 'typescript',
+            tsx: true
+          },
+          target: 'es2023',
+          transform: {
+            react: {
+              runtime: 'automatic'
+            }
+          }
+        },
+        minify: false,
+        module: {
+          lazy: false,
+          noInterop: false,
+          strict: false,
+          strictMode: true,
+          type: 'es6'
+        },
+        sourceMaps: 'inline'
+      },
       useTypescript: false
     },
     getTypeScriptDeclarationFlags: jest.fn(() => [
@@ -540,6 +569,38 @@ describe('compile', () => {
     });
 
     it('should handle TSX files with React transform', async () => {
+      const {LexConfig} = require('../../LexConfig.js');
+      LexConfig.config.swc = {
+        inlineSourcesContent: true,
+        isModule: true,
+        jsc: {
+          externalHelpers: false,
+          keepClassNames: false,
+          loose: false,
+          parser: {
+            decorators: true,
+            dynamicImport: true,
+            syntax: 'typescript',
+            tsx: true
+          },
+          target: 'es2023',
+          transform: {
+            react: {
+              runtime: 'automatic'
+            }
+          }
+        },
+        minify: false,
+        module: {
+          lazy: false,
+          noInterop: false,
+          strict: false,
+          strictMode: true,
+          type: 'es6'
+        },
+        sourceMaps: 'inline'
+      };
+
       (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.tsx']);
 
       (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);

@@ -23,7 +23,6 @@ export * from './utils/aiService.js';
 export * from './utils/app.js';
 export * from './utils/file.js';
 export * from './utils/log.js';
-export * from './utils/reactShim.js';
 
 // Export Storybook module
 export * from './storybook/index.js';

@@ -36,32 +36,13 @@ const config = {
     }
   },
   stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx'],
-  webpackFinal: async (config) => {
+  webpackFinal: async (config: any) => {
     return {
       ...config,
       module: {
         ...config.module,
         rules: [
-          ...(config.module?.rules || []),
-          {
-            test: /\.(ts|tsx)$/,
-            use: [
-              {
-                loader: 'babel-loader',
-                options: {
-                  presets: [
-                    '@babel/preset-typescript',
-                    [
-                      '@babel/preset-react',
-                      {
-                        runtime: 'automatic'
-                      }
-                    ]
-                  ]
-                }
-              }
-            ]
-          }
+          ...(config.module?.rules || [])
         ]
       },
       resolve: {

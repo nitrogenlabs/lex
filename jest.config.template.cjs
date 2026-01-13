@@ -26,16 +26,7 @@ const baseConfig = {
   ],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
-    '^.+\\.ts$|^.+\\.tsx$': ['ts-jest', {
-      useESM: false,
-      tsconfig: 'tsconfig.test.json'
-    }],
-    '^.+\\.js$|^.+\\.jsx$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', {targets: {node: 'current'}}],
-        '@babel/preset-react'
-      ]
-    }]
+    '^.+\\.(t|j)sx?$': '@swc/jest'
   },
   moduleDirectories: ['node_modules', '<rootDir>'],
   testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx|js|jsx)?$',

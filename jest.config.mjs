@@ -43,25 +43,7 @@ const baseConfig = {
   testEnvironment: 'node',
   testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$',
   transform: {
-    '^.+\\.js$|^.+\\.jsx$': ['babel-jest', {
-      plugins: [
-        'babel-plugin-transform-import-meta'
-      ],
-      presets: [
-        ['@babel/preset-env', {targets: {node: 'current'}}],
-        '@babel/preset-typescript'
-      ]
-    }],
-    '^.+\\.ts$|^.+\\.tsx$': ['babel-jest', {
-      plugins: [
-        'babel-plugin-transform-import-meta'
-      ],
-      presets: [
-        ['@babel/preset-env', {targets: {node: 'current'}}],
-        '@babel/preset-typescript',
-        ['@babel/preset-react', {runtime: 'automatic'}]
-      ]
-    }]
+    '^.+\\.(t|j)sx?$': '@swc/jest'
   },
   verbose: true
 };
