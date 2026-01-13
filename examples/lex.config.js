@@ -156,5 +156,13 @@ export default {
 //     },
 //     minify: true,
 //     sourceMaps: true
-//   }
+//   },
+
+  // Tailwind CSS content paths
+  // Specify which files Tailwind should scan for class names
+  // tailwindContent: [
+  //   './src/**/*.{js,ts,jsx,tsx}',
+  //   // Include external packages that use Tailwind classes
+  //   './node_modules/@nlabs/gothamjs/lib/**/*.{js,ts,jsx,tsx}'
+  // ]
 // };

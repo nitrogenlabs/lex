@@ -412,6 +412,25 @@ You can also specify ESLint rules in your `lex.config.js` file, but this is less
 | `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
 | `webpack.staticPath` | `string` | `'./src/static'` | Path to static assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { staticPath: './assets' }` |
 
+### **Tailwind CSS Configuration**
+
+| Option | Type | Default | Description | Example |
+|--------|------|---------|-------------|---------|
+| `tailwindContent` | `string[]` | `undefined` | Content paths for Tailwind CSS to scan for class names. Passed to the PostCSS Tailwind plugin during webpack builds. | `tailwindContent: ['./src/**/*.{js,ts,jsx,tsx}', './node_modules/@nlabs/gothamjs/lib/**/*.{js,ts,jsx,tsx}']` |
+
+**Example usage in `lex.config.js`:**
+
+```javascript
+export default {
+  // ... other config
+  tailwindContent: [
+    './src/**/*.{js,ts,jsx,tsx}',
+    // Include external packages that use Tailwind classes
+    './node_modules/@nlabs/gothamjs/lib/**/*.{js,ts,jsx,tsx}'
+  ]
+};
+```
+
 ### **Library Configuration**
 
 | Option | Type | Default | Description | Example |

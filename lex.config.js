@@ -73,5 +73,14 @@ export default {
   jest: {
     roots: ['<rootDir>/src'],
     testEnvironment: 'node'
-  }
+  },
+
+  // Tailwind CSS content paths
+  // Specify which files Tailwind should scan for class names
+  // This is used by the PostCSS Tailwind plugin during build
+  tailwindContent: [
+    './src/**/*.{js,ts,jsx,tsx}',
+    // Include external packages that use Tailwind classes
+    // './node_modules/@nlabs/gothamjs/lib/**/*.{js,ts,jsx,tsx}'
+  ]
 };
