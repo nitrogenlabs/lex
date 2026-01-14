@@ -87,6 +87,29 @@ export const relativeFilePath = (filename: string, dirPath: string = './', backU
   return findFileUp.sync(filename, dirPath, nestDepth);
 };
 
+export const relativeNodePath = (packageName: string, dirPath: string = process.cwd()): string => {
+  const nodePath = pathResolve(dirPath, 'node_modules', packageName);
+  if(existsSync(nodePath)) {
+    return nodePath;
+  }
+
+  // Check parent directories for node_modules
+  let checkDir = dirPath;
+  for(let i = 0; i < 10; i++) {
+    const checkPath = pathResolve(checkDir, 'node_modules', packageName);
+    if(existsSync(checkPath)) {
+      return checkPath;
+    }
+    const parentDir = pathResolve(checkDir, '..');
+    if(parentDir === checkDir) {
+      break;
+    }
+    checkDir = parentDir;
+  }
+
+  return '';
+};
+
 export const resolveBinaryPath = (binaryName: string, packageName?: string): string => {
   const lexDir = LexConfig.getLexDir();
 
