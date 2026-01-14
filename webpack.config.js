@@ -274,15 +274,15 @@ if(existsSync(`${sourceFullPath}/tsconfig.json`)) {
   }));
 }
 
-const swcLoaderPath = relativeNodePath('swc-loader', dirName);
-const cssLoaderPath = relativeNodePath('css-loader', dirName);
-const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName);
-const htmlLoaderPath = relativeNodePath('html-loader', dirName);
-const miniCssExtractPluginPath = relativeNodePath('mini-css-extract-plugin', dirName);
-const postcssLoaderPath = relativeNodePath('postcss-loader', dirName);
-const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName);
-const styleLoaderPath = relativeNodePath('style-loader', dirName);
-const webpackPath = relativeNodePath('webpack', dirName);
+const swcLoaderPath = relativeNodePath('swc-loader', dirName) || 'swc-loader';
+const cssLoaderPath = relativeNodePath('css-loader', dirName) || 'css-loader';
+const graphqlLoaderPath = relativeNodePath('graphql-tag/loader', dirName) || 'graphql-tag/loader';
+const htmlLoaderPath = relativeNodePath('html-loader', dirName) || 'html-loader';
+const miniCssExtractPluginPath = relativeNodePath('mini-css-extract-plugin', dirName) || 'mini-css-extract-plugin';
+const postcssLoaderPath = relativeNodePath('postcss-loader', dirName) || 'postcss-loader';
+const sourceMapLoaderPath = relativeNodePath('source-map-loader', dirName) || 'source-map-loader';
+const styleLoaderPath = relativeNodePath('style-loader', dirName) || 'style-loader';
+const webpackPath = relativeNodePath('webpack', dirName) || 'webpack';
 
 const aliasPaths = {
   '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
