@@ -53,7 +53,7 @@ Utility function to check if a directory contains files with specific extensions
 
 ```javascript
 // Import the compile function
-import { compile } from './compile.js';
+import {compile} from './compile.js';
 
 // Compile with default options
 await compile({});
@@ -73,7 +73,7 @@ await compile({
   sourcePath: './src',
   outputPath: './lib'
 }, (exitCode) => {
-  if (exitCode === 0) {
+  if(exitCode === 0) {
     console.log('Compilation succeeded');
   } else {
     console.log('Compilation failed');

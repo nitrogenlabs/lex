@@ -61,7 +61,7 @@ export default {
   preset: 'web', // 'web' | 'node' | 'lambda'
   sourcePath: './src',
   outputPath: './lib'
-}
+};
 ```
 
 ### Command Implementation Pattern

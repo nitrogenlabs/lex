@@ -94,7 +94,7 @@ export default {
     minify: false, // Enable minification
     sourceMaps: 'inline', // 'inline', true, false
     inlineSourcesContent: true, // Inline source content
-    isModule: true, // Treat as module
+    isModule: true // Treat as module
 
     // Environment configuration (optional)
     // env: {

@@ -1,5 +1,5 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 
 // Mock implementations that don't use import.meta.url
 function getDirName() {
@@ -33,7 +33,7 @@ function getNodePath(moduleName) {
 
 function resolveBinaryPath(binaryName, packageName) {
   // Mock implementation
-  if (packageName) {
+  if(packageName) {
     return path.resolve(process.cwd(), `node_modules/${packageName}/bin/${binaryName}`);
   }
   return path.resolve(process.cwd(), `node_modules/.bin/${binaryName}`);

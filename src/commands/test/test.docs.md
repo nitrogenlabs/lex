@@ -98,7 +98,7 @@ export interface TestOptions {
 
 ```javascript
 // Import the test function
-import { test } from './test.js';
+import {test} from './test.js';
 
 // Run tests with default options
 await test({}, []);

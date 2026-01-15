@@ -3,19 +3,20 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
-import tailwindcss from '@tailwindcss/postcss';
 import tailwindNesting from '@tailwindcss/nesting';
+import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import cssnano from 'cssnano';
 import DotenvPlugin from 'dotenv-webpack';
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
 import isEmpty from 'lodash/isEmpty.js';
+import {createRequire} from 'module';
 import {resolve as pathResolve} from 'path';
 import postcssBrowserReporter from 'postcss-browser-reporter';
 import postcssCustomProperties from 'postcss-custom-properties';
@@ -26,15 +27,14 @@ import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
 import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import {createRequire} from 'module';
 import {URL} from 'url';
 import {default as webpack} from 'webpack';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 import {merge} from 'webpack-merge';
 import {WebpackPluginServe} from 'webpack-plugin-serve';
 
-import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 import {LexConfig} from './lib/LexConfig.js';
+import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 import postcssFor from './lib/utils/postcss/postcss-for.js';
 import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
 
@@ -59,7 +59,7 @@ const {
 
 const webpackStaticPath = webpackCustom?.staticPath || './src/static';
 
-const { publicPath: _, staticPath: __, ...webpackConfigFiltered } = webpackCustom || {};
+const {publicPath: _, staticPath: __, ...webpackConfigFiltered} = webpackCustom || {};
 
 const plugins = [
   new ProgressPlugin({
@@ -89,7 +89,7 @@ const plugins = [
   }),
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-    'global': 'global'
+    global: 'global'
   }),
   {
     apply: (compiler) => {
@@ -97,7 +97,7 @@ const plugins = [
         console.log('\x1b[36m[webpack]\x1b[0m Detected file change. Rebuilding...');
       });
       compiler.hooks.done.tap('NotifyOnRebuild', (stats) => {
-        if (stats.hasErrors()) {
+        if(stats.hasErrors()) {
           console.log('\x1b[31m[webpack]\x1b[0m Build failed with errors.');
         } else {
           console.log('\x1b[32m[webpack]\x1b[0m Build complete. Watching for changes...');
@@ -286,13 +286,13 @@ const webpackPath = relativeNodePath('webpack', dirName) || 'webpack';
 const aliasPaths = {
   '@nlabs/arkhamjs': relativeNodePath('@nlabs/arkhamjs', process.cwd()),
   '@nlabs/arkhamjs-utils-react': relativeNodePath('@nlabs/arkhamjs-utils-react', process.cwd()),
-  'buffer': relativeNodePath('buffer', dirName),
+  buffer: relativeNodePath('buffer', dirName),
   'core-js': relativeNodePath('core-js', dirName),
   process: relativeNodePath('process', dirName),
   react: relativeNodePath('react', process.cwd()),
   'react-dom': relativeNodePath('react-dom', process.cwd()),
   'regenerator-runtime': relativeNodePath('regenerator-runtime', dirName),
-  'Buffer': relativeNodePath('buffer', dirName)
+  Buffer: relativeNodePath('buffer', dirName)
 };
 const aliasKeys = Object.keys(aliasPaths);
 const alias = aliasKeys.reduce((aliases, key) => {
@@ -322,19 +322,19 @@ export default (webpackEnv, webpackOptions) => {
       : 'eval-cheap-module-source-map',
     entry: entryValue
       ? {
-          index: [
-            'buffer',
-            'process/browser',
-            entryValue
-          ]
-        }
+        index: [
+          'buffer',
+          'process/browser',
+          entryValue
+        ]
+      }
       : {
-          index: [
-            'buffer',
-            'process/browser',
-            `${sourceFullPath}/${lexConfig.entryJs}`
-          ]
-        },
+        index: [
+          'buffer',
+          'process/browser',
+          `${sourceFullPath}/${lexConfig.entryJs}`
+        ]
+      },
     externals: isReactNative ? {'react-native': true} : undefined,
     ignoreWarnings: [/Failed to parse source map/],
     mode: isProduction ? 'production' : 'development',
@@ -480,8 +480,8 @@ export default (webpackEnv, webpackOptions) => {
           use: [
             ...(isProduction && isWeb
               ? [{
-                  loader: require(miniCssExtractPluginPath).loader
-                }]
+                loader: require(miniCssExtractPluginPath).loader
+              }]
               : [styleLoaderPath]),
             {
               loader: cssLoaderPath,
@@ -734,20 +734,20 @@ export default (webpackEnv, webpackOptions) => {
               if(existsSync(filePath)) {
                 try {
                   ctx.type = path.match(/\.svg$/i) ? 'image/svg+xml' :
-                             path.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image/' + path.split('.').pop() :
-                             path.match(/\.css$/i) ? 'text/css' :
-                             'application/octet-stream';
+                    path.match(/\.(jpg|jpeg|png|gif)$/i) ? `image/${path.split('.').pop()}` :
+                      path.match(/\.css$/i) ? 'text/css' :
+                        'application/octet-stream';
                   ctx.body = readFileSync(filePath);
                   ctx.status = 200;
 
                   return;
                 } catch(err) {
-                  if (process.env.LEX_CONFIG_DEBUG) {
+                  if(process.env.LEX_CONFIG_DEBUG) {
                     console.log(`[LEX_DEBUG] Error reading file ${filePath}:`, err.message);
                   }
                 }
               } else {
-                if (process.env.LEX_CONFIG_DEBUG) {
+                if(process.env.LEX_CONFIG_DEBUG) {
                   console.log(`[LEX_DEBUG] File not found at: ${filePath}, outputFullPath: ${outputFullPath}, path: ${path}`);
                 }
               }
@@ -757,7 +757,7 @@ export default (webpackEnv, webpackOptions) => {
           });
 
           if(outputFullPath && existsSync(outputFullPath)) {
-            if (process.env.LEX_CONFIG_DEBUG) {
+            if(process.env.LEX_CONFIG_DEBUG) {
               console.log(`[LEX_DEBUG] Setting up static file serving from output: ${outputFullPath}`);
             }
 
@@ -771,7 +771,7 @@ export default (webpackEnv, webpackOptions) => {
           }
 
           if(existsSync(staticPathFull)) {
-            if (process.env.LEX_CONFIG_DEBUG) {
+            if(process.env.LEX_CONFIG_DEBUG) {
               console.log(`[LEX_DEBUG] Setting up static file serving from: ${staticPathFull}`);
             }
 
@@ -783,20 +783,20 @@ export default (webpackEnv, webpackOptions) => {
               br: false
             }));
 
-            if (process.env.LEX_CONFIG_DEBUG) {
+            if(process.env.LEX_CONFIG_DEBUG) {
               app.use(async (ctx, next) => {
                 const path = ctx.path || ctx.url || '';
-                if (path && !path.match(/^\/wps/) && !path.match(/^\/webpack/)) {
+                if(path && !path.match(/^\/wps/) && !path.match(/^\/webpack/)) {
                   console.log(`[LEX_DEBUG] Request: ${path}`);
                 }
                 await next();
-                if (ctx.status === 404 && path && path.includes('.')) {
+                if(ctx.status === 404 && path && path.includes('.')) {
                   console.log(`[LEX_DEBUG] 404 for: ${path}, body set: ${ctx.body !== undefined}`);
                 }
               });
             }
           } else {
-            if (process.env.LEX_CONFIG_DEBUG) {
+            if(process.env.LEX_CONFIG_DEBUG) {
               console.log(`[LEX_DEBUG] Static path does not exist: ${staticPathFull}`);
             }
           }
@@ -886,17 +886,17 @@ export default (webpackEnv, webpackOptions) => {
     }
   }
 
-  if (process.env.LEX_CONFIG_DEBUG) {
+  if(process.env.LEX_CONFIG_DEBUG) {
     console.log('\n\x1b[36m[LEX_CONFIG_DEBUG] Webpack mode:', process.env.NODE_ENV, 'isProduction:', isProduction, '\x1b[0m');
-    if (webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
+    if(webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
       console.log('\x1b[36m[LEX_CONFIG_DEBUG] Loader chains:\x1b[0m');
       webpackConfig.module.rules.forEach((rule, idx) => {
-        if (rule.test) {
-          let testStr = rule.test.toString();
+        if(rule.test) {
+          const testStr = rule.test.toString();
           let use = rule.use || rule.loader || rule.type;
-          if (Array.isArray(use)) {
-            use = use.map(u => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
-          } else if (typeof use === 'object' && use !== null) {
+          if(Array.isArray(use)) {
+            use = use.map((u) => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
+          } else if(typeof use === 'object' && use !== null) {
             use = use.loader || use.type;
           }
           console.log(`  [${idx}] ${testStr}: ${use}`);
@@ -904,23 +904,27 @@ export default (webpackEnv, webpackOptions) => {
       });
     }
 
-    if (webpackConfig && Array.isArray(webpackConfig.plugins)) {
+    if(webpackConfig && Array.isArray(webpackConfig.plugins)) {
       console.log('\x1b[36m[LEX_CONFIG_DEBUG] Plugins:\x1b[0m');
       webpackConfig.plugins.forEach((plugin, idx) => {
         let name = plugin.constructor && plugin.constructor.name;
-        if (!name && typeof plugin === 'object' && plugin.apply) name = 'CustomPlugin';
-        if (!name && typeof plugin === 'function') name = 'FunctionPlugin';
+        if(!name && typeof plugin === 'object' && plugin.apply) {
+          name = 'CustomPlugin';
+        }
+        if(!name && typeof plugin === 'function') {
+          name = 'FunctionPlugin';
+        }
         console.log(`  [${idx}] ${name}`);
       });
     }
 
-    if (webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
-      const cssRule = webpackConfig.module.rules.find(rule => rule.test && rule.test.toString().includes('css'));
-      if (cssRule) {
+    if(webpackConfig && webpackConfig.module && Array.isArray(webpackConfig.module.rules)) {
+      const cssRule = webpackConfig.module.rules.find((rule) => rule.test && rule.test.toString().includes('css'));
+      if(cssRule) {
         let use = cssRule.use || cssRule.loader || cssRule.type;
-        if (Array.isArray(use)) {
-          use = use.map(u => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
-        } else if (typeof use === 'object' && use !== null) {
+        if(Array.isArray(use)) {
+          use = use.map((u) => (typeof u === 'string' ? u : u.loader || u.type)).join(' -> ');
+        } else if(typeof use === 'object' && use !== null) {
           use = use.loader || use.type;
         }
         console.log('\x1b[36m[LEX_CONFIG_DEBUG] CSS Loader Chain:\x1b[0m', use);
@@ -932,13 +936,13 @@ export default (webpackEnv, webpackOptions) => {
 
   const mergedConfig = merge(webpackConfig, webpackConfigFiltered);
 
-  if (Array.isArray(mergedConfig.plugins)) {
+  if(Array.isArray(mergedConfig.plugins)) {
     mergedConfig.plugins = mergedConfig.plugins.filter((plugin) => {
-      if (typeof plugin === 'function' || (plugin && typeof plugin.apply === 'function')) {
+      if(typeof plugin === 'function' || (plugin && typeof plugin.apply === 'function')) {
         return true;
       }
 
-      if (plugin && typeof plugin === 'object' && 'postcssPlugin' in plugin) {
+      if(plugin && typeof plugin === 'object' && 'postcssPlugin' in plugin) {
         return false;
       }
 

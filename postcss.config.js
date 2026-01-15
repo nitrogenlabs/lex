@@ -2,6 +2,8 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import tailwindNesting from '@tailwindcss/nesting';
+import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 import postcssBrowserReporter from 'postcss-browser-reporter';
@@ -10,8 +12,6 @@ import postcssFlexbugsFixes from 'postcss-flexbugs-fixes';
 import postcssHash from 'postcss-hash';
 import postcssImport from 'postcss-import';
 import postcssNesting from 'postcss-nesting';
-import tailwindcss from '@tailwindcss/postcss';
-import tailwindNesting from '@tailwindcss/nesting';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssSimpleVars from 'postcss-simple-vars';
 import postcssSvgo from 'postcss-svgo';

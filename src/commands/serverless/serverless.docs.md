@@ -75,19 +75,17 @@ HTTP handlers should export a function that receives an event and context object
 
 ```javascript
 // handlers/hello.js
-export const handler = async (event, context) => {
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: 'Hello from serverless!',
-      path: event.path,
-      method: event.httpMethod
-    })
-  };
-};
+export const handler = async (event, context) => ({
+  statusCode: 200,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: 'Hello from serverless!',
+    path: event.path,
+    method: event.httpMethod
+  })
+});
 ```
 
 ### WebSocket Handlers

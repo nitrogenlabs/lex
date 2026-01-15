@@ -3,10 +3,10 @@ require('@testing-library/jest-dom');
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
-  disconnect: jest.fn(),
+  disconnect: jest.fn()
 }));
 
-global.matchMedia = jest.fn().mockImplementation(query => ({
+global.matchMedia = jest.fn().mockImplementation((query) => ({
   matches: false,
   media: query,
   onchange: null,
@@ -14,5 +14,5 @@ global.matchMedia = jest.fn().mockImplementation(query => ({
   removeListener: jest.fn(),
   addEventListener: jest.fn(),
   removeEventListener: jest.fn(),
-  dispatchEvent: jest.fn(),
+  dispatchEvent: jest.fn()
 }));

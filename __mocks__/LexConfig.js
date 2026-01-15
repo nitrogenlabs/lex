@@ -16,7 +16,7 @@ const LexConfig = {
   checkLintTypescriptConfig: jest.fn(),
   checkTestTypescriptConfig: jest.fn(),
   getLexDir: jest.fn(() => '/mock/lex/dir'),
-  updateConfig: jest.fn((config) => ({ ...defaultConfigValues, ...config })),
+  updateConfig: jest.fn((config) => ({...defaultConfigValues, ...config})),
   addConfigParams: jest.fn(),
   get useTypescript() {
     return this.config.useTypescript;

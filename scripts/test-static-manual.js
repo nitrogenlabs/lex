@@ -6,9 +6,8 @@
 
 import {spawn} from 'child_process';
 import {createConnection} from 'net';
-import {join} from 'path';
+import {join,dirname} from 'path';
 import {fileURLToPath} from 'url';
-import {dirname} from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,33 +30,31 @@ const devServerProcess = spawn('node', [lexPath, 'dev', '--port', testPort.toStr
   }
 });
 
-const checkPort = (port) => {
-  return new Promise((resolve) => {
-    const socket = createConnection(port, 'localhost');
-    socket.on('connect', () => {
-      socket.destroy();
-      resolve(true);
-    });
-    socket.on('error', () => {
-      resolve(false);
-    });
-    socket.setTimeout(2000, () => {
-      socket.destroy();
-      resolve(false);
-    });
+const checkPort = (port) => new Promise((resolve) => {
+  const socket = createConnection(port, 'localhost');
+  socket.on('connect', () => {
+    socket.destroy();
+    resolve(true);
   });
-};
+  socket.on('error', () => {
+    resolve(false);
+  });
+  socket.setTimeout(2000, () => {
+    socket.destroy();
+    resolve(false);
+  });
+});
 
 const waitForServer = async () => {
   console.log('⏳ Waiting for server to start...');
-  for (let i = 0; i < 60; i++) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  for(let i = 0; i < 60; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const portOpen = await checkPort(testPort);
-    if (portOpen) {
+    if(portOpen) {
       console.log(`✅ Server is running on port ${testPort}\n`);
       return true;
     }
-    if (i % 5 === 4) {
+    if(i % 5 === 4) {
       process.stdout.write('.');
     }
   }
@@ -69,41 +66,40 @@ const testStaticFile = async () => {
     console.log('🌐 Testing static file access...');
     const response = await fetch(`http://localhost:${testPort}/test.txt`);
     console.log(`   Status: ${response.status}`);
-    console.log(`   Headers:`, Object.fromEntries(response.headers.entries()));
+    console.log('   Headers:', Object.fromEntries(response.headers.entries()));
 
-    if (response.ok) {
+    if(response.ok) {
       const content = await response.text();
       console.log(`   Content: "${content}"`);
       console.log('\n✅ Static file is accessible!');
       return true;
-    } else {
-      console.log(`\n❌ Static file returned status ${response.status}`);
-      const text = await response.text();
-      console.log(`   Response: ${text.substring(0, 200)}`);
-      return false;
     }
-  } catch (error) {
+    console.log(`\n❌ Static file returned status ${response.status}`);
+    const text = await response.text();
+    console.log(`   Response: ${text.substring(0, 200)}`);
+    return false;
+  } catch(error) {
     console.log(`\n❌ Error accessing static file: ${error.message}`);
     return false;
   }
 };
 
 waitForServer().then(async (serverReady) => {
-  if (!serverReady) {
+  if(!serverReady) {
     console.log('\n❌ Server did not start within 60 seconds');
     devServerProcess.kill('SIGTERM');
     process.exit(1);
   }
 
   // Give it a moment to fully initialize
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const success = await testStaticFile();
 
   console.log('\n🛑 Stopping dev server...');
   devServerProcess.kill('SIGTERM');
   setTimeout(() => {
-    if (!devServerProcess.killed) {
+    if(!devServerProcess.killed) {
       devServerProcess.kill('SIGKILL');
     }
     process.exit(success ? 0 : 1);

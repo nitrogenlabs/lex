@@ -1,7 +1,7 @@
-import {typescriptConfig} from 'eslint-config-styleguidejs';
+import styleguideConfig from 'eslint-config-styleguidejs';
 
 export default [
-  ...typescriptConfig,
+  ...styleguideConfig,
   {
     ignores: ['*.md'],
     rules: {

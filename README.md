@@ -478,7 +478,7 @@ export default {
 
 ```javascript
 export default {
-  useTypescript: true,
+  useTypescript: true
   // SWC provides optimal defaults for all compilation tasks
   // No additional configuration needed for most use cases
   // SWC automatically handles:

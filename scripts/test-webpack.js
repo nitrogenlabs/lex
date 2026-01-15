@@ -15,8 +15,8 @@
 import {execSync, spawn} from 'child_process';
 import {existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync} from 'fs';
 import {createConnection} from 'net';
-import {join} from 'path';
 import {tmpdir} from 'os';
+import {join} from 'path';
 
 const testDir = join(tmpdir(), `lex-webpack-test-${Date.now()}`);
 
@@ -105,7 +105,7 @@ try {
       }
     });
     console.log(result.toString());
-  } catch (error) {
+  } catch(error) {
     console.error('Build error output:', error.stdout || error.stderr || error.message);
     throw error;
   }
@@ -117,9 +117,9 @@ try {
   console.log('🔍 Verifying build output...');
 
   const indexHtml = join(buildDir, 'index.html');
-  if (existsSync(indexHtml)) {
+  if(existsSync(indexHtml)) {
     const htmlContent = readFileSync(indexHtml, 'utf8');
-    if (htmlContent.includes('Test App')) {
+    if(htmlContent.includes('Test App')) {
       console.log('✅ HTML file generated correctly');
     } else {
       console.log('❌ HTML content incorrect');
@@ -133,24 +133,24 @@ try {
   let cssFound = false;
   let cssProcessed = false;
 
-  for (const cssFile of cssFiles) {
+  for(const cssFile of cssFiles) {
     const cssPath = join(buildDir, cssFile);
-    if (existsSync(cssPath)) {
+    if(existsSync(cssPath)) {
       cssFound = true;
       const cssContent = readFileSync(cssPath, 'utf8');
       console.log('✅ CSS file generated');
 
-      if (cssContent.includes('test-for-loop')) {
+      if(cssContent.includes('test-for-loop')) {
         const hasForLoop = /width:\s*calc\([^)]*25px\)/.test(cssContent);
-        if (hasForLoop) {
+        if(hasForLoop) {
           console.log('✅ PostCSS @for loop processed correctly');
           cssProcessed = true;
         }
       }
 
-      if (cssContent.includes('test-percentage')) {
+      if(cssContent.includes('test-percentage')) {
         const hasPercentage = /width:\s*[\d.]+%/.test(cssContent);
-        if (hasPercentage) {
+        if(hasPercentage) {
           console.log('✅ PostCSS percentage() function processed correctly');
           cssProcessed = true;
         }
@@ -159,29 +159,29 @@ try {
     }
   }
 
-  if (!cssFound) {
+  if(!cssFound) {
     const files = readdirSync(buildDir);
-    const jsFile = files.find(f => f.startsWith('index.') && f.endsWith('.js') && !f.includes('runtime') && !f.includes('vendors'));
-    if (jsFile) {
+    const jsFile = files.find((f) => f.startsWith('index.') && f.endsWith('.js') && !f.includes('runtime') && !f.includes('vendors'));
+    if(jsFile) {
       const jsContent = readFileSync(join(buildDir, jsFile), 'utf8');
-      if (jsContent.includes('calc') && jsContent.includes('25px')) {
+      if(jsContent.includes('calc') && jsContent.includes('25px')) {
         console.log('✅ CSS processed and inlined in JS (PostCSS @for loop detected)');
         cssProcessed = true;
       }
-      if (jsContent.includes('%') && /[\d.]+%/.test(jsContent)) {
+      if(jsContent.includes('%') && /[\d.]+%/.test(jsContent)) {
         console.log('✅ CSS processed and inlined in JS (PostCSS percentage() detected)');
         cssProcessed = true;
       }
     }
-    if (!cssProcessed) {
+    if(!cssProcessed) {
       console.log('⚠️  CSS file not found (may be inlined or named differently)');
     }
   }
 
   const staticFile = join(buildDir, 'test.txt');
-  if (existsSync(staticFile)) {
+  if(existsSync(staticFile)) {
     const staticContent = readFileSync(staticFile, 'utf8');
-    if (staticContent === 'Static file content') {
+    if(staticContent === 'Static file content') {
       console.log('✅ Static file copied correctly');
     } else {
       console.log('❌ Static file content incorrect');
@@ -194,7 +194,7 @@ try {
 
   const testPort = 3001;
 
-  if (!existsSync(buildDir)) {
+  if(!existsSync(buildDir)) {
     console.log('⚠️  Build directory does not exist, creating it...');
     mkdirSync(buildDir, {recursive: true});
   }
@@ -220,7 +220,7 @@ try {
       const output = data.toString();
       serverOutput += output;
       // Check for server ready indicators
-      if (output.includes('compiled') || output.includes('Local:') || output.includes('http://') || output.includes('webpack compiled')) {
+      if(output.includes('compiled') || output.includes('Local:') || output.includes('http://') || output.includes('webpack compiled')) {
         serverStartedOutput = true;
       }
     });
@@ -228,11 +228,11 @@ try {
     devServerProcess.stderr.on('data', (data) => {
       const output = data.toString();
       serverOutput += output;
-      if (output.includes('error') || output.includes('Error') || output.includes('ERROR')) {
+      if(output.includes('error') || output.includes('Error') || output.includes('ERROR')) {
         serverError = output;
       }
       // Sometimes webpack outputs to stderr but it's not an error
-      if (output.includes('compiled') || output.includes('webpack')) {
+      if(output.includes('compiled') || output.includes('webpack')) {
         serverStartedOutput = true;
       }
     });
@@ -244,31 +244,29 @@ try {
     console.log(`⏳ Waiting for dev server to start on port ${testPort}...`);
     console.log('   (This may take 30-60 seconds for initial compilation)');
 
-    const checkPort = (port) => {
-      return new Promise((resolve) => {
-        const socket = createConnection(port, 'localhost');
-        socket.on('connect', () => {
-          socket.destroy();
-          resolve(true);
-        });
-        socket.on('error', () => {
-          resolve(false);
-        });
-        socket.setTimeout(1000, () => {
-          socket.destroy();
-          resolve(false);
-        });
+    const checkPort = (port) => new Promise((resolve) => {
+      const socket = createConnection(port, 'localhost');
+      socket.on('connect', () => {
+        socket.destroy();
+        resolve(true);
       });
-    };
+      socket.on('error', () => {
+        resolve(false);
+      });
+      socket.setTimeout(1000, () => {
+        socket.destroy();
+        resolve(false);
+      });
+    });
 
     const waitForServer = async () => {
-      for (let i = 0; i < 90; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      for(let i = 0; i < 90; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const portOpen = await checkPort(testPort);
-        if (portOpen || serverStartedOutput) {
+        if(portOpen || serverStartedOutput) {
           // Give it a bit more time to fully initialize
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
 
           // Try to access the static file directly
           try {
@@ -278,14 +276,14 @@ try {
               signal: controller.signal
             });
             clearTimeout(timeoutId);
-            if (response.ok && response.status === 200) {
+            if(response.ok && response.status === 200) {
               const content = await response.text();
-              if (content.includes('Static file content')) {
+              if(content.includes('Static file content')) {
                 return true;
               }
             }
-          } catch (error) {
-            if (error.name !== 'AbortError' && i > 5) {
+          } catch(error) {
+            if(error.name !== 'AbortError' && i > 5) {
               // Only log after a few attempts
             }
           }
@@ -298,28 +296,28 @@ try {
               signal: controller.signal
             });
             clearTimeout(timeoutId);
-            if (response.ok || response.status === 200) {
+            if(response.ok || response.status === 200) {
               // Server is up, even if static file test didn't work yet
-              if (i > 10) {
+              if(i > 10) {
                 // After 10 seconds, if server is up, try static file again
                 try {
                   const staticResponse = await fetch(`http://localhost:${testPort}/test.txt`, {
                     signal: controller.signal
                   });
-                  if (staticResponse.ok) {
+                  if(staticResponse.ok) {
                     return true;
                   }
-                } catch {
+                } catch{
                 }
               }
             }
-          } catch (error) {
-            if (error.name !== 'AbortError') {
+          } catch(error) {
+            if(error.name !== 'AbortError') {
             }
           }
         }
 
-        if (i % 10 === 9 && i > 0) {
+        if(i % 10 === 9 && i > 0) {
           console.log(`   Still waiting... (${i + 1}/90 seconds)`);
         }
       }
@@ -328,21 +326,21 @@ try {
 
     serverReady = await waitForServer();
 
-    if (serverError) {
+    if(serverError) {
       console.log(`❌ Dev server error: ${serverError}`);
       console.log('❌ HTTP tests cannot run due to server error');
       console.log('💡 Note: Static files are copied to build directory and should be accessible via dev server');
       throw new Error(`Dev server failed to start: ${serverError}`);
-    } else if (!serverReady) {
+    } else if(!serverReady) {
       console.log('❌ Dev server did not start within 60 seconds');
       console.log('❌ HTTP tests cannot run - this is a required test');
       console.log('💡 To test manually, run: cd <test-dir> && lex dev --port 3001');
-      if (serverOutput) {
+      if(serverOutput) {
         const lastOutput = serverOutput.slice(-2000);
         console.log('\nServer output (last 2000 chars):');
         console.log(lastOutput);
         // Check if there are any obvious errors
-        if (lastOutput.includes('Error') || lastOutput.includes('error') || lastOutput.includes('Cannot find')) {
+        if(lastOutput.includes('Error') || lastOutput.includes('error') || lastOutput.includes('Cannot find')) {
           console.log('\n⚠️  Potential errors detected in server output above');
         }
       } else {
@@ -351,11 +349,11 @@ try {
       }
 
       // Check if process is still running
-      if (devServerProcess && !devServerProcess.killed) {
+      if(devServerProcess && !devServerProcess.killed) {
         try {
           devServerProcess.kill(0); // Check if process exists
           console.log('   (Dev server process is still running but not responding)');
-        } catch {
+        } catch{
           console.log('   (Dev server process has exited)');
         }
       }
@@ -372,17 +370,17 @@ try {
       let httpTestFailed = false;
       const httpTestErrors = [];
 
-      for (const test of testUrls) {
+      for(const test of testUrls) {
         try {
           const response = await fetch(`http://localhost:${testPort}${test.url}`);
-          if (response.ok) {
+          if(response.ok) {
             const content = await response.text();
-            if (content.includes(test.expectedContent)) {
+            if(content.includes(test.expectedContent)) {
               console.log(`✅ ${test.description} accessible via HTTP (${test.url})`);
             } else {
               const errorMsg = `${test.description} accessible but content doesn't match (${test.url})`;
               console.log(`❌ ${errorMsg}`);
-              if (test.required) {
+              if(test.required) {
                 httpTestFailed = true;
                 httpTestErrors.push(errorMsg);
               }
@@ -390,25 +388,25 @@ try {
           } else {
             const errorMsg = `${test.description} returned status ${response.status} (${test.url})`;
             console.log(`❌ ${errorMsg}`);
-            if (test.required) {
+            if(test.required) {
               httpTestFailed = true;
               httpTestErrors.push(errorMsg);
             }
           }
-        } catch (error) {
+        } catch(error) {
           const errorMsg = `Failed to fetch ${test.description}: ${error.message}`;
           console.log(`❌ ${errorMsg}`);
-          if (test.required) {
+          if(test.required) {
             httpTestFailed = true;
             httpTestErrors.push(errorMsg);
           }
         }
       }
 
-      if (httpTestFailed) {
+      if(httpTestFailed) {
         console.log('\n❌ HTTP static file access test FAILED!');
         console.log('Errors:');
-        httpTestErrors.forEach(err => console.log(`  - ${err}`));
+        httpTestErrors.forEach((err) => console.log(`  - ${err}`));
         console.log('\n💡 The dev server must be able to serve static files from the staticPath directory.');
         console.log('💡 Check that the middleware in webpack.config.js is correctly serving files from staticPathFull.');
         throw new Error('HTTP static file access test failed');
@@ -416,17 +414,16 @@ try {
         console.log('\n✅ All HTTP static file access tests passed!');
       }
     }
-
-  } catch (error) {
+  } catch(error) {
     console.error(`\n❌ Dev server HTTP test failed: ${error.message}`);
     console.error('This test is required and must pass.');
     throw error;
   } finally {
-    if (devServerProcess) {
+    if(devServerProcess) {
       console.log('🛑 Stopping dev server...');
       devServerProcess.kill('SIGTERM');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (devServerProcess.killed === false) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if(devServerProcess.killed === false) {
         devServerProcess.kill('SIGKILL');
       }
       console.log('✅ Dev server stopped');
@@ -437,10 +434,9 @@ try {
   console.log('\n🎉 All tests passed!');
   console.log(`\n📁 Test project location: ${testDir}`);
   console.log('💡 You can inspect the build output in the build/ directory');
-
-} catch (error) {
+} catch(error) {
   console.error('\n❌ Test suite failed:', error.message);
-  if (error.stack) {
+  if(error.stack) {
     console.error('\nStack trace:');
     console.error(error.stack);
   }
@@ -450,7 +446,7 @@ try {
   try {
     rmSync(testDir, {recursive: true, force: true});
     console.log('✅ Cleanup complete');
-  } catch {
+  } catch{
     console.log('⚠️  Could not clean up test directory:', testDir);
   }
 }
