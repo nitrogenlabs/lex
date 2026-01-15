@@ -76,7 +76,6 @@ export interface LexConfigType {
   sourceFullPath?: string;
   sourcePath?: string;
   swc?: SWCOptions;
-  tailwindContent?: string[];
   targetEnvironment?: 'node' | 'web';
   useGraphQl?: boolean;
   useTypescript?: boolean;

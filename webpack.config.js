@@ -53,7 +53,6 @@ const {
   libraryName,
   libraryTarget,
   preset,
-  tailwindContent,
   targetEnvironment = 'es2015',
   webpack: webpackCustom
 } = lexConfig;
@@ -538,7 +537,7 @@ export default (webpackEnv, webpackOptions) => {
                     }),
                     tailwindNesting(),
                     postcssNesting(),
-                    tailwindcss(tailwindContent ? {content: tailwindContent} : undefined),
+                    tailwindcss(),
                     autoprefixer(),
                     postcssFlexbugsFixes(),
                     postcssPresetEnv({
