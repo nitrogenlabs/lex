@@ -120,6 +120,7 @@
     "execa": "9.6.1",
     "expect": "^30.2.0",
     "express": "^5.2.1",
+    "favicons-webpack-plugin": "^6.0.1",
     "find-file-up": "^2.0.1",
     "glob": "^13.0.0",
     "global": "^4.4.0",
