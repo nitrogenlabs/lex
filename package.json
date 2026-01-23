@@ -116,7 +116,7 @@
     "dotenv-webpack": "^8.1.1",
     "download-npm-package": "^3.1.12",
     "eslint": "^9.39.2",
-    "eslint-config-styleguidejs": "^4.1.17",
+    "eslint-config-styleguidejs": "^4.1.18",
     "execa": "9.6.1",
     "expect": "^30.2.0",
     "express": "^5.2.1",
