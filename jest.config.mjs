@@ -43,7 +43,21 @@ const baseConfig = {
   testEnvironment: 'node',
   testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx)?$',
   transform: {
-    '^.+\\.(t|j)sx?$': '@swc/jest'
+    '^.+\\.(t|j)sx?$': ['@swc/jest', {
+      jsc: {
+        parser: {
+          decorators: true,
+          dynamicImport: true,
+          syntax: 'typescript',
+          tsx: true
+        },
+        transform: {
+          react: {
+            runtime: 'automatic'
+          }
+        }
+      }
+    }]
   },
   verbose: true
 };

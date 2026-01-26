@@ -14,22 +14,6 @@ if(process.env.LEX_CONFIG) {
 }
 
 const baseConfig = {
-  testEnvironment: 'jsdom',
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'node'],
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js'
-  },
-  transformIgnorePatterns: [
-    'node_modules/(?!(strip-indent|chalk|@testing-library/jest-dom|zod|@nlabs|@nlabs/arkhamjs|@nlabs/utils|@nlabs/lex)/.*)'
-  ],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  transform: {
-    '^.+\\.(t|j)sx?$': '@swc/jest'
-  },
-  moduleDirectories: ['node_modules', '<rootDir>'],
-  testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx|js|jsx)?$',
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: [
@@ -40,6 +24,36 @@ const baseConfig = {
     '.d.ts'
   ],
   coverageReporters: ['html', 'text'],
+  moduleDirectories: ['node_modules', '<rootDir>'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'node'],
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'jsdom',
+  testRegex: '(/__tests__/.*|\\.(test|spec|integration))\\.(ts|tsx|js|jsx)?$',
+  transform: {
+    '^.+\\.(t|j)sx?$': ['@swc/jest', {
+      jsc: {
+        parser: {
+          decorators: true,
+          dynamicImport: true,
+          syntax: 'typescript',
+          tsx: true
+        },
+        transform: {
+          react: {
+            runtime: 'automatic'
+          }
+        }
+      }
+    }]
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(strip-indent|chalk|@testing-library/jest-dom|zod|@nlabs|@nlabs/arkhamjs|@nlabs/utils|@nlabs/lex)/.*)'
+  ],
   verbose: true
 };
 
