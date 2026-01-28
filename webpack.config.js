@@ -37,7 +37,7 @@ import {LexConfig} from './lib/LexConfig.js';
 import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 import postcssFor from './lib/utils/postcss/postcss-for.js';
 import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
-import {tail} from 'lodash';
+import tail from 'lodash/tail.js';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
