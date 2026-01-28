@@ -3,9 +3,7 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
-import tailwindForms from '@tailwindcss/forms';
 import tailwindNesting from '@tailwindcss/nesting';
-import tailwindTypography from '@tailwindcss/typography';
 import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
@@ -539,8 +537,6 @@ export default (webpackEnv, webpackOptions) => {
                       warnings: false
                     }),
                     tailwindNesting(),
-                    tailwindForms(),
-                    tailwindTypography(),
                     postcssNesting(),
                     tailwindcss(),
                     autoprefixer(),
