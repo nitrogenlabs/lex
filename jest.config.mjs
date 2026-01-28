@@ -56,6 +56,9 @@ const baseConfig = {
             runtime: 'automatic'
           }
         }
+      },
+      module: {
+        type: 'es6'
       }
     }]
   },
