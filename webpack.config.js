@@ -3,7 +3,9 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {StaticSitePlugin} from '@nlabs/webpack-plugin-static-site';
+import tailwindForms from '@tailwindcss/forms';
 import tailwindNesting from '@tailwindcss/nesting';
+import tailwindTypography from '@tailwindcss/typography';
 import tailwindcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
@@ -37,6 +39,7 @@ import {LexConfig} from './lib/LexConfig.js';
 import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
 import postcssFor from './lib/utils/postcss/postcss-for.js';
 import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
+import {tail} from 'lodash';
 
 const {ProgressPlugin, ProvidePlugin} = webpack;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -536,6 +539,8 @@ export default (webpackEnv, webpackOptions) => {
                       warnings: false
                     }),
                     tailwindNesting(),
+                    tailwindForms(),
+                    tailwindTypography(),
                     postcssNesting(),
                     tailwindcss(),
                     autoprefixer(),
