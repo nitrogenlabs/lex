@@ -1,6 +1,5 @@
 import {execa} from 'execa';
 import path from 'path';
-import {URL} from 'url';
 
 import {test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
@@ -14,7 +13,6 @@ vi.mock('fs', async () => ({
   readFileSync: vi.fn(() => '{"type": "module"}')
 }));
 vi.mock('path');
-vi.mock('url');
 vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     checkTestTypescriptConfig: vi.fn(),
@@ -66,10 +64,6 @@ describe('test options tests', () => {
       useTypescript: true
     };
     (LexConfig.checkTypescriptConfig as Mock).mockImplementation(() => {});
-
-    (URL as unknown as MockedClass<typeof URL>).mockImplementation(() => ({
-      pathname: '/mock/path'
-    } as any));
 
     (path.resolve as Mock).mockImplementation((...args) => args.join('/'));
 

@@ -259,7 +259,7 @@ export const test = async (
     return 1;
   }
 
-  let vitestConfigFile = '';
+  let vitestConfigFile: string | undefined;
   let projectVitestConfig: Record<string, unknown> | null = null;
 
   if(config) {
@@ -482,6 +482,7 @@ export const test = async (
   if(reporters.size > 0) {
     const reporterList = Array.from(reporters);
     if(reporterList.includes('json') && !reporterList.includes('verbose')) {
+      // Keep console output while writing JSON results.
       reporterList.unshift('default');
     }
     reporterList.forEach((reporter) => vitestOptions.push('--reporter', reporter));

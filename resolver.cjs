@@ -26,9 +26,13 @@ module.exports = (value, options) => {
   const isAbsolute = fileName.indexOf('/') === 0;
 
   // For Vitest's internal modules and transformers, use lex node_modules
-  if(fileName.includes('@vitest/') ||
-      fileName.includes('vitest') ||
-      fileName.includes('vite-node') ||
+  const isVitestModule = fileName === 'vitest' ||
+    fileName.startsWith('vitest/') ||
+    fileName.startsWith('@vitest/') ||
+    fileName === 'vite-node' ||
+    fileName.startsWith('vite-node/');
+
+  if(isVitestModule ||
       fileName.includes('core-js') ||
       fileName.includes('regenerator-runtime') ||
       fileName.includes('vitest-sequencer-')) {
