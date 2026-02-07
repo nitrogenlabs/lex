@@ -37,7 +37,7 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 ### **Enterprise Ready**
 
 - TypeScript support out of the box
-- Jest testing framework included
+- Vitest testing framework included
 - Storybook integration
 - Production-optimized builds
 
@@ -70,7 +70,7 @@ Lex comes with everything you need for modern React development:
 | Tool | Purpose | Version |
 |------|---------|---------|
 | **SWC** | Lightning-fast TypeScript/JavaScript compiler | Latest |
-| **Jest** | Testing framework | Latest |
+| **Vitest** | Testing framework | Latest |
 | **TypeScript** | Type safety | Latest |
 | **Webpack** | Advanced bundling | Latest |
 | **Storybook** | Component development | Latest |
@@ -100,7 +100,7 @@ Lex comes with everything you need for modern React development:
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex test`](#test) | Run Jest tests | `lex test --watch` |
+| [`lex test`](#test) | Run Vitest tests | `lex test --watch` |
 | [`lex lint`](#lint) | Lint code with ESLint | `lex lint --fix` |
 | [`lex storybook`](#storybook) | Start Storybook | `lex storybook --open` |
 
@@ -204,15 +204,15 @@ lex test --generate
 # Debug failing tests
 lex test --debugTests
 
-# Use project-specific Jest config
-lex test --config ./jest.config.js
+# Use project-specific Vitest config
+lex test --config ./vitest.config.mjs
 ```
 
 #### Advanced Testing Features
 
-- **Smart Configuration Merging**: Automatically merges your project's Jest config with Lex's optimized defaults
+- **Smart Configuration Merging**: Automatically merges your project's Vitest config with Lex's optimized defaults
 - **ESM Support**: Automatic detection and configuration for ES modules projects
-- **Automatic Setup**: Creates jest.setup.js file if one doesn't exist
+- **Automatic Setup**: Creates vitest.setup.js file if one doesn't exist
 - **React JSX Automatic Runtime**: No need to import React in your test files
 - **TypeScript-First**: Optimized for TypeScript projects with specialized configs
 
@@ -288,12 +288,13 @@ export default {
   // SWC configuration (defaults to ESM format)
   // SWC is now the default transpiler for all compilation tasks
 
-  // Jest configuration (merged with Lex defaults)
-  jest: {
-    testEnvironment: 'jsdom',
-    setupFilesAfterEnv: ['./src/setupTests.js'],
-    moduleNameMapper: {
-      '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+  // Vitest configuration (merged with Lex defaults)
+  vitest: {
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.js'],
+    include: ['src/**/*.{test,spec}.ts'],
+    coverage: {
+      reporter: ['html', 'text']
     }
   }
 };
@@ -352,17 +353,16 @@ SWC is automatically configured and doesn't require additional configuration in 
 | **Decorators** | TypeScript decorators support | `enabled` |
 | **Source Maps** | Debug information | `inline` |
 
-### **Jest Configuration**
+### **Vitest Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
-| `jest.extensionsToTreatAsEsm` | `string[]` | `undefined` | Extensions to treat as ES modules | `jest: { extensionsToTreatAsEsm: ['.ts', '.tsx'] }` |
-| `jest.moduleNameMapper` | `Record<string, string>` | `undefined` | Module name mappings | `jest: { moduleNameMapper: { '\\.(css)$': 'identity-obj-proxy' } }` |
-| `jest.preset` | `string` | `undefined` | Jest preset | `jest: { preset: 'ts-jest' }` |
-| `jest.roots` | `string[]` | `undefined` | Test root directories | `jest: { roots: ['<rootDir>/src'] }` |
-| `jest.testEnvironment` | `string` | `undefined` | Test environment | `jest: { testEnvironment: 'jsdom' }` |
-| `jest.transform` | `Record<string, [string, object]>` | `undefined` | Transform configurations | `jest: { transform: { '^.+\\.tsx?$': ['ts-jest'] } }` |
-| `jest.transformIgnorePatterns` | `string[]` | `undefined` | Patterns to ignore in transforms | `jest: { transformIgnorePatterns: ['node_modules'] }` |
+| `vitest.environment` | `string` | `undefined` | Test environment | `vitest: { environment: 'jsdom' }` |
+| `vitest.setupFiles` | `string[]` | `undefined` | Setup files executed before tests | `vitest: { setupFiles: ['./src/setupTests.ts'] }` |
+| `vitest.include` | `string[]` | `undefined` | Test file glob patterns | `vitest: { include: ['src/**/*.{test,spec}.ts'] }` |
+| `vitest.exclude` | `string[]` | `undefined` | Exclude patterns for tests | `vitest: { exclude: ['dist'] }` |
+| `vitest.coverage.reporter` | `string[]` | `undefined` | Coverage reporters | `vitest: { coverage: { reporter: ['text', 'html'] } }` |
+| `vitest.coverage.reportsDirectory` | `string` | `undefined` | Coverage output directory | `vitest: { coverage: { reportsDirectory: 'coverage' } }` |
 
 ### **ESLint Configuration**
 
@@ -467,9 +467,9 @@ export default {
     maxTokens: 8000,
     temperature: 0.3
   },
-  jest: {
-    testEnvironment: 'jsdom',
-    setupFilesAfterEnv: ['./src/setupTests.ts']
+  vitest: {
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts']
   }
 };
 ```
@@ -634,7 +634,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **SWC** - For lightning-fast TypeScript/JavaScript compilation
-- **Jest** - For comprehensive testing
+- **Vitest** - For comprehensive testing
 - **TypeScript** - For type safety
 - **Webpack** - For advanced bundling features
 - **Storybook** - For component development

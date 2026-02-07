@@ -1,13 +1,13 @@
 // Mock implementation of build module
 const mockSpinner = {
-  start: jest.fn(),
-  succeed: jest.fn(),
-  fail: jest.fn()
+  start: vi.fn(),
+  succeed: vi.fn(),
+  fail: vi.fn()
 };
 
-const build = jest.fn().mockResolvedValue(0);
-const buildWithEsBuild = jest.fn().mockResolvedValue(0);
-const buildWithWebpack = jest.fn().mockResolvedValue(0);
+const build = vi.fn().mockResolvedValue(0);
+const buildWithEsBuild = vi.fn().mockResolvedValue(0);
+const buildWithWebpack = vi.fn().mockResolvedValue(0);
 
 module.exports = {
   build,

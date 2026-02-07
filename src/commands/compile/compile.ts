@@ -2,15 +2,17 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {existsSync, lstatSync, readdirSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
-import {extname as pathExtname, join as pathJoin, relative as pathRelative, resolve as pathResolve, dirname} from 'path';
 import {transform} from '@swc/core';
 import {execa} from 'execa';
+import {existsSync, lstatSync, readdirSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import {sync as globSync} from 'glob';
+import {extname as pathExtname, join as pathJoin, relative as pathRelative, resolve as pathResolve, dirname} from 'path';
+
 import {LexConfig} from '../../LexConfig.js';
 import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFilesByExt, removeFiles} from '../../utils/app.js';
 import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+
 import type {SWCOptions} from '../../LexConfig.js';
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {

@@ -1,41 +1,41 @@
 import {copy} from './copy.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  lstatSync: jest.fn(() => ({
-    isDirectory: jest.fn(() => false)
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  lstatSync: vi.fn(() => ({
+    isDirectory: vi.fn(() => false)
   }))
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  copyFileSync: jest.fn(),
-  copyFolderRecursiveSync: jest.fn(),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  copyFileSync: vi.fn(),
+  copyFolderRecursiveSync: vi.fn(),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
+vi.mock('../../utils/log.js');
 
 describe('copy options', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should copy with options', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const {copyFileSync} = require('../../utils/app.js');
 
     const result = await copy('./source.txt', './dest.txt', {quiet: true}, mockCallback);

@@ -2,56 +2,56 @@ import {execa} from 'execa';
 
 import {dev} from './dev.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn()
   }))
 }));
-jest.mock('../../utils/file.js', () => ({
-  ...jest.requireActual('../../utils/file.js'),
-  resolveWebpackPaths: jest.fn(() => ({
+vi.mock('../../utils/file.js', async () => ({
+  ...await vi.importActual('../../utils/file.js'),
+  resolveWebpackPaths: vi.fn(() => ({
     webpackConfig: '/mock/path/to/webpack.config.js',
     webpackPath: '/mock/path/to/webpack-cli'
   }))
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTypescriptConfig: jest.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       outputFullPath: '/mock/output',
       useTypescript: false
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
 
 describe('dev integration', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should start development server successfully', async () => {
     const mockChildProcess = {
-      on: jest.fn(),
-      stderr: {on: jest.fn()},
-      stdout: {on: jest.fn()}
+      on: vi.fn(),
+      stderr: {on: vi.fn()},
+      stdout: {on: vi.fn()}
     };
-    (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+    (execa as MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
 
     mockChildProcess.on.mockImplementation((event, callback) => {
       if(event === 'close') {
@@ -66,7 +66,7 @@ describe('dev integration', () => {
   });
 
   it('should handle server startup errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Server failed to start'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Server failed to start'));
     const result = await dev({});
 
     expect(result).toBe(1);

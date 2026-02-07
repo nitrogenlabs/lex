@@ -2,9 +2,10 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import {execa} from 'execa';
 import {renameSync, writeFileSync} from 'fs';
 import {resolve as pathResolve} from 'path';
-import {execa} from 'execa';
+
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../../utils/app.js';
 import {getDirName} from '../../utils/file.js';
@@ -18,7 +19,7 @@ export interface InitOptions {
   readonly typescript?: boolean;
 }
 
-export type InitCallback = (status: number) => void;
+export type InitCallback = (status: number)=> void;
 
 export const init = async (
   appName: string,

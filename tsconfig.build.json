@@ -26,7 +26,6 @@
     "skipLibCheck": true,
     "target": "ESNext",
     "types": [
-      "jest",
       "node"
     ]
   },
@@ -39,8 +38,9 @@
     "**/*.integration.*",
     "**/__tests__/**",
     "**/__mocks__/**",
+    "src/vitest.d.ts",
     "lib",
     "node_modules",
-    "jest.config.mjs"
+    "vitest.config.mjs"
   ]
 }

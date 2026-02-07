@@ -1,25 +1,25 @@
 // Mock implementation of ora
 const mockSpinner = {
-  start: jest.fn().mockReturnThis(),
-  stop: jest.fn().mockReturnThis(),
-  succeed: jest.fn().mockReturnThis(),
-  fail: jest.fn().mockReturnThis(),
-  warn: jest.fn().mockReturnThis(),
-  info: jest.fn().mockReturnThis(),
+  start: vi.fn().mockReturnThis(),
+  stop: vi.fn().mockReturnThis(),
+  succeed: vi.fn().mockReturnThis(),
+  fail: vi.fn().mockReturnThis(),
+  warn: vi.fn().mockReturnThis(),
+  info: vi.fn().mockReturnThis(),
   text: '',
   color: 'cyan',
   isSpinning: false
 };
 
-const mockOra = jest.fn().mockImplementation(() => mockSpinner);
+const mockOra = vi.fn().mockImplementation(() => mockSpinner);
 
 module.exports = () => ({
-  start: jest.fn().mockReturnThis(),
-  succeed: jest.fn().mockReturnThis(),
-  fail: jest.fn().mockReturnThis(),
-  stop: jest.fn().mockReturnThis(),
-  info: jest.fn().mockReturnThis(),
-  warn: jest.fn().mockReturnThis(),
+  start: vi.fn().mockReturnThis(),
+  succeed: vi.fn().mockReturnThis(),
+  fail: vi.fn().mockReturnThis(),
+  stop: vi.fn().mockReturnThis(),
+  info: vi.fn().mockReturnThis(),
+  warn: vi.fn().mockReturnThis(),
   text: ''
 });
 

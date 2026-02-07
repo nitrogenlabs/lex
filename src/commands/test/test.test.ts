@@ -1,64 +1,65 @@
-import {readFileSync} from 'fs';
-import {existsSync} from 'node:fs';
 import {execa} from 'execa';
+import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {aiFunction} from '../ai/ai.js';
-import {test, TestCallback} from './test.js';
+import {existsSync} from 'node:fs';
 
-jest.mock('execa');
-jest.mock('fs');
-jest.mock('glob', () => ({sync: jest.fn(() => [])}));
-jest.mock('node:fs');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+import {test, TestCallback} from './test.js';
+import {aiFunction} from '../ai/ai.js';
+
+vi.mock('execa');
+vi.mock('fs');
+vi.mock('glob', async () => ({sync: vi.fn(() => [])}));
+vi.mock('node:fs');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../ai/ai.js', () => ({
-  aiFunction: jest.fn()
+vi.mock('../../utils/log.js');
+vi.mock('../ai/ai.js', async () => ({
+  aiFunction: vi.fn()
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTestTypescriptConfig: jest.fn(),
-    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: vi.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       useTypescript: true
     },
-    getLexDir: jest.fn(() => '/mock/lex/dir'),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    getLexDir: vi.fn(() => '/mock/lex/dir'),
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getLexDir: jest.fn(() => '/mock/lex/dir'),
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
+  getLexDir: vi.fn(() => '/mock/lex/dir'),
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.test.json')
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
-  resolveBinaryPath: jest.fn(() => '/mock/path/to/jest')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  relativeNodePath: vi.fn(() => '/node_modules/vitest/vitest.mjs'),
+  resolveBinaryPath: vi.fn(() => '/mock/path/to/vitest')
 }));
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{"type": "module"}')
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => '{"type": "module"}')
 }));
 
 describe('test command', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    (readFileSync as jest.Mock).mockReturnValue('{}');
-    (existsSync as jest.Mock).mockReturnValue(true);
-    (globSync as unknown as jest.Mock).mockReturnValue([]);
+    vi.clearAllMocks();
+    (readFileSync as Mock).mockReturnValue('{}');
+    (existsSync as Mock).mockReturnValue(true);
+    (globSync as unknown as Mock).mockReturnValue([]);
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
-  it('runs Jest with default options', async () => {
-    const callback = jest.fn() as unknown as TestCallback;
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+  it('runs Vitest with default options', async () => {
+    const callback = vi.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await test({}, [], callback);
 
@@ -66,9 +67,9 @@ describe('test command', () => {
     expect(callback).toHaveBeenCalledWith(0);
   });
 
-  it('propagates Jest errors', async () => {
-    const callback = jest.fn() as unknown as TestCallback;
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('Test failed'));
+  it('propagates Vitest errors', async () => {
+    const callback = vi.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Test failed'));
 
     await test({}, [], callback);
 
@@ -77,12 +78,12 @@ describe('test command', () => {
 
   describe('AI test generation', () => {
     it('uses AI to generate tests for uncovered files', async () => {
-      const callback = jest.fn() as unknown as TestCallback;
-      const mockGlobSync = globSync as unknown as jest.Mock;
+      const callback = vi.fn() as unknown as TestCallback;
+      const mockGlobSync = globSync as unknown as Mock;
       mockGlobSync
         .mockReturnValueOnce(['src/utils/helper.ts']) // Source files
         .mockReturnValueOnce([]); // No test files
-      (readFileSync as jest.Mock).mockReturnValue('function helper() { return true; }');
+      (readFileSync as Mock).mockReturnValue('function helper() { return true; }');
 
       await test({aiGenerate: true}, [], callback);
 
@@ -93,8 +94,8 @@ describe('test command', () => {
     });
 
     it('skips test generation when all files have tests', async () => {
-      const callback = jest.fn() as unknown as TestCallback;
-      const mockGlobSync = globSync as unknown as jest.Mock;
+      const callback = vi.fn() as unknown as TestCallback;
+      const mockGlobSync = globSync as unknown as Mock;
       mockGlobSync
         .mockReturnValueOnce(['src/utils/helper.ts']) // Source files
         .mockReturnValueOnce(['src/utils/helper.test.ts']); // Test files exist
@@ -107,9 +108,9 @@ describe('test command', () => {
 
   describe('AI test analysis', () => {
     it('analyzes test results with AI when tests pass', async () => {
-      const callback = jest.fn() as unknown as TestCallback;
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
-      (readFileSync as jest.Mock).mockReturnValue('{"numPassedTests":5,"numFailedTests":0}');
+      const callback = vi.fn() as unknown as TestCallback;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+      (readFileSync as Mock).mockReturnValue('{"numPassedTests":5,"numFailedTests":0}');
 
       await test({aiAnalyze: true}, [], callback);
 
@@ -121,9 +122,9 @@ describe('test command', () => {
 
   describe('AI test debugging', () => {
     it('provides AI debugging when tests fail', async () => {
-      const callback = jest.fn() as unknown as TestCallback;
-      (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('Test failed'));
-      (readFileSync as jest.Mock).mockReturnValue('{"numPassedTests":3,"numFailedTests":2,"testResults":[]}');
+      const callback = vi.fn() as unknown as TestCallback;
+      (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Test failed'));
+      (readFileSync as Mock).mockReturnValue('{"numPassedTests":3,"numFailedTests":2,"testResults":[]}');
 
       await test({aiDebug: true}, [], callback);
 
@@ -134,9 +135,9 @@ describe('test command', () => {
   });
 
   describe('test options', () => {
-    it('passes options to Jest', async () => {
-      const callback = jest.fn() as unknown as TestCallback;
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    it('passes options to Vitest', async () => {
+      const callback = vi.fn() as unknown as TestCallback;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
       await test({
         bail: true,

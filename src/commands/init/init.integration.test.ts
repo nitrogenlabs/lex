@@ -2,48 +2,48 @@ import {execa} from 'execa';
 
 import {init} from './init.js';
 
-jest.mock('execa');
-jest.mock('fs');
-jest.mock('path');
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/app.js', () => ({
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('fs');
+vi.mock('path');
+vi.mock('../../LexConfig.js');
+vi.mock('../../utils/app.js', async () => ({
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  copyFileSync: jest.fn(),
-  copyFolderRecursiveSync: jest.fn(),
-  getPackageJson: jest.fn(() => ({
+  copyFileSync: vi.fn(),
+  copyFolderRecursiveSync: vi.fn(),
+  getPackageJson: vi.fn(() => ({
     dependencies: {},
     devDependencies: {},
     name: 'test-package',
     version: '1.0.0'
   })),
-  setPackageJson: jest.fn(),
-  updateTemplateName: jest.fn()
+  setPackageJson: vi.fn(),
+  updateTemplateName: vi.fn()
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../utils/file.js');
+vi.mock('../../utils/log.js');
+vi.mock('../../utils/file.js');
 
 describe('init integration', () => {
-  let consoleLogSpy: jest.SpyInstance;
-  let chdirSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
+  let chdirSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    chdirSpy = jest.spyOn(process, 'chdir').mockImplementation(() => undefined);
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    chdirSpy = vi.spyOn(process, 'chdir').mockImplementation(() => undefined);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    vi.clearAllMocks();
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
     chdirSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should initialize project successfully', async () => {
@@ -71,7 +71,7 @@ describe('init integration', () => {
   });
 
   it('should handle initialization errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Download failed'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Download failed'));
     const result = await init('invalid-app', 'invalid-package', {});
 
     expect(result).toBe(1);

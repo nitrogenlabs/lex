@@ -15,9 +15,9 @@ module.exports = (value, options) => {
     return null;
   }
 
-  const isSequencer = fileName.startsWith('jest-sequencer-');
+  const isSequencer = fileName.startsWith('vitest-sequencer-');
   if(isSequencer) {
-    fileName = fileName.replace('jest-sequencer-', '');
+    fileName = fileName.replace('vitest-sequencer-', '');
   }
 
   const {basedir, extensions = ['.js', '.ts', '.tsx', '.cjs']} = options;
@@ -25,15 +25,13 @@ module.exports = (value, options) => {
   const hasExtension = existingExt !== '' && extensions.includes(existingExt);
   const isAbsolute = fileName.indexOf('/') === 0;
 
-  // For Jest's internal modules and transformers, use lex node_modules
-  if(fileName.includes('ts-jest') ||
-      fileName.includes('jest-transform-graphql') ||
-      fileName.includes('@swc/jest') ||
+  // For Vitest's internal modules and transformers, use lex node_modules
+  if(fileName.includes('@vitest/') ||
+      fileName.includes('vitest') ||
+      fileName.includes('vite-node') ||
       fileName.includes('core-js') ||
       fileName.includes('regenerator-runtime') ||
-      fileName.includes('jest-circus') ||
-      fileName.includes('@jest/') ||
-      fileName.includes('jest-sequencer-')) {
+      fileName.includes('vitest-sequencer-')) {
     try {
       const result = resolveSync(fileName, {basedir: pathResolve(__dirname, '../'), extensions});
       return result;

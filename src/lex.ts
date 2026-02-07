@@ -3,11 +3,12 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import {Option, program} from 'commander';
 import {readFileSync} from 'fs';
 import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
-import {Option, program} from 'commander';
+
 import {aiFunction} from './commands/ai/ai.js';
 import {build} from './commands/build/build.js';
 import {clean} from './commands/clean/clean.js';
@@ -222,22 +223,22 @@ program.command('test [files...]')
   .option('--bail', 'Exit the test suite immediately upon the first failing test suite.')
   .option('--changedFilesWithAncestor', 'Runs tests related to the current changes and the changes made in the last commit.')
   .option('--changedSince', 'Runs tests related the changes since the provided branch.')
-  .option('--ci', 'When this option is provided, Jest will assume it is running in a CI environment.')
-  .option('--clearCache', 'Clear Jest cache.')
+  .option('--ci', 'When this option is provided, Vitest will assume it is running in a CI environment.')
+  .option('--clearCache', 'Clear Vitest cache.')
   .option('--collectCoverageFrom <glob>', 'A glob pattern relative to matching the files that coverage info needs to be collected from.')
   .option('--colors', 'Forces test results output highlighting even if stdout is not a TTY.')
-  .option('--config <path>', 'Custom Jest configuration file path (ie. jest.config.js).')
-  .option('--debug', 'Print debugging info about your Jest config.')
-  .option('--detectOpenHandles', 'Attempt to collect and print open handles preventing Jest from exiting cleanly')
+  .option('--config <path>', 'Custom Vitest configuration file path (ie. vitest.config.mjs).')
+  .option('--debug', 'Print debugging info about your Vitest config.')
+  .option('--detectOpenHandles', 'Attempt to collect and print open handles preventing Vitest from exiting cleanly')
   .option('--environment <n>', 'Target environment. "node" or "web". Default: "node".')
-  .option('--env', 'The test environment used for all tests. This can point to any file or node module. Examples: jsdom, node or path/to/my-environment.js.')
+  .option('--env', 'The test environment used for all tests. This can point to any file or node module. Examples: happy-dom, jsdom, node or path/to/my-environment.js.')
   .option('--errorOnDeprecated', 'Make calling deprecated APIs throw helpful error messages.')
   .option('--expand', 'Use this flag to show full diffs and errors instead of a patch.')
-  .option('--forceExit', 'Force Jest to exit after all tests have completed running.')
+  .option('--forceExit', 'Force Vitest to exit after all tests have completed running.')
   .option('--json', 'Prints the test results in JSON.')
   .option('--lastCommit', 'Run all tests affected by file changes in the last commit made.')
   .option('--lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
-  .option('--listTests', 'Lists all tests as JSON that Jest will run given the arguments, and exits.')
+  .option('--listTests', 'Lists all tests as JSON that Vitest will run given the arguments, and exits.')
   .option('--logHeapUsage', 'Logs the heap usage after every test.')
   .option('--maxWorkers <num>', 'Specifies the maximum number of workers the worker-pool will spawn for running tests. ')
   .option('--noStackTrace', 'Disables stack trace in test results output.')
@@ -247,14 +248,14 @@ program.command('test [files...]')
   .option('--passWithNoTests', 'Allows the test suite to pass when no files are found.')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--runInBand', 'Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests.')
-  .option('--setup <path>', 'Jest setup file path.')
-  .option('--showConfig', 'Print your Jest config and then exits.')
+  .option('--setup <path>', 'Vitest setup file path.')
+  .option('--showConfig', 'Print your Vitest config and then exits.')
   .option('--silent', 'Prevent tests from printing messages through the console.')
   .option('--testLocationInResults', 'Adds a location field to test results.')
   .option('--testNamePattern <regex>', 'Run only tests with a name that matches the regex. ')
   .option('--testPathPattern <regex>', 'A regexp pattern string that is matched against all tests paths before executing the test.')
   .option('--typescript', 'Transpile as Typescript.')
-  .option('--update', 'Update snapshots. Runs "jest --updateSnapshots"')
+  .option('--update', 'Update snapshots. Runs "vitest --update"')
   .option('--useStderr', 'Divert all output to stderr.')
   .option('--verbose', 'Display individual test results with the test suite hierarchy.')
   .option('--watch <path>', 'Watch files for changes and rerun tests related to changed files.')

@@ -1,46 +1,46 @@
-import {log} from '../../utils/log.js';
 import {serverless} from './serverless.js';
+import {log} from '../../utils/log.js';
 
-jest.mock('execa');
-jest.mock('boxen', () => jest.fn((text) => text));
-jest.mock('chalk', () => ({
-  blue: jest.fn((text) => text),
-  bold: jest.fn((text) => text),
-  cyan: jest.fn((text) => text),
-  dim: jest.fn((text) => text),
-  gray: jest.fn((text) => text),
-  green: jest.fn((text) => text),
-  magenta: jest.fn((text) => text),
-  red: jest.fn((text) => text),
-  white: jest.fn((text) => text),
-  yellow: jest.fn((text) => text)
+vi.mock('execa');
+vi.mock('boxen', () => vi.fn((text) => text));
+vi.mock('chalk', async () => ({
+  blue: vi.fn((text) => text),
+  bold: vi.fn((text) => text),
+  cyan: vi.fn((text) => text),
+  dim: vi.fn((text) => text),
+  gray: vi.fn((text) => text),
+  green: vi.fn((text) => text),
+  magenta: vi.fn((text) => text),
+  red: vi.fn((text) => text),
+  white: vi.fn((text) => text),
+  yellow: vi.fn((text) => text)
 }));
-jest.mock('express', () => {
+vi.mock('express', async () => {
   const mockApp = {
-    delete: jest.fn(),
-    get: jest.fn(),
-    listen: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    static: jest.fn(),
-    use: jest.fn()
+    delete: vi.fn(),
+    get: vi.fn(),
+    listen: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    static: vi.fn(),
+    use: vi.fn()
   };
-  return jest.fn(() => mockApp);
+  return vi.fn(() => mockApp);
 });
-jest.mock('../../utils/app.js', () => ({
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  removeFiles: jest.fn()
+  removeFiles: vi.fn()
 }));
 
 // Mock the server creation to prevent actual server startup
-jest.mock('http', () => ({
-  createServer: jest.fn(() => ({
-    close: jest.fn(),
-    listen: jest.fn((port, host, callback) => {
+vi.mock('http', async () => ({
+  createServer: vi.fn(() => ({
+    close: vi.fn(),
+    listen: vi.fn((port, host, callback) => {
       if(callback) {
         callback();
       }
@@ -48,40 +48,40 @@ jest.mock('http', () => ({
   }))
 }));
 
-jest.mock('ws', () => ({
-  WebSocketServer: jest.fn(() => ({
-    close: jest.fn(),
-    on: jest.fn()
+vi.mock('ws', async () => ({
+  WebSocketServer: vi.fn(() => ({
+    close: vi.fn(),
+    on: vi.fn()
   }))
 }));
 
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       outputFullPath: './lib'
     },
-    parseConfig: jest.fn()
+    parseConfig: vi.fn()
   }
 }));
 
-jest.mock('../../utils/log.js', () => ({
-  log: jest.fn()
+vi.mock('../../utils/log.js', async () => ({
+  log: vi.fn()
 }));
 
 // Mock fetch for public IP detection
-global.fetch = jest.fn(() =>
+global.fetch = vi.fn(() =>
   Promise.resolve({
     text: () => Promise.resolve('192.168.1.1')
   })
-) as jest.Mock;
+) as Mock;
 
 describe('serverless cli', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should start serverless server with default options', async () => {

@@ -21,7 +21,8 @@
     "skipLibCheck": true,
     "target": "ESNext",
     "types": [
-      "jest",
+      "vitest/globals",
+      "@testing-library/jest-dom",
       "node"
     ]
   },

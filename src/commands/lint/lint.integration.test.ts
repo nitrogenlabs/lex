@@ -2,37 +2,37 @@ import {execa} from 'execa';
 
 import {lint} from './lint.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
 
 describe('lint integration', () => {
-  let processExitSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
+  let processExitSpy: SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     processExitSpy.mockRestore();
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should lint successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     const result = await lint({});
 
     expect(result).toBe(0);
@@ -40,7 +40,7 @@ describe('lint integration', () => {
   });
 
   it('should handle linting errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Linting failed'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Linting failed'));
     const result = await lint({});
 
     expect(result).toBe(1);

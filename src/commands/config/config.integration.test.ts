@@ -1,48 +1,48 @@
 import {config} from './config.js';
 
-jest.mock('fs', () => ({
-  writeFileSync: jest.fn()
+vi.mock('fs', async () => ({
+  writeFileSync: vi.fn()
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('path', () => ({
-  relative: jest.fn(() => 'relative/path')
+vi.mock('path', async () => ({
+  relative: vi.fn(() => 'relative/path')
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       outputPath: './lib',
       sourcePath: './src',
       useTypescript: true
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
+vi.mock('../../utils/log.js');
 
 describe('config integration', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should generate app config', async () => {

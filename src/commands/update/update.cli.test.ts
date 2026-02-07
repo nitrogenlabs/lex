@@ -2,30 +2,30 @@ import {execa} from 'execa';
 
 import {update, UpdateCallback} from './update.js';
 
-jest.mock('execa');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('execa');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       packageManager: 'npm'
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir')
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
 
 describe('update.cli', () => {
-  const mockExit = jest.fn() as unknown as jest.MockedFunction<UpdateCallback>;
-  const mockExeca = execa as jest.MockedFunction<typeof execa>;
+  const mockExit = vi.fn() as unknown as MockedFunction<UpdateCallback>;
+  const mockExeca = execa as MockedFunction<typeof execa>;
 
   beforeEach(() => {
     mockExit.mockClear();
@@ -33,7 +33,7 @@ describe('update.cli', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should update packages with npm', async () => {

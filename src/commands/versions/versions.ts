@@ -13,10 +13,10 @@ const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 export const parseVersion = (packageVersion: string): string => packageVersion?.replace(/\^/g, '') || 'N/A';
 
 export const packages = {
-  jest: parseVersion(packageJson?.dependencies?.jest),
   lex: packageJson.version,
   swc: parseVersion(packageJson?.dependencies?.['@swc/core']),
   typescript: parseVersion(packageJson?.dependencies?.typescript),
+  vitest: parseVersion(packageJson?.dependencies?.vitest),
   webpack: parseVersion(packageJson?.dependencies?.webpack)
 };
 
@@ -29,7 +29,7 @@ export interface VersionsCmd {
   readonly json?: boolean;
 }
 
-export const versions = (cmd: VersionsCmd, callback: (status: number) => void): Promise<number> => {
+export const versions = (cmd: VersionsCmd, callback: (status: number)=> void): Promise<number> => {
   if(cmd.json) {
     console.log(JSON.stringify(jsonVersions(packages)));
   } else {
@@ -37,7 +37,7 @@ export const versions = (cmd: VersionsCmd, callback: (status: number) => void): 
     log(`  Lex: ${packages.lex}`, 'info', false);
     log('  ----------', 'note', false);
     log(`  SWC: ${packages.swc}`, 'info', false);
-    log(`  Jest: ${packages.jest}`, 'info', false);
+    log(`  Vitest: ${packages.vitest}`, 'info', false);
     log(`  Typescript: ${packages.typescript}`, 'info', false);
     log(`  Webpack: ${packages.webpack}`, 'info', false);
   }

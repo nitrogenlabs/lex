@@ -15,7 +15,7 @@ export const parseVersion = (packageVersion: string): string
 
 export const packages = {
   swc: string,
-  jest: string,
+  vitest: string,
   lex: string,
   typescript: string,
   webpack: string

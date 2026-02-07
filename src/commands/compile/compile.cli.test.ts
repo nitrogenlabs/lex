@@ -1,29 +1,30 @@
-import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {transform} from '@swc/core';
 import {execa} from 'execa';
+import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
+
 import {compile, hasFileType} from './compile.js';
 
-jest.mock('execa');
-jest.mock('@swc/core');
-jest.mock('fs');
-jest.mock('glob');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  checkLinkedModules: jest.fn(),
-  copyConfiguredFiles: jest.fn().mockResolvedValue(undefined),
-  copyFiles: jest.fn().mockResolvedValue(undefined),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('@swc/core');
+vi.mock('fs');
+vi.mock('glob');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  checkLinkedModules: vi.fn(),
+  copyConfiguredFiles: vi.fn().mockResolvedValue(undefined),
+  copyFiles: vi.fn().mockResolvedValue(undefined),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  getFilesByExt: jest.fn().mockReturnValue([]),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  getFilesByExt: vi.fn().mockReturnValue([]),
+  removeFiles: vi.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  resolveBinaryPath: jest.fn((binary) => {
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  resolveBinaryPath: vi.fn((binary) => {
     if(binary === 'tsc') {
       return '/mock/path/to/tsc';
     }
@@ -33,8 +34,8 @@ jest.mock('../../utils/file.js', () => ({
     return null;
   })
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       outputFullPath: '/mock/output',
@@ -71,7 +72,7 @@ jest.mock('../../LexConfig.js', () => ({
       },
       useTypescript: false
     },
-    getTypeScriptDeclarationFlags: jest.fn(() => [
+    getTypeScriptDeclarationFlags: vi.fn(() => [
       '--emitDeclarationOnly',
       '--declaration',
       '--declarationMap',
@@ -79,39 +80,39 @@ jest.mock('../../LexConfig.js', () => ({
       '--rootDir', './src',
       '--skipLibCheck'
     ]),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
 
 describe('compile', () => {
-  let consoleLogSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
+  let consoleErrorSpy: SpyInstance;
   const {LexConfig} = require('../../LexConfig.js');
   const {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} = require('../../utils/app.js');
   const {resolveBinaryPath} = require('../../utils/file.js');
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue([]);
-    (readdirSync as jest.MockedFunction<typeof readdirSync>).mockReturnValue([]);
-    (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
-    (lstatSync as jest.MockedFunction<typeof lstatSync>).mockReturnValue({
+    vi.clearAllMocks();
+    (globSync as MockedFunction<typeof globSync>).mockReturnValue([]);
+    (readdirSync as MockedFunction<typeof readdirSync>).mockReturnValue([]);
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
+    (lstatSync as MockedFunction<typeof lstatSync>).mockReturnValue({
       isDirectory: () => false
     } as any);
-    (readFileSync as jest.MockedFunction<typeof readFileSync>).mockReturnValue('export const test = () => {};');
-    (writeFileSync as jest.MockedFunction<typeof writeFileSync>).mockImplementation(() => {});
-    (mkdirSync as jest.MockedFunction<typeof mkdirSync>).mockImplementation(() => {});
+    (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValue('export const test = () => {};');
+    (writeFileSync as MockedFunction<typeof writeFileSync>).mockImplementation(() => {});
+    (mkdirSync as MockedFunction<typeof mkdirSync>).mockImplementation(() => {});
     getFilesByExt.mockReturnValue([]);
     copyFiles.mockResolvedValue(undefined);
     copyConfiguredFiles.mockResolvedValue(undefined);
@@ -131,7 +132,7 @@ describe('compile', () => {
 
   describe('hasFileType', () => {
     it('should return false if path does not exist', () => {
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(false);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(false);
 
       const result = hasFileType('/nonexistent', ['.ts']);
 
@@ -139,8 +140,8 @@ describe('compile', () => {
     });
 
     it('should return true if file with matching extension exists', () => {
-      (readdirSync as jest.MockedFunction<typeof readdirSync>).mockReturnValue(['test.ts'] as any);
-      (lstatSync as jest.MockedFunction<typeof lstatSync>).mockReturnValue({
+      (readdirSync as MockedFunction<typeof readdirSync>).mockReturnValue(['test.ts'] as any);
+      (lstatSync as MockedFunction<typeof lstatSync>).mockReturnValue({
         isDirectory: () => false
       } as any);
 
@@ -150,8 +151,8 @@ describe('compile', () => {
     });
 
     it('should return false if no matching extension found', () => {
-      (readdirSync as jest.MockedFunction<typeof readdirSync>).mockReturnValue(['test.js'] as any);
-      (lstatSync as jest.MockedFunction<typeof lstatSync>).mockReturnValue({
+      (readdirSync as MockedFunction<typeof readdirSync>).mockReturnValue(['test.js'] as any);
+      (lstatSync as MockedFunction<typeof lstatSync>).mockReturnValue({
         isDirectory: () => false
       } as any);
 
@@ -161,10 +162,10 @@ describe('compile', () => {
     });
 
     it('should recursively check directories', () => {
-      (readdirSync as jest.MockedFunction<typeof readdirSync>)
+      (readdirSync as MockedFunction<typeof readdirSync>)
         .mockReturnValueOnce(['subdir'] as any)
         .mockReturnValueOnce(['test.ts'] as any);
-      (lstatSync as jest.MockedFunction<typeof lstatSync>)
+      (lstatSync as MockedFunction<typeof lstatSync>)
         .mockReturnValueOnce({
           isDirectory: () => true
         } as any)
@@ -190,19 +191,19 @@ describe('compile', () => {
 
     it('should generate TypeScript declarations successfully', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         all: '',
         exitCode: 0,
         stderr: '',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -212,19 +213,19 @@ describe('compile', () => {
 
     it('should handle TypeScript compilation with warnings (has declarations)', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         all: 'Writing file: test.d.ts',
         exitCode: 1,
         stderr: 'error TS1234',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -234,19 +235,19 @@ describe('compile', () => {
 
     it('should handle TypeScript compilation failure (no declarations)', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         all: 'TypeScript compilation failed',
         exitCode: 1,
         stderr: 'error TS1234',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -256,19 +257,19 @@ describe('compile', () => {
 
     it('should handle TypeScript errors with error lines', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         all: 'TypeScript compilation failed',
         exitCode: 1,
         stderr: 'error TS1234: Type error',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -278,20 +279,20 @@ describe('compile', () => {
 
     it('should handle TypeScript errors with more than 10 error lines', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
       const manyErrors = Array.from({length: 15}, (_, i) => `error TS${1000 + i}: Error ${i}`).join('\n');
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         all: 'TypeScript compilation failed',
         exitCode: 1,
         stderr: manyErrors,
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -301,14 +302,14 @@ describe('compile', () => {
 
     it('should handle TypeScript compilation exception', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('TypeScript error'));
+      (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('TypeScript error'));
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -318,17 +319,17 @@ describe('compile', () => {
 
     it('should use custom TypeScript config when provided', async () => {
       LexConfig.config.useTypescript = true;
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         exitCode: 0,
         stderr: '',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       await compile({config: 'tsconfig.custom.json'});
@@ -344,17 +345,17 @@ describe('compile', () => {
   describe('compile - CSS processing', () => {
     it('should process CSS files', async () => {
       getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
         exitCode: 0,
         stderr: '',
         stdout: ''
       } as any);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -369,7 +370,7 @@ describe('compile', () => {
 
     it('should handle PostCSS binary not found', async () => {
       getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
       resolveBinaryPath.mockImplementation((binary) => {
@@ -386,11 +387,11 @@ describe('compile', () => {
 
     it('should handle PostCSS processing errors', async () => {
       getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('PostCSS error'));
+      (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('PostCSS error'));
 
       const result = await compile({});
 
@@ -404,7 +405,7 @@ describe('compile', () => {
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/image.png']);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -440,11 +441,11 @@ describe('compile', () => {
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/font.ttf']);
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -483,11 +484,11 @@ describe('compile', () => {
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/readme.md']);
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -519,13 +520,13 @@ describe('compile', () => {
 
   describe('compile - SWC compilation', () => {
     it('should compile TypeScript files with SWC', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts', '/mock/source/test2.tsx'])
         .mockReturnValueOnce([]);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'export const test = () => {};', map: ''} as any);
 
       const result = await compile({});
@@ -536,13 +537,13 @@ describe('compile', () => {
     });
 
     it('should compile JavaScript files with SWC', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>)
+      (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/test.js']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("test");', map: ''} as any);
 
       const result = await compile({});
@@ -552,13 +553,13 @@ describe('compile', () => {
     });
 
     it('should create output directory if it does not exist', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>)
+      (existsSync as MockedFunction<typeof existsSync>)
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'export const test = () => {};', map: ''} as any);
 
       const result = await compile({});
@@ -600,11 +601,11 @@ describe('compile', () => {
         sourceMaps: 'inline'
       };
 
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.tsx']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.tsx']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'export const Test = () => {};', map: ''} as any);
 
       const result = await compile({});
@@ -628,13 +629,13 @@ describe('compile', () => {
     });
 
     it('should handle SWC error with stack trace', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
       const error = new Error('SWC error');
       error.stack = 'Error: SWC error\n    at compile.ts:123';
-      (transform as jest.MockedFunction<typeof transform>).mockRejectedValue(error);
+      (transform as MockedFunction<typeof transform>).mockRejectedValue(error);
 
       const result = await compile({quiet: false});
 
@@ -643,13 +644,13 @@ describe('compile', () => {
     });
 
     it('should handle SWC error with filename property', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
       const error = new Error('SWC error') as any;
       error.filename = '/mock/source/test.ts';
-      (transform as jest.MockedFunction<typeof transform>).mockRejectedValue(error);
+      (transform as MockedFunction<typeof transform>).mockRejectedValue(error);
 
       const result = await compile({quiet: false});
 
@@ -657,13 +658,13 @@ describe('compile', () => {
     });
 
     it('should handle SWC error with file property', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
       const error = new Error('SWC error') as any;
       error.file = '/mock/source/test.ts';
-      (transform as jest.MockedFunction<typeof transform>).mockRejectedValue(error);
+      (transform as MockedFunction<typeof transform>).mockRejectedValue(error);
 
       const result = await compile({quiet: false});
 
@@ -671,11 +672,11 @@ describe('compile', () => {
     });
 
     it('should handle non-Error exceptions in SWC', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>).mockRejectedValue('String error');
+      (transform as MockedFunction<typeof transform>).mockRejectedValue('String error');
 
       const result = await compile({quiet: false});
 
@@ -688,11 +689,11 @@ describe('compile', () => {
       copyConfiguredFiles.mockRejectedValue(new Error('Copy configured files failed'));
 
       // Mock source files so compilation proceeds
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue([
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue([
         '/mock/source/index.ts'
       ]);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({});
@@ -703,7 +704,7 @@ describe('compile', () => {
 
   describe('compile - options', () => {
     it('should use custom cliName', async () => {
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({cliName: 'CustomCLI'});
@@ -712,7 +713,7 @@ describe('compile', () => {
     });
 
     it('should use custom sourcePath', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue([]);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue([]);
 
       const result = await compile({sourcePath: './custom/src'});
 
@@ -720,7 +721,7 @@ describe('compile', () => {
     });
 
     it('should use custom outputPath', async () => {
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({outputPath: './custom/lib'});
@@ -729,7 +730,7 @@ describe('compile', () => {
     });
 
     it('should handle remove option', async () => {
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({remove: true});
@@ -739,11 +740,11 @@ describe('compile', () => {
     });
 
     it('should handle watch mode', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'export const test = () => {};', map: ''} as any);
 
       const result = await compile({watch: true});
@@ -752,11 +753,11 @@ describe('compile', () => {
     });
 
     it('should handle format cjs', async () => {
-      (globSync as jest.MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
 
-      (existsSync as jest.MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'module.exports = {};', map: ''} as any);
 
       const result = await compile({format: 'cjs'});
@@ -773,9 +774,9 @@ describe('compile', () => {
     });
 
     it('should handle callback function', async () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
 
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({}, callback);
@@ -785,7 +786,7 @@ describe('compile', () => {
     });
 
     it('should handle quiet mode', async () => {
-      (transform as jest.MockedFunction<typeof transform>)
+      (transform as MockedFunction<typeof transform>)
         .mockResolvedValue({code: 'console.log("compiled");', map: ''} as any);
 
       const result = await compile({quiet: true});

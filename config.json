@@ -46,7 +46,7 @@
     "isModule": true
   },
   "webpack": {},
-  "jest": {},
+  "vitest": {},
   "outputHash": false,
   "useGraphQl": false,
   "configFiles": [],

@@ -2,10 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {existsSync, readFileSync} from 'fs';
-import {resolve as pathResolve} from 'path';
 import {execa} from 'execa';
+import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
+import {resolve as pathResolve} from 'path';
+
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
@@ -37,6 +38,7 @@ export interface TestOptions {
   readonly changedFilesWithAncestor?: boolean;
   readonly changedSince?: string;
   readonly ci?: boolean;
+  readonly clearCache?: boolean;
   readonly cliName?: string;
   readonly collectCoverageFrom?: string;
   readonly colors?: boolean;
@@ -44,6 +46,7 @@ export interface TestOptions {
   readonly debug?: boolean;
   readonly debugTests?: boolean;
   readonly detectOpenHandles?: boolean;
+  readonly environment?: string;
   readonly env?: string;
   readonly errorOnDeprecated?: boolean;
   readonly expand?: boolean;
@@ -78,7 +81,7 @@ export interface TestOptions {
 export type TestCallback = typeof process.exit;
 
 const defaultExit = ((code?: number) => {
-  if(process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
+  if(process.env.VITEST || process.env.VITEST_WORKER_ID || process.env.NODE_ENV === 'test') {
     return undefined as never;
   }
 
@@ -150,6 +153,7 @@ export const test = async (
     changedFilesWithAncestor,
     changedSince,
     ci,
+    clearCache,
     cliName = 'Lex',
     collectCoverageFrom,
     colors,
@@ -157,6 +161,7 @@ export const test = async (
     debug = false,
     debugTests = false,
     detectOpenHandles,
+    environment,
     env,
     errorOnDeprecated,
     expand,
@@ -221,7 +226,7 @@ export const test = async (
         await aiFunction({
           context: true,
           file: targetFile,
-          prompt: `Generate Jest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
+          prompt: `Generate Vitest unit tests for this file: ${targetFile}\n\n${readFileSync(targetFile, 'utf-8')}\n\nPlease create comprehensive tests that cover the main functionality. Include test fixtures and mocks where necessary.`,
           quiet,
           task: 'test'
         });
@@ -239,87 +244,97 @@ export const test = async (
     }
   }
 
-  const projectJestBin = pathResolve(process.cwd(), 'node_modules/.bin/jest');
-  let jestPath: string;
+  const projectVitestBin = pathResolve(process.cwd(), 'node_modules/.bin/vitest');
+  let vitestPath: string;
 
-  if(existsSync(projectJestBin)) {
-    jestPath = projectJestBin;
+  if(existsSync(projectVitestBin)) {
+    vitestPath = projectVitestBin;
   } else {
-    jestPath = resolveBinaryPath('jest');
+    vitestPath = resolveBinaryPath('vitest');
   }
 
-  if(!jestPath) {
-    log(`\n${cliName} Error: Jest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+  if(!vitestPath) {
+    log(`\n${cliName} Error: Vitest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
     log('Please reinstall Lex or check your installation.', 'info', quiet);
     return 1;
   }
 
-  let jestConfigFile: string;
-  let projectJestConfig: any = null;
+  let vitestConfigFile = '';
+  let projectVitestConfig: Record<string, unknown> | null = null;
 
   if(config) {
-    jestConfigFile = config;
+    vitestConfigFile = config;
   } else {
-    const projectJestConfigPath = pathResolve(process.cwd(), 'jest.config.js');
-    const projectJestConfigCjsPath = pathResolve(process.cwd(), 'jest.config.cjs');
-    const projectJestConfigMjsPath = pathResolve(process.cwd(), 'jest.config.mjs');
-    const projectJestConfigJsonPath = pathResolve(process.cwd(), 'jest.config.json');
+    const projectVitestConfigPaths = [
+      pathResolve(process.cwd(), 'vitest.config.ts'),
+      pathResolve(process.cwd(), 'vitest.config.mts'),
+      pathResolve(process.cwd(), 'vitest.config.js'),
+      pathResolve(process.cwd(), 'vitest.config.mjs'),
+      pathResolve(process.cwd(), 'vitest.config.cjs')
+    ];
+    const existingConfigPath = projectVitestConfigPaths.find((configPath) => existsSync(configPath));
 
-    if(existsSync(projectJestConfigPath)) {
-      jestConfigFile = projectJestConfigPath;
+    if(existingConfigPath) {
+      vitestConfigFile = existingConfigPath;
       if(debug) {
-        log(`Using project Jest config file: ${jestConfigFile}`, 'info', quiet);
-      }
-    } else if(existsSync(projectJestConfigCjsPath)) {
-      jestConfigFile = projectJestConfigCjsPath;
-      if(debug) {
-        log(`Using project Jest config file (CJS): ${jestConfigFile}`, 'info', quiet);
-      }
-    } else if(existsSync(projectJestConfigMjsPath)) {
-      jestConfigFile = projectJestConfigMjsPath;
-      if(debug) {
-        log(`Using project Jest config file (MJS): ${jestConfigFile}`, 'info', quiet);
-      }
-    } else if(existsSync(projectJestConfigJsonPath)) {
-      jestConfigFile = projectJestConfigJsonPath;
-      if(debug) {
-        log(`Using project Jest config file (JSON): ${jestConfigFile}`, 'info', quiet);
+        log(`Using project Vitest config file: ${vitestConfigFile}`, 'info', quiet);
       }
     } else {
-      // No Jest config file exists in the project
-      // Check if there's a Jest config in lex.config.cjs
-      projectJestConfig = LexConfig.config.jest;
+      // No Vitest config file exists in the project
+      // Check if there's a Vitest config in lex.config.cjs
+      projectVitestConfig = LexConfig.config.vitest;
 
       const lexDir = LexConfig.getLexDir();
-      const lexJestConfig = pathResolve(lexDir, 'jest.config.mjs');
+      const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');
 
       if(debug) {
-        log(`Looking for Jest config at: ${lexJestConfig}`, 'info', quiet);
-        log(`File exists: ${existsSync(lexJestConfig)}`, 'info', quiet);
+        log(`Looking for Vitest config at: ${lexVitestConfig}`, 'info', quiet);
+        log(`File exists: ${existsSync(lexVitestConfig)}`, 'info', quiet);
       }
 
-      if(existsSync(lexJestConfig)) {
-        jestConfigFile = lexJestConfig;
-        if(projectJestConfig && Object.keys(projectJestConfig).length > 0) {
+      if(existsSync(lexVitestConfig)) {
+        vitestConfigFile = lexVitestConfig;
+        if(projectVitestConfig && Object.keys(projectVitestConfig).length > 0) {
           if(debug) {
-            log(`Using Lex Jest config with project Jest config from lex.config.cjs: ${jestConfigFile}`, 'info', quiet);
+            log(`Using Lex Vitest config with project Vitest config from lex.config.cjs: ${vitestConfigFile}`, 'info', quiet);
           }
-        } else {
-          if(debug) {
-            log(`Using Lex Jest config (no project Jest config found): ${jestConfigFile}`, 'info', quiet);
-          }
+        } else if(debug) {
+          log(`Using Lex Vitest config (no project Vitest config found): ${vitestConfigFile}`, 'info', quiet);
         }
       } else {
         if(debug) {
-          log('No Jest config found in project or Lex', 'warn', quiet);
+          log('No Vitest config found in project or Lex', 'warn', quiet);
         }
-        jestConfigFile = '';
       }
     }
   }
 
-  const jestSetupFile: string = setup || pathResolve(process.cwd(), 'jest.setup.js');
-  const jestOptions: string[] = ['--no-cache'];
+  if(showConfig) {
+    if(vitestConfigFile) {
+      const resolvedConfig = await import(vitestConfigFile);
+      log(JSON.stringify(resolvedConfig.default ?? resolvedConfig, null, 2), 'info', quiet);
+    } else {
+      log(JSON.stringify({test: projectVitestConfig ?? {}}, null, 2), 'info', quiet);
+    }
+    callback(0);
+    return 0;
+  }
+
+  const vitestSetupFile: string = setup || pathResolve(process.cwd(), 'vitest.setup.js');
+  const vitestArgs: string[] = [];
+  const vitestOptions: string[] = [];
+  const reporters = new Set<string>();
+  const filters: string[] = [];
+  const watchMode = Boolean(watch || watchAll);
+  const listMode = Boolean(listTests);
+
+  if(listMode) {
+    vitestArgs.push('list');
+  } else if(watchMode) {
+    vitestArgs.push('watch');
+  } else {
+    vitestArgs.push('run');
+  }
 
   const isESM = detectESM(process.cwd());
   let nodeOptions = process.env.NODE_OPTIONS || '';
@@ -330,165 +345,152 @@ export const test = async (
     log('ESM project detected, using --experimental-vm-modules in NODE_OPTIONS', 'info', quiet);
   }
 
-  if(jestConfigFile) {
-    jestOptions.push('--config', jestConfigFile);
+  if(vitestConfigFile) {
+    vitestOptions.push('--config', vitestConfigFile);
   }
 
   if(bail) {
-    jestOptions.push('--bail');
+    vitestOptions.push('--bail', '1');
   }
 
   if(changedFilesWithAncestor) {
-    jestOptions.push('--changedFilesWithAncestor');
+    vitestOptions.push('--changed');
   }
 
   if(changedSince) {
-    jestOptions.push('--changedSince');
+    vitestOptions.push('--changed', changedSince);
   }
 
   if(ci) {
-    jestOptions.push('--ci');
+    vitestOptions.push('--run');
   }
 
   if(collectCoverageFrom) {
-    jestOptions.push('--collectCoverageFrom', collectCoverageFrom);
-  }
-
-  if(colors) {
-    jestOptions.push('--colors');
+    vitestOptions.push('--coverage', '--coverage.include', collectCoverageFrom);
   }
 
   if(debug) {
-    jestOptions.push('--debug');
+    vitestOptions.push('--inspect');
   }
 
   if(detectOpenHandles) {
-    jestOptions.push('--detectOpenHandles');
+    reporters.add('hanging-process');
   }
 
-  if(env) {
-    jestOptions.push('--env');
+  const environmentName = environment || env;
+  if(environmentName) {
+    vitestOptions.push('--environment', environmentName);
   }
 
   if(errorOnDeprecated) {
-    jestOptions.push('--errorOnDeprecated');
+    log('Vitest does not support --errorOnDeprecated; option ignored.', 'warn', quiet);
   }
 
   if(expand) {
-    jestOptions.push('--expand');
+    vitestOptions.push('--expandSnapshotDiff');
   }
 
   if(forceExit) {
-    jestOptions.push('--forceExit');
-  }
-
-  if(json) {
-    jestOptions.push('--json');
+    log('Vitest does not support --forceExit; option ignored.', 'warn', quiet);
   }
 
   if(lastCommit) {
-    jestOptions.push('--lastCommit');
-  }
-
-  if(listTests) {
-    jestOptions.push('--listTests');
+    vitestOptions.push('--changed');
   }
 
   if(logHeapUsage) {
-    jestOptions.push('--logHeapUsage');
+    vitestOptions.push('--logHeapUsage');
   }
 
   if(maxWorkers) {
-    jestOptions.push('--maxWorkers', maxWorkers);
+    vitestOptions.push('--maxWorkers', maxWorkers);
   }
 
   if(noStackTrace) {
-    jestOptions.push('--noStackTrace');
+    log('Vitest does not support --noStackTrace; option ignored.', 'warn', quiet);
   }
 
   if(notify) {
-    jestOptions.push('--notify');
+    log('Vitest does not support --notify; option ignored.', 'warn', quiet);
   }
 
   if(onlyChanged) {
-    jestOptions.push('--onlyChanged');
+    vitestOptions.push('--changed');
   }
 
   let tempOutputFile = outputFile;
+  const shouldWriteJson = json || useAnalyze || useDebug || Boolean(outputFile);
 
-  if((useAnalyze || useDebug) && !outputFile) {
-    tempOutputFile = '.lex-test-results.json';
-    jestOptions.push('--json', '--outputFile', tempOutputFile);
-  } else if(outputFile) {
-    jestOptions.push('--outputFile', outputFile);
+  if(shouldWriteJson) {
+    tempOutputFile = outputFile || '.lex-test-results.json';
+    vitestOptions.push('--outputFile', tempOutputFile);
+    reporters.add('json');
   }
 
   if(passWithNoTests) {
-    jestOptions.push('--passWithNoTests');
+    vitestOptions.push('--passWithNoTests');
   }
 
   if(runInBand) {
-    jestOptions.push('--runInBand');
-  }
-
-  if(showConfig) {
-    jestOptions.push('--showConfig');
+    vitestOptions.push('--no-file-parallelism', '--maxWorkers', '1');
   }
 
   if(silent) {
-    jestOptions.push('--silent');
+    vitestOptions.push('--silent');
   }
 
   if(testLocationInResults) {
-    jestOptions.push('--testLocationInResults');
+    vitestOptions.push('--includeTaskLocation');
   }
 
   if(testNamePattern) {
-    jestOptions.push('--testNamePattern', testNamePattern);
+    vitestOptions.push('--testNamePattern', testNamePattern);
   }
 
   if(testPathPattern) {
-    jestOptions.push('--testPathPattern', testPathPattern);
+    filters.push(testPathPattern);
   }
 
   if(useStderr) {
-    jestOptions.push('--useStderr');
+    log('Vitest does not support --useStderr; option ignored.', 'warn', quiet);
   }
 
   if(verbose) {
-    jestOptions.push('--verbose');
+    reporters.add('verbose');
   }
 
-  if(watchAll) {
-    jestOptions.push('--watchAll');
-  }
-
-  if(removeCache) {
-    jestOptions.push('--no-cache');
-  }
-
-  if(jestSetupFile && existsSync(jestSetupFile)) {
-    jestOptions.push(`--setupFilesAfterEnv=${jestSetupFile}`);
+  if(removeCache || clearCache) {
+    vitestOptions.push('--clearCache');
   }
 
   if(update) {
-    jestOptions.push('--updateSnapshot');
+    vitestOptions.push('--update');
   }
 
   if(watch) {
-    jestOptions.push('--watch', watch);
+    filters.push(watch);
   }
 
   if(args) {
-    jestOptions.push(...args);
+    vitestOptions.push(...args);
   }
 
   if(files && files.length > 0) {
-    jestOptions.push(...files);
+    filters.push(...files);
   }
 
+  if(reporters.size > 0) {
+    const reporterList = Array.from(reporters);
+    if(reporterList.includes('json') && !reporterList.includes('verbose')) {
+      reporterList.unshift('default');
+    }
+    reporterList.forEach((reporter) => vitestOptions.push('--reporter', reporter));
+  }
+
+  const finalArgs = [...vitestArgs, ...vitestOptions, ...filters];
+
   if(debug) {
-    log(`Jest options: ${jestOptions.join(' ')}`, 'info', quiet);
+    log(`Vitest options: ${finalArgs.join(' ')}`, 'info', quiet);
     log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
   }
 
@@ -498,7 +500,19 @@ export const test = async (
       NODE_OPTIONS: nodeOptions
     };
 
-    await execa(jestPath, jestOptions, {
+    if(colors) {
+      env.FORCE_COLOR = '1';
+    }
+
+    if(ci) {
+      env.CI = 'true';
+    }
+
+    if(vitestSetupFile && existsSync(vitestSetupFile)) {
+      env.LEX_VITEST_SETUP = vitestSetupFile;
+    }
+
+    await execa(vitestPath, finalArgs, {
       encoding: 'utf8',
       env,
       stdio: 'inherit'
@@ -515,7 +529,7 @@ export const test = async (
 
         await aiFunction({
           context: true,
-          prompt: `Analyze these Jest test results and suggest test coverage improvements:
+          prompt: `Analyze these Vitest test results and suggest test coverage improvements:
 
 ${JSON.stringify(testResults, null, 2)}
 
@@ -555,7 +569,7 @@ Please provide:
 
         await aiFunction({
           context: true,
-          prompt: `Debug these failed Jest tests and suggest fixes:
+          prompt: `Debug these failed Vitest tests and suggest fixes:
 
 ${JSON.stringify(error.message, null, 2)}
 

@@ -2,51 +2,51 @@ import {execa} from 'execa';
 
 import {publish} from './publish.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  createSpinner: jest.fn(() => ({
-    start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  createSpinner: vi.fn(() => ({
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn()
   })),
-  getPackageJson: jest.fn(() => ({
+  getPackageJson: vi.fn(() => ({
     dependencies: {},
     devDependencies: {},
     name: 'test-package',
     version: '1.0.0'
   })),
-  setPackageJson: jest.fn()
+  setPackageJson: vi.fn()
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
-jest.mock('fs');
-jest.mock('path');
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
+vi.mock('fs');
+vi.mock('path');
 
 describe('publish cli', () => {
-  let processExitSpy: jest.SpyInstance;
+  let processExitSpy: SpyInstance;
 
   beforeAll(() => {
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     processExitSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should publish with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await publish({});
 
     expect(execa).toHaveBeenCalled();
   });
 
   it('should handle publish errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Publish failed'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Publish failed'));
     const result = await publish({});
 
     expect(result).toBe(1);

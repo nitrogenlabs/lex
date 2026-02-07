@@ -2,13 +2,15 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {writeFileSync} from 'fs';
-import {join as pathJoin} from 'path';
 import {execa} from 'execa';
+import {writeFileSync} from 'fs';
 import capitalize from 'lodash/capitalize.js';
 import isEmpty from 'lodash/isEmpty.js';
 import merge from 'lodash/merge.js';
 import {DateTime} from 'luxon';
+import {join as pathJoin} from 'path';
+
+
 import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
 

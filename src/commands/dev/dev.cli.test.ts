@@ -2,34 +2,34 @@ import {execa} from 'execa';
 
 import {dev} from './dev.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
 
 describe('dev cli', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should start dev server with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({});
 
     expect(execa).toHaveBeenCalledWith(
@@ -40,7 +40,7 @@ describe('dev cli', () => {
   });
 
   it('should start dev server with usePublicIp option', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({usePublicIp: true});
 
     expect(execa).toHaveBeenCalledWith(
@@ -51,7 +51,7 @@ describe('dev cli', () => {
   });
 
   it('should start dev server with custom port', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await dev({port: 8080});
 
     expect(execa).toHaveBeenCalledWith(

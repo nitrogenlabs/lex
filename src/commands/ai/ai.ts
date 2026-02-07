@@ -2,10 +2,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {readFileSync} from 'fs';
 import chalk from 'chalk';
 import {Command} from 'commander';
+import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
+
 import {LexConfig} from '../../LexConfig.js';
 import {callAIService} from '../../utils/aiService.js';
 import {log} from '../../utils/log.js';
@@ -66,7 +67,7 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
 
     case 'test':
       if(file) {
-        const testConfig = getFileContext('jest.config.js');
+        const testConfig = getFileContext('vitest.config.mjs');
         projectContext += `\n\nTest configuration:\n${testConfig}`;
       }
       break;

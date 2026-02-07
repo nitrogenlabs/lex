@@ -1,4 +1,4 @@
-jest.mock('execa');
+vi.mock('execa');
 
 import {execa} from 'execa';
 import {mkdirSync, rmSync, writeFileSync} from 'fs';
@@ -11,11 +11,11 @@ describe('lex build integration', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('lex build integration', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     process.chdir(originalCwd);
     try {
       rmSync(testDir, {recursive: true, force: true});

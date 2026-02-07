@@ -2,9 +2,10 @@
  * Copyright (c) 2022-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import {execa} from 'execa';
 import {existsSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {dirname, resolve as pathResolve, extname} from 'path';
-import {execa} from 'execa';
+
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
@@ -124,7 +125,7 @@ const runEslintWithLex = async (
   fix: boolean,
   debug: boolean,
   useTypescript: boolean,
-  captureOutput?: (output: string) => void
+  captureOutput?: (output: string)=> void
 ): Promise<number> => {
   const spinner = createSpinner(quiet);
 

@@ -1,16 +1,16 @@
 # LEX Testing Module
 
-The test module provides a comprehensive interface for running Jest tests with enhanced capabilities including AI-powered test generation, analysis, and debugging.
+The test module provides a comprehensive interface for running Vitest tests with enhanced capabilities including AI-powered test generation, analysis, and debugging.
 
 ## Overview
 
 The test module offers functionality to:
 
-- Run Jest tests with various configuration options
+- Run Vitest tests with various configuration options
 - Generate test files using AI for uncovered source files
 - Analyze test coverage and suggest improvements using AI
 - Debug failing tests with AI assistance
-- Support various Jest flags and options
+- Support various Vitest flags and options
 
 ## API
 
@@ -22,7 +22,7 @@ Main function that handles running tests.
 
 - `options` (TestOptions): Command options object
   - See below for all supported options
-- `args` (string[]): Additional arguments to pass to Jest
+- `args` (string[]): Additional arguments to pass to Vitest
 - `callback` (Function): Callback function called when tests complete
   - Default: `process.exit`
   - Called with `0` for success or `1` for failure
@@ -55,17 +55,19 @@ export interface TestOptions {
   readonly changedFilesWithAncestor?: boolean; // Run tests related to files changed since common ancestor
   readonly changedSince?: string;    // Run tests related to files changed since the specified branch
   readonly ci?: boolean;             // Run in CI mode
+  readonly clearCache?: boolean;     // Clear Vitest cache
   readonly cliName?: string;         // Name of the CLI tool (default: 'Lex')
   readonly collectCoverageFrom?: string; // Coverage pattern
   readonly colors?: boolean;         // Force colors in output
-  readonly config?: string;          // Path to Jest config
+  readonly config?: string;          // Path to Vitest config
   readonly debug?: boolean;          // Enable debugging info
   readonly debugTests?: boolean;     // Enable AI debugging assistance
   readonly detectOpenHandles?: boolean; // Detect open handles
+  readonly environment?: string;     // Runner environment
   readonly env?: string;             // Test environment
   readonly errorOnDeprecated?: boolean; // Error on deprecated API usage
   readonly expand?: boolean;         // Expand results
-  readonly forceExit?: boolean;      // Force Jest to exit after tests
+  readonly forceExit?: boolean;      // Force Vitest to exit after tests
   readonly generate?: boolean;       // Enable AI test generation
   readonly json?: boolean;           // Output results in JSON
   readonly lastCommit?: boolean;     // Run tests on files from the last commit
@@ -78,7 +80,7 @@ export interface TestOptions {
   readonly outputFile?: string;      // Write test results to a file
   readonly passWithNoTests?: boolean; // Pass when no tests are found
   readonly quiet?: boolean;          // Reduce output
-  readonly removeCache?: boolean;    // Clear Jest cache
+  readonly removeCache?: boolean;    // Clear Vitest cache
   readonly runInBand?: boolean;      // Run all tests serially in current process
   readonly setup?: string;           // Path to setup file
   readonly showConfig?: boolean;     // Show config info
@@ -124,9 +126,9 @@ await test({
   testPathPattern: 'src/components/**/*.test.tsx'
 }, []);
 
-// Run with a specific Jest configuration file
+// Run with a specific Vitest configuration file
 await test({
-  config: './custom-jest.config.js'
+  config: './custom-vitest.config.js'
 }, []);
 
 // With custom callback
@@ -191,7 +193,7 @@ lex test --generate --analyze --debugTests
 
 ```bash
 # Run tests with coverage reporting
-lex test --collectCoverage
+lex test --collectCoverageFrom "src/**/*.{ts,tsx}"
 
 # Watch for changes and rerun tests
 lex test --watch
@@ -219,13 +221,13 @@ lex test --ci
 | `--ci` | boolean | `false` | Run tests in continuous integration mode. |
 | `--collectCoverageFrom` | string | - | Files for which coverage information should be collected. |
 | `--colors` | boolean | `false` | Force test output to be colored. |
-| `--config` | string | - | Custom Jest configuration file path. |
+| `--config` | string | - | Custom Vitest configuration file path. |
 | `--debug` | boolean | `false` | Run tests in debug mode. |
 | `--detectOpenHandles` | boolean | `false` | Detect handles that weren't closed properly. |
-| `--env` | string | - | Test environment used by Jest. |
+| `--env` | string | - | Test environment used by Vitest. |
 | `--errorOnDeprecated` | boolean | `false` | Make calling deprecated APIs throw helpful error messages. |
 | `--expand` | boolean | `false` | Use the expanded display format for test results. |
-| `--forceExit` | boolean | `false` | Force Jest to exit after all tests complete. |
+| `--forceExit` | boolean | `false` | Force Vitest to exit after all tests complete. |
 | `--json` | boolean | `false` | Output results as JSON. |
 | `--lastCommit` | boolean | `false` | Run tests related to files changed in the last commit. |
 | `--listTests` | boolean | `false` | List all tests without running them. |
@@ -237,10 +239,10 @@ lex test --ci
 | `--outputFile` | string | - | Write test results to a file. |
 | `--passWithNoTests` | boolean | `false` | Pass when no tests are found. |
 | `--quiet` | boolean | `false` | No Lex notifications printed in the console. |
-| `--removeCache` | boolean | `false` | Clear test cache before running. |
+| `--clearCache` | boolean | `false` | Clear the Vitest cache before running. |
 | `--runInBand` | boolean | `false` | Run all tests serially in the current process. |
-| `--setup` | string | - | Path to Jest setup file. |
-| `--showConfig` | boolean | `false` | Show Jest configuration and exit. |
+| `--setup` | string | - | Path to Vitest setup file. |
+| `--showConfig` | boolean | `false` | Show Vitest configuration and exit. |
 | `--silent` | boolean | `false` | Prevent tests from printing messages through console. |
 | `--testLocationInResults` | boolean | `false` | Add location info to test results. |
 | `--testNamePattern` | string | - | Run only tests with a name that matches the regex pattern. |
@@ -274,7 +276,7 @@ lex test --debugTests
 Get AI-powered suggestions to improve test coverage:
 
 ```bash
-lex test --analyze --collectCoverage
+lex test --analyze --collectCoverageFrom "src/**/*.{ts,tsx}"
 ```
 
 ### Integration with CI/CD

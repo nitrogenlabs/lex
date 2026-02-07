@@ -2,6 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+import findFileUp from 'find-file-up';
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {
   dirname,
@@ -10,24 +11,18 @@ import {
   resolve as pathResolve
 } from 'path';
 import {URL} from 'url';
-import findFileUp from 'find-file-up';
+
 import {getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
+
 import type {Options} from '@swc/core';
 import type {Linter} from 'eslint';
 
 const cwd: string = process.cwd();
 
 
-export interface JestConfig {
+export interface VitestConfig {
   [key: string]: unknown;
-  roots?: string[];
-  testEnvironment?: string;
-  transform?: Record<string, [string, Record<string, unknown>]>;
-  transformIgnorePatterns?: string[];
-  moduleNameMapper?: Record<string, string>;
-  extensionsToTreatAsEsm?: string[];
-  preset?: string;
 }
 
 export interface WebpackConfig {
@@ -62,7 +57,7 @@ export interface LexConfigType {
   env?: object;
   eslint?: ESLintConfig;
   gitUrl?: string;
-  jest?: JestConfig;
+  vitest?: VitestConfig;
   libraryName?: string;
   libraryTarget?: string;
   outputFile?: string;
@@ -95,7 +90,7 @@ export const defaultConfigValues: LexConfigType = {
   entryJs: 'index.js',
   env: null,
   eslint: {},
-  jest: {},
+  vitest: {},
   outputFullPath: pathResolve(cwd, './lib'),
   outputHash: false,
   outputPath: './lib',

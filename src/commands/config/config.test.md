@@ -13,7 +13,7 @@ The config module is tested with three separate test files:
 ## CLI Tests
 
 The CLI tests focus on:
-- Basic command execution with different configuration types (app, jest, webpack)
+- Basic command execution with different configuration types (app, vitest, webpack)
 - Error handling for invalid configuration types
 - Custom CLI name usage
 - JSON output file creation
@@ -22,7 +22,7 @@ The CLI tests focus on:
 
 The integration tests validate:
 - Integration with LexConfig for app configuration
-- Integration with Jest configuration module
+- Integration with Vitest configuration module
 - Integration with Webpack configuration module
 - Integration with filesystem for JSON output
 - Error handling for invalid configuration types
@@ -46,7 +46,7 @@ The config module has several external dependencies that are mocked in tests:
 - **app.js**: Mocked for spinner functionality
 - **log.js**: Mocked to capture log output
 - **LexConfig.js**: Mocked for configuration parsing
-- **Dynamic imports**: Mocked for Jest and Webpack configurations
+- **Dynamic imports**: Mocked for Vitest and Webpack configurations
 
 ## Test Coverage
 
@@ -54,7 +54,7 @@ The tests cover the following key areas:
 
 1. **Configuration Type Handling**
    - Validation of configuration types
-   - Processing of different configuration types (app, jest, webpack)
+   - Processing of different configuration types (app, vitest, webpack)
    - Error handling for invalid types
 
 2. **Configuration Output**
@@ -68,6 +68,6 @@ The tests cover the following key areas:
 
 4. **Integration Points**
    - LexConfig integration
-   - Jest configuration integration
+   - Vitest configuration integration
    - Webpack configuration integration
    - Filesystem integration 

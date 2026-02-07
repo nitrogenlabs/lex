@@ -1,74 +1,74 @@
 import {create} from './create.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
+vi.mock('execa');
+vi.mock('fs', async () => ({
   existsSync: (path) => {
     if(typeof path === 'string' && (path.includes('TestStore') || path.includes('TestView') || path.includes('TestDataLayer'))) {
       return false;
     }
     return true;
   },
-  mkdirSync: jest.fn(),
-  readFileSync: jest.fn(() => '{}'),
-  renameSync: jest.fn(),
-  writeFileSync: jest.fn()
+  mkdirSync: vi.fn(),
+  readFileSync: vi.fn(() => '{}'),
+  renameSync: vi.fn(),
+  writeFileSync: vi.fn()
 }));
-jest.mock('path', () => ({
-  resolve: jest.fn((...args) => args.join('/'))
+vi.mock('path', async () => ({
+  resolve: vi.fn((...args) => args.join('/'))
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('../../create/changelog.js', () => ({
-  createChangelog: jest.fn().mockResolvedValue(0)
+vi.mock('../../create/changelog.js', async () => ({
+  createChangelog: vi.fn().mockResolvedValue(0)
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  copyFolderRecursiveSync: jest.fn(),
-  removeFiles: jest.fn().mockResolvedValue(undefined),
-  getFilenames: jest.fn(() => ({
+  copyFolderRecursiveSync: vi.fn(),
+  removeFiles: vi.fn().mockResolvedValue(undefined),
+  getFilenames: vi.fn(() => ({
     nameCaps: 'Test',
     templateExt: '.ts',
     templatePath: '/mock/template/path',
     templateReact: '.tsx'
   })),
-  updateTemplateName: jest.fn()
+  updateTemplateName: vi.fn()
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir')
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTypescriptConfig: jest.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       outputPath: './lib',
       sourcePath: './src',
       useTypescript: false
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
 
 describe('create integration', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should create changelog', async () => {

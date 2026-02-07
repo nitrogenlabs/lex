@@ -1,89 +1,90 @@
+import {execa} from 'execa';
 import path from 'path';
 import {URL} from 'url';
-import {execa} from 'execa';
+
+import {test, TestOptions} from './test.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as logUtils from '../../utils/log.js';
-import {test, TestOptions} from './test.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{"type": "module"}')
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => '{"type": "module"}')
 }));
-jest.mock('path');
-jest.mock('url');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('path');
+vi.mock('url');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTestTypescriptConfig: jest.fn(),
-    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: vi.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       useTypescript: true
     },
-    getLexDir: jest.fn(() => '/mock/lex/dir'),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    getLexDir: vi.fn(() => '/mock/lex/dir'),
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.test.json')
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
-  resolveBinaryPath: jest.fn(() => '/mock/path/to/jest')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  relativeNodePath: vi.fn(() => '/node_modules/vitest/vitest.mjs'),
+  resolveBinaryPath: vi.fn(() => '/mock/path/to/vitest')
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../ai/ai.js');
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('../../utils/log.js');
+vi.mock('../ai/ai.js');
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
 
 describe('test options tests', () => {
   let mockSpinner: any;
-  let mockCallback: jest.Mock;
+  let mockCallback: Mock;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    vi.clearAllMocks();
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     mockSpinner = {
-      fail: jest.fn(),
-      start: jest.fn(),
-      succeed: jest.fn()
+      fail: vi.fn(),
+      start: vi.fn(),
+      succeed: vi.fn()
     };
-    (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
+    (app.createSpinner as Mock).mockReturnValue(mockSpinner);
 
-    (LexConfig.parseConfig as jest.Mock).mockResolvedValue({} as never);
+    (LexConfig.parseConfig as Mock).mockResolvedValue({} as never);
     (LexConfig.config as any) = {
       useTypescript: true
     };
-    (LexConfig.checkTypescriptConfig as jest.Mock).mockImplementation(() => {});
+    (LexConfig.checkTypescriptConfig as Mock).mockImplementation(() => {});
 
-    (URL as unknown as jest.MockedClass<typeof URL>).mockImplementation(() => ({
+    (URL as unknown as MockedClass<typeof URL>).mockImplementation(() => ({
       pathname: '/mock/path'
     } as any));
 
-    (path.resolve as jest.Mock).mockImplementation((...args) => args.join('/'));
+    (path.resolve as Mock).mockImplementation((...args) => args.join('/'));
 
-    (file.relativeNodePath as jest.Mock).mockReturnValue('/node_modules/jest-cli/bin/jest.js');
+    (file.relativeNodePath as Mock).mockReturnValue('/node_modules/vitest/vitest.mjs');
 
-    mockCallback = jest.fn();
+    mockCallback = vi.fn();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
-  const getExecaCalls = () => (execa as jest.MockedFunction<typeof execa>).mock.calls;
+  const getExecaCalls = () => (execa as MockedFunction<typeof execa>).mock.calls;
 
-  it('should pass bail option to Jest when specified', async () => {
+  it('should pass bail option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       bail: true
@@ -91,12 +92,13 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--bail');
+    expect(vitestArgs).toContain('--bail');
+    expect(vitestArgs).toContain('1');
   });
 
-  it('should pass changedFilesWithAncestor option to Jest when specified', async () => {
+  it('should pass changedFilesWithAncestor option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       changedFilesWithAncestor: true
@@ -104,12 +106,12 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--changedFilesWithAncestor');
+    expect(vitestArgs).toContain('--changed');
   });
 
-  it('should pass changedSince option to Jest when specified', async () => {
+  it('should pass changedSince option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       changedSince: 'main'
@@ -117,12 +119,13 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--changedSince');
+    expect(vitestArgs).toContain('--changed');
+    expect(vitestArgs).toContain('main');
   });
 
-  it('should pass ci option to Jest when specified', async () => {
+  it('should pass ci option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       ci: true
@@ -130,12 +133,12 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--ci');
+    expect(vitestArgs).toContain('--run');
   });
 
-  it('should pass collectCoverageFrom option to Jest when specified', async () => {
+  it('should pass collectCoverageFrom option to Vitest when specified', async () => {
     const coveragePattern = 'src/**/*.{ts,tsx}';
     const options: TestOptions = {
       quiet: false,
@@ -144,13 +147,14 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--collectCoverageFrom');
-    expect(jestArgs).toContain(coveragePattern);
+    expect(vitestArgs).toContain('--coverage');
+    expect(vitestArgs).toContain('--coverage.include');
+    expect(vitestArgs).toContain(coveragePattern);
   });
 
-  it('should pass colors option to Jest when specified', async () => {
+  it('should pass colors option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       colors: true
@@ -158,13 +162,13 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestEnv = getExecaCalls()[0][2]?.env;
 
-    expect(jestArgs).toContain('--colors');
+    expect(vitestEnv?.FORCE_COLOR).toBe('1');
   });
 
-  it('should pass config option to Jest when specified', async () => {
-    const customConfig = './custom-jest.config.js';
+  it('should pass config option to Vitest when specified', async () => {
+    const customConfig = './custom-vitest.config.js';
     const options: TestOptions = {
       quiet: false,
       config: customConfig
@@ -172,13 +176,13 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--config');
-    expect(jestArgs).toContain(customConfig);
+    expect(vitestArgs).toContain('--config');
+    expect(vitestArgs).toContain(customConfig);
   });
 
-  it('should pass debug option to Jest when specified', async () => {
+  it('should pass debug option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       debug: true
@@ -186,12 +190,12 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--debug');
+    expect(vitestArgs).toContain('--inspect');
   });
 
-  it('should pass detectOpenHandles option to Jest when specified', async () => {
+  it('should pass detectOpenHandles option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
       detectOpenHandles: true
@@ -199,9 +203,10 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--detectOpenHandles');
+    expect(vitestArgs).toContain('--reporter');
+    expect(vitestArgs).toContain('hanging-process');
   });
 
   it('should handle multiple options correctly', async () => {
@@ -216,13 +221,14 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--bail');
-    expect(jestArgs).toContain('--ci');
-    expect(jestArgs).toContain('--colors');
-    expect(jestArgs).toContain('--verbose');
-    expect(jestArgs).toContain('--detectOpenHandles');
+    expect(vitestArgs).toContain('--bail');
+    expect(vitestArgs).toContain('--run');
+    expect(vitestArgs).toContain('--reporter');
+    expect(vitestArgs).toContain('verbose');
+    expect(vitestArgs).toContain('hanging-process');
+    expect(getExecaCalls()[0][2]?.env?.FORCE_COLOR).toBe('1');
   });
 
   it('should handle custom CLI name', async () => {
@@ -257,9 +263,9 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestEnv = getExecaCalls()[0][2]?.env;
 
-    expect(jestArgs).toContain(`--setupFilesAfterEnv=${setupFile}`);
+    expect(vitestEnv?.LEX_VITEST_SETUP).toBe(setupFile);
   });
 
   it('should handle watch option', async () => {
@@ -271,10 +277,10 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--watch');
-    expect(jestArgs).toContain(watchPattern);
+    expect(vitestArgs).toContain('watch');
+    expect(vitestArgs).toContain(watchPattern);
   });
 
   it('should handle watchAll option', async () => {
@@ -285,9 +291,9 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--watchAll');
+    expect(vitestArgs).toContain('watch');
   });
 
   it('should handle update option for snapshots', async () => {
@@ -298,8 +304,8 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const jestArgs = getExecaCalls()[0][1];
+    const vitestArgs = getExecaCalls()[0][1];
 
-    expect(jestArgs).toContain('--updateSnapshot');
+    expect(vitestArgs).toContain('--update');
   });
 });

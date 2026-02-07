@@ -1,19 +1,19 @@
 import {clean} from './clean.js';
 
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  removeFiles: jest.fn().mockResolvedValue(undefined),
-  removeModules: jest.fn().mockResolvedValue(undefined)
+  removeFiles: vi.fn().mockResolvedValue(undefined),
+  removeModules: vi.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
 
@@ -21,16 +21,16 @@ describe('clean integration', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should clean the project successfully', async () => {

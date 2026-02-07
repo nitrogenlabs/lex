@@ -44,7 +44,7 @@ export type CleanCallback = (status: number) => void;
 - **Node Modules Removal**: Removes the node_modules directory
 - **Coverage Reports Removal**: Removes test coverage reports
 - **NPM Debug Logs Removal**: Removes npm-debug.log files
-- **Test Snapshots Removal**: Optionally removes Jest snapshots
+- **Test Snapshots Removal**: Optionally removes Vitest snapshots
 - **Custom Configuration**: Uses LexConfig for custom configuration
 
 ## Example Usage
