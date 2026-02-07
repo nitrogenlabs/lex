@@ -10,14 +10,14 @@ const defaultConfigValues = {
 
 const LexConfig = {
   config: defaultConfigValues,
-  parseConfig: jest.fn(),
-  checkTypescriptConfig: jest.fn(),
-  checkCompileTypescriptConfig: jest.fn(),
-  checkLintTypescriptConfig: jest.fn(),
-  checkTestTypescriptConfig: jest.fn(),
-  getLexDir: jest.fn(() => '/mock/lex/dir'),
-  updateConfig: jest.fn((config) => ({...defaultConfigValues, ...config})),
-  addConfigParams: jest.fn(),
+  parseConfig: vi.fn(),
+  checkTypescriptConfig: vi.fn(),
+  checkCompileTypescriptConfig: vi.fn(),
+  checkLintTypescriptConfig: vi.fn(),
+  checkTestTypescriptConfig: vi.fn(),
+  getLexDir: vi.fn(() => '/mock/lex/dir'),
+  updateConfig: vi.fn((config) => ({...defaultConfigValues, ...config})),
+  addConfigParams: vi.fn(),
   get useTypescript() {
     return this.config.useTypescript;
   },
@@ -26,7 +26,7 @@ const LexConfig = {
   }
 };
 
-const getTypeScriptConfigPath = jest.fn((configName) => `/mock/lex/dir/${configName}`);
+const getTypeScriptConfigPath = vi.fn((configName) => `/mock/lex/dir/${configName}`);
 
 module.exports = {
   LexConfig,

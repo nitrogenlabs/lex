@@ -2,55 +2,55 @@ import {execa} from 'execa';
 
 import {migrate} from './migrate.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  createSpinner: jest.fn(() => ({
-    start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  createSpinner: vi.fn(() => ({
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn()
   })),
-  copyFileSync: jest.fn(),
-  getPackageJson: jest.fn(() => ({
+  copyFileSync: vi.fn(),
+  getPackageJson: vi.fn(() => ({
     dependencies: {},
     devDependencies: {},
     name: 'test-package',
     version: '1.0.0'
   })),
-  removeConflictModules: jest.fn((modules) => modules),
-  removeFiles: jest.fn().mockResolvedValue(undefined),
-  removeModules: jest.fn().mockResolvedValue(undefined),
-  setPackageJson: jest.fn()
+  removeConflictModules: vi.fn((modules) => modules),
+  removeFiles: vi.fn().mockResolvedValue(undefined),
+  removeModules: vi.fn().mockResolvedValue(undefined),
+  setPackageJson: vi.fn()
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
-jest.mock('fs');
-jest.mock('path');
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
+vi.mock('fs');
+vi.mock('path');
 
 describe('migrate integration', () => {
-  let processExitSpy: jest.SpyInstance;
+  let processExitSpy: SpyInstance;
 
   beforeAll(() => {
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     processExitSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should migrate successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await migrate({});
 
     expect(execa).toHaveBeenCalled();
   });
 
   it('should handle migration errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Install failed'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Install failed'));
     const result = await migrate({});
 
     expect(result).toBe(1);

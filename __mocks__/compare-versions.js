@@ -1,3 +1,3 @@
 module.exports = {
-  compareVersions: jest.fn().mockReturnValue(1)
+  compareVersions: vi.fn().mockReturnValue(1)
 };

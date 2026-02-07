@@ -1,19 +1,19 @@
 import {jsonVersions, packages, versions} from './versions.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
+vi.mock('../../utils/log.js');
 
 describe('versions.cli', () => {
-  const mockExit = jest.fn();
-  const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+  const mockExit = vi.fn();
+  const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
 
   beforeEach(() => {
     mockExit.mockClear();
@@ -21,7 +21,7 @@ describe('versions.cli', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should display versions in text format by default', async () => {

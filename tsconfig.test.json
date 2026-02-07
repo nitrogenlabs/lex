@@ -29,7 +29,8 @@
     "strict": false,
     "target": "ESNext",
     "types": [
-      "jest",
+      "vitest/globals",
+      "@testing-library/jest-dom",
       "node"
     ]
   },
@@ -39,7 +40,7 @@
     "**/*.spec.*",
     "**/*.integration.*",
     "**/__tests__/*",
-    "jest.setup.ts"
+    "vitest.setup.ts"
   ],
   "exclude": [
     "lib",

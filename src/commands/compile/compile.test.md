@@ -44,7 +44,7 @@ The options tests verify:
 
 ## Mocking Strategy
 
-The tests extensively use Jest mocking to isolate components:
+The tests extensively use Vitest mocking to isolate components:
 
 - `execa` is mocked to simulate command execution
 - `fs` operations are mocked to avoid real filesystem interaction
@@ -71,8 +71,8 @@ npm test -- packages/lex/src/commands/compile/compile.cli.test.ts
 
 ```typescript
 // Mock filesystem
-(fs.existsSync as jest.Mock).mockReturnValue(true);
-(fs.lstatSync as jest.Mock).mockReturnValue({
+(fs.existsSync as Mock).mockReturnValue(true);
+(fs.lstatSync as Mock).mockReturnValue({
   isDirectory: () => false
 });
 
@@ -84,7 +84,7 @@ expect(hasFileType('/test/path', ['.ts'])).toBe(true);
 
 ```typescript
 // Mock execa
-(execa as unknown as jest.Mock).mockResolvedValue({
+(execa as unknown as Mock).mockResolvedValue({
   stdout: 'success',
   stderr: ''
 });
@@ -104,7 +104,7 @@ expect(execa).toHaveBeenCalledWith(
 
 ```typescript
 // Mock execa to throw an error
-(execa as unknown as jest.Mock).mockImplementationOnce(() => {
+(execa as unknown as Mock).mockImplementationOnce(() => {
   throw new Error('Error message');
 });
 

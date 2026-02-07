@@ -67,7 +67,7 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
 
     case 'test':
       if(file) {
-        const testConfig = getFileContext('jest.config.js');
+        const testConfig = getFileContext('vitest.config.mjs');
         projectContext += `\n\nTest configuration:\n${testConfig}`;
       }
       break;

@@ -37,7 +37,7 @@ export const migrate = async (cmd: MigrateOptions, callback: MigrateCallback = p
   const appPackage = getPackageJson(packagePath);
   const {dependencies = {}, devDependencies = {}} = appPackage;
 
-  // Remove ESBuild, Jest and Webpack from app since it will conflict
+  // Remove ESBuild, Vitest and Webpack from app since it will conflict
   appPackage.dependencies = removeConflictModules(dependencies);
   appPackage.devDependencies = removeConflictModules(devDependencies);
 

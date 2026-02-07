@@ -2,34 +2,34 @@ import {execa} from 'execa';
 
 import {update, UpdateCallback} from './update.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir')
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir')
 }));
 
 describe('update integration', () => {
-  const mockCallback = jest.fn() as unknown as jest.MockedFunction<UpdateCallback>;
+  const mockCallback = vi.fn() as unknown as MockedFunction<UpdateCallback>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should update successfully', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await update({}, mockCallback);
 
     expect(execa).toHaveBeenCalled();
@@ -37,7 +37,7 @@ describe('update integration', () => {
   });
 
   it('should handle update errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('Failed to update'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Failed to update'));
     const result = await update({}, mockCallback);
 
     expect(result).toBe(1);

@@ -7,7 +7,7 @@
 export type {
   AIConfig,
   Config,
-  JestConfig,
+  VitestConfig,
   LexConfigType,
   SWCOptions,
   WebpackConfig

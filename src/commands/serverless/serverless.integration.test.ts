@@ -4,48 +4,48 @@
  */
 import {serverless} from './serverless.js';
 
-jest.mock('../../utils/app.js');
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
+vi.mock('../../utils/app.js');
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
 
 describe('Serverless Integration Tests', () => {
-  const mockCreateSpinner = jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+  const mockCreateSpinner = vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }));
-  const mockRemoveFiles = jest.fn();
-  const mockLog = jest.fn();
+  const mockRemoveFiles = vi.fn();
+  const mockLog = vi.fn();
 
   beforeAll(() => {
-    jest.doMock('../../utils/app.js', () => ({
+    vi.doMock('../../utils/app.js', () => ({
       createSpinner: mockCreateSpinner,
       removeFiles: mockRemoveFiles
     }));
-    jest.doMock('../../utils/log.js', () => ({
+    vi.doMock('../../utils/log.js', () => ({
       log: mockLog
     }));
-    jest.doMock('../../LexConfig.js', () => ({
+    vi.doMock('../../LexConfig.js', () => ({
       LexConfig: {
         config: {
           outputFullPath: './lib'
         },
-        parseConfig: jest.fn()
+        parseConfig: vi.fn()
       }
     }));
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Environment Variable Loading', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('should load environment variables from .env file', async () => {

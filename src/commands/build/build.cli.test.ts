@@ -1,15 +1,15 @@
-jest.mock('execa');
+vi.mock('execa');
 
 describe('build cli', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   const generateEsbuildArgs = (options: any) => {

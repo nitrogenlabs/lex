@@ -31,7 +31,8 @@
     "target": "ESNext",
     "types": [
       "node",
-      "jest"
+      "vitest/globals",
+      "@testing-library/jest-dom"
     ]
   },
   "include": [

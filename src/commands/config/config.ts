@@ -24,10 +24,10 @@ export const config = async (
   callback: ConfigCallback = () => ({})
 ): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
-  const validTypes: string[] = ['app', 'jest', 'webpack'];
+  const validTypes: string[] = ['app', 'vitest', 'webpack'];
 
   if(!validTypes.includes(type)) {
-    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, jest, and webpack.`, 'error', quiet);
+    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, vitest, and webpack.`, 'error', quiet);
     callback(1);
     return Promise.resolve(1);
   }
@@ -42,8 +42,8 @@ export const config = async (
     case 'app':
       configOptions = LexConfig.config;
       break;
-    case 'jest':
-      configOptions = import('../../../jest.config.mjs');
+    case 'vitest':
+      configOptions = import('../../../vitest.config.mjs');
       break;
     case 'webpack':
       configOptions = import('../../../webpack.config.js');

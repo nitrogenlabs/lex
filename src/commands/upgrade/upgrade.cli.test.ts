@@ -4,40 +4,40 @@ import latestVersion from 'latest-version';
 
 import {upgrade, UpgradeCallback} from './upgrade.js';
 
-jest.mock('execa');
-jest.mock('latest-version');
-jest.mock('compare-versions');
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('execa');
+vi.mock('latest-version');
+vi.mock('compare-versions');
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => JSON.stringify({
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => JSON.stringify({
     dependencies: {
       '@swc/core': '1.0.0',
-      jest: '27.0.0',
-      typescript: '4.0.0'
+      typescript: '4.0.0',
+      vitest: '4.0.0'
     },
     version: '0.9.0'
   }))
 }));
-jest.mock('../../utils/file.js', () => ({
-  getLexPackageJsonPath: jest.fn(() => '/mock/path/package.json')
+vi.mock('../../utils/file.js', async () => ({
+  getLexPackageJsonPath: vi.fn(() => '/mock/path/package.json')
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
 
 describe('upgrade.cli', () => {
-  const mockExit = jest.fn() as unknown as jest.MockedFunction<UpgradeCallback>;
-  const mockExeca = execa as jest.MockedFunction<typeof execa>;
-  const mockLatestVersion = latestVersion as jest.MockedFunction<typeof latestVersion>;
-  const mockCompareVersions = compareVersions as jest.MockedFunction<typeof compareVersions>;
+  const mockExit = vi.fn() as unknown as MockedFunction<UpgradeCallback>;
+  const mockExeca = execa as MockedFunction<typeof execa>;
+  const mockLatestVersion = latestVersion as MockedFunction<typeof latestVersion>;
+  const mockCompareVersions = compareVersions as MockedFunction<typeof compareVersions>;
 
   beforeEach(() => {
     mockExit.mockClear();
@@ -48,7 +48,7 @@ describe('upgrade.cli', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should upgrade when newer version is available', async () => {

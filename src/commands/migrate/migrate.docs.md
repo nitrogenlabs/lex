@@ -89,4 +89,4 @@ await migrate({
 
 ## Notes
 
-This command is useful when migrating an application to a new version of Lex or when resolving dependency conflicts. It removes modules that might conflict with Lex's own dependencies (like ESBuild, Jest, and Webpack) and then reinstalls all dependencies. 
+This command is useful when migrating an application to a new version of Lex or when resolving dependency conflicts. It removes modules that might conflict with Lex's own dependencies (like ESBuild, Vitest, and Webpack) and then reinstalls all dependencies. 

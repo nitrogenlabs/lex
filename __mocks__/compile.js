@@ -1,6 +1,6 @@
 // Mock implementation of compile module
-const compile = jest.fn().mockResolvedValue(0);
-const hasFileType = jest.fn().mockReturnValue(false);
+const compile = vi.fn().mockResolvedValue(0);
+const hasFileType = vi.fn().mockReturnValue(false);
 
 module.exports = {
   compile,

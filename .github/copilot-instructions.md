@@ -1,7 +1,7 @@
 # Lex: AI Coding Agent Instructions
 
 ## Project Overview
-Lex is a zero-configuration React development CLI that provides a complete development environment with AI-powered features. It uses SWC for lightning-fast compilation and includes Jest testing, Storybook integration, and intelligent code assistance.
+Lex is a zero-configuration React development CLI that provides a complete development environment with AI-powered features. It uses SWC for lightning-fast compilation and includes Vitest testing, Storybook integration, and intelligent code assistance.
 
 ## Architecture & Key Components
 
@@ -15,7 +15,7 @@ Lex is a zero-configuration React development CLI that provides a complete devel
 ### Build System
 - **Compiler**: SWC (10-100x faster than Babel)
 - **Bundler**: Webpack (configurable, defaults to SWC for speed)
-- **Testing**: Jest with jsdom environment
+- **Testing**: Vitest with jsdom environment
 - **Linting**: ESLint with AI-powered auto-fixes
 
 ## Critical Workflows
@@ -115,7 +115,7 @@ log('Error message', 'error');
 
 ### Unit Tests
 ```typescript
-// Use Jest with jsdom for DOM testing
+// Use Vitest with jsdom for DOM testing
 import {render, screen} from '@testing-library/react';
 import {Button} from './Button.js';
 

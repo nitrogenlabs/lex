@@ -6,80 +6,80 @@ import {storybook, StorybookOptions} from './storybook.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(),
-  readFileSync: jest.fn()
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(),
+  readFileSync: vi.fn()
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn()
+vi.mock('glob', async () => ({
+  sync: vi.fn()
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTestTypescriptConfig: jest.fn(),
-    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: vi.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       useTypescript: true
     },
-    getLexDir: jest.fn(() => '/mock/lex/dir'),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    getLexDir: vi.fn(() => '/mock/lex/dir'),
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.test.json')
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/file.js');
-jest.mock('../../utils/log.js');
+vi.mock('../../utils/file.js');
+vi.mock('../../utils/log.js');
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
-let consoleLogSpy: jest.SpyInstance;
-let pathResolveSpy: jest.SpyInstance;
+let consoleLogSpy: SpyInstance;
+let pathResolveSpy: SpyInstance;
 
 beforeAll(() => {
-  pathResolveSpy = jest.spyOn(require('path'), 'resolve').mockImplementation((...args: string[]) => args.join('/'));
-  consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  pathResolveSpy = vi.spyOn(require('path'), 'resolve').mockImplementation((...args: string[]) => args.join('/'));
+  consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 });
 
 afterAll(() => {
   pathResolveSpy.mockRestore();
   consoleLogSpy.mockRestore();
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 describe('storybook.integration tests', () => {
   let mockSpinner: {
-    start: jest.Mock;
-    succeed: jest.Mock;
-    fail: jest.Mock;
+    start: Mock;
+    succeed: Mock;
+    fail: Mock;
   };
   let tempDir: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     tempDir = '/tmp/lex-storybook-test';
-    jest.spyOn(process, 'cwd').mockReturnValue(tempDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempDir);
 
     process.env = {
       NODE_ENV: 'test'
     };
 
     mockSpinner = {
-      fail: jest.fn(),
-      start: jest.fn(),
-      succeed: jest.fn()
+      fail: vi.fn(),
+      start: vi.fn(),
+      succeed: vi.fn()
     };
-    (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
+    (app.createSpinner as Mock).mockReturnValue(mockSpinner);
 
     // Default mocks that make the code succeed
-    (existsSync as jest.Mock).mockImplementation((path: any) => {
+    (existsSync as Mock).mockImplementation((path: any) => {
       if(typeof path === 'string') {
         if(path.includes('package.json') || path.includes('node_modules')) {
           return true;
@@ -90,22 +90,22 @@ describe('storybook.integration tests', () => {
       }
       return false;
     });
-    (readFileSync as jest.Mock).mockReturnValue('{"dependencies": {"@storybook/react": "^7.0.0"}}');
-    (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
-    (globSync as unknown as jest.Mock).mockReturnValue(['src/Component.stories.ts', 'src/Button.stories.tsx']);
+    (readFileSync as Mock).mockReturnValue('{"dependencies": {"@storybook/react": "^7.0.0"}}');
+    (file.resolveBinaryPath as Mock).mockReturnValue('/node_modules/.bin/storybook');
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (globSync as unknown as Mock).mockReturnValue(['src/Component.stories.ts', 'src/Button.stories.tsx']);
   });
 
   afterAll(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('should find story files in multiple locations', async () => {
     const options: StorybookOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
 
@@ -122,18 +122,18 @@ describe('storybook.integration tests', () => {
       ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
   it('should check for Storybook installation in package.json', async () => {
     const options: StorybookOptions = {};
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (globSync as unknown as jest.Mock).mockReturnValue([]);
+    (globSync as unknown as Mock).mockReturnValue([]);
 
     await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('No story files found in the project.');
@@ -141,16 +141,16 @@ describe('storybook.integration tests', () => {
 
   it('should handle different Storybook framework installations', async () => {
     const options: StorybookOptions = {};
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await storybook(options, mockCallback);
 
     expect(mockCallback).toHaveBeenCalledWith(0);
 
     mockCallback.mockClear();
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
@@ -158,9 +158,9 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       static: true
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (file.resolveBinaryPath as jest.Mock).mockReturnValue('/node_modules/.bin/storybook');
+    (file.resolveBinaryPath as Mock).mockReturnValue('/node_modules/.bin/storybook');
 
     await storybook(options, mockCallback);
 
@@ -175,10 +175,10 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       config: './custom-storybook'
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     // Mock the custom config directory to exist
-    (existsSync as jest.Mock).mockImplementation((path: any) => {
+    (existsSync as Mock).mockImplementation((path: any) => {
       if(typeof path === 'string') {
         if(path.includes('custom-storybook')) {
           return true;
@@ -194,7 +194,7 @@ describe('storybook.integration tests', () => {
     });
 
     await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
@@ -208,10 +208,10 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       port: 6007
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
@@ -226,10 +226,10 @@ describe('storybook.integration tests', () => {
       open: true,
       port: 6007
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
@@ -248,7 +248,7 @@ describe('storybook.integration tests', () => {
       quiet: false,
       variables: '{"STORYBOOK_THEME": "dark", "DEBUG": true, "NODE_ENV": "development"}'
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
 
@@ -258,7 +258,7 @@ describe('storybook.integration tests', () => {
       DEBUG: true
     }));
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
@@ -266,28 +266,28 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (existsSync as jest.Mock).mockReturnValue(false);
+    (existsSync as Mock).mockReturnValue(false);
 
     const result = await storybook(options, mockCallback);
 
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
   it('should handle invalid package.json', async () => {
     const options: StorybookOptions = {};
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     // Mock no story files found
-    (globSync as unknown as jest.Mock).mockReturnValue([]);
+    (globSync as unknown as Mock).mockReturnValue([]);
 
     const result = await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(result).toBe(1);
@@ -299,9 +299,9 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (globSync as unknown as jest.Mock).mockReturnValue([]);
+    (globSync as unknown as Mock).mockReturnValue([]);
 
     const result = await storybook(options, mockCallback);
 
@@ -309,7 +309,7 @@ describe('storybook.integration tests', () => {
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
@@ -317,28 +317,28 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (file.resolveBinaryPath as jest.Mock).mockReturnValue(null);
+    (file.resolveBinaryPath as Mock).mockReturnValue(null);
 
     const result = await storybook(options, mockCallback);
 
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
   });
 
   it('should handle execa execution failure', async () => {
     const options: StorybookOptions = {};
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     // Mock execa to fail
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
+    (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
 
     const result = await storybook(options, mockCallback);
-    jest.runAllTimers();
+    vi.runAllTimers();
     await Promise.resolve();
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('There was an error while running storybook.');

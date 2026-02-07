@@ -2,38 +2,38 @@ import {execa} from 'execa';
 
 import {test, type TestCallback} from './test.js';
 
-jest.mock('execa');
-jest.mock('../ai/ai.js', () => ({
-  aiFunction: jest.fn()
+vi.mock('execa');
+vi.mock('../ai/ai.js', async () => ({
+  aiFunction: vi.fn()
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTestTypescriptConfig: jest.fn(),
-    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: vi.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       useTypescript: true
     },
-    getLexDir: jest.fn(() => '/mock/lex/dir'),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    getLexDir: vi.fn(() => '/mock/lex/dir'),
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.test.json')
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
-  resolveBinaryPath: jest.fn(() => '/mock/path/to/jest')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  relativeNodePath: vi.fn(() => '/node_modules/vitest/vitest.mjs'),
+  resolveBinaryPath: vi.fn(() => '/mock/path/to/vitest')
 }));
-jest.mock('fs', () => ({
-  existsSync: jest.fn((path: string) => {
+vi.mock('fs', async () => ({
+  existsSync: vi.fn((path: string) => {
     // Handle undefined or null paths
     if(!path) {
       return false;
@@ -41,32 +41,32 @@ jest.mock('fs', () => ({
 
     return true;
   }),
-  readFileSync: jest.fn((path: string) => {
+  readFileSync: vi.fn((path: string) => {
     if(path.includes('package.json')) {
-      return '{"type": "module", "scripts": {"test": "jest"}}';
+      return '{"type": "module", "scripts": {"test": "vitest"}}';
     }
     return '{"type": "module"}';
   }),
-  writeFileSync: jest.fn()
+  writeFileSync: vi.fn()
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('path');
-jest.mock('url');
+vi.mock('path');
+vi.mock('url');
 
 describe('test integration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should run tests successfully', async () => {
-    const callback = jest.fn() as unknown as TestCallback;
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    const callback = vi.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
 
     await test({}, [], callback);
 
@@ -74,8 +74,8 @@ describe('test integration', () => {
   });
 
   it('should handle test errors', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('AI service unavailable'));
-    const callback = jest.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('AI service unavailable'));
+    const callback = vi.fn() as unknown as TestCallback;
     const result = await test({}, [], callback);
 
     expect(result).toBe(1);

@@ -5,70 +5,70 @@ import {test, TestOptions} from './test.js';
 import * as app from '../../utils/app.js';
 import * as logUtils from '../../utils/log.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(),
-  readFileSync: jest.fn()
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(),
+  readFileSync: vi.fn()
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTestTypescriptConfig: jest.fn(),
-    checkTypescriptConfig: jest.fn(),
+    checkTestTypescriptConfig: vi.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       useTypescript: true
     },
-    getLexDir: jest.fn(() => '/mock/lex/dir'),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    getLexDir: vi.fn(() => '/mock/lex/dir'),
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.test.json')
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.test.json')
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  relativeNodePath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js'),
-  resolveBinaryPath: jest.fn(() => '/node_modules/jest-cli/bin/jest.js')
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  relativeNodePath: vi.fn(() => '/node_modules/vitest/vitest.mjs'),
+  resolveBinaryPath: vi.fn(() => '/node_modules/vitest/vitest.mjs')
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => ['test1.js', 'test2.js'])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => ['test1.js', 'test2.js'])
 }));
 
 describe('test.cli', () => {
-  const mockCallback = jest.fn();
+  const mockCallback = vi.fn();
   let mockSpinner: {
-    start: jest.Mock;
-    succeed: jest.Mock;
-    fail: jest.Mock;
+    start: Mock;
+    succeed: Mock;
+    fail: Mock;
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    vi.clearAllMocks();
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     mockSpinner = {
-      fail: jest.fn(),
-      start: jest.fn(),
-      succeed: jest.fn()
+      fail: vi.fn(),
+      start: vi.fn(),
+      succeed: vi.fn()
     };
-    (app.createSpinner as jest.Mock).mockReturnValue(mockSpinner);
+    (app.createSpinner as Mock).mockReturnValue(mockSpinner);
 
-    (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readFileSync as jest.Mock).mockReturnValue('{"scripts": {"test": "jest"}}');
+    (fs.existsSync as Mock).mockReturnValue(true);
+    (fs.readFileSync as Mock).mockReturnValue('{"scripts": {"test": "vitest"}}');
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('test function', () => {
-    it('should run Jest with default options', async () => {
+    it('should run Vitest with default options', async () => {
       const options: TestOptions = {};
       const result = await test(options, [], mockCallback as any);
 
@@ -76,19 +76,19 @@ describe('test.cli', () => {
       expect(mockCallback).toHaveBeenCalledWith(0);
       expect(mockSpinner.succeed).toHaveBeenCalledWith('Testing completed!');
 
-      expect(execa as unknown as jest.Mock).toHaveBeenCalledWith(
-        expect.stringContaining('jest'),
-        expect.arrayContaining(['--no-cache', '--config']),
+      expect(execa as unknown as Mock).toHaveBeenCalledWith(
+        expect.stringContaining('vitest'),
+        expect.arrayContaining(['run', '--config']),
         expect.objectContaining({encoding: 'utf8'})
       );
     });
 
-    it('should propagate Jest errors', async () => {
+    it('should propagate Vitest errors', async () => {
       const options: TestOptions = {};
-      (execa as jest.MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Test failed'));
+      (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Test failed'));
       const result = await test(options, [], mockCallback as any);
 
-      expect(logUtils.log as jest.Mock).toHaveBeenCalledWith(
+      expect(logUtils.log as Mock).toHaveBeenCalledWith(
         '\nLex Error: Check for unit test errors and/or coverage.', 'error', undefined
       );
       expect(mockSpinner.fail).toHaveBeenCalledWith('Testing failed!');

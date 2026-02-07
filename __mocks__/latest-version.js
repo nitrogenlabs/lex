@@ -1,1 +1,1 @@
-module.exports = jest.fn().mockResolvedValue('1.0.0');
+module.exports = vi.fn().mockResolvedValue('1.0.0');

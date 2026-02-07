@@ -21,15 +21,8 @@ import type {Linter} from 'eslint';
 const cwd: string = process.cwd();
 
 
-export interface JestConfig {
+export interface VitestConfig {
   [key: string]: unknown;
-  roots?: string[];
-  testEnvironment?: string;
-  transform?: Record<string, [string, Record<string, unknown>]>;
-  transformIgnorePatterns?: string[];
-  moduleNameMapper?: Record<string, string>;
-  extensionsToTreatAsEsm?: string[];
-  preset?: string;
 }
 
 export interface WebpackConfig {
@@ -64,7 +57,7 @@ export interface LexConfigType {
   env?: object;
   eslint?: ESLintConfig;
   gitUrl?: string;
-  jest?: JestConfig;
+  vitest?: VitestConfig;
   libraryName?: string;
   libraryTarget?: string;
   outputFile?: string;
@@ -97,7 +90,7 @@ export const defaultConfigValues: LexConfigType = {
   entryJs: 'index.js',
   env: null,
   eslint: {},
-  jest: {},
+  vitest: {},
   outputFullPath: pathResolve(cwd, './lib'),
   outputHash: false,
   outputPath: './lib',

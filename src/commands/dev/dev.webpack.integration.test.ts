@@ -6,15 +6,15 @@ import {join} from 'path';
 describe('dev webpack integration', () => {
   let testDir: string;
   let originalCwd: string;
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
@@ -93,7 +93,7 @@ describe('dev webpack integration', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     process.chdir(originalCwd);
     try {
       rmSync(testDir, {force: true, recursive: true});

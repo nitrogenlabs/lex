@@ -2,70 +2,70 @@ import {execa} from 'execa';
 
 import {init} from './init.js';
 
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{}'),
-  renameSync: jest.fn(),
-  unlinkSync: jest.fn(),
-  writeFileSync: jest.fn()
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => '{}'),
+  renameSync: vi.fn(),
+  unlinkSync: vi.fn(),
+  writeFileSync: vi.fn()
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn()
+vi.mock('glob', async () => ({
+  sync: vi.fn()
 }));
-jest.mock('path', () => ({
-  dirname: jest.fn(() => '/mock/dir'),
-  resolve: jest.fn((...args) => args.join('/'))
+vi.mock('path', async () => ({
+  dirname: vi.fn(() => '/mock/dir'),
+  resolve: vi.fn((...args) => args.join('/'))
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       packageManager: 'npm',
       useTypescript: false
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
-jest.mock('../../utils/app.js', () => ({
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('../../utils/app.js', async () => ({
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  getPackageJson: jest.fn(() => ({
+  getPackageJson: vi.fn(() => ({
     description: 'Test app',
     name: 'test-app',
     version: '0.1.0'
   })),
-  setPackageJson: jest.fn()
+  setPackageJson: vi.fn()
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir')
+vi.mock('../../utils/log.js');
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir')
 }));
 
 describe('init options', () => {
-  let consoleLogSpy: jest.SpyInstance;
-  let chdirSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
+  let chdirSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    chdirSpy = jest.spyOn(process, 'chdir').mockImplementation(() => undefined);
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    chdirSpy = vi.spyOn(process, 'chdir').mockImplementation(() => undefined);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    vi.clearAllMocks();
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
     chdirSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should handle default options', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '@test/package', {}, mockCallback);
 
     expect(result).toBe(0);
@@ -73,7 +73,7 @@ describe('init options', () => {
   });
 
   it('should handle typescript option', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '', {typescript: true}, mockCallback);
 
     expect(result).toBe(0);
@@ -81,7 +81,7 @@ describe('init options', () => {
   });
 
   it('should handle install option', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '@test/package', {install: true}, mockCallback);
 
     expect(result).toBe(0);
@@ -89,7 +89,7 @@ describe('init options', () => {
   });
 
   it('should handle packageManager option', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '@test/package', {packageManager: 'yarn'}, mockCallback);
 
     expect(result).toBe(0);
@@ -97,7 +97,7 @@ describe('init options', () => {
   });
 
   it('should handle quiet option', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '@test/package', {quiet: true}, mockCallback);
 
     expect(result).toBe(0);
@@ -105,7 +105,7 @@ describe('init options', () => {
   });
 
   it('should handle cliName option', async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const result = await init('test-app', '@test/package', {cliName: 'CustomCLI'}, mockCallback);
 
     expect(result).toBe(0);

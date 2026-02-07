@@ -2,49 +2,49 @@ import {execa} from 'execa';
 
 import {lint} from './lint.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{"type": "module"}'),
-  unlinkSync: jest.fn(),
-  writeFileSync: jest.fn()
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => '{"type": "module"}'),
+  unlinkSync: vi.fn(),
+  writeFileSync: vi.fn()
 }));
-jest.mock('path', () => ({
-  dirname: jest.fn(() => '/mock/dir'),
-  resolve: jest.fn((...args) => args.join('/'))
+vi.mock('path', async () => ({
+  dirname: vi.fn(() => '/mock/dir'),
+  resolve: vi.fn((...args) => args.join('/'))
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn()
+vi.mock('glob', async () => ({
+  sync: vi.fn()
 }));
 
 describe('lint options', () => {
-  let processExitSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
+  let processExitSpy: SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    vi.clearAllMocks();
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {
     processExitSpy.mockRestore();
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should handle default options', async () => {

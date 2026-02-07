@@ -4,8 +4,8 @@ import {join} from 'path';
 
 import {processTranslations} from './translations.js';
 
-jest.mock('./log.js', () => ({
-  log: jest.fn()
+vi.mock('./log.js', async () => ({
+  log: vi.fn()
 }));
 
 describe('translations', () => {

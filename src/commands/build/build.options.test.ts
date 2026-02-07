@@ -1,68 +1,68 @@
-jest.mock('execa');
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  readFileSync: jest.fn(() => '{}'),
-  writeFileSync: jest.fn(),
-  mkdirSync: jest.fn(),
-  unlinkSync: jest.fn(),
-  rmSync: jest.fn()
+vi.mock('execa');
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  readFileSync: vi.fn(() => '{}'),
+  writeFileSync: vi.fn(),
+  mkdirSync: vi.fn(),
+  unlinkSync: vi.fn(),
+  rmSync: vi.fn()
 }));
-jest.mock('path', () => ({
-  dirname: jest.fn(() => '/mock/dir'),
-  join: jest.fn((...args) => args.join('/')),
-  resolve: jest.fn((...args) => args.join('/'))
+vi.mock('path', async () => ({
+  dirname: vi.fn(() => '/mock/dir'),
+  join: vi.fn((...args) => args.join('/')),
+  resolve: vi.fn((...args) => args.join('/'))
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn(),
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn(),
   })),
-  checkLinkedModules: jest.fn(),
-  copyConfiguredFiles: jest.fn(),
-  createProgressBar: jest.fn(),
-  handleWebpackProgress: jest.fn(),
-  removeFiles: jest.fn()
+  checkLinkedModules: vi.fn(),
+  copyConfiguredFiles: vi.fn(),
+  createProgressBar: vi.fn(),
+  handleWebpackProgress: vi.fn(),
+  removeFiles: vi.fn()
 }));
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    parseConfig: jest.fn(),
+    parseConfig: vi.fn(),
     config: {
       outputFullPath: './lib',
       sourceFullPath: './src',
       useTypescript: false
     }
   },
-  getTypeScriptConfigPath: jest.fn(() => './tsconfig.build.json')
+  getTypeScriptConfigPath: vi.fn(() => './tsconfig.build.json')
 }));
-jest.mock('../../utils/file.js', () => ({
-  ...jest.requireActual('../../utils/file.js'),
-  resolveWebpackPaths: jest.fn(() => ({
+vi.mock('../../utils/file.js', async () => ({
+  ...await vi.importActual('../../utils/file.js'),
+  resolveWebpackPaths: vi.fn(() => ({
     webpackConfig: './webpack.config.js',
     webpackPath: 'npx'
   })),
-  getDirName: jest.fn(() => '/mock/dir'),
-  relativeNodePath: jest.fn(() => './mock/path'),
-  getLexPackageJsonPath: jest.fn(() => '/mock/package.json')
+  getDirName: vi.fn(() => '/mock/dir'),
+  relativeNodePath: vi.fn(() => './mock/path'),
+  getLexPackageJsonPath: vi.fn(() => '/mock/package.json')
 }));
-jest.mock('../../utils/log.js', () => ({
-  log: jest.fn()
+vi.mock('../../utils/log.js', async () => ({
+  log: vi.fn()
 }));
-jest.mock('../../utils/translations.js', () => ({
-  processTranslations: jest.fn()
+vi.mock('../../utils/translations.js', async () => ({
+  processTranslations: vi.fn()
 }));
-jest.mock('../ai/ai.js', () => ({
-  aiFunction: jest.fn()
+vi.mock('../ai/ai.js', async () => ({
+  aiFunction: vi.fn()
 }));
 
 // Mock the buildWithWebpack function
-jest.mock('./build.js', () => {
-  const originalModule = jest.requireActual('./build.js');
-  const mockBuildWithWebpack = jest.fn().mockResolvedValue(0);
+vi.mock('./build.js', async () => {
+  const originalModule = await vi.importActual('./build.js');
+  const mockBuildWithWebpack = vi.fn().mockResolvedValue(0);
   return {
     ...originalModule,
     buildWithWebpack: mockBuildWithWebpack
@@ -75,15 +75,15 @@ import {build} from './build.js';
 describe('build options', () => {
   let consoleLogSpy;
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should build with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
 
     // Add a test flag to the build command to exit early
     const result = await build({test: true});

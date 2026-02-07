@@ -114,9 +114,9 @@ export default {
   },
 
   // Test configuration
-  jest: {
-    roots: ['<rootDir>/src'],
-    testEnvironment: 'node'
+  vitest: {
+    dir: './src',
+    environment: 'node'
   }
 };
 

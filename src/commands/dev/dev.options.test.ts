@@ -2,60 +2,60 @@ import {execa} from 'execa';
 
 import {dev} from './dev.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn()
   })),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  removeFiles: vi.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../utils/file.js', () => ({
-  ...jest.requireActual('../../utils/file.js'),
-  getDirName: jest.fn(() => '/mock/dir'),
-  resolveBinaryPath: jest.fn(() => '/mock/path/to/webpack-cli'),
-  resolveWebpackPaths: jest.fn(() => ({
+vi.mock('../../utils/file.js', async () => ({
+  ...await vi.importActual('../../utils/file.js'),
+  getDirName: vi.fn(() => '/mock/dir'),
+  resolveBinaryPath: vi.fn(() => '/mock/path/to/webpack-cli'),
+  resolveWebpackPaths: vi.fn(() => ({
     webpackConfig: '/mock/path/to/webpack.config.js',
     webpackPath: '/mock/path/to/webpack-cli'
   }))
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkTypescriptConfig: jest.fn(),
+    checkTypescriptConfig: vi.fn(),
     config: {
       outputFullPath: '/mock/output',
       useTypescript: false
     },
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));
 
 describe('dev options', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: SpyInstance;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should start dev server with default options', async () => {
     const mockChildProcess = {
-      on: jest.fn(),
-      stderr: {on: jest.fn()},
-      stdout: {on: jest.fn()}
+      on: vi.fn(),
+      stderr: {on: vi.fn()},
+      stdout: {on: vi.fn()}
     };
-    (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+    (execa as MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
 
     mockChildProcess.on.mockImplementation((event, callback) => {
       if(event === 'close') {
@@ -71,11 +71,11 @@ describe('dev options', () => {
 
   it('should start dev server with usePublicIp option', async () => {
     const mockChildProcess = {
-      on: jest.fn(),
-      stderr: {on: jest.fn()},
-      stdout: {on: jest.fn()}
+      on: vi.fn(),
+      stderr: {on: vi.fn()},
+      stdout: {on: vi.fn()}
     };
-    (execa as jest.MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+    (execa as MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
 
     mockChildProcess.on.mockImplementation((event, callback) => {
       if(event === 'close') {

@@ -110,7 +110,7 @@ Tests the options interface and validation.
 
 ### Mocking Strategy
 
-- **Dependencies**: All external dependencies are mocked using Jest
+- **Dependencies**: All external dependencies are mocked using Vitest
 - **File System**: `fs` module operations are mocked to avoid actual file system access
 - **Process**: `process.env` and `process.cwd` are mocked for consistent testing
 - **Binaries**: `resolveBinaryPath` is mocked to return predictable paths

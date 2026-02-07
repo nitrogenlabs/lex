@@ -4,42 +4,42 @@ import {copy, CopyOptions} from './copy.js';
 import * as app from '../../utils/app.js';
 import * as log from '../../utils/log.js';
 
-jest.mock('execa');
-jest.mock('fs');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  copyFileSync: jest.fn(),
-  copyFolderRecursiveSync: jest.fn(),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('fs');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  copyFileSync: vi.fn(),
+  copyFolderRecursiveSync: vi.fn(),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   }))
 }));
-jest.mock('../../utils/log.js');
+vi.mock('../../utils/log.js');
 
 describe('copy integration', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
-    (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.lstatSync as jest.Mock).mockReturnValue({
-      isDirectory: jest.fn().mockReturnValue(false)
+    (fs.existsSync as Mock).mockReturnValue(true);
+    (fs.lstatSync as Mock).mockReturnValue({
+      isDirectory: vi.fn().mockReturnValue(false)
     });
 
-    (app.copyFileSync as jest.Mock).mockImplementation(() => {});
-    (app.copyFolderRecursiveSync as jest.Mock).mockImplementation(() => {});
+    (app.copyFileSync as Mock).mockImplementation(() => {});
+    (app.copyFolderRecursiveSync as Mock).mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should integrate with fs to check if source exists', async () => {
@@ -48,7 +48,7 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await copy(from, to, options, mockCallback);
 
@@ -61,7 +61,7 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await copy(from, to, options, mockCallback);
 
@@ -74,7 +74,7 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await copy(from, to, options, mockCallback);
 
@@ -88,10 +88,10 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (fs.lstatSync as jest.Mock).mockReturnValue({
-      isDirectory: jest.fn().mockReturnValue(true)
+    (fs.lstatSync as Mock).mockReturnValue({
+      isDirectory: vi.fn().mockReturnValue(true)
     });
 
     await copy(from, to, options, mockCallback);
@@ -106,9 +106,9 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (fs.existsSync as jest.Mock).mockReturnValue(false);
+    (fs.existsSync as Mock).mockReturnValue(false);
 
     const result = await copy(from, to, options, mockCallback);
 
@@ -124,10 +124,10 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     const errorMessage = 'Permission denied';
-    (app.copyFileSync as jest.Mock).mockImplementation(() => {
+    (app.copyFileSync as Mock).mockImplementation(() => {
       throw new Error(errorMessage);
     });
 
@@ -143,14 +143,14 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
-    (fs.lstatSync as jest.Mock).mockReturnValue({
-      isDirectory: jest.fn().mockReturnValue(true)
+    (fs.lstatSync as Mock).mockReturnValue({
+      isDirectory: vi.fn().mockReturnValue(true)
     });
 
     const errorMessage = 'Permission denied';
-    (app.copyFolderRecursiveSync as jest.Mock).mockImplementation(() => {
+    (app.copyFolderRecursiveSync as Mock).mockImplementation(() => {
       throw new Error(errorMessage);
     });
 
@@ -166,12 +166,12 @@ describe('copy integration', () => {
     const options: CopyOptions = {
       quiet: false
     };
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
 
     await copy(from, to, options, mockCallback);
 
-    const logCallOrder = (log.log as jest.Mock).mock.invocationCallOrder[0];
-    const copyCallOrder = (app.copyFileSync as jest.Mock).mock.invocationCallOrder[0];
+    const logCallOrder = (log.log as Mock).mock.invocationCallOrder[0];
+    const copyCallOrder = (app.copyFileSync as Mock).mock.invocationCallOrder[0];
 
     expect(logCallOrder).toBeLessThan(copyCallOrder);
   });

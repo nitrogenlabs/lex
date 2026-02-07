@@ -2,38 +2,38 @@ import {execa} from 'execa';
 
 import {migrate} from './migrate.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  createSpinner: jest.fn(() => ({
-    start: jest.fn(),
-    succeed: jest.fn(),
-    fail: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  createSpinner: vi.fn(() => ({
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn()
   })),
-  removeFiles: jest.fn().mockResolvedValue(undefined),
-  removeModules: jest.fn().mockResolvedValue(undefined)
+  removeFiles: vi.fn().mockResolvedValue(undefined),
+  removeModules: vi.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js');
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js');
 
 describe('migrate options', () => {
-  let processExitSpy: jest.SpyInstance;
+  let processExitSpy: SpyInstance;
 
   beforeAll(() => {
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
     processExitSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should migrate with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     await migrate({});
 
     expect(execa).toHaveBeenCalled();

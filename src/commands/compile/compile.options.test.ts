@@ -2,34 +2,34 @@ import {execa} from 'execa';
 
 import {compile} from './compile.js';
 
-jest.mock('execa');
-jest.mock('../../utils/app.js', () => ({
-  ...jest.requireActual('../../utils/app.js'),
-  checkLinkedModules: jest.fn(),
-  copyConfiguredFiles: jest.fn().mockResolvedValue(undefined),
-  createSpinner: jest.fn(() => ({
-    fail: jest.fn(),
-    start: jest.fn(),
-    succeed: jest.fn()
+vi.mock('execa');
+vi.mock('../../utils/app.js', async () => ({
+  ...await vi.importActual('../../utils/app.js'),
+  checkLinkedModules: vi.fn(),
+  copyConfiguredFiles: vi.fn().mockResolvedValue(undefined),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
   })),
-  copyFiles: jest.fn().mockResolvedValue(undefined),
-  getFilesByExt: jest.fn().mockReturnValue([]),
-  removeFiles: jest.fn().mockResolvedValue(undefined)
+  copyFiles: vi.fn().mockResolvedValue(undefined),
+  getFilesByExt: vi.fn().mockReturnValue([]),
+  removeFiles: vi.fn().mockResolvedValue(undefined)
 }));
-jest.mock('../../utils/file.js', () => ({
-  getDirName: jest.fn(() => '/mock/dir'),
-  resolveBinaryPath: jest.fn((binary) => `/mock/path/to/${binary}`)
+vi.mock('../../utils/file.js', async () => ({
+  getDirName: vi.fn(() => '/mock/dir'),
+  resolveBinaryPath: vi.fn((binary) => `/mock/path/to/${binary}`)
 }));
-jest.mock('../../utils/log.js');
-jest.mock('../../LexConfig.js', () => ({
+vi.mock('../../utils/log.js');
+vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
-    checkCompileTypescriptConfig: jest.fn(),
+    checkCompileTypescriptConfig: vi.fn(),
     config: {
       outputFullPath: '/mock/output',
       sourceFullPath: '/mock/source',
       useTypescript: true
     },
-    getTypeScriptDeclarationFlags: jest.fn(() => [
+    getTypeScriptDeclarationFlags: vi.fn(() => [
       '--emitDeclarationOnly',
       '--declaration',
       '--declarationMap',
@@ -46,37 +46,37 @@ jest.mock('../../LexConfig.js', () => ({
       '--resolveJsonModule',
       '--allowJs'
     ]),
-    parseConfig: jest.fn().mockResolvedValue(undefined)
+    parseConfig: vi.fn().mockResolvedValue(undefined)
   },
-  getTypeScriptConfigPath: jest.fn(() => 'tsconfig.build.json')
+  getTypeScriptConfigPath: vi.fn(() => 'tsconfig.build.json')
 }));
-jest.mock('fs', () => ({
-  existsSync: jest.fn(() => true),
-  lstatSync: jest.fn(() => ({isDirectory: () => false})),
-  readdirSync: jest.fn(() => [])
+vi.mock('fs', async () => ({
+  existsSync: vi.fn(() => true),
+  lstatSync: vi.fn(() => ({isDirectory: () => false})),
+  readdirSync: vi.fn(() => [])
 }));
-jest.mock('glob', () => ({
-  sync: jest.fn(() => [])
+vi.mock('glob', async () => ({
+  sync: vi.fn(() => [])
 }));
 
 describe('compile options', () => {
   let consoleLogSpy;
 
   beforeAll(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterAll(() => {
     consoleLogSpy.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should compile with default options', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({
       exitCode: 0,
       stderr: '',
       stdout: ''
@@ -89,7 +89,7 @@ describe('compile options', () => {
   });
 
   it('should compile with quiet mode', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({
       exitCode: 0,
       stderr: '',
       stdout: ''
@@ -101,7 +101,7 @@ describe('compile options', () => {
   });
 
   it('should compile with custom output path', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({
       exitCode: 0,
       stderr: '',
       stdout: ''
@@ -113,7 +113,7 @@ describe('compile options', () => {
   });
 
   it('should compile with remove option', async () => {
-    (execa as jest.MockedFunction<typeof execa>).mockResolvedValue({
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({
       exitCode: 0,
       stderr: '',
       stdout: ''

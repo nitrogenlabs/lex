@@ -23,7 +23,8 @@
     "skipLibCheck": true,
     "target": "esnext",
     "types": [
-      "jest",
+      "vitest/globals",
+      "@testing-library/jest-dom",
       "react-native"
     ]
   }

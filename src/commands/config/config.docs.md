@@ -1,6 +1,6 @@
 # Config Module API Documentation
 
-The config module provides functionality to generate and output configuration for various parts of the Lex toolchain, including app, Jest, and Webpack configurations.
+The config module provides functionality to generate and output configuration for various parts of the Lex toolchain, including app, Vitest, and Webpack configurations.
 
 ## API
 
@@ -12,7 +12,7 @@ The main function that handles configuration generation and output.
 
 - `type`: The type of configuration to generate. Must be one of:
   - `'app'` - Application configuration from LexConfig
-  - `'jest'` - Jest testing configuration
+  - `'vitest'` - Vitest testing configuration
   - `'webpack'` - Webpack bundling configuration
 
 - `options`: An object containing the configuration options
@@ -46,7 +46,7 @@ export type ConfigCallback = (status: number) => void;
 
 ## Features
 
-- **Multiple Configuration Types**: Supports generating app, Jest, and Webpack configurations
+- **Multiple Configuration Types**: Supports generating app, Vitest, and Webpack configurations
 - **JSON Output**: Can save the generated configuration to a JSON file
 - **Custom CLI Name**: Supports custom CLI name for output messages
 - **Quiet Mode**: Supports suppressing output for automated usage
@@ -59,8 +59,8 @@ import { config } from '@nlabs/lex';
 // Basic usage to get app configuration
 await config('app', {});
 
-// Save Jest configuration to a JSON file
-await config('jest', { json: './jest-config.json' });
+// Save Vitest configuration to a JSON file
+await config('vitest', { json: './vitest-config.json' });
 
 // Get Webpack configuration with custom CLI name and quiet output
 await config('webpack', {

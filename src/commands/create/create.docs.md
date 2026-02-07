@@ -117,7 +117,7 @@ The data layer creation generates a complete Lambda function with:
 - **Error Handling**: Comprehensive error handling with proper Lambda response format
 - **CORS Support**: Built-in CORS headers for web applications
 - **TypeScript Support**: Full TypeScript support with proper AWS Lambda types
-- **Test Coverage**: Complete test suite with Jest for all operations
+- **Test Coverage**: Complete test suite with Vitest for all operations
 - **Environment Configuration**: Support for environment variables and configuration
 
 ### Generated Files

@@ -1,5 +1,5 @@
 // Mock implementation of execa
-const mockExeca = jest.fn().mockImplementation(() =>
+const mockExeca = vi.fn().mockImplementation(() =>
   Promise.resolve({
     stdout: '',
     stderr: '',
@@ -9,7 +9,7 @@ const mockExeca = jest.fn().mockImplementation(() =>
   })
 );
 
-mockExeca.sync = jest.fn().mockImplementation(() => ({
+mockExeca.sync = vi.fn().mockImplementation(() => ({
   stdout: '',
   stderr: '',
   exitCode: 0,
