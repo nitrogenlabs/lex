@@ -2,11 +2,10 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
-import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
-
+import {execa} from 'execa';
+import {sync as globSync} from 'glob';
 import {LexConfig, getTypeScriptConfigPath} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';

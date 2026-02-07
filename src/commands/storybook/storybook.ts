@@ -1,9 +1,8 @@
+import {existsSync} from 'fs';
+import {resolve as pathResolve} from 'path';
 import chalk from 'chalk';
 import {execa} from 'execa';
-import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {resolve as pathResolve} from 'path';
-
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {findTailwindCssPath, resolveBinaryPath} from '../../utils/file.js';
@@ -21,7 +20,7 @@ export interface StorybookOptions {
   readonly verbose?: boolean;
 }
 
-export type StorybookCallback = (status: number)=> void;
+export type StorybookCallback = (status: number) => void;
 
 const findStoryFiles = (): string[] => {
   const storyPatterns = [

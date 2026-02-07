@@ -1,8 +1,7 @@
+import {readFileSync} from 'fs';
 import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
-import {readFileSync} from 'fs';
 import latestVersion from 'latest-version';
-
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {getLexPackageJsonPath} from '../../utils/file.js';

@@ -1,10 +1,8 @@
 import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
 import latestVersion from 'latest-version';
-
-
-import {upgrade, UpgradeCallback} from './upgrade.js';
 import {LexConfig} from '../../LexConfig.js';
+import {upgrade, UpgradeCallback} from './upgrade.js';
 
 jest.mock('execa');
 jest.mock('../../LexConfig.js');

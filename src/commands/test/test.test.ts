@@ -1,10 +1,9 @@
-import {execa} from 'execa';
 import {readFileSync} from 'fs';
-import {sync as globSync} from 'glob';
 import {existsSync} from 'node:fs';
-
-import {test, TestCallback} from './test.js';
+import {execa} from 'execa';
+import {sync as globSync} from 'glob';
 import {aiFunction} from '../ai/ai.js';
+import {test, TestCallback} from './test.js';
 
 jest.mock('execa');
 jest.mock('fs');

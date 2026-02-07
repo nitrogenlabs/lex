@@ -3,23 +3,20 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 
+import {copyFile, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
+import {basename as pathBasename, join as pathJoin, relative as pathRelative, resolve as pathResolve} from 'path';
 import boxen from 'boxen';
 import chalk from 'chalk';
-import {copyFile, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import isEmpty from 'lodash/isEmpty.js';
 import ora from 'ora';
-import {basename as pathBasename, join as pathJoin, relative as pathRelative, resolve as pathResolve} from 'path';
 import {rimrafSync} from 'rimraf';
-
-
 import {log} from './log.js';
-
 import type {LexConfigType} from '../LexConfig.js';
 
 
 export interface GetFilenamesProps {
-  readonly callback?: (status: number)=> void;
+  readonly callback?: (status: number) => void;
   readonly cliName?: string;
   readonly name?: string;
   readonly quiet?: boolean;
@@ -75,9 +72,9 @@ export const getFilenames = (props: GetFilenamesProps): FilenamesResult | undefi
 };
 
 export interface Spinner {
-  fail: (text?: string)=> void;
-  start: (text?: string)=> void;
-  succeed: (text?: string)=> void;
+  fail: (text?: string) => void;
+  start: (text?: string) => void;
+  succeed: (text?: string) => void;
   text?: string;
 }
 

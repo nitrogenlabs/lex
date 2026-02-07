@@ -1,8 +1,7 @@
+import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {transform} from '@swc/core';
 import {execa} from 'execa';
-import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-
 import {compile, hasFileType} from './compile.js';
 
 jest.mock('execa');

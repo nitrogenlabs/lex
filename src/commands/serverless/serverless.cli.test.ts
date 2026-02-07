@@ -1,5 +1,5 @@
-import {serverless} from './serverless.js';
 import {log} from '../../utils/log.js';
+import {serverless} from './serverless.js';
 
 jest.mock('execa');
 jest.mock('boxen', () => jest.fn((text) => text));

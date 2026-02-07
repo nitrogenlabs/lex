@@ -2,15 +2,14 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import boxen from 'boxen';
-import chalk from 'chalk';
-import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
 import {homedir} from 'os';
 import {resolve as pathResolve, join, isAbsolute} from 'path';
 import {pathToFileURL} from 'url';
+import boxen from 'boxen';
+import chalk from 'chalk';
+import express from 'express';
 import {WebSocketServer} from 'ws';
-
 import {LexConfig, getPackageDir} from '../../LexConfig.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
@@ -30,7 +29,7 @@ export interface ServerlessOptions {
   readonly wsPort?: number;
 }
 
-export type ServerlessCallback = (status: number)=> void;
+export type ServerlessCallback = (status: number) => void;
 
 interface PublicIpCache {
   ip: string;
@@ -307,7 +306,7 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
   }
 };
 
-const captureConsoleLogs = (handler: (event: any, context: any)=> Promise<any>, quiet: boolean) => {
+const captureConsoleLogs = (handler: (event: any, context: any) => Promise<any>, quiet: boolean) => {
   if(quiet) {
     return handler;
   }

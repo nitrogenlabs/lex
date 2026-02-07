@@ -1,5 +1,5 @@
-import {clean} from './clean.js';
 import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
+import {clean} from './clean.js';
 
 jest.mock('../../utils/app.js', () => ({
   ...jest.requireActual('../../utils/app.js'),

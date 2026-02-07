@@ -11,7 +11,7 @@ export interface LinkOptions {
   readonly quiet?: boolean;
 }
 
-export type LinkCallback = (status: number)=> void;
+export type LinkCallback = (status: number) => void;
 
 export const linked = async (cmd: LinkOptions, callback: LinkCallback = () => ({})): Promise<number> => {
   const {cliName = 'Lex', quiet} = cmd;

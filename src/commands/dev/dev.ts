@@ -2,14 +2,13 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import boxen from 'boxen';
-import chalk from 'chalk';
-import {execa} from 'execa';
 import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import https from 'https';
 import {networkInterfaces, homedir} from 'os';
 import {dirname, resolve as pathResolve, join} from 'path';
-
+import boxen from 'boxen';
+import chalk from 'chalk';
+import {execa} from 'execa';
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, handleWebpackProgress, removeFiles} from '../../utils/app.js';
 import {resolveWebpackPaths} from '../../utils/file.js';
@@ -42,7 +41,7 @@ export interface DevOptions {
   readonly variables?: string;
 }
 
-export type DevCallback = (status: number)=> void;
+export type DevCallback = (status: number) => void;
 
 interface PublicIpCache {
   ip: string;

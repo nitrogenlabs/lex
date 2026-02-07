@@ -5,7 +5,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 interface ButtonProps {
   children: React.ReactNode;
   disabled?: boolean;
-  onClick?: ()=> void;
+  onClick?: () => void;
   size?: 'lg' | 'md' | 'sm';
   variant?: 'outline' | 'primary' | 'secondary';
 }

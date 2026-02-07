@@ -1,13 +1,12 @@
-import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
-import {sync as globSync} from 'glob';
 import path from 'path';
-
-import {storybook, StorybookOptions} from './storybook.js';
+import {execa} from 'execa';
+import {sync as globSync} from 'glob';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as log from '../../utils/log.js';
+import {storybook, StorybookOptions} from './storybook.js';
 
 jest.mock('execa');
 jest.mock('fs');

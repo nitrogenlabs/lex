@@ -3,12 +3,11 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {Option, program} from 'commander';
 import {readFileSync} from 'fs';
 import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
-
+import {Option, program} from 'commander';
 import {aiFunction} from './commands/ai/ai.js';
 import {build} from './commands/build/build.js';
 import {clean} from './commands/clean/clean.js';

@@ -3,9 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs';
-import {sync as globSync} from 'glob';
 import {resolve as pathResolve} from 'path';
-
+import {sync as globSync} from 'glob';
 import {log} from './log.js';
 
 const flattenTranslations = (obj: any, prefix = ''): Record<string, string> => {

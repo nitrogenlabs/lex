@@ -1,7 +1,7 @@
-import {execa} from 'execa';
 import {existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
+import {execa} from 'execa';
 
 describe('dev webpack integration', () => {
   let testDir: string;

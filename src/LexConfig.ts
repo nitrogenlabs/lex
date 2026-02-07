@@ -2,7 +2,6 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import findFileUp from 'find-file-up';
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {
   dirname,
@@ -11,10 +10,9 @@ import {
   resolve as pathResolve
 } from 'path';
 import {URL} from 'url';
-
+import findFileUp from 'find-file-up';
 import {getLexPackageJsonPath, relativeFilePath} from './utils/file.js';
 import {log} from './utils/log.js';
-
 import type {Options} from '@swc/core';
 import type {Linter} from 'eslint';
 

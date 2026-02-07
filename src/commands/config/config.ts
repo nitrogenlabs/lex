@@ -3,9 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {writeFileSync} from 'fs';
-import startCase from 'lodash/startCase.js';
 import {relative as pathRelative} from 'path';
-
+import startCase from 'lodash/startCase.js';
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
@@ -16,7 +15,7 @@ export interface ConfigOptions {
   readonly quiet?: boolean;
 }
 
-export type ConfigCallback = (status: number)=> void;
+export type ConfigCallback = (status: number) => void;
 
 export const config = async (
   type: string,

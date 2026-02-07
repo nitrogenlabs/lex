@@ -2,11 +2,10 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import findFileUp from 'find-file-up';
 import {existsSync, readFileSync} from 'fs';
-import {sync as globSync} from 'glob';
 import {resolve as pathResolve, dirname} from 'path';
-
+import findFileUp from 'find-file-up';
+import {sync as globSync} from 'glob';
 import {LexConfig} from '../LexConfig.js';
 
 export const getDirName = (): string => {
