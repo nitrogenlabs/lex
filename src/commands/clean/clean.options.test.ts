@@ -1,4 +1,5 @@
 import {clean} from './clean.js';
+import {createSpinner, removeFiles} from '../../utils/app.js';
 
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
@@ -36,7 +37,6 @@ describe('clean options', () => {
   });
 
   it('should handle quiet option', async () => {
-    const {createSpinner} = require('../../utils/app.js');
     const result = await clean({quiet: true});
 
     expect(result).toBe(0);
@@ -44,7 +44,6 @@ describe('clean options', () => {
   });
 
   it('should handle snapshots option', async () => {
-    const {removeFiles} = require('../../utils/app.js');
     const result = await clean({snapshots: true});
 
     expect(result).toBe(0);

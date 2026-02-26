@@ -12,7 +12,13 @@ import * as log from '../../utils/log.js';
 vi.mock('execa');
 vi.mock('fs');
 vi.mock('glob');
-vi.mock('path');
+vi.mock('path', async () => {
+  const actual = await vi.importActual('path');
+  return {
+    ...actual,
+    resolve: vi.fn((...args: any[]) => args.join('/'))
+  };
+});
 vi.mock('../../LexConfig.js', async () => ({
   ...await vi.importActual('../../LexConfig.js'),
   LexConfig: {
@@ -31,8 +37,6 @@ vi.mock('../../utils/app.js', async () => ({
 }));
 vi.mock('../../utils/file.js');
 vi.mock('../../utils/log.js');
-
-vi.useFakeTimers();
 
 let consoleLogSpy: SpyInstance;
 
@@ -73,8 +77,6 @@ describe('storybook.cli tests', () => {
       'src/components/Input.stories.tsx'
     ]);
 
-    (path.resolve as Mock).mockImplementation((...args) => args.join('/'));
-
     mockSpinner = {
       fail: vi.fn(),
       start: vi.fn(),
@@ -96,7 +98,6 @@ describe('storybook.cli tests', () => {
   });
 
   afterAll(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -107,8 +108,6 @@ describe('storybook.cli tests', () => {
 
     const result = await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith('Lex starting Storybook...', 'info', false);
     expect(LexConfig.parseConfig).toHaveBeenCalledWith(options);
@@ -140,8 +139,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith('CustomCLI starting Storybook...', 'info', false);
   });
@@ -154,8 +151,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       expect.any(String),
@@ -172,8 +167,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       expect.any(String),
@@ -194,8 +187,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       expect.any(String),
@@ -214,8 +205,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(file.resolveBinaryPath).toHaveBeenCalledWith('storybook');
     expect(mockSpinner.start).toHaveBeenCalledWith('Building static Storybook...');
@@ -235,8 +224,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(process.env).toEqual(expect.objectContaining({
       DEBUG: true,
@@ -253,8 +240,6 @@ describe('storybook.cli tests', () => {
 
     const result = await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith(
       '\nLex Error: Environment variables option is not a valid JSON object.',
@@ -272,8 +257,6 @@ describe('storybook.cli tests', () => {
     (globSync as unknown as Mock).mockReturnValue([]);
 
     await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith(
       'Please create story files with .stories.ts/.stories.js extensions or in a stories/ directory.',
@@ -293,8 +276,6 @@ describe('storybook.cli tests', () => {
 
     const result = await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith(
       '\nLex Error: storybook binary not found in Lex\'s node_modules or monorepo root',
@@ -317,8 +298,6 @@ describe('storybook.cli tests', () => {
     (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
 
     const result = await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     const errorMessage = 'Storybook failed to start';
 
@@ -335,8 +314,6 @@ describe('storybook.cli tests', () => {
 
     await storybook(options, mockCallback);
 
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(log.log).toHaveBeenCalledWith('Lex starting Storybook...', 'info', true);
     expect(app.createSpinner).toHaveBeenCalledWith(true);

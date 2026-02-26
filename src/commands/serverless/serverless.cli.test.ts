@@ -2,7 +2,9 @@ import {serverless} from './serverless.js';
 import {log} from '../../utils/log.js';
 
 vi.mock('execa');
-vi.mock('boxen', () => vi.fn((text) => text));
+vi.mock('boxen', () => ({
+  default: vi.fn((text) => text)
+}));
 vi.mock('chalk', async () => ({
   blue: vi.fn((text) => text),
   bold: vi.fn((text) => text),
@@ -25,7 +27,9 @@ vi.mock('express', async () => {
     static: vi.fn(),
     use: vi.fn()
   };
-  return vi.fn(() => mockApp);
+  return {
+    default: vi.fn(() => mockApp)
+  };
 });
 vi.mock('../../utils/app.js', async () => ({
   createSpinner: vi.fn(() => ({

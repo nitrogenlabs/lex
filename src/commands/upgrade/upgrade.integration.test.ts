@@ -17,6 +17,9 @@ vi.mock('../../utils/app.js', async () => ({
   }))
 }));
 vi.mock('compare-versions');
+vi.mock('latest-version', () => ({
+  default: vi.fn()
+}));
 vi.mock('fs', async () => ({
   existsSync: vi.fn(() => true),
   readFileSync: vi.fn(() => JSON.stringify({

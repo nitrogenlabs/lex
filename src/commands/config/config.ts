@@ -42,12 +42,16 @@ export const config = async (
     case 'app':
       configOptions = LexConfig.config;
       break;
-    case 'vitest':
-      configOptions = import('../../../vitest.config.mjs');
+    case 'vitest': {
+      const vistestConfig = await import('../../../vitest.config.mjs');
+      configOptions = vistestConfig.default;
       break;
-    case 'webpack':
-      configOptions = import('../../../webpack.config.js');
+    }
+    case 'webpack': {
+      const webpackConfig = await import('../../../webpack.config.js');
+      configOptions = webpackConfig.default;
       break;
+    }
   }
 
   const jsonOutput: string = JSON.stringify(configOptions, null, 2);

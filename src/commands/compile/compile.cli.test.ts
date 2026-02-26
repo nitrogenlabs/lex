@@ -4,6 +4,9 @@ import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSy
 import {sync as globSync} from 'glob';
 
 import {compile, hasFileType} from './compile.js';
+import {LexConfig} from '../../LexConfig.js';
+import {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} from '../../utils/app.js';
+import {resolveBinaryPath} from '../../utils/file.js';
 
 vi.mock('execa');
 vi.mock('@swc/core');
@@ -87,9 +90,6 @@ vi.mock('../../LexConfig.js', async () => ({
 describe('compile', () => {
   let consoleLogSpy: SpyInstance;
   let consoleErrorSpy: SpyInstance;
-  const {LexConfig} = require('../../LexConfig.js');
-  const {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} = require('../../utils/app.js');
-  const {resolveBinaryPath} = require('../../utils/file.js');
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -569,8 +569,7 @@ describe('compile', () => {
     });
 
     it('should handle TSX files with React transform', async () => {
-      const {LexConfig} = require('../../LexConfig.js');
-      LexConfig.config.swc = {
+      (LexConfig as any).config.swc = {
         inlineSourcesContent: true,
         isModule: true,
         jsc: {

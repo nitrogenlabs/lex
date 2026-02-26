@@ -1,6 +1,7 @@
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
+import path from 'path';
 
 import {storybook, StorybookOptions} from './storybook.js';
 import * as app from '../../utils/app.js';
@@ -14,6 +15,13 @@ vi.mock('fs', async () => ({
 vi.mock('glob', async () => ({
   sync: vi.fn()
 }));
+vi.mock('path', async () => {
+  const actual = await vi.importActual('path');
+  return {
+    ...actual,
+    resolve: vi.fn((...args: string[]) => args.join('/'))
+  };
+});
 vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     checkTestTypescriptConfig: vi.fn(),
@@ -37,18 +45,13 @@ vi.mock('../../utils/app.js', async () => ({
 vi.mock('../../utils/file.js');
 vi.mock('../../utils/log.js');
 
-vi.useFakeTimers();
-
 let consoleLogSpy: SpyInstance;
-let pathResolveSpy: SpyInstance;
 
 beforeAll(() => {
-  pathResolveSpy = vi.spyOn(require('path'), 'resolve').mockImplementation((...args: string[]) => args.join('/'));
   consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 });
 
 afterAll(() => {
-  pathResolveSpy.mockRestore();
   consoleLogSpy.mockRestore();
   vi.restoreAllMocks();
 });
@@ -79,12 +82,12 @@ describe('storybook.integration tests', () => {
     (app.createSpinner as Mock).mockReturnValue(mockSpinner);
 
     // Default mocks that make the code succeed
-    (existsSync as Mock).mockImplementation((path: any) => {
-      if(typeof path === 'string') {
-        if(path.includes('package.json') || path.includes('node_modules')) {
+    (existsSync as Mock).mockImplementation((pathArg: any) => {
+      if(typeof pathArg === 'string') {
+        if(pathArg.includes('package.json') || pathArg.includes('node_modules')) {
           return true;
         }
-        if(path.includes('.storybook')) {
+        if(pathArg.includes('.storybook')) {
           return true;
         }
       }
@@ -97,7 +100,6 @@ describe('storybook.integration tests', () => {
   });
 
   afterAll(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -122,8 +124,6 @@ describe('storybook.integration tests', () => {
       ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
 
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should check for Storybook installation in package.json', async () => {
@@ -133,8 +133,6 @@ describe('storybook.integration tests', () => {
     (globSync as unknown as Mock).mockReturnValue([]);
 
     await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('No story files found in the project.');
   });
@@ -150,8 +148,6 @@ describe('storybook.integration tests', () => {
     expect(mockCallback).toHaveBeenCalledWith(0);
 
     mockCallback.mockClear();
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should handle static build with output directory', async () => {
@@ -194,8 +190,6 @@ describe('storybook.integration tests', () => {
     });
 
     await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
@@ -211,8 +205,6 @@ describe('storybook.integration tests', () => {
     const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
@@ -229,8 +221,6 @@ describe('storybook.integration tests', () => {
     const mockCallback = vi.fn();
 
     await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
@@ -258,8 +248,6 @@ describe('storybook.integration tests', () => {
       DEBUG: true
     }));
 
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should handle package.json not found', async () => {
@@ -275,8 +263,6 @@ describe('storybook.integration tests', () => {
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should handle invalid package.json', async () => {
@@ -287,8 +273,6 @@ describe('storybook.integration tests', () => {
     (globSync as unknown as Mock).mockReturnValue([]);
 
     const result = await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
@@ -309,8 +293,6 @@ describe('storybook.integration tests', () => {
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should handle Storybook binary resolution failure', async () => {
@@ -326,8 +308,6 @@ describe('storybook.integration tests', () => {
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
 
-    vi.runAllTimers();
-    await Promise.resolve();
   });
 
   it('should handle execa execution failure', async () => {
@@ -338,8 +318,6 @@ describe('storybook.integration tests', () => {
     (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
 
     const result = await storybook(options, mockCallback);
-    vi.runAllTimers();
-    await Promise.resolve();
 
     expect(mockSpinner.fail).toHaveBeenCalledWith('There was an error while running storybook.');
     expect(mockCallback).toHaveBeenCalledWith(1);

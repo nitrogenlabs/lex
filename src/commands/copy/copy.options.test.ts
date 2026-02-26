@@ -1,4 +1,5 @@
 import {copy} from './copy.js';
+import {copyFileSync} from '../../utils/app.js';
 
 vi.mock('execa');
 vi.mock('fs', async () => ({
@@ -36,7 +37,6 @@ describe('copy options', () => {
 
   it('should copy with options', async () => {
     const mockCallback = vi.fn();
-    const {copyFileSync} = require('../../utils/app.js');
 
     const result = await copy('./source.txt', './dest.txt', {quiet: true}, mockCallback);
 

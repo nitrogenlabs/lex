@@ -59,25 +59,23 @@ describe('clean cli', () => {
   });
 
   it('should not clean snapshots when snapshots option is false', async () => {
-    const {removeFiles} = require('../../utils/app.js');
+    (removeFiles as any).mockClear();
     await clean({snapshots: false});
-    const {calls} = removeFiles.mock;
+    const calls = (removeFiles as any).mock.calls;
     const snapshotCall = calls.find((call: any) => call[0].includes('__snapshots__'));
 
     expect(snapshotCall).toBeUndefined();
   });
 
   it('should handle removeModules failure', async () => {
-    const {removeModules} = require('../../utils/app.js');
-    removeModules.mockRejectedValueOnce(new Error('Permission denied'));
+    (removeModules as any).mockRejectedValueOnce(new Error('Permission denied'));
     const result = await clean({});
 
     expect(result).toBe(1);
   });
 
   it('should handle removeFiles failure for coverage', async () => {
-    const {removeFiles} = require('../../utils/app.js');
-    removeFiles.mockRejectedValueOnce(new Error('Cannot remove coverage'));
+    (removeFiles as any).mockRejectedValueOnce(new Error('Cannot remove coverage'));
     const result = await clean({});
 
     expect(result).toBe(1);
@@ -110,8 +108,7 @@ describe('clean cli', () => {
   });
 
   it('should handle general errors gracefully', async () => {
-    const {removeModules} = require('../../utils/app.js');
-    removeModules.mockRejectedValueOnce(new Error('Test error'));
+    (removeModules as any).mockRejectedValueOnce(new Error('Test error'));
     const result = await clean({});
 
     expect(result).toBe(1);

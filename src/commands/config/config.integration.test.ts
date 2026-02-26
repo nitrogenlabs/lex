@@ -1,4 +1,5 @@
 import {config} from './config.js';
+import {writeFileSync} from 'fs';
 
 vi.mock('fs', async () => ({
   writeFileSync: vi.fn()
@@ -59,7 +60,6 @@ describe('config integration', () => {
   });
 
   it('should save config to json file', async () => {
-    const {writeFileSync} = require('fs');
     const result = await config('app', {json: 'test-config.json'});
 
     expect(result).toBe(0);

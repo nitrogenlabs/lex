@@ -19,10 +19,14 @@ vi.mock('fs', async () => ({
   unlinkSync: vi.fn(),
   writeFileSync: vi.fn()
 }));
-vi.mock('path', async () => ({
-  dirname: vi.fn(() => '/mock/dir'),
-  resolve: vi.fn((...args) => args.join('/'))
-}));
+vi.mock('path', async () => {
+  const actual = await vi.importActual('path');
+  return {
+    ...actual,
+    dirname: vi.fn(() => '/mock/dir'),
+    resolve: vi.fn((...args: any[]) => args.join('/'))
+  };
+});
 vi.mock('glob', async () => ({
   sync: vi.fn()
 }));
@@ -38,7 +42,7 @@ describe('lint options', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as unknown as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
   });
 
   afterAll(() => {
