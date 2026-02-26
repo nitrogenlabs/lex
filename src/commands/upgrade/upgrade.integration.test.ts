@@ -2,9 +2,8 @@ import {compareVersions} from 'compare-versions';
 import {execa} from 'execa';
 import latestVersion from 'latest-version';
 
-
-import {upgrade, UpgradeCallback} from './upgrade.js';
 import {LexConfig} from '../../LexConfig.js';
+import {upgrade, UpgradeCallback} from './upgrade.js';
 
 vi.mock('execa');
 vi.mock('../../LexConfig.js');
@@ -50,7 +49,7 @@ describe('upgrade.integration', () => {
     mockLatestVersion.mockClear();
     mockCompareVersions.mockClear();
     mockLatestVersion.mockResolvedValue('1.0.0');
-    mockLexConfig.parseConfig.mockResolvedValue(undefined);
+    (mockLexConfig.parseConfig as Mock).mockResolvedValue(undefined);
     mockLexConfig.config = {} as any;
   });
 

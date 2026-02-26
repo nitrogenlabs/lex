@@ -3,9 +3,9 @@ import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import path from 'path';
 
-import {storybook, StorybookOptions} from './storybook.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
+import {storybook, StorybookOptions} from './storybook.js';
 
 vi.mock('execa');
 vi.mock('fs', async () => ({
@@ -95,7 +95,7 @@ describe('storybook.integration tests', () => {
     });
     (readFileSync as Mock).mockReturnValue('{"dependencies": {"@storybook/react": "^7.0.0"}}');
     (file.resolveBinaryPath as Mock).mockReturnValue('/node_modules/.bin/storybook');
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as unknown as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
     (globSync as unknown as Mock).mockReturnValue(['src/Component.stories.ts', 'src/Button.stories.tsx']);
   });
 
@@ -123,7 +123,6 @@ describe('storybook.integration tests', () => {
       cwd: tempDir,
       ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/build/**']
     });
-
   });
 
   it('should check for Storybook installation in package.json', async () => {
@@ -141,7 +140,7 @@ describe('storybook.integration tests', () => {
     const options: StorybookOptions = {};
     const mockCallback = vi.fn();
 
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as unknown as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await storybook(options, mockCallback);
 
@@ -247,7 +246,6 @@ describe('storybook.integration tests', () => {
       STORYBOOK_THEME: 'dark',
       DEBUG: true
     }));
-
   });
 
   it('should handle package.json not found', async () => {
@@ -262,7 +260,6 @@ describe('storybook.integration tests', () => {
 
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
-
   });
 
   it('should handle invalid package.json', async () => {
@@ -292,7 +289,6 @@ describe('storybook.integration tests', () => {
     expect(mockSpinner.fail).toHaveBeenCalledWith('No story files found in the project.');
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
-
   });
 
   it('should handle Storybook binary resolution failure', async () => {
@@ -307,7 +303,6 @@ describe('storybook.integration tests', () => {
 
     expect(result).toBe(1);
     expect(mockCallback).toHaveBeenCalledWith(1);
-
   });
 
   it('should handle execa execution failure', async () => {
@@ -315,7 +310,7 @@ describe('storybook.integration tests', () => {
     const mockCallback = vi.fn();
 
     // Mock execa to fail
-    (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
+    (execa as unknown as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
 
     const result = await storybook(options, mockCallback);
 

@@ -3,11 +3,11 @@ import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import path from 'path';
 
-import {storybook, StorybookOptions} from './storybook.js';
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
 import * as log from '../../utils/log.js';
+import {storybook, StorybookOptions} from './storybook.js';
 
 vi.mock('execa');
 vi.mock('fs');
@@ -86,7 +86,7 @@ describe('storybook.cli tests', () => {
 
     (file.resolveBinaryPath as Mock).mockReturnValue('/node_modules/.bin/storybook');
 
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as unknown as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     (LexConfig.parseConfig as Mock).mockResolvedValue(undefined as never);
     LexConfig.config = {
@@ -295,7 +295,7 @@ describe('storybook.cli tests', () => {
     const options: StorybookOptions = {};
 
     // Mock execa to fail
-    (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
+    (execa as unknown as MockedFunction<typeof execa>).mockRejectedValue(new Error('Storybook failed to start'));
 
     const result = await storybook(options, mockCallback);
 

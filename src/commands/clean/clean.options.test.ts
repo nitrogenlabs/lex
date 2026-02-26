@@ -1,5 +1,5 @@
-import {clean} from './clean.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
+import {clean} from './clean.js';
 
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),

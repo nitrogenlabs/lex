@@ -1,5 +1,5 @@
-import {serverless} from './serverless.js';
 import {log} from '../../utils/log.js';
+import {serverless} from './serverless.js';
 
 vi.mock('execa');
 vi.mock('boxen', () => ({

@@ -1,5 +1,5 @@
-import {copy} from './copy.js';
 import {copyFileSync} from '../../utils/app.js';
+import {copy} from './copy.js';
 
 vi.mock('execa');
 vi.mock('fs', async () => ({

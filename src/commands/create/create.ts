@@ -18,7 +18,7 @@ export interface CreateOptions {
   readonly quiet?: boolean;
 }
 
-export type CreateCallback = (status: number)=> void;
+export type CreateCallback = (status: number) => void;
 
 export const create = async (
   type: string,

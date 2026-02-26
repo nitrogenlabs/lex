@@ -1,9 +1,9 @@
 import {execa} from 'execa';
 import * as fs from 'fs';
 
-import {test, TestOptions} from './test.js';
 import * as app from '../../utils/app.js';
 import * as logUtils from '../../utils/log.js';
+import {test, TestOptions} from './test.js';
 
 vi.mock('execa');
 vi.mock('fs', async () => ({
@@ -50,7 +50,7 @@ describe('test.cli', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (execa as unknown as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     mockSpinner = {
       fail: vi.fn(),
@@ -85,7 +85,7 @@ describe('test.cli', () => {
 
     it('should propagate Vitest errors', async () => {
       const options: TestOptions = {};
-      (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Test failed'));
+      (execa as unknown as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Test failed'));
       const result = await test(options, [], mockCallback as any);
 
       expect(logUtils.log as Mock).toHaveBeenCalledWith(

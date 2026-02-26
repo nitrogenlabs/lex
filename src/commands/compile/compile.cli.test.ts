@@ -3,10 +3,10 @@ import {execa} from 'execa';
 import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 
-import {compile, hasFileType} from './compile.js';
 import {LexConfig} from '../../LexConfig.js';
 import {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
+import {compile, hasFileType} from './compile.js';
 
 vi.mock('execa');
 vi.mock('@swc/core');

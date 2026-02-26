@@ -42,7 +42,7 @@ export interface DevOptions {
   readonly variables?: string;
 }
 
-export type DevCallback = (status: number)=> void;
+export type DevCallback = (status: number) => void;
 
 interface PublicIpCache {
   ip: string;

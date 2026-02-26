@@ -1,5 +1,6 @@
-import {config} from './config.js';
 import {writeFileSync} from 'fs';
+
+import {config} from './config.js';
 
 vi.mock('fs', async () => ({
   writeFileSync: vi.fn()

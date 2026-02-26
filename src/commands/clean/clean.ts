@@ -12,7 +12,7 @@ export interface CleanOptions {
   readonly snapshots?: boolean;
 }
 
-export type CleanCallback = (status: number)=> void;
+export type CleanCallback = (status: number) => void;
 
 export const clean = async (
   cmd: CleanOptions,

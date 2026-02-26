@@ -16,7 +16,7 @@ export interface ConfigOptions {
   readonly quiet?: boolean;
 }
 
-export type ConfigCallback = (status: number)=> void;
+export type ConfigCallback = (status: number) => void;
 
 export const config = async (
   type: string,

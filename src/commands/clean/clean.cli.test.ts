@@ -1,5 +1,5 @@
-import {clean} from './clean.js';
 import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
+import {clean} from './clean.js';
 
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
@@ -61,7 +61,7 @@ describe('clean cli', () => {
   it('should not clean snapshots when snapshots option is false', async () => {
     (removeFiles as any).mockClear();
     await clean({snapshots: false});
-    const calls = (removeFiles as any).mock.calls;
+    const {calls} = (removeFiles as any).mock;
     const snapshotCall = calls.find((call: any) => call[0].includes('__snapshots__'));
 
     expect(snapshotCall).toBeUndefined();

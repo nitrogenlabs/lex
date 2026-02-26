@@ -1,6 +1,5 @@
-import {jsonVersions, packages, parseVersion, versions} from './versions.js';
 import {log} from '../../utils/log.js';
-
+import {jsonVersions, packages, parseVersion, versions} from './versions.js';
 
 vi.mock('execa');
 vi.mock('../../utils/app.js', async () => ({
