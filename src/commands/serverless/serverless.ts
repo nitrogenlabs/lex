@@ -127,6 +127,19 @@ const fetchPublicIp = (forceRefresh: boolean = false): Promise<string | undefine
     .catch(() => resolve(undefined));
 });
 
+const resolvePublicIpForDisplay = async (forceRefresh: boolean = false): Promise<string | undefined> => {
+  const timeoutMs = 1500;
+  const timeoutPromise = new Promise<undefined>((resolve) => {
+    setTimeout(() => resolve(undefined), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([fetchPublicIp(forceRefresh), timeoutPromise]);
+  } catch{
+    return undefined;
+  }
+};
+
 const displayServerStatus = (
   httpPort: number,
   httpsPort: number,
@@ -978,26 +991,15 @@ export const serverless = async (
     // Start Express server
     const server = expressApp.listen(httpPort, host, () => {
       spinner.succeed('Serverless development server started.');
-
-      displayServerStatus(
-        httpPort,
-        finalConfig.custom!['serverless-offline']!.httpsPort!,
-        wsPort,
-        host,
-        quiet
-      );
-
-      fetchPublicIp(usePublicIp).then((publicIp) => {
-        if(publicIp) {
-          displayServerStatus(
-            httpPort,
-            finalConfig.custom!['serverless-offline']!.httpsPort!,
-            wsPort,
-            host,
-            quiet,
-            publicIp
-          );
-        }
+      void resolvePublicIpForDisplay(usePublicIp).then((publicIp) => {
+        displayServerStatus(
+          httpPort,
+          finalConfig.custom!['serverless-offline']!.httpsPort!,
+          wsPort,
+          host,
+          quiet,
+          publicIp
+        );
       });
     });
 
