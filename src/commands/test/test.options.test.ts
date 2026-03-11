@@ -77,6 +77,14 @@ describe('test options tests', () => {
   });
 
   const getExecaCalls = () => (execa as unknown as MockedFunction<typeof execa>).mock.calls;
+  const getExecaEnv = () => {
+    const call = getExecaCalls()[0] as unknown as any[];
+    const thirdArg = call[2];
+    const secondArg = call[1];
+    const options = thirdArg ?? (!Array.isArray(secondArg) ? secondArg : undefined);
+
+    return options?.env;
+  };
 
   it('should pass bail option to Vitest when specified', async () => {
     const options: TestOptions = {
@@ -156,8 +164,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const vitestCall = getExecaCalls()[0];
-    const vitestEnv = (vitestCall[1] as any)?.env;
+    const vitestEnv = getExecaEnv();
 
     expect(vitestEnv?.FORCE_COLOR).toBe('1');
   });
@@ -224,7 +231,7 @@ describe('test options tests', () => {
     expect(vitestArgs).toContain('--reporter');
     expect(vitestArgs).toContain('verbose');
     expect(vitestArgs).toContain('hanging-process');
-    expect((vitestCall[1] as any)?.env?.FORCE_COLOR).toBe('1');
+    expect(getExecaEnv()?.FORCE_COLOR).toBe('1');
   });
 
   it('should handle custom CLI name', async () => {
@@ -259,8 +266,7 @@ describe('test options tests', () => {
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
 
-    const vitestCall = getExecaCalls()[0];
-    const vitestEnv = (vitestCall[1] as any)?.env;
+    const vitestEnv = getExecaEnv();
 
     expect(vitestEnv?.LEX_VITEST_SETUP).toBe(setupFile);
   });
