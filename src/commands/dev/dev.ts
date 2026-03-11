@@ -44,10 +44,26 @@ export interface DevOptions {
 
 export type DevCallback = (status: number) => void;
 
+// default port used by the development server when none is provided
+export const DEFAULT_DEV_PORT = 3000;
+
 interface PublicIpCache {
   ip: string;
   timestamp: number;
 }
+
+const parsePort = (portValue: unknown): number | undefined => {
+  if(portValue === undefined || portValue === null || portValue === '') {
+    return undefined;
+  }
+
+  const parsed = Number(portValue);
+  if(Number.isInteger(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  return undefined;
+};
 
 const getCacheDir = (): string => {
   const cacheDir = join(homedir(), '.lex-cache');
@@ -145,7 +161,7 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (port: number = 3000, quiet: boolean, publicIp?: string) => {
+const displayServerStatus = (port: number = DEFAULT_DEV_PORT, quiet: boolean, publicIp?: string) => {
   if(quiet) {
     return;
   }
@@ -187,7 +203,7 @@ const displayServerStatus = (port: number = 3000, quiet: boolean, publicIp?: str
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port = 3000, quiet, remove, translations = false, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port: cliPort, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -195,7 +211,8 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
 
   await LexConfig.parseConfig(cmd);
 
-  const {outputFullPath, useTypescript} = LexConfig.config;
+  const {dev: devConfig, outputFullPath, useTypescript} = LexConfig.config;
+  const finalPort = parsePort(cliPort) ?? parsePort(devConfig?.port) ?? DEFAULT_DEV_PORT;
 
   let variablesObj: object = {NODE_ENV: 'development'};
 
@@ -283,7 +300,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         ...process.env,
         LEX_QUIET: quiet,
         WEBPACK_DEV_OPEN: open,
-        WEBPACK_DEV_PORT: port.toString()
+        WEBPACK_DEV_PORT: finalPort.toString()
       },
       stdio: 'pipe'
     } as any);
@@ -303,7 +320,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
         displayServerStatus(portToShow, quiet);
       }
     };
-    let detectedPort = port;
+    let detectedPort = finalPort;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString();

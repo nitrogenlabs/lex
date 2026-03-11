@@ -1,5 +1,6 @@
 import {execa} from 'execa';
 
+import {LexConfig} from '../../LexConfig.js';
 import {dev} from './dev.js';
 
 vi.mock('execa');
@@ -26,6 +27,7 @@ vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     checkTypescriptConfig: vi.fn(),
     config: {
+      dev: {},
       outputFullPath: '/mock/output',
       useTypescript: false
     },
@@ -42,6 +44,7 @@ describe('dev options', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (LexConfig.config as any).dev = {};
   });
 
   afterAll(() => {
@@ -87,5 +90,65 @@ describe('dev options', () => {
     await dev({usePublicIp: true});
 
     expect(execa).toHaveBeenCalled();
+  });
+
+  it('should use dev.port from lex config when --port is not provided', async () => {
+    (LexConfig.config as any).dev = {port: 4200};
+
+    const mockChildProcess = {
+      on: vi.fn(),
+      stderr: {on: vi.fn()},
+      stdout: {on: vi.fn()}
+    };
+    (execa as MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+
+    mockChildProcess.on.mockImplementation((event, callback) => {
+      if(event === 'close') {
+        setTimeout(() => callback(0), 10);
+      }
+      return mockChildProcess;
+    });
+
+    await dev({});
+
+    expect(execa).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Array),
+      expect.objectContaining({
+        env: expect.objectContaining({
+          WEBPACK_DEV_PORT: '4200'
+        })
+      })
+    );
+  });
+
+  it('should prefer --port over dev.port from lex config', async () => {
+    (LexConfig.config as any).dev = {port: 4200};
+
+    const mockChildProcess = {
+      on: vi.fn(),
+      stderr: {on: vi.fn()},
+      stdout: {on: vi.fn()}
+    };
+    (execa as MockedFunction<typeof execa>).mockReturnValue(mockChildProcess as any);
+
+    mockChildProcess.on.mockImplementation((event, callback) => {
+      if(event === 'close') {
+        setTimeout(() => callback(0), 10);
+      }
+      return mockChildProcess;
+    });
+
+    await dev({port: 8080});
+
+    expect(execa).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Array),
+      expect.objectContaining({
+        env: expect.objectContaining({
+          WEBPACK_DEV_PORT: '8080'
+        })
+      })
+    );
   });
 });

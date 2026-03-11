@@ -15,7 +15,7 @@ import {clean} from './commands/clean/clean.js';
 import {compile} from './commands/compile/compile.js';
 import {config} from './commands/config/config.js';
 import {create} from './commands/create/create.js';
-import {dev} from './commands/dev/dev.js';
+import {dev, DEFAULT_DEV_PORT} from './commands/dev/dev.js';
 import {init} from './commands/init/init.js';
 import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
@@ -119,7 +119,7 @@ program.command('dev')
   .option('--lexConfig <path>', 'Custom Lex configuration file path (ie. lex.config.js).')
   .option('--open', 'Automatically open dev server in a new browser window.')
   .option('--outputPath <path>', 'Output path')
-  .option('--port <number>', 'Port number for the development server (default: 3000).')
+  .option('--port <number>', `Port number for the development server (default: ${DEFAULT_DEV_PORT}).`)
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--remove', 'Removes all files from the output directory before compiling.')
   .option('--sourcePath <path>', 'Source path')
@@ -194,9 +194,9 @@ program.command('publish')
 program.command('serverless')
   .option('--config <path>', 'Custom configuration file path (default: lex.config.mjs).')
   .option('--host <host>', 'Host to bind the server to (default: localhost).')
-  .option('--httpPort <port>', 'HTTP server port (default: 3000).')
-  .option('--httpsPort <port>', 'HTTPS server port (default: 3001).')
-  .option('--wsPort <port>', 'WebSocket server port (default: 3002).')
+  .option('--httpPort <port>', 'HTTP server port (default: 3100).')
+  .option('--httpsPort <port>', 'HTTPS server port (default: 3101).')
+  .option('--wsPort <port>', 'WebSocket server port (default: 3102).')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--remove', 'Removes all files from the output directory before starting.')
   .option('--usePublicIp', 'Force refresh the cached public IP address.')

@@ -12,9 +12,9 @@ lex serverless [options]
 
 - `--config <path>` - Custom configuration file path (default: lex.config.mjs)
 - `--host <host>` - Host to bind the server to (default: localhost)
-- `--httpPort <port>` - HTTP server port (default: 3000)
-- `--httpsPort <port>` - HTTPS server port (default: 3001)
-- `--wsPort <port>` - WebSocket server port (default: 3002)
+- `--httpPort <port>` - HTTP server port (default: 3100)
+- `--httpsPort <port>` - HTTPS server port (default: 3101)
+- `--wsPort <port>` - WebSocket server port (default: 3102)
 - `--quiet` - No Lex notifications printed in the console
 - `--remove` - Removes all files from the output directory before starting
 - `--usePublicIp` - Force refresh the cached public IP address
@@ -56,9 +56,9 @@ export default {
     },
     custom: {
       'serverless-offline': {
-        httpPort: 3000,
-        httpsPort: 3001,
-        wsPort: 3002,
+        httpPort: 3100,
+        httpsPort: 3101,
+        wsPort: 3102,
         host: 'localhost',
         cors: true
       }
@@ -130,7 +130,7 @@ export const handler = async (event, context) => {
     routeKey: '$default',
     connectionId: 'test-connection-id',
     apiGateway: {
-      endpoint: 'ws://localhost:3002'
+      endpoint: 'ws://localhost:3102'
     }
   },
   body: 'message content'
@@ -163,7 +163,7 @@ Both HTTP and WebSocket handlers receive a context object that simulates AWS Lam
 lex serverless
 
 # Test the function
-curl http://localhost:3000/hello
+curl http://localhost:3100/hello
 ```
 
 ### Custom Ports

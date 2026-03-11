@@ -931,9 +931,9 @@ export const serverless = async (
     const n = typeof v === 'number' ? v : parseInt(String(v));
     return Number.isFinite(n) ? n : fallback;
   };
-  const effectiveHttpPort = toNumber(cliHttpPort ?? configOffline.httpPort, 5000);
-  const effectiveHttpsPort = toNumber(cliHttpsPort ?? configOffline.httpsPort, 5001);
-  const effectiveWsPort = toNumber(cliWsPort ?? configOffline.wsPort, 5002);
+  const effectiveHttpPort = toNumber(cliHttpPort ?? configOffline.httpPort, 3100);
+  const effectiveHttpsPort = toNumber(cliHttpsPort ?? configOffline.httpsPort, 3101);
+  const effectiveWsPort = toNumber(cliWsPort ?? configOffline.wsPort, 3102);
 
   const finalConfig: ServerlessConfig = {
     ...serverlessConfig,

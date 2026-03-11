@@ -148,6 +148,18 @@ lex dev --config ./custom.webpack.js
 lex dev --usePublicIp
 ```
 
+Configure the default `lex dev` port in `lex.config.mjs`:
+
+```javascript
+export default {
+  dev: {
+    port: 4200
+  }
+};
+```
+
+`--port` takes precedence over `dev.port`.
+
 **Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
 **Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
@@ -173,6 +185,22 @@ lex serverless --debug --printOutput
 **AWS Lambda Simulation**: Lex provides a local development server similar to serverless-offline, allowing you to test AWS Lambda functions with HTTP and WebSocket support.
 
 **Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless/serverless.docs.md) for detailed configuration options.
+
+```javascript
+export default {
+  serverless: {
+    custom: {
+      'serverless-offline': {
+        httpPort: 3100,
+        httpsPort: 3101,
+        wsPort: 3102
+      }
+    }
+  }
+};
+```
+
+`--httpPort`, `--httpsPort`, and `--wsPort` override these config values.
 
 **Environment Variables**: The serverless command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
 
@@ -310,6 +338,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 |--------|------|---------|-------------|---------|
 | `entryHTML` | `string` | `'index.html'` | HTML template file | `entryHTML: 'app.html'` |
 | `entryJs` | `string` | `'index.js'` | Main JavaScript entry file | `entryJs: 'main.tsx'` |
+| `dev.port` | `number` | `3000` | Default port used by `lex dev` when `--port` is not passed | `dev: { port: 4200 }` |
 | `outputFile` | `string` | `undefined` | Specific output filename | `outputFile: 'bundle.js'` |
 | `outputFullPath` | `string` | `path.resolve('./lib')` | Absolute output path for build artifacts. Used by webpack dev server for static file serving. | `outputFullPath: '/absolute/build'` |
 | `outputHash` | `boolean` | `false` | Add hash to output filenames | `outputHash: true` |

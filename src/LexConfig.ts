@@ -42,6 +42,10 @@ export interface AIConfig {
   temperature?: number;
 }
 
+export interface DevConfig {
+  port?: number;
+}
+
 export interface ESLintConfig {
   [key: string]: unknown;
   extends?: string[];
@@ -52,6 +56,7 @@ export interface LexConfigType {
   ai?: AIConfig;
   configFiles?: string[];
   copyFiles?: string[];
+  dev?: DevConfig;
   entryHTML?: string;
   entryJs?: string;
   env?: object;
