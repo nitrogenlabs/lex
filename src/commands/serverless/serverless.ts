@@ -64,6 +64,11 @@ interface ServerlessConfig {
   readonly functions?: Record<string, ServerlessHandler>;
 }
 
+interface WebSocketClientLike {
+  on(event: string, listener: (...args: any[]) => void): void;
+  send(data: string): void;
+}
+
 const getCacheDir = (): string => {
   const cacheDir = join(homedir(), '.lex-cache');
   if(!existsSync(cacheDir)) {
@@ -554,13 +559,14 @@ const createExpressServer = async (
 
       // Find matching function
       let matchedFunction = null;
+      const functions = config.functions || {};
 
       if(config.functions) {
-        const functionNames = Object.keys(config.functions);
+        const functionNames = Object.keys(functions);
         console.log(`[Serverless] Available functions: ${functionNames.join(', ')}`);
-        console.log('[Serverless] Config functions:', JSON.stringify(config.functions, null, 2));
+        console.log('[Serverless] Config functions:', JSON.stringify(functions, null, 2));
 
-        for(const [functionName, functionConfig] of Object.entries(config.functions)) {
+        for(const [functionName, functionConfig] of Object.entries(functions)) {
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
               if(event.http) {
@@ -591,9 +597,9 @@ const createExpressServer = async (
         console.log('[Serverless] No functions found in config');
       }
 
-      if(matchedFunction && config.functions[matchedFunction]) {
+      if(matchedFunction && functions[matchedFunction]) {
         // Resolve handler path relative to output directory
-        const handlerPath = config.functions[matchedFunction].handler;
+        const handlerPath = functions[matchedFunction].handler;
         console.log(`[Serverless] Loading handler: ${handlerPath} from outputDir: ${outputDir}`);
         const handler = await loadHandler(handlerPath, outputDir);
 
@@ -649,7 +655,7 @@ const createExpressServer = async (
         }
       } else {
         console.error(`[Serverless] Function not found for pathname: ${pathname}, method: ${method}`);
-        console.error(`[Serverless] Available functions: ${config.functions ? Object.keys(config.functions).join(', ') : 'none'}`);
+        console.error(`[Serverless] Available functions: ${config.functions ? Object.keys(functions).join(', ') : 'none'}`);
         res.status(404).json({error: 'Function not found'});
       }
     } catch(error) {
@@ -670,18 +676,19 @@ const createWebSocketServer = (
 ) => {
   const wss = new WebSocketServer({port: wsPort});
 
-  wss.on('connection', async (ws, req) => {
+  wss.on('connection', async (ws: WebSocketClientLike, req: any) => {
     log(`WebSocket connection established: ${req.url}`, 'info', false);
 
-    ws.on('message', async (message) => {
+    ws.on('message', async (message: any) => {
       try {
         const data = JSON.parse(message.toString());
 
         // Find matching WebSocket function
         let matchedFunction = null;
+        const functions = config.functions || {};
 
         if(config.functions) {
-          for(const [functionName, functionConfig] of Object.entries(config.functions)) {
+          for(const [functionName, functionConfig] of Object.entries(functions)) {
             if(functionConfig.events) {
               for(const event of functionConfig.events) {
                 if(event.websocket) {
@@ -699,8 +706,8 @@ const createWebSocketServer = (
           }
         }
 
-        if(matchedFunction && config.functions[matchedFunction]) {
-          const handler = await loadHandler(config.functions[matchedFunction].handler, outputDir);
+        if(matchedFunction && functions[matchedFunction]) {
+          const handler = await loadHandler(functions[matchedFunction].handler, outputDir);
 
           if(handler) {
             // Wrap handler with console log capture
@@ -981,7 +988,7 @@ export const serverless = async (
     );
 
     // Handle server errors
-    wsServer.on('error', (error) => {
+    wsServer.on('error', (error: Error) => {
       log(`WebSocket server error: ${error.message}`, 'error', quiet);
       spinner.fail('Failed to start WebSocket server.');
       callback(1);

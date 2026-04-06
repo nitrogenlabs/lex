@@ -20,10 +20,10 @@ export const packages = {
   webpack: parseVersion(packageJson?.dependencies?.webpack)
 };
 
-export const jsonVersions = (lexPackages) => Object.keys(lexPackages).reduce((list, key) => {
-  list[key] = packages[key];
+export const jsonVersions = (lexPackages: Record<string, string>) => Object.keys(lexPackages).reduce((list, key) => {
+  list[key] = lexPackages[key] || 'N/A';
   return list;
-}, {});
+}, {} as Record<string, string>);
 
 export interface VersionsCmd {
   readonly json?: boolean;

@@ -6,6 +6,7 @@
  * Original: https://github.com/antyakushev/postcss-percentage
  */
 import Mexp from 'math-expression-evaluator';
+import postcss from 'postcss';
 import parser from 'postcss-value-parser';
 
 interface PostcssPercentageOptions {
@@ -67,8 +68,8 @@ const postcssPercentage = (opts: PostcssPercentageOptions = {}) => {
 
   return {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    Once(root, {result}) {
-      root.walkDecls((decl) => {
+    Once(root: postcss.Root, {result}: {result: postcss.Result}) {
+      root.walkDecls((decl: postcss.Declaration) => {
         if(!decl.value || !/percentage\s*\(/.test(decl.value)) {
           return;
         }
@@ -83,7 +84,6 @@ const postcssPercentage = (opts: PostcssPercentageOptions = {}) => {
         } catch(e) {
           const error = e as Error;
           decl.warn(result, error.message, {
-            index: decl.index,
             word: decl.value
           });
         }
@@ -96,4 +96,3 @@ const postcssPercentage = (opts: PostcssPercentageOptions = {}) => {
 postcssPercentage.postcss = true;
 
 export default postcssPercentage;
-

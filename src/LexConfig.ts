@@ -59,7 +59,7 @@ export interface LexConfigType {
   dev?: DevConfig;
   entryHTML?: string;
   entryJs?: string;
-  env?: object;
+  env?: object | null;
   eslint?: ESLintConfig;
   gitUrl?: string;
   vitest?: VitestConfig;
@@ -263,7 +263,7 @@ export class LexConfig {
     const {entryJs, sourceFullPath, targetEnvironment} = LexConfig.config;
 
     if(entryJs === 'index.js' && value) {
-      const indexPath: string = pathResolve(cwd, sourceFullPath, 'index.tsx');
+      const indexPath: string = pathResolve(cwd, sourceFullPath || cwd, 'index.tsx');
       const hasIndexTsx: boolean = existsSync(indexPath);
 
       if(hasIndexTsx) {
@@ -273,6 +273,8 @@ export class LexConfig {
       }
     }
 
+    LexConfig.config.swc = LexConfig.config.swc || {...defaultConfigValues.swc!};
+    LexConfig.config.swc.jsc = LexConfig.config.swc.jsc || {...defaultConfigValues.swc!.jsc!};
     LexConfig.config.swc.jsc.parser = {
       syntax: 'typescript',
       tsx: true
@@ -320,7 +322,7 @@ export class LexConfig {
     return LexConfig.config;
   }
 
-  static addConfigParams(cmd, params: LexConfigType) {
+  static addConfigParams(cmd: Record<string, any>, params: LexConfigType) {
     const nameProperty: string = '_name';
     const {environment, outputPath, sourcePath, typescript} = cmd;
     const packageDir = getPackageDir();
@@ -356,7 +358,7 @@ export class LexConfig {
     );
   }
 
-  static async parseConfig(cmd, isRoot: boolean = true): Promise<void> {
+  static async parseConfig(cmd: Record<string, any>, isRoot: boolean = true): Promise<void> {
     const {cliName = 'Lex', lexConfig, lexConfigName, quiet, typescript, debug = false} = cmd;
     const configFormats = ['js', 'mjs', 'cjs', 'ts', 'json'];
     const configBaseName: string = lexConfigName || 'lex.config';

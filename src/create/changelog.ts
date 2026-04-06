@@ -13,7 +13,43 @@ import {join as pathJoin} from 'path';
 import {createSpinner} from '../utils/app.js';
 import {log} from '../utils/log.js';
 
-export const createChangelog = async ({cliName, config, outputFile = 'changelog.tmp.md', quiet}): Promise<number> => {
+interface ChangelogConfig {
+  readonly gitUrl?: string;
+}
+
+interface ChangelogOptions {
+  readonly cliName?: string;
+  readonly config?: ChangelogConfig;
+  readonly outputFile?: string;
+  readonly quiet?: boolean;
+}
+
+interface ChangelogEntry {
+  readonly authorEmail: string;
+  readonly authorName: string;
+  readonly comments: string;
+  readonly date: number;
+  readonly hashFull: string;
+  readonly hashShort: string;
+  readonly tag: string;
+}
+
+interface ChangelogItemDetails {
+  readonly authorEmail: string;
+  readonly authorName: string;
+  readonly details: string;
+  readonly hashFull: string;
+  readonly hashShort: string;
+  readonly type: string;
+}
+
+interface ChangelogVersionEntry {
+  readonly date?: string;
+  readonly version?: string;
+  readonly list?: Record<string, Record<string, ChangelogItemDetails[]>>;
+}
+
+export const createChangelog = async ({cliName, config = {}, outputFile = 'changelog.tmp.md', quiet}: ChangelogOptions): Promise<number> => {
   const spinner = createSpinner(quiet);
 
   const gitOptions: string[] = [
@@ -29,11 +65,11 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
     const entries: string[] = stdout.split('[lex_break]').filter((item) => !!item);
     const gitJson = JSON.parse(
       (`[${entries.join(',')}]`).replace(/"[^"]*(?:""[^"]*)*"/g, (match) => match.replace(/\n/g, '[lex_break]'))
-    );
-    const commitContent = {};
+    ) as ChangelogEntry[];
+    const commitContent: Record<string, ChangelogVersionEntry> = {};
     let version: string = 'Unreleased';
 
-    gitJson.forEach((item) => {
+    gitJson.forEach((item: ChangelogEntry) => {
       const {comments, authorEmail, authorName, date, hashFull, hashShort, tag} = item;
       const formatDate: string = DateTime.fromMillis(date).toFormat('DDD');
 
@@ -60,7 +96,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
       }
 
       const subjectLines: string[] = comments.split('[lex_break]');
-      const topics = {};
+      const topics: Record<string, Record<string, ChangelogItemDetails[]>> = {};
 
 
       for(let idx: number = 0, len: number = subjectLines.length; idx < len; idx++) {
@@ -71,7 +107,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
 
         if(matches) {
           const itemType: string = capitalize(matches[1]);
-          const itemScope: string = matches[2];
+          const itemScope: string = matches[2] || 'General';
           const itemDetails: string = matches[3];
           const details = {
             authorEmail,
@@ -116,7 +152,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
         itemNames.forEach((itemName: string) => {
           updatedContent += `* ${itemName}\n`;
 
-          itemList[itemName].forEach((changes) => {
+          itemList[itemName].forEach((changes: ChangelogItemDetails) => {
             const {authorEmail, authorName, details, hashFull, hashShort} = changes;
             const {gitUrl} = config;
             let hash: string = `#${hashShort}`;
@@ -124,7 +160,7 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
             if(!isEmpty(gitUrl)) {
               let commitPath: string = 'commits';
 
-              if(gitUrl.includes('github.com')) {
+              if(gitUrl && gitUrl.includes('github.com')) {
                 commitPath = 'commit';
               }
 
@@ -153,6 +189,6 @@ export const createChangelog = async ({cliName, config, outputFile = 'changelog.
     spinner.fail('Failed generating change log!');
 
     // Kill process
-    return error.status;
+    return 1;
   }
 };

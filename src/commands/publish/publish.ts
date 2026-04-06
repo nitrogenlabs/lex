@@ -33,7 +33,7 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
   await LexConfig.parseConfig(cmd);
 
   const {packageManager: configPackageManager} = LexConfig.config;
-  const packageManager: string = cmdPackageManager || configPackageManager;
+  const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
   const publishOptions: string[] = ['publish'];
 
   if(accessPrivate) {
@@ -49,7 +49,7 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
   }
 
   // Get next version number
-  let nextVersion: string;
+  let nextVersion: string | undefined;
   const packagePath: string = `${process.cwd()}/package.json`;
   let packageJson;
   let packageName: string;
@@ -84,18 +84,24 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
       // Make sure the version in package.json is valid
       const packageVersion = semver.coerce(prevVersion);
 
-      if(!semver.valid(packageVersion)) {
+      if(!packageVersion || !semver.valid(packageVersion)) {
         log(`\n${cliName} Error: Version is invalid in package.json`, 'error', quiet);
         callback(1);
         return 1;
       }
 
       if(validReleases.includes(formatBump)) {
-        nextVersion = semver.inc(packageVersion, formatBump as ReleaseType);
+        nextVersion = semver.inc(packageVersion, formatBump as ReleaseType) || undefined;
       } else if(validPreReleases.includes(formatBump)) {
-        nextVersion = semver.inc(packageVersion, 'prerelease', formatBump);
+        nextVersion = semver.inc(packageVersion, 'prerelease', formatBump) || undefined;
       } else {
         log(`\n${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
+        callback(1);
+        return 1;
+      }
+
+      if(!nextVersion) {
+        log(`\n${cliName} Error: Could not determine the next package version.`, 'error', quiet);
         callback(1);
         return 1;
       }

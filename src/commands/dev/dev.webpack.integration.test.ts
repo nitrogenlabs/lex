@@ -31,6 +31,7 @@ describe('dev webpack integration', () => {
     }, null, 2));
 
     mkdirSync(join(testDir, 'src'), {recursive: true});
+    mkdirSync(join(testDir, 'src', 'icons'), {recursive: true});
     mkdirSync(join(testDir, 'src', 'images'), {recursive: true});
     mkdirSync(join(testDir, 'src', 'static'), {recursive: true});
 
@@ -77,6 +78,7 @@ describe('dev webpack integration', () => {
     `);
 
     writeFileSync(join(testDir, 'src', 'images', 'test.png'), 'fake-png-content');
+    writeFileSync(join(testDir, 'src', 'icons', 'check.svg'), `<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2"/></svg>`);
     writeFileSync(join(testDir, 'src', 'static', 'test.txt'), 'Static file content');
 
     writeFileSync(join(testDir, 'lex.config.js'), `
@@ -145,6 +147,11 @@ describe('dev webpack integration', () => {
 
         expect(staticContent).toBe('Static file content');
       }
+
+      const iconSprite = join(buildDir, 'icons', 'icons.svg');
+      expect(existsSync(iconSprite)).toBe(true);
+      expect(readFileSync(iconSprite, 'utf8')).toContain('symbol');
+      expect(readFileSync(iconSprite, 'utf8')).toContain('id="check"');
     } catch(error) {
       console.log('Webpack build test skipped:', error.message);
     }
@@ -219,4 +226,3 @@ describe('dev webpack integration', () => {
     }
   }, 70000);
 });
-

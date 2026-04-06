@@ -26,6 +26,7 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 
 import type {SWCOptions} from '../../LexConfig.js';
+import type {Spinner} from '../../utils/app.js';
 
 let currentFilename: string;
 let currentDirname: string;
@@ -84,7 +85,7 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
   console.log('\n' + statusBox + '\n');
 };
 
-export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
+export const buildWithSWC = async (spinner: Spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
     cliName = 'Lex',
     format = 'esm',
@@ -152,7 +153,7 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
     await Promise.all(transformPromises);
 
     spinner.succeed('Build completed with SWC');
-    displayBuildStatus('SWC', outputDir, quiet);
+    displayBuildStatus('SWC', outputDir, quiet ?? false);
     callback(0);
     return 0;
   } catch(error) {
@@ -178,7 +179,11 @@ export const buildWithSWC = async (spinner, commandOptions: BuildOptions, callba
   }
 };
 
-export const buildWithWebpack = async (spinner, cmd, callback) => {
+export const buildWithWebpack = async (
+  spinner: Spinner,
+  cmd: Record<string, any>,
+  callback: BuildCallback
+) => {
   const {
     analyze,
     cliName = 'Lex',
@@ -464,7 +469,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
       buildResult = status;
     });
   } else {
-    buildResult = await buildWithWebpack(spinner, cmd, (status) => {
+    buildResult = await buildWithWebpack(spinner, cmd, (status: number) => {
       buildResult = status;
     });
   }

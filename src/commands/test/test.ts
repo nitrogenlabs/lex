@@ -282,7 +282,7 @@ export const test = async (
     } else {
       // No Vitest config file exists in the project
       // Check if there's a Vitest config in lex.config.cjs
-      projectVitestConfig = LexConfig.config.vitest;
+      projectVitestConfig = LexConfig.config.vitest || null;
 
       const lexDir = LexConfig.getLexDir();
       const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');

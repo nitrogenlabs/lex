@@ -36,11 +36,11 @@ interface FilenamesResult {
 export const getFilenames = (props: GetFilenamesProps): FilenamesResult | undefined => {
   const {callback, cliName, name, quiet, type, useTypescript} = props;
 
-  let nameCaps: string;
+  let nameCaps = '';
   const itemTypes: string[] = ['stores', 'views'];
 
   if(!name) {
-    if(itemTypes.includes(type)) {
+    if(type && itemTypes.includes(type)) {
       log(`\n${cliName} Error: ${type} name is required. Please use 'lex -h' for options.`, 'error', quiet);
       callback?.(1);
       return undefined;
@@ -129,11 +129,11 @@ export const handleWebpackProgress = (
   }
 };
 
-export const copyFiles = async (files: string[], typeName: string, spinner, config: LexConfigType) => {
+export const copyFiles = async (files: string[], typeName: string, spinner: Spinner, config: LexConfigType) => {
   const {outputFullPath, sourceFullPath} = config;
   const items = files.map((fileName: string) => ({
     from: fileName,
-    to: pathResolve(outputFullPath, pathRelative(sourceFullPath, fileName))
+    to: pathResolve(outputFullPath || process.cwd(), pathRelative(sourceFullPath || process.cwd(), fileName))
   }));
 
   try {
@@ -154,11 +154,11 @@ export const copyFiles = async (files: string[], typeName: string, spinner, conf
   } catch(error) {
     spinner.fail(`Copying of ${typeName} files failed.`);
     log(`Error: ${error.message}`, 'error');
-    log(error, 'error');
+    log(String(error), 'error');
   }
 };
 
-export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet: boolean) => {
+export const copyConfiguredFiles = async (spinner: Spinner, config: LexConfigType, quiet: boolean) => {
   const {copyFiles: copyFilesConfig, outputFullPath, sourceFullPath, sourcePath} = config;
   if(!copyFilesConfig || copyFilesConfig.length === 0) {
     return;
@@ -187,7 +187,7 @@ export const copyConfiguredFiles = async (spinner, config: LexConfigType, quiet:
 
       const copyPromises = matchingFiles.map((sourceFile) => {
         const relativePath = pathRelative(baseDir, sourceFile);
-        const destPath = pathResolve(outputFullPath, relativePath);
+        const destPath = pathResolve(outputFullPath || process.cwd(), relativePath);
         const destDir = pathResolve(destPath, '..');
         mkdirSync(destDir, {recursive: true});
 
@@ -271,8 +271,8 @@ export const getFilesByExt = (ext: string, config: LexConfigType): string[] => {
   });
 };
 
-export const removeConflictModules = (moduleList: object) => {
-  const updatedList: object = {...moduleList};
+export const removeConflictModules = (moduleList: Record<string, unknown>) => {
+  const updatedList: Record<string, unknown> = {...moduleList};
 
   Object.keys(updatedList).forEach((moduleName: string) => {
     const regex: RegExp = new RegExp('^(?!@types/).*?(vitest|webpack).*$', 'gi');
@@ -307,7 +307,7 @@ export const removeModules = () => new Promise(async (resolve, reject) => {
   }
 });
 
-export const setPackageJson = (json, packagePath?: string) => {
+export const setPackageJson = (json: unknown, packagePath?: string) => {
   if(!json) {
     return;
   }

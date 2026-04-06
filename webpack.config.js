@@ -25,7 +25,6 @@ import postcssImport from 'postcss-import';
 import postcssNesting from 'postcss-nesting';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssUrl from 'postcss-url';
-import SVGSpriteMapPlugin from 'svg-spritemap-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import {URL} from 'url';
 import {default as webpack} from 'webpack';
@@ -35,6 +34,7 @@ import {WebpackPluginServe} from 'webpack-plugin-serve';
 
 import {LexConfig} from './lib/LexConfig.js';
 import {relativeFilePath, relativeNodePath} from './lib/utils/file.js';
+import LexSvgSpritemapPlugin from './lib/utils/webpack/LexSvgSpritemapPlugin.js';
 import postcssFor from './lib/utils/postcss/postcss-for.js';
 import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
 import tail from 'lodash/tail.js';
@@ -175,17 +175,10 @@ const svgPaths = `${sourceFullPath}/icons/**/**.svg`;
 
 if(globSync(svgPaths, globOptions).length) {
   plugins.push(
-    new SVGSpriteMapPlugin(svgPaths, {
-      input: {
-        allowDuplicates: false
-      },
-      output: {
-        chunk: {keep: true},
-        filename: './icons/icons.svg'
-      },
-      sprite: {
-        prefix: false
-      }
+    new LexSvgSpritemapPlugin(svgPaths, {
+      allowDuplicates: false,
+      filename: './icons/icons.svg',
+      prefix: false
     })
   );
 }

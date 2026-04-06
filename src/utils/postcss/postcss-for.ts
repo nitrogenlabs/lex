@@ -20,17 +20,19 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
   const iterStack: string[] = [];
 
   const parentsHaveIterator = (rule: postcss.AtRule, param: string): boolean => {
-    if(rule.parent === null) {
+    const parent = rule.parent;
+
+    if(parent === null || parent === undefined) {
       return false;
     }
-    if(rule.parent.type === 'root') {
+    if(parent.type === 'root') {
       return false;
     }
-    if(rule.parent.type !== 'atrule' || !rule.parent.params) {
+    if(parent.type !== 'atrule') {
       return false;
     }
 
-    const parentIterVar = rule.parent.params.split(/\s+/)[0];
+    const parentIterVar = parent.params.split(/\s+/)[0];
     if(!parentIterVar) {
       return false;
     }
@@ -40,7 +42,7 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
     if(iterStack.indexOf(param) !== -1) {
       return true;
     }
-    return parentsHaveIterator(rule.parent as postcss.AtRule, param);
+    return parentsHaveIterator(parent, param);
   };
 
   const manageIterStack = (rule: postcss.AtRule) => {
@@ -132,7 +134,7 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
     }
   };
 
-  const processLoops = (css: postcss.Container) => {
+  const processLoops = (css: postcss.Container<postcss.ChildNode>) => {
     css.walkAtRules((rule) => {
       if(rule.name === 'for') {
         unrollLoop(rule);
@@ -152,7 +154,7 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
   };
 
   return {
-    Once(root) {
+    Once(root: postcss.Root) {
       processOriginalLoops(root);
     },
     postcssPlugin: 'postcss-for'
@@ -162,4 +164,3 @@ const postcssFor = (opts: PostcssForOptions = {}) => {
 postcssFor.postcss = true;
 
 export default postcssFor;
-

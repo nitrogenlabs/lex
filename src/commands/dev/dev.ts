@@ -131,8 +131,8 @@ const getNetworkAddresses = () => {
   const interfaces = networkInterfaces();
   const addresses = {
     local: 'localhost',
-    private: null,
-    public: null
+    private: null as string | null,
+    public: null as string | null
   };
 
   for(const name of Object.keys(interfaces)) {
@@ -161,7 +161,7 @@ const getNetworkAddresses = () => {
   return addresses;
 };
 
-const displayServerStatus = (port: number = DEFAULT_DEV_PORT, quiet: boolean, publicIp?: string) => {
+const displayServerStatus = (port: number = DEFAULT_DEV_PORT, quiet: boolean = false, publicIp?: string) => {
   if(quiet) {
     return;
   }
@@ -325,7 +325,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     childProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString();
 
-      handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
+      handleWebpackProgress(output, spinner, quiet ?? false, '🚀', 'Webpack Building');
 
       if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
         serverStarted = true;
@@ -347,7 +347,7 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     childProcess.stderr?.on('data', (data: Buffer) => {
       const output = data.toString();
 
-      handleWebpackProgress(output, spinner, quiet, '🚀', 'Webpack Building');
+      handleWebpackProgress(output, spinner, quiet ?? false, '🚀', 'Webpack Building');
 
       if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
         serverStarted = true;
