@@ -2,7 +2,6 @@ const config = {
   addons: [
     '@storybook/addon-docs',
     '@storybook/addon-links',
-    '@storybook/addon-postcss',
     {
       name: '@storybook/addon-styling-webpack',
       options: {
