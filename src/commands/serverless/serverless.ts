@@ -285,7 +285,9 @@ const loadHandler = async (handlerPath: string, outputDir: string) => {
       // Get the handler based on export name or try defaults
       let handler: any;
       if(exportName) {
-        handler = handlerModule[exportName];
+        handler = handlerModule[exportName]
+          || handlerModule.default?.[exportName]
+          || handlerModule['module.exports']?.[exportName];
         if(!handler) {
           console.error(`[Serverless] Export "${exportName}" not found in module. Available exports: ${Object.keys(handlerModule).join(', ')}`);
           return null;
@@ -688,14 +690,21 @@ const createWebSocketServer = (
         const functions = config.functions || {};
 
         if(config.functions) {
+          let defaultFunction: string | null = null;
+
           for(const [functionName, functionConfig] of Object.entries(functions)) {
             if(functionConfig.events) {
               for(const event of functionConfig.events) {
                 if(event.websocket) {
                   const route = event.websocket.route || '$connect';
-                  if(route === '$default' || route === data.action) {
+
+                  if(route === data.action) {
                     matchedFunction = functionName;
                     break;
+                  }
+
+                  if(route === '$default' && !defaultFunction) {
+                    defaultFunction = functionName;
                   }
                 }
               }
@@ -703,6 +712,10 @@ const createWebSocketServer = (
             if(matchedFunction) {
               break;
             }
+          }
+
+          if(!matchedFunction) {
+            matchedFunction = defaultFunction;
           }
         }
 
