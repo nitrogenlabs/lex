@@ -1,6 +1,6 @@
 # Serverless Example
 
-This example demonstrates how to use the `lex serverless` command to run AWS Lambda functions locally with HTTP and WebSocket support.
+This example demonstrates how to use the `lex serverless-dev` command to run AWS Lambda functions locally with HTTP and WebSocket support.
 
 ## Setup
 
@@ -13,7 +13,7 @@ cd examples/serverless-example
 2. Start the serverless development server:
 
 ```bash
-lex serverless
+lex serverless-dev
 ```
 
 ## Available Endpoints

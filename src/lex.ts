@@ -20,9 +20,9 @@ import {init} from './commands/init/init.js';
 import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
-import {packageLambda} from './commands/package-lambda/package-lambda.js';
+import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {publish} from './commands/publish/publish.js';
-import {serverless} from './commands/serverless/serverless.js';
+import {serverlessDev} from './commands/serverless-dev/serverless-dev.js';
 import {storybook} from './commands/storybook/storybook.js';
 import {test} from './commands/test/test.js';
 import {update} from './commands/update/update.js';
@@ -182,7 +182,7 @@ program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => migrate(cmd, process.exit).then(() => {}));
 
-program.command('package-lambda')
+program.command('serverless-deploy')
   .requiredOption('--entry <path>', 'Lambda entry file to bundle.')
   .option('--copyNodeModule <value...>', 'Runtime node_modules packages to copy into the package after bundling.')
   .option('--external <value...>', 'Packages or package patterns to keep external from the bundle.')
@@ -196,7 +196,7 @@ program.command('package-lambda')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--sourcemap', 'Generate a sourcemap.', false)
   .option('--target <value>', 'esbuild runtime target. Default: "node24".')
-  .action((cmd) => packageLambda(cmd, process.exit).then(() => {}));
+  .action((cmd) => serverlessDeploy(cmd, process.exit).then(() => {}));
 
 program.command('publish')
   .addOption(new Option('--bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch".').choices(['major', 'minor', 'patch', 'beta', 'alpha', 'rc']).default('patch'))
@@ -208,7 +208,7 @@ program.command('publish')
   .option('--tag <tag>', 'Registers the published package with the given tag.')
   .action((cmd) => publish(cmd, process.exit).then(() => {}));
 
-program.command('serverless')
+program.command('serverless-dev')
   .option('--config <path>', 'Custom configuration file path (default: lex.config.mjs).')
   .option('--host <host>', 'Host to bind the server to (default: localhost).')
   .option('--httpPort <port>', 'HTTP server port (default: 3100).')
@@ -220,7 +220,7 @@ program.command('serverless')
   .option('--variables <json>', 'Environment variables to set in process.env.')
   .option('--debug', 'Enable GraphQL debug logging to see queries, variables, and operations.')
   .option('--printOutput', 'Print GraphQL response output including status, headers, and body.')
-  .action((cmd) => serverless(cmd, process.exit).then(() => {}));
+  .action((cmd) => serverlessDev(cmd, process.exit).then(() => {}));
 
 program.command('storybook')
   .option('--config <path>', 'Custom Storybook configuration directory path (ie. .storybook).')

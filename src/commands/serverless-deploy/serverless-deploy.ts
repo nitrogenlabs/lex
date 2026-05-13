@@ -8,7 +8,7 @@ import {dirname, resolve} from 'path';
 
 import {log} from '../../utils/log.js';
 
-export interface PackageLambdaOptions {
+export interface ServerlessDeployOptions {
   readonly bundle?: boolean;
   readonly cliName?: string;
   readonly copyNodeModule?: string | string[];
@@ -27,7 +27,7 @@ export interface PackageLambdaOptions {
   readonly target?: string;
 }
 
-export type PackageLambdaCallback = (status: number) => void;
+export type ServerlessDeployCallback = (status: number) => void;
 
 const toList = (value?: string | string[]): string[] => {
   if(!value) return [];
@@ -40,9 +40,9 @@ const formatSize = (bytes: number): string => {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 };
 
-export const packageLambda = async (
-  cmd: PackageLambdaOptions,
-  callback: PackageLambdaCallback = () => ({})
+export const serverlessDeploy = async (
+  cmd: ServerlessDeployOptions,
+  callback: ServerlessDeployCallback = () => ({})
 ): Promise<number> => {
   const {
     bundle = true,

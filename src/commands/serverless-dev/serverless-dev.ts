@@ -16,7 +16,7 @@ import {LexConfig, getPackageDir} from '../../LexConfig.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
 
-export interface ServerlessOptions {
+export interface ServerlessDevOptions {
   readonly cliName?: string;
   readonly config?: string;
   readonly debug?: boolean;
@@ -31,7 +31,7 @@ export interface ServerlessOptions {
   readonly wsPort?: number;
 }
 
-export type ServerlessCallback = (status: number) => void;
+export type ServerlessDevCallback = (status: number) => void;
 
 interface PublicIpCache {
   ip: string;
@@ -934,9 +934,9 @@ const loadEnvFile = (envPath: string): Record<string, string> => {
   return envVars;
 };
 
-export const serverless = async (
-  cmd: ServerlessOptions,
-  callback: ServerlessCallback = () => ({})
+export const serverlessDev = async (
+  cmd: ServerlessDevOptions,
+  callback: ServerlessDevCallback = () => ({})
 ): Promise<number> => {
   const {
     cliName = 'Lex',

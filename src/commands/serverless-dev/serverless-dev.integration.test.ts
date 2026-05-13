@@ -2,7 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {serverless} from './serverless.js';
+import {serverlessDev} from './serverless-dev.js';
 
 vi.mock('../../utils/app.js');
 vi.mock('../../utils/log.js');
@@ -50,7 +50,7 @@ describe('Serverless Integration Tests', () => {
 
     it('should load environment variables from .env file', async () => {
       // Call serverless command in test mode (no .env files exist)
-      const result = await serverless({
+      const result = await serverlessDev({
         quiet: true,
         test: true
       });
@@ -62,7 +62,7 @@ describe('Serverless Integration Tests', () => {
 
     it('should load environment variables from multiple .env files with proper precedence', async () => {
       // Call serverless command in test mode (no .env files exist)
-      const result = await serverless({
+      const result = await serverlessDev({
         quiet: true,
         test: true
       });
@@ -74,7 +74,7 @@ describe('Serverless Integration Tests', () => {
 
     it('should handle missing .env files gracefully', async () => {
     // Call serverless command without any .env files in test mode
-      const result = await serverless({
+      const result = await serverlessDev({
         quiet: true,
         test: true
       });

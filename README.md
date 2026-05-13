@@ -92,7 +92,7 @@ Lex comes with everything you need for modern React development:
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
 | [`lex dev`](#dev) | Start development server | `lex dev --open` |
-| [`lex serverless`](#serverless) | Start serverless development server | `lex serverless --host 0.0.0.0` |
+| [`lex serverless-dev`](#serverless-dev) | Start serverless development server | `lex serverless-dev --host 0.0.0.0` |
 | [`lex compile`](#compile) | Compile TypeScript/JavaScript | `lex compile --watch` |
 | [`lex build`](#build) | Build for production | `lex build --mode production` |
 
@@ -166,25 +166,25 @@ export default {
 
 **Static Assets**: Use the `webpack.staticPath` configuration to specify a directory for static assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
 
-### **Serverless Development Server** {#serverless}
+### **Serverless Development Server** {#serverless-dev}
 
 ```bash
 # Start serverless development server
-lex serverless
+lex serverless-dev
 
 # With custom host and ports
-lex serverless --host 0.0.0.0 --httpPort 4000 --wsPort 4002
+lex serverless-dev --host 0.0.0.0 --httpPort 4000 --wsPort 4002
 
 # With environment variables
-lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
+lex serverless-dev --variables '{"NODE_ENV":"development","API_KEY":"test"}'
 
 # With GraphQL debug logging
-lex serverless --debug --printOutput
+lex serverless-dev --debug --printOutput
 ```
 
 **AWS Lambda Simulation**: Lex provides a local development server similar to serverless-offline, allowing you to test AWS Lambda functions with HTTP and WebSocket support.
 
-**Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless/serverless.docs.md) for detailed configuration options.
+**Configuration**: Configure your serverless functions in `lex.config.mjs`. See the [Serverless Documentation](src/commands/serverless-dev/serverless-dev.docs.md) for detailed configuration options.
 
 ```javascript
 export default {
@@ -202,7 +202,7 @@ export default {
 
 `--httpPort`, `--httpsPort`, and `--wsPort` override these config values.
 
-**Environment Variables**: The serverless command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
+**Environment Variables**: The `serverless-dev` command automatically loads environment variables from `.env`, `.env.local`, and `.env.development` files, with command-line variables taking precedence.
 
 ### **Production Builds**
 

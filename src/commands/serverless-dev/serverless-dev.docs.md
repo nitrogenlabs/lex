@@ -1,11 +1,11 @@
-# Serverless Command
+# Serverless Dev Command
 
-The `serverless` command provides a development server similar to serverless-offline, allowing you to test AWS Lambda functions locally with HTTP and WebSocket support.
+The `serverless-dev` command provides a development server similar to serverless-offline, allowing you to test AWS Lambda functions locally with HTTP and WebSocket support.
 
 ## Usage
 
 ```bash
-lex serverless [options]
+lex serverless-dev [options]
 ```
 
 ## Options
@@ -160,7 +160,7 @@ Both HTTP and WebSocket handlers receive a context object that simulates AWS Lam
 
 ```bash
 # Start serverless server
-lex serverless
+lex serverless-dev
 
 # Test the function
 curl http://localhost:3100/hello
@@ -170,36 +170,36 @@ curl http://localhost:3100/hello
 
 ```bash
 # Start with custom ports
-lex serverless --httpPort 4000 --wsPort 4002
+lex serverless-dev --httpPort 4000 --wsPort 4002
 ```
 
 ### With Environment Variables
 
-The serverless command automatically loads environment variables from `.env` files in the following order (later files override earlier ones):
+The `serverless-dev` command automatically loads environment variables from `.env` files in the following order (later files override earlier ones):
 - `.env`
 - `.env.local`
 - `.env.development`
 
 ```bash
 # Start with automatic .env file loading
-lex serverless
+lex serverless-dev
 
 # Override with command line variables (takes precedence over .env files)
-lex serverless --variables '{"NODE_ENV":"development","API_KEY":"test"}'
+lex serverless-dev --variables '{"NODE_ENV":"development","API_KEY":"test"}'
 ```
 
 ### With Custom Config
 
 ```bash
 # Use custom configuration file
-lex serverless --config ./custom-serverless.config.mjs
+lex serverless-dev --config ./custom-serverless.config.mjs
 ```
 
 ### With GraphQL Debug Logging
 
 ```bash
 # Enable GraphQL debug logging (similar to serverless npm module)
-lex serverless --debug --printOutput
+lex serverless-dev --debug --printOutput
 
 # Debug mode shows:
 # - GraphQL queries and operations

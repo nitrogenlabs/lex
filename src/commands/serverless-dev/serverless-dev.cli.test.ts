@@ -1,5 +1,5 @@
 import {log} from '../../utils/log.js';
-import {serverless} from './serverless.js';
+import {serverlessDev} from './serverless-dev.js';
 
 vi.mock('execa');
 vi.mock('boxen', () => ({
@@ -79,7 +79,7 @@ global.fetch = vi.fn(() =>
   })
 ) as Mock;
 
-describe('serverless cli', () => {
+describe('serverless-dev cli', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -89,7 +89,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with default options', async () => {
-    await serverless({test: true});
+    await serverlessDev({test: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -99,7 +99,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with custom host', async () => {
-    await serverless({host: '0.0.0.0', test: true});
+    await serverlessDev({host: '0.0.0.0', test: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -109,7 +109,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with custom ports', async () => {
-    await serverless({
+    await serverlessDev({
       httpPort: 4000,
       httpsPort: 4001,
       test: true,
@@ -124,7 +124,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with usePublicIp option', async () => {
-    await serverless({test: true, usePublicIp: true});
+    await serverlessDev({test: true, usePublicIp: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -134,7 +134,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with remove option', async () => {
-    await serverless({remove: true, test: true});
+    await serverlessDev({remove: true, test: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -144,7 +144,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with quiet option', async () => {
-    await serverless({quiet: true, test: true});
+    await serverlessDev({quiet: true, test: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -154,7 +154,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with custom config', async () => {
-    await serverless({config: './custom.config.mjs', test: true});
+    await serverlessDev({config: './custom.config.mjs', test: true});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
@@ -164,7 +164,7 @@ describe('serverless cli', () => {
   });
 
   it('should start serverless server with variables', async () => {
-    await serverless({test: true, variables: '{"NODE_ENV":"test"}'});
+    await serverlessDev({test: true, variables: '{"NODE_ENV":"test"}'});
 
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('Test mode: Environment variables loaded, exiting'),
