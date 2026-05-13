@@ -529,8 +529,8 @@ What are the key optimization opportunities for this build configuration? Consid
               nodir: true,
               absolute: true
             };
-            const tsFiles = globSync(`**/!(*.spec|*.test|*.integration).ts`, globOptions);
-            const tsxFiles = globSync(`**/!(*.spec|*.test|*.integration).tsx`, globOptions);
+            const tsFiles = globSync(`**/!(*.spec|*.test|*.integration|*.e2e).ts`, globOptions);
+            const tsxFiles = globSync(`**/!(*.spec|*.test|*.integration|*.e2e).tsx`, globOptions);
             const allSourceFiles = [...tsFiles, ...tsxFiles];
             const typescriptOptions = [
               ...LexConfig.getTypeScriptDeclarationFlags(),

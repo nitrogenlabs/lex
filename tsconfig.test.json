@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "6.0",
     "inlineSourceMap": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -39,6 +40,7 @@
     "**/*.test.*",
     "**/*.spec.*",
     "**/*.integration.*",
+    "**/*.e2e.*",
     "**/__tests__/*",
     "vitest.setup.ts"
   ],

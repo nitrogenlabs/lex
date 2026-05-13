@@ -83,8 +83,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
           dot: false,
           nodir: true
         };
-        const tsFiles = globSync('**/!(*.spec|*.test|*.integration).ts', globOptions);
-        const tsxFiles = globSync('**/!(*.spec|*.test|*.integration).tsx', globOptions);
+        const tsFiles = globSync('**/!(*.spec|*.test|*.integration|*.e2e).ts', globOptions);
+        const tsxFiles = globSync('**/!(*.spec|*.test|*.integration|*.e2e).tsx', globOptions);
         const allSourceFiles = [...tsFiles, ...tsxFiles];
 
         return [
@@ -164,8 +164,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     nodir: true,
     nosort: true
   };
-  const tsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration).ts*', globOptions);
-  const jsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration).js', globOptions);
+  const tsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration|*.e2e).ts*', globOptions);
+  const jsFiles: string[] = globSync('**/!(*.spec|*.test|*.integration|*.e2e).js', globOptions);
   const sourceFiles: string[] = [...tsFiles, ...jsFiles];
 
   const cssFiles: string[] = getFilesByExt('.css', LexConfig.config);

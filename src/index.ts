@@ -40,6 +40,7 @@ export * from './commands/init/init.js';
 export * from './commands/link/link.js';
 export * from './commands/lint/lint.js';
 export * from './commands/migrate/migrate.js';
+export * from './commands/package-lambda/package-lambda.js';
 export * from './commands/publish/publish.js';
 export * from './commands/serverless/serverless.js';
 export * from './commands/storybook/storybook.js';

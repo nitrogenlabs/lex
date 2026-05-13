@@ -9,6 +9,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "6.0",
     "inlineSourceMap": false,
     "isolatedModules": true,
     "jsx": "react-jsx",

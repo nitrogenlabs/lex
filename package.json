@@ -47,7 +47,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "NODE_ENV=production && rm -rf lib && npx swc src --out-dir ./lib --source-maps inline --strip-leading-paths --extensions .ts,.tsx --ignore '**/*.test.ts' --ignore '**/*.spec.ts' && npm run declarations",
+    "build": "NODE_ENV=production && rm -rf lib && npx swc src --out-dir ./lib --source-maps inline --strip-leading-paths --extensions .ts,.tsx --ignore '**/*.test.ts' --ignore '**/*.test.tsx' --ignore '**/*.spec.ts' --ignore '**/*.spec.tsx' --ignore '**/*.integration.ts' --ignore '**/*.integration.tsx' --ignore '**/*.e2e.ts' --ignore '**/*.e2e.tsx' && npm run declarations",
     "build:all": "npm run build && npm run build:ai",
     "build:ai": "NODE_ENV=production && npx swc 'src/commands/ai/**/*.{ts,tsx}' --out-dir ./lib/commands/ai --source-maps inline",
     "declarations": "tsc -p tsconfig.build.json",
@@ -63,6 +63,8 @@
     "publish:patch": "npm version patch && npm publish",
     "test": "NODE_ENV=test && (npm run lint || true) && npm run test:unit",
     "test:unit": "NODE_ENV=test && npm run env && npx vitest run",
+    "test:e2e": "NODE_ENV=test && npx playwright test",
+    "test:all": "NODE_ENV=test && npm run test:unit && npm run test:e2e",
     "test:integration": "NODE_ENV=test && npx vitest run \"src/**/*.integration.*\"",
     "test:cli": "NODE_ENV=test && npx vitest run \"src/**/*.cli.*\"",
     "test:commands": "NODE_ENV=test && npm run test:cli && npm run test:integration",
@@ -78,11 +80,12 @@
     "ci:build": "npm run build && npm run package",
     "ci:deploy": "npm run prepublishOnly",
     "update": "npm-check-updates -i",
-    "watch": "NODE_ENV=development rm -rf lib && npx swc src --out-dir ./lib --source-maps inline --strip-leading-paths --extensions .ts,.tsx --ignore '**/*.test.ts' --ignore '**/*.spec.ts' --watch"
+    "watch": "NODE_ENV=development rm -rf lib && npx swc src --out-dir ./lib --source-maps inline --strip-leading-paths --extensions .ts,.tsx --ignore '**/*.test.ts' --ignore '**/*.test.tsx' --ignore '**/*.spec.ts' --ignore '**/*.spec.tsx' --ignore '**/*.integration.ts' --ignore '**/*.integration.tsx' --ignore '**/*.e2e.ts' --ignore '**/*.e2e.tsx' --watch"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
     "@nlabs/webpack-plugin-static-site": "*",
+    "@playwright/test": "^1.55.1",
     "@storybook/addon-docs": "^10.3.4",
     "@storybook/addon-links": "^10.3.4",
     "@storybook/addon-styling-webpack": "^3.0.2",
@@ -115,6 +118,7 @@
     "cssnano": "^7.1.4",
     "dotenv-webpack": "^9.0.0",
     "download-npm-package": "^3.1.12",
+    "esbuild": "^0.27.3",
     "eslint": "^10.2.0",
     "eslint-config-styleguidejs": "^5.0.4",
     "execa": "9.6.1",

@@ -67,6 +67,29 @@ describe('test command', () => {
     expect(callback).toHaveBeenCalledWith(0);
   });
 
+  it('runs Playwright when e2e is requested', async () => {
+    const callback = vi.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+
+    await test({e2e: true}, [], callback);
+
+    expect(execa).toHaveBeenCalledTimes(1);
+    expect((execa as Mock).mock.calls[0][0]).toContain('playwright');
+    expect((execa as Mock).mock.calls[0][1]).toContain('test');
+    expect(callback).toHaveBeenCalledWith(0);
+  });
+
+  it('runs Vitest and Playwright when unit and e2e are both requested', async () => {
+    const callback = vi.fn() as unknown as TestCallback;
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+
+    await test({unit: true, e2e: true}, [], callback);
+
+    expect(execa).toHaveBeenCalledTimes(2);
+    expect((execa as Mock).mock.calls[0][0]).toContain('vitest');
+    expect((execa as Mock).mock.calls[1][0]).toContain('playwright');
+  });
+
   it('propagates Vitest errors', async () => {
     const callback = vi.fn() as unknown as TestCallback;
     (execa as MockedFunction<typeof execa>).mockRejectedValue(new Error('Test failed'));

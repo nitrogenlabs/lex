@@ -36,6 +36,7 @@
     "**/*.test.*",
     "**/*.spec.*",
     "**/*.integration.*",
+    "**/*.e2e.*",
     "**/__tests__/**",
     "**/__mocks__/**",
     "src/vitest.d.ts",

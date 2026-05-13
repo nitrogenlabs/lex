@@ -311,4 +311,25 @@ describe('test options tests', () => {
 
     expect(vitestArgs).toContain('--update');
   });
+
+  it('should pass e2e-only execution to Playwright', async () => {
+    const options: TestOptions = {
+      quiet: false,
+      e2e: true,
+      maxWorkers: '2',
+      runInBand: true,
+      testNamePattern: 'smoke'
+    };
+
+    await test(options, [], mockCallback as unknown as typeof process.exit);
+
+    const playwrightArgs = getExecaCalls()[0][1];
+
+    expect(getExecaCalls()[0][0]).toContain('playwright');
+    expect(playwrightArgs).toContain('test');
+    expect(playwrightArgs).toContain('--workers');
+    expect(playwrightArgs).toContain('1');
+    expect(playwrightArgs).toContain('--grep');
+    expect(playwrightArgs).toContain('smoke');
+  });
 });

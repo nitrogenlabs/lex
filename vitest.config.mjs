@@ -36,8 +36,8 @@ const baseConfig = defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['**/*.{test,spec,integration}.{ts,tsx,js,jsx}'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/lib/**'],
+    include: ['**/*.test.{ts,tsx,js,jsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/*.e2e.*'],
     setupFiles,
     coverage: {
       provider: 'v8',

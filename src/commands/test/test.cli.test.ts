@@ -89,7 +89,7 @@ describe('test.cli', () => {
       const result = await test(options, [], mockCallback as any);
 
       expect(logUtils.log as Mock).toHaveBeenCalledWith(
-        '\nLex Error: Check for unit test errors and/or coverage.', 'error', undefined
+        '\nLex Error: Check for test failures and coverage issues.', 'error', undefined
       );
       expect(mockSpinner.fail).toHaveBeenCalledWith('Testing failed!');
       expect(result).toBe(1);
