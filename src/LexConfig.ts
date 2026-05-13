@@ -498,7 +498,8 @@ export class LexConfig {
       '--jsx', 'react-jsx',
       '--isolatedModules',
       '--resolveJsonModule',
-      '--allowJs'
+      '--allowJs',
+      '--ignoreConfig'
       // Note: --noUnusedLocals and --noUnusedParameters are not needed for declaration generation
       // and would actually enable strict checking, which we want to avoid for faster declaration generation
     ];

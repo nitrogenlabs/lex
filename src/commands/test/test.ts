@@ -50,6 +50,8 @@ export interface TestOptions {
   readonly env?: string;
   readonly errorOnDeprecated?: boolean;
   readonly expand?: boolean;
+  readonly e2e?: boolean;
+  readonly e2eConfig?: string;
   readonly forceExit?: boolean;
   readonly generate?: boolean;
   readonly json?: boolean;
@@ -71,6 +73,7 @@ export interface TestOptions {
   readonly testLocationInResults?: boolean;
   readonly testNamePattern?: string;
   readonly testPathPattern?: string;
+  readonly unit?: boolean;
   readonly update?: boolean;
   readonly useStderr?: boolean;
   readonly verbose?: boolean;
@@ -89,7 +92,7 @@ const defaultExit = ((code?: number) => {
 }) as typeof process.exit;
 
 export const getTestFilePatterns = (testPathPattern?: string): string[] => {
-  const defaultPatterns = ['**/*.test.*', '**/*.spec.*', '**/*.integration.*'];
+  const defaultPatterns = ['**/*.test.{ts,tsx,js,jsx}'];
 
   if(!testPathPattern) {
     return defaultPatterns;
@@ -98,13 +101,15 @@ export const getTestFilePatterns = (testPathPattern?: string): string[] => {
   return [testPathPattern];
 };
 
+export const getE2ETestFilePatterns = (): string[] => ['**/*.e2e.{ts,tsx,js,jsx}'];
+
 const findUncoveredSourceFiles = (): string[] => {
   const sourceFiles = globSync('src/**/*.{ts,tsx,js,jsx}', {
     cwd: process.cwd(),
     ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**', '**/*.test.*', '**/*.spec.*']
   });
 
-  const testFiles = globSync('**/*.{test,spec}.{ts,tsx,js,jsx}', {
+  const testFiles = globSync('**/*.test.{ts,tsx,js,jsx}', {
     cwd: process.cwd(),
     ignore: ['**/node_modules/**', '**/dist/**', '**/lib/**']
   });
@@ -161,6 +166,8 @@ export const test = async (
     debug = false,
     debugTests = false,
     detectOpenHandles,
+    e2e = false,
+    e2eConfig,
     environment,
     env,
     errorOnDeprecated,
@@ -186,6 +193,7 @@ export const test = async (
     testLocationInResults,
     testNamePattern,
     testPathPattern,
+    unit = false,
     update,
     useStderr,
     verbose,
@@ -196,6 +204,8 @@ export const test = async (
   const useGenerate = generate || aiGenerate;
   const useAnalyze = analyze || aiAnalyze;
   const useDebug = debugTests || aiDebug;
+  const runE2E = e2e;
+  const runUnit = unit || !runE2E;
 
   log(`${cliName} testing...`, 'info', quiet);
 
@@ -244,98 +254,6 @@ export const test = async (
     }
   }
 
-  const projectVitestBin = pathResolve(process.cwd(), 'node_modules/.bin/vitest');
-  let vitestPath: string;
-
-  if(existsSync(projectVitestBin)) {
-    vitestPath = projectVitestBin;
-  } else {
-    vitestPath = resolveBinaryPath('vitest');
-  }
-
-  if(!vitestPath) {
-    log(`\n${cliName} Error: Vitest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
-    log('Please reinstall Lex or check your installation.', 'info', quiet);
-    return 1;
-  }
-
-  let vitestConfigFile: string | undefined;
-  let projectVitestConfig: Record<string, unknown> | null = null;
-
-  if(config) {
-    vitestConfigFile = config;
-  } else {
-    const projectVitestConfigPaths = [
-      pathResolve(process.cwd(), 'vitest.config.ts'),
-      pathResolve(process.cwd(), 'vitest.config.mts'),
-      pathResolve(process.cwd(), 'vitest.config.js'),
-      pathResolve(process.cwd(), 'vitest.config.mjs'),
-      pathResolve(process.cwd(), 'vitest.config.cjs')
-    ];
-    const existingConfigPath = projectVitestConfigPaths.find((configPath) => existsSync(configPath));
-
-    if(existingConfigPath) {
-      vitestConfigFile = existingConfigPath;
-      if(debug) {
-        log(`Using project Vitest config file: ${vitestConfigFile}`, 'info', quiet);
-      }
-    } else {
-      // No Vitest config file exists in the project
-      // Check if there's a Vitest config in lex.config.cjs
-      projectVitestConfig = LexConfig.config.vitest || null;
-
-      const lexDir = LexConfig.getLexDir();
-      const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');
-
-      if(debug) {
-        log(`Looking for Vitest config at: ${lexVitestConfig}`, 'info', quiet);
-        log(`File exists: ${existsSync(lexVitestConfig)}`, 'info', quiet);
-      }
-
-      if(existsSync(lexVitestConfig)) {
-        vitestConfigFile = lexVitestConfig;
-        if(projectVitestConfig && Object.keys(projectVitestConfig).length > 0) {
-          if(debug) {
-            log(`Using Lex Vitest config with project Vitest config from lex.config.cjs: ${vitestConfigFile}`, 'info', quiet);
-          }
-        } else if(debug) {
-          log(`Using Lex Vitest config (no project Vitest config found): ${vitestConfigFile}`, 'info', quiet);
-        }
-      } else {
-        if(debug) {
-          log('No Vitest config found in project or Lex', 'warn', quiet);
-        }
-      }
-    }
-  }
-
-  if(showConfig) {
-    if(vitestConfigFile) {
-      const resolvedConfig = await import(vitestConfigFile);
-      log(JSON.stringify(resolvedConfig.default ?? resolvedConfig, null, 2), 'info', quiet);
-    } else {
-      log(JSON.stringify({test: projectVitestConfig ?? {}}, null, 2), 'info', quiet);
-    }
-    callback(0);
-    return 0;
-  }
-
-  const vitestSetupFile: string = setup || pathResolve(process.cwd(), 'vitest.setup.js');
-  const vitestArgs: string[] = [];
-  const vitestOptions: string[] = [];
-  const reporters = new Set<string>();
-  const filters: string[] = [];
-  const watchMode = Boolean(watch || watchAll);
-  const listMode = Boolean(listTests);
-
-  if(listMode) {
-    vitestArgs.push('list');
-  } else if(watchMode) {
-    vitestArgs.push('watch');
-  } else {
-    vitestArgs.push('run');
-  }
-
   const isESM = detectESM(process.cwd());
   let nodeOptions = process.env.NODE_OPTIONS || '';
   if(isESM) {
@@ -345,192 +263,280 @@ export const test = async (
     log('ESM project detected, using --experimental-vm-modules in NODE_OPTIONS', 'info', quiet);
   }
 
-  if(vitestConfigFile) {
-    vitestOptions.push('--config', vitestConfigFile);
-  }
-
-  if(bail) {
-    vitestOptions.push('--bail', '1');
-  }
-
-  if(changedFilesWithAncestor) {
-    vitestOptions.push('--changed');
-  }
-
-  if(changedSince) {
-    vitestOptions.push('--changed', changedSince);
-  }
-
-  if(ci) {
-    vitestOptions.push('--run');
-  }
-
-  if(collectCoverageFrom) {
-    vitestOptions.push('--coverage', '--coverage.include', collectCoverageFrom);
-  }
-
-  if(debug) {
-    vitestOptions.push('--inspect');
-  }
-
-  if(detectOpenHandles) {
-    reporters.add('hanging-process');
-  }
-
-  const environmentName = environment || env;
-  if(environmentName) {
-    vitestOptions.push('--environment', environmentName);
-  }
-
-  if(errorOnDeprecated) {
-    log('Vitest does not support --errorOnDeprecated; option ignored.', 'warn', quiet);
-  }
-
-  if(expand) {
-    vitestOptions.push('--expandSnapshotDiff');
-  }
-
-  if(forceExit) {
-    log('Vitest does not support --forceExit; option ignored.', 'warn', quiet);
-  }
-
-  if(lastCommit) {
-    vitestOptions.push('--changed');
-  }
-
-  if(logHeapUsage) {
-    vitestOptions.push('--logHeapUsage');
-  }
-
-  if(maxWorkers) {
-    vitestOptions.push('--maxWorkers', maxWorkers);
-  }
-
-  if(noStackTrace) {
-    log('Vitest does not support --noStackTrace; option ignored.', 'warn', quiet);
-  }
-
-  if(notify) {
-    log('Vitest does not support --notify; option ignored.', 'warn', quiet);
-  }
-
-  if(onlyChanged) {
-    vitestOptions.push('--changed');
-  }
-
   let tempOutputFile = outputFile;
-  const shouldWriteJson = json || useAnalyze || useDebug || Boolean(outputFile);
-
-  if(shouldWriteJson) {
-    tempOutputFile = outputFile || '.lex-test-results.json';
-    vitestOptions.push('--outputFile', tempOutputFile);
-    reporters.add('json');
-  }
-
-  if(passWithNoTests) {
-    vitestOptions.push('--passWithNoTests');
-  }
-
-  if(runInBand) {
-    vitestOptions.push('--no-file-parallelism', '--maxWorkers', '1');
-  }
-
-  if(silent) {
-    vitestOptions.push('--silent');
-  }
-
-  if(testLocationInResults) {
-    vitestOptions.push('--includeTaskLocation');
-  }
-
-  if(testNamePattern) {
-    vitestOptions.push('--testNamePattern', testNamePattern);
-  }
-
-  if(testPathPattern) {
-    filters.push(testPathPattern);
-  }
-
-  if(useStderr) {
-    log('Vitest does not support --useStderr; option ignored.', 'warn', quiet);
-  }
-
-  if(verbose) {
-    reporters.add('verbose');
-  }
-
-  if(removeCache || clearCache) {
-    vitestOptions.push('--clearCache');
-  }
-
-  if(update) {
-    vitestOptions.push('--update');
-  }
-
-  if(watch) {
-    filters.push(watch);
-  }
-
-  if(args) {
-    vitestOptions.push(...args);
-  }
-
-  if(files && files.length > 0) {
-    filters.push(...files);
-  }
-
-  if(reporters.size > 0) {
-    const reporterList = Array.from(reporters);
-    if(reporterList.includes('json') && !reporterList.includes('verbose')) {
-      // Keep console output while writing JSON results.
-      reporterList.unshift('default');
-    }
-    reporterList.forEach((reporter) => vitestOptions.push('--reporter', reporter));
-  }
-
-  const finalArgs = [...vitestArgs, ...vitestOptions, ...filters];
-
-  if(debug) {
-    log(`Vitest options: ${finalArgs.join(' ')}`, 'info', quiet);
-    log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
-  }
 
   try {
-    const env: Record<string, string> = {
+    const processEnv: Record<string, string> = {
       ...process.env,
       NODE_OPTIONS: nodeOptions
     };
 
     if(colors) {
-      env.FORCE_COLOR = '1';
+      processEnv.FORCE_COLOR = '1';
     }
 
     if(ci) {
-      env.CI = 'true';
+      processEnv.CI = 'true';
     }
 
-    if(vitestSetupFile && existsSync(vitestSetupFile)) {
-      env.LEX_VITEST_SETUP = vitestSetupFile;
-    }
+    if(runUnit) {
+      const projectVitestBin = pathResolve(process.cwd(), 'node_modules/.bin/vitest');
+      let vitestPath: string;
 
-    await execa(vitestPath, finalArgs, {
-      encoding: 'utf8',
-      env,
-      stdio: 'inherit'
-    });
+      if(existsSync(projectVitestBin)) {
+        vitestPath = projectVitestBin;
+      } else {
+        vitestPath = resolveBinaryPath('vitest');
+      }
 
-    spinner.succeed('Testing completed!');
+      if(!vitestPath) {
+        log(`\n${cliName} Error: Vitest binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+        log('Please reinstall Lex or check your installation.', 'info', quiet);
+        callback(1);
+        return 1;
+      }
 
-    if(useAnalyze) {
-      spinner.start('AI is analyzing test coverage and suggesting improvements...');
+      let vitestConfigFile: string | undefined;
+      let projectVitestConfig: Record<string, unknown> | null = null;
 
-      try {
-        const testResults = processTestResults(tempOutputFile);
-        const filePatterns = getTestFilePatterns(testPathPattern);
+      if(config) {
+        vitestConfigFile = config;
+      } else {
+        const projectVitestConfigPaths = [
+          pathResolve(process.cwd(), 'vitest.config.ts'),
+          pathResolve(process.cwd(), 'vitest.config.mts'),
+          pathResolve(process.cwd(), 'vitest.config.js'),
+          pathResolve(process.cwd(), 'vitest.config.mjs'),
+          pathResolve(process.cwd(), 'vitest.config.cjs')
+        ];
+        const existingConfigPath = projectVitestConfigPaths.find((configPath) => existsSync(configPath));
 
-        await aiFunction({
-          context: true,
-          prompt: `Analyze these Vitest test results and suggest test coverage improvements:
+        if(existingConfigPath) {
+          vitestConfigFile = existingConfigPath;
+          if(debug) {
+            log(`Using project Vitest config file: ${vitestConfigFile}`, 'info', quiet);
+          }
+        } else {
+          projectVitestConfig = LexConfig.config.vitest || null;
+
+          const lexDir = LexConfig.getLexDir();
+          const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');
+
+          if(debug) {
+            log(`Looking for Vitest config at: ${lexVitestConfig}`, 'info', quiet);
+            log(`File exists: ${existsSync(lexVitestConfig)}`, 'info', quiet);
+          }
+
+          if(existsSync(lexVitestConfig)) {
+            vitestConfigFile = lexVitestConfig;
+            if(projectVitestConfig && Object.keys(projectVitestConfig).length > 0) {
+              if(debug) {
+                log(`Using Lex Vitest config with project Vitest config from lex.config.cjs: ${vitestConfigFile}`, 'info', quiet);
+              }
+            } else if(debug) {
+              log(`Using Lex Vitest config (no project Vitest config found): ${vitestConfigFile}`, 'info', quiet);
+            }
+          } else if(debug) {
+            log('No Vitest config found in project or Lex', 'warn', quiet);
+          }
+        }
+      }
+
+      if(showConfig) {
+        if(vitestConfigFile) {
+          const resolvedConfig = await import(vitestConfigFile);
+          log(JSON.stringify(resolvedConfig.default ?? resolvedConfig, null, 2), 'info', quiet);
+        } else {
+          log(JSON.stringify({test: projectVitestConfig ?? {}}, null, 2), 'info', quiet);
+        }
+        callback(0);
+        return 0;
+      }
+
+      const vitestSetupFile: string = setup || pathResolve(process.cwd(), 'vitest.setup.js');
+      const vitestArgs: string[] = [];
+      const vitestOptions: string[] = [];
+      const reporters = new Set<string>();
+      const filters: string[] = [];
+      const watchMode = Boolean(watch || watchAll);
+      const listMode = Boolean(listTests);
+
+      if(listMode) {
+        vitestArgs.push('list');
+      } else if(watchMode) {
+        vitestArgs.push('watch');
+      } else {
+        vitestArgs.push('run');
+      }
+
+      if(vitestConfigFile) {
+        vitestOptions.push('--config', vitestConfigFile);
+      }
+
+      if(bail) {
+        vitestOptions.push('--bail', '1');
+      }
+
+      if(changedFilesWithAncestor) {
+        vitestOptions.push('--changed');
+      }
+
+      if(changedSince) {
+        vitestOptions.push('--changed', changedSince);
+      }
+
+      if(ci) {
+        vitestOptions.push('--run');
+      }
+
+      if(collectCoverageFrom) {
+        vitestOptions.push('--coverage', '--coverage.include', collectCoverageFrom);
+      }
+
+      if(debug) {
+        vitestOptions.push('--inspect');
+      }
+
+      if(detectOpenHandles) {
+        reporters.add('hanging-process');
+      }
+
+      const environmentName = environment || env;
+      if(environmentName) {
+        vitestOptions.push('--environment', environmentName);
+      }
+
+      if(errorOnDeprecated) {
+        log('Vitest does not support --errorOnDeprecated; option ignored.', 'warn', quiet);
+      }
+
+      if(expand) {
+        vitestOptions.push('--expandSnapshotDiff');
+      }
+
+      if(forceExit) {
+        log('Vitest does not support --forceExit; option ignored.', 'warn', quiet);
+      }
+
+      if(lastCommit) {
+        vitestOptions.push('--changed');
+      }
+
+      if(logHeapUsage) {
+        vitestOptions.push('--logHeapUsage');
+      }
+
+      if(maxWorkers) {
+        vitestOptions.push('--maxWorkers', maxWorkers);
+      }
+
+      if(noStackTrace) {
+        log('Vitest does not support --noStackTrace; option ignored.', 'warn', quiet);
+      }
+
+      if(notify) {
+        log('Vitest does not support --notify; option ignored.', 'warn', quiet);
+      }
+
+      if(onlyChanged) {
+        vitestOptions.push('--changed');
+      }
+
+      const shouldWriteJson = json || useAnalyze || useDebug || Boolean(outputFile);
+
+      if(shouldWriteJson) {
+        tempOutputFile = outputFile || '.lex-test-results.json';
+        vitestOptions.push('--outputFile', tempOutputFile);
+        reporters.add('json');
+      }
+
+      if(passWithNoTests) {
+        vitestOptions.push('--passWithNoTests');
+      }
+
+      if(runInBand) {
+        vitestOptions.push('--no-file-parallelism', '--maxWorkers', '1');
+      }
+
+      if(silent) {
+        vitestOptions.push('--silent');
+      }
+
+      if(testLocationInResults) {
+        vitestOptions.push('--includeTaskLocation');
+      }
+
+      if(testNamePattern) {
+        vitestOptions.push('--testNamePattern', testNamePattern);
+      }
+
+      if(testPathPattern) {
+        filters.push(testPathPattern);
+      }
+
+      if(useStderr) {
+        log('Vitest does not support --useStderr; option ignored.', 'warn', quiet);
+      }
+
+      if(verbose) {
+        reporters.add('verbose');
+      }
+
+      if(removeCache || clearCache) {
+        vitestOptions.push('--clearCache');
+      }
+
+      if(update) {
+        vitestOptions.push('--update');
+      }
+
+      if(watch) {
+        filters.push(watch);
+      }
+
+      if(args) {
+        vitestOptions.push(...args);
+      }
+
+      if(files && files.length > 0) {
+        filters.push(...files.filter((file) => !/\.e2e\./.test(file)));
+      }
+
+      if(reporters.size > 0) {
+        const reporterList = Array.from(reporters);
+        if(reporterList.includes('json') && !reporterList.includes('verbose')) {
+          reporterList.unshift('default');
+        }
+        reporterList.forEach((reporter) => vitestOptions.push('--reporter', reporter));
+      }
+
+      const finalArgs = [...vitestArgs, ...vitestOptions, ...filters];
+
+      if(debug) {
+        log(`Vitest options: ${finalArgs.join(' ')}`, 'info', quiet);
+        log(`NODE_OPTIONS: ${nodeOptions}`, 'info', quiet);
+      }
+
+      if(vitestSetupFile && existsSync(vitestSetupFile)) {
+        processEnv.LEX_VITEST_SETUP = vitestSetupFile;
+      }
+
+      await execa(vitestPath, finalArgs, {
+        encoding: 'utf8',
+        env: processEnv,
+        stdio: 'inherit'
+      });
+
+      if(useAnalyze) {
+        spinner.start('AI is analyzing test coverage and suggesting improvements...');
+
+        try {
+          const testResults = processTestResults(tempOutputFile);
+          const filePatterns = getTestFilePatterns(testPathPattern);
+
+          await aiFunction({
+            context: true,
+            prompt: `Analyze these Vitest test results and suggest test coverage improvements:
 
 ${JSON.stringify(testResults, null, 2)}
 
@@ -541,28 +547,111 @@ Please provide:
 2. Suggestions for improving test cases
 3. Recommendations for additional integration test scenarios
 4. Best practices for increasing test effectiveness`,
-          quiet,
-          task: 'optimize'
-        });
+            quiet,
+            task: 'optimize'
+          });
 
-        spinner.succeed('AI test analysis complete');
-      } catch(aiError) {
-        spinner.fail('Could not generate AI test analysis');
-        if(!quiet) {
-          // eslint-disable-next-line no-console
-          console.error('AI analysis error:', aiError);
+          spinner.succeed('AI test analysis complete');
+        } catch(aiError) {
+          spinner.fail('Could not generate AI test analysis');
+          if(!quiet) {
+            // eslint-disable-next-line no-console
+            console.error('AI analysis error:', aiError);
+          }
         }
       }
     }
 
+    if(runE2E) {
+      const projectPlaywrightBin = pathResolve(process.cwd(), 'node_modules/.bin/playwright');
+      let playwrightPath: string;
+
+      if(existsSync(projectPlaywrightBin)) {
+        playwrightPath = projectPlaywrightBin;
+      } else {
+        playwrightPath = resolveBinaryPath('playwright');
+      }
+
+      if(!playwrightPath) {
+        log(`\n${cliName} Error: Playwright binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
+        log('Please install @playwright/test to run E2E tests.', 'info', quiet);
+        callback(1);
+        return 1;
+      }
+
+      const e2eConfigPaths = [
+        pathResolve(process.cwd(), 'playwright.config.ts'),
+        pathResolve(process.cwd(), 'playwright.config.mts'),
+        pathResolve(process.cwd(), 'playwright.config.js'),
+        pathResolve(process.cwd(), 'playwright.config.mjs'),
+        pathResolve(process.cwd(), 'playwright.config.cjs')
+      ];
+      const playwrightConfigFile = e2eConfig || e2eConfigPaths.find((configPath) => existsSync(configPath));
+      const playwrightArgs = ['test'];
+
+      if(playwrightConfigFile) {
+        playwrightArgs.push('--config', playwrightConfigFile);
+      }
+
+      if(listTests) {
+        playwrightArgs.push('--list');
+      }
+
+      if(passWithNoTests) {
+        playwrightArgs.push('--pass-with-no-tests');
+      }
+
+      if(testNamePattern) {
+        playwrightArgs.push('--grep', testNamePattern);
+      }
+
+      if(maxWorkers) {
+        playwrightArgs.push('--workers', maxWorkers);
+      }
+
+      if(runInBand) {
+        playwrightArgs.push('--workers', '1');
+      }
+
+      if(update) {
+        playwrightArgs.push('--update-snapshots');
+      }
+
+      if(testPathPattern) {
+        playwrightArgs.push(testPathPattern);
+      }
+
+      if(files && files.length > 0) {
+        playwrightArgs.push(...files.filter((file) => /\.e2e\./.test(file)));
+      }
+
+      if(debug) {
+        log(`Playwright options: ${playwrightArgs.join(' ')}`, 'info', quiet);
+      }
+
+      if(useGenerate || useAnalyze || useDebug) {
+        log('AI test helpers currently apply to Vitest unit test runs only; skipping them for Playwright E2E.', 'warn', quiet);
+      }
+
+      await execa(playwrightPath, playwrightArgs, {
+        encoding: 'utf8',
+        env: processEnv,
+        stdio: 'inherit'
+      });
+    }
+
+    spinner.succeed('Testing completed!');
+
     callback(0);
     return 0;
   } catch(error) {
-    log(`\n${cliName} Error: Check for unit test errors and/or coverage.`, 'error', quiet);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    log(`\n${cliName} Error: Check for test failures and coverage issues.`, 'error', quiet);
 
     spinner.fail('Testing failed!');
 
-    if(useDebug) {
+    if(useDebug && runUnit) {
       spinner.start('AI is analyzing test failures...');
 
       try {
@@ -572,7 +661,7 @@ Please provide:
           context: true,
           prompt: `Debug these failed Vitest tests and suggest fixes:
 
-${JSON.stringify(error.message, null, 2)}
+${JSON.stringify(errorMessage, null, 2)}
 
 Test results: ${JSON.stringify(testResults, null, 2)}
 
@@ -593,6 +682,8 @@ Please provide:
           console.error('AI debugging error:', aiError);
         }
       }
+    } else if(useDebug && runE2E) {
+      log('AI debugging assistance currently supports Vitest unit runs only.', 'warn', quiet);
     }
 
     callback(1);

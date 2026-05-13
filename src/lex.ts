@@ -20,6 +20,7 @@ import {init} from './commands/init/init.js';
 import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
+import {packageLambda} from './commands/package-lambda/package-lambda.js';
 import {publish} from './commands/publish/publish.js';
 import {serverless} from './commands/serverless/serverless.js';
 import {storybook} from './commands/storybook/storybook.js';
@@ -181,6 +182,22 @@ program.command('migrate')
   .option('-q, --quiet', 'No Lex notifications printed in the console.')
   .action((cmd) => migrate(cmd, process.exit).then(() => {}));
 
+program.command('package-lambda')
+  .requiredOption('--entry <path>', 'Lambda entry file to bundle.')
+  .option('--copyNodeModule <value...>', 'Runtime node_modules packages to copy into the package after bundling.')
+  .option('--external <value...>', 'Packages or package patterns to keep external from the bundle.')
+  .addOption(new Option('--format <value>', 'JavaScript output format. Default: "cjs".').choices(['cjs', 'esm']).default('cjs'))
+  .option('--mainFields <value>', 'Package fields esbuild should prefer. Default: "module,main".')
+  .option('--minify', 'Minify the bundle.', false)
+  .option('--nodeModulesPath <path>', 'Path to runtime node_modules copied by --copyNodeModule. Default: "./node_modules".')
+  .option('--outfile <path>', 'Bundled output file path inside the package directory.')
+  .option('--output <path>', 'Zip output path. Default: "./lambda-package.zip".')
+  .option('--packageDir <path>', 'Temporary package directory. Default: "./.lex/lambda-package".')
+  .option('--quiet', 'No Lex notifications printed in the console.')
+  .option('--sourcemap', 'Generate a sourcemap.', false)
+  .option('--target <value>', 'esbuild runtime target. Default: "node24".')
+  .action((cmd) => packageLambda(cmd, process.exit).then(() => {}));
+
 program.command('publish')
   .addOption(new Option('--bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch".').choices(['major', 'minor', 'patch', 'beta', 'alpha', 'rc']).default('patch'))
   .option('--newVersion <versionNumber>', 'Publish as a specific version.')
@@ -230,6 +247,8 @@ program.command('test [files...]')
   .option('--config <path>', 'Custom Vitest configuration file path (ie. vitest.config.mjs).')
   .option('--debug', 'Print debugging info about your Vitest config.')
   .option('--detectOpenHandles', 'Attempt to collect and print open handles preventing Vitest from exiting cleanly')
+  .option('--e2e', 'Run Playwright end-to-end tests matching "*.e2e.ts[x]".')
+  .option('--e2eConfig <path>', 'Custom Playwright configuration file path (ie. playwright.config.ts).')
   .option('--environment <n>', 'Target environment. "node" or "web". Default: "node".')
   .option('--env', 'The test environment used for all tests. This can point to any file or node module. Examples: happy-dom, jsdom, node or path/to/my-environment.js.')
   .option('--errorOnDeprecated', 'Make calling deprecated APIs throw helpful error messages.')
@@ -255,6 +274,7 @@ program.command('test [files...]')
   .option('--testNamePattern <regex>', 'Run only tests with a name that matches the regex. ')
   .option('--testPathPattern <regex>', 'A regexp pattern string that is matched against all tests paths before executing the test.')
   .option('--typescript', 'Transpile as Typescript.')
+  .option('--unit', 'Run Vitest unit tests matching "*.test.ts[x]".')
   .option('--update', 'Update snapshots. Runs "vitest --update"')
   .option('--useStderr', 'Divert all output to stderr.')
   .option('--verbose', 'Display individual test results with the test suite hierarchy.')

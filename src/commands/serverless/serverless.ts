@@ -4,6 +4,7 @@
  */
 import boxen from 'boxen';
 import chalk from 'chalk';
+import {randomUUID} from 'crypto';
 import express from 'express';
 import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'fs';
 import {homedir} from 'os';
@@ -54,6 +55,7 @@ interface ServerlessHandler {
 interface ServerlessConfig {
   readonly custom?: {
     readonly 'serverless-offline'?: {
+      readonly bodyLimit?: string;
       readonly cors?: boolean;
       readonly host?: string;
       readonly httpPort?: number;
@@ -66,6 +68,7 @@ interface ServerlessConfig {
 
 interface WebSocketClientLike {
   on(event: string, listener: (...args: any[]) => void): void;
+  readyState?: number;
   send(data: string): void;
 }
 
@@ -387,6 +390,7 @@ const createExpressServer = async (
   outputDir: string,
   httpPort: number,
   host: string,
+  connectionRegistry: Map<string, WebSocketClientLike>,
   quiet: boolean,
   debug: boolean
 ) => {
@@ -406,8 +410,43 @@ const createExpressServer = async (
     }
   });
 
+  // Parse raw websocket management API payloads
+  app.use(express.raw({limit: '10mb', type: 'application/octet-stream'}));
+
+  // Preserve multipart uploads as raw Lambda-style bodies so upload handlers can parse boundaries.
+  app.use(express.raw({
+    limit: config.custom?.['serverless-offline']?.bodyLimit || '25mb',
+    type: (req) => String(req.headers['content-type'] || '').includes('multipart/form-data')
+  }));
+
   // Parse JSON bodies
-  app.use(express.json());
+  app.use(express.json({limit: config.custom?.['serverless-offline']?.bodyLimit || '25mb'}));
+
+  app.post(['/@connections/:connectionId', '/:stage/@connections/:connectionId'], (req, res) => {
+    const connectionId = String(req.params.connectionId || '');
+    const ws = connectionRegistry.get(connectionId);
+
+    if(!ws) {
+      res.status(410).json({message: 'Gone'});
+      return;
+    }
+
+    let body = '';
+
+    if(Buffer.isBuffer(req.body)) {
+      body = req.body.toString('utf8');
+    } else if(typeof req.body === 'string') {
+      body = req.body;
+    } else if(req.body !== undefined && req.body !== null && req.body !== '') {
+      body = JSON.stringify(req.body);
+    }
+
+    if(body) {
+      ws.send(body);
+    }
+
+    res.status(200).json({ok: true});
+  });
 
   // Load GraphQL handler
   const loadGraphQLSchema = async () => {
@@ -609,10 +648,12 @@ const createExpressServer = async (
           console.log(`[Serverless] Handler loaded successfully, type: ${typeof handler}`);
           const wrappedHandler = captureConsoleLogs(handler, quiet);
 
+          const isRawBody = Buffer.isBuffer(req.body);
           const event = {
-            body: req.body,
+            body: isRawBody ? req.body.toString('base64') : req.body,
             headers: req.headers,
             httpMethod: method,
+            isBase64Encoded: isRawBody,
             path: url,
             queryStringParameters: req.query
           };
@@ -673,51 +714,87 @@ const createWebSocketServer = (
   config: ServerlessConfig,
   outputDir: string,
   wsPort: number,
+  connectionRegistry: Map<string, WebSocketClientLike>,
   quiet: boolean,
   debug: boolean
 ) => {
   const wss = new WebSocketServer({port: wsPort});
 
+  const getWebSocketFunctionByRoute = (routeKey: string): string | null => {
+    const functions = config.functions || {};
+    let defaultFunction: string | null = null;
+
+    for(const [functionName, functionConfig] of Object.entries(functions)) {
+      if(functionConfig.events) {
+        for(const event of functionConfig.events) {
+          if(event.websocket) {
+            const route = event.websocket.route || '$connect';
+
+            if(route === routeKey) {
+              return functionName;
+            }
+
+            if(route === '$default' && !defaultFunction) {
+              defaultFunction = functionName;
+            }
+          }
+        }
+      }
+    }
+
+    return defaultFunction;
+  };
+
   wss.on('connection', async (ws: WebSocketClientLike, req: any) => {
     log(`WebSocket connection established: ${req.url}`, 'info', false);
+    const connectionId = randomUUID().replace(/-/g, '').slice(0, 32);
+    connectionRegistry.set(connectionId, ws);
+    const requestUrl = new URL(req.url || '/', `ws://localhost:${wsPort}`);
+    const queryStringParameters = Object.fromEntries(requestUrl.searchParams.entries());
+    const multiValueQueryStringParameters = Object.fromEntries(
+      Array.from(new Set(Array.from(requestUrl.searchParams.keys())))
+        .map((key) => [key, requestUrl.searchParams.getAll(key)])
+    );
+
+    const connectFunction = getWebSocketFunctionByRoute('$connect');
+
+    if(connectFunction && config.functions?.[connectFunction]) {
+      const connectHandler = await loadHandler(config.functions[connectFunction].handler, outputDir);
+
+      if(connectHandler) {
+        const wrappedConnectHandler = captureConsoleLogs(connectHandler, quiet);
+        await wrappedConnectHandler({
+          body: null,
+          multiValueQueryStringParameters,
+          queryStringParameters,
+          requestContext: {
+            apiGateway: {
+              endpoint: `ws://localhost:${wsPort}`
+            },
+            connectionId,
+            eventType: 'CONNECT',
+            routeKey: '$connect'
+          }
+        }, {
+          awsRequestId: 'test-request-id',
+          functionName: connectFunction,
+          functionVersion: '$LATEST',
+          getRemainingTimeInMillis: () => 30000,
+          invokedFunctionArn: `arn:aws:lambda:us-east-1:123456789012:function:${connectFunction}`,
+          logGroupName: `/aws/lambda/${connectFunction}`,
+          logStreamName: 'test-log-stream',
+          memoryLimitInMB: '128'
+        });
+      }
+    }
 
     ws.on('message', async (message: any) => {
       try {
         const data = JSON.parse(message.toString());
 
         // Find matching WebSocket function
-        let matchedFunction = null;
         const functions = config.functions || {};
-
-        if(config.functions) {
-          let defaultFunction: string | null = null;
-
-          for(const [functionName, functionConfig] of Object.entries(functions)) {
-            if(functionConfig.events) {
-              for(const event of functionConfig.events) {
-                if(event.websocket) {
-                  const route = event.websocket.route || '$connect';
-
-                  if(route === data.action) {
-                    matchedFunction = functionName;
-                    break;
-                  }
-
-                  if(route === '$default' && !defaultFunction) {
-                    defaultFunction = functionName;
-                  }
-                }
-              }
-            }
-            if(matchedFunction) {
-              break;
-            }
-          }
-
-          if(!matchedFunction) {
-            matchedFunction = defaultFunction;
-          }
-        }
+        const matchedFunction = getWebSocketFunctionByRoute(String(data.action || '$default'));
 
         if(matchedFunction && functions[matchedFunction]) {
           const handler = await loadHandler(functions[matchedFunction].handler, outputDir);
@@ -726,12 +803,12 @@ const createWebSocketServer = (
             // Wrap handler with console log capture
             const wrappedHandler = captureConsoleLogs(handler, quiet);
             const event = {
-              body: data.body || null,
+              body: message.toString(),
               requestContext: {
                 apiGateway: {
                   endpoint: `ws://localhost:${wsPort}`
                 },
-                connectionId: 'test-connection-id',
+                connectionId,
                 routeKey: data.action || '$default'
               }
             };
@@ -751,11 +828,13 @@ const createWebSocketServer = (
 
             // Handle Lambda response format for WebSocket
             if(result && typeof result === 'object' && result.statusCode) {
-              // This is a Lambda response object, extract the body
-              const body = result.body || '';
-              ws.send(body);
-            } else {
-              // This is a direct response, stringify it
+              // Only send a frame when the handler returned a real body.
+              const body = typeof result.body === 'string' ? result.body : '';
+              if(body) {
+                ws.send(body);
+              }
+            } else if(result !== undefined) {
+              // This is a direct response, stringify it.
               ws.send(JSON.stringify(result));
             }
           } else {
@@ -771,6 +850,43 @@ const createWebSocketServer = (
     });
 
     ws.on('close', () => {
+      connectionRegistry.delete(connectionId);
+      const disconnectFunction = getWebSocketFunctionByRoute('$disconnect');
+
+      if(disconnectFunction && config.functions?.[disconnectFunction]) {
+        void loadHandler(config.functions[disconnectFunction].handler, outputDir)
+          .then((disconnectHandler) => {
+            if(!disconnectHandler) {
+              return;
+            }
+
+            const wrappedDisconnectHandler = captureConsoleLogs(disconnectHandler, quiet);
+            return wrappedDisconnectHandler({
+              body: null,
+              requestContext: {
+                apiGateway: {
+                  endpoint: `ws://localhost:${wsPort}`
+                },
+                connectionId,
+                eventType: 'DISCONNECT',
+                routeKey: '$disconnect'
+              }
+            }, {
+              awsRequestId: 'test-request-id',
+              functionName: disconnectFunction,
+              functionVersion: '$LATEST',
+              getRemainingTimeInMillis: () => 30000,
+              invokedFunctionArn: `arn:aws:lambda:us-east-1:123456789012:function:${disconnectFunction}`,
+              logGroupName: `/aws/lambda/${disconnectFunction}`,
+              logStreamName: 'test-log-stream',
+              memoryLimitInMB: '128'
+            });
+          })
+          .catch((error: Error) => {
+            log(`WebSocket disconnect handler error: ${error.message}`, 'error', false);
+          });
+      }
+
       log('WebSocket connection closed', 'info', false);
     });
   });
@@ -977,6 +1093,7 @@ export const serverless = async (
     const httpPort = finalConfig.custom!['serverless-offline']!.httpPort!;
     const wsPort = finalConfig.custom!['serverless-offline']!.wsPort!;
     const host = finalConfig.custom!['serverless-offline']!.host!;
+    const connectionRegistry = new Map<string, WebSocketClientLike>();
 
     log(`Creating HTTP server on ${host}:${httpPort}`, 'info', quiet);
     log(`Creating WebSocket server on port ${wsPort}`, 'info', quiet);
@@ -987,6 +1104,7 @@ export const serverless = async (
       outputDir,
       httpPort,
       host,
+      connectionRegistry,
       quiet,
       debug
     );
@@ -996,6 +1114,7 @@ export const serverless = async (
       finalConfig,
       outputDir,
       wsPort,
+      connectionRegistry,
       quiet,
       debug
     );
