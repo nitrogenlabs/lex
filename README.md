@@ -1,5 +1,9 @@
 # Lex: The Ultimate React Development CLI
 
+<p align="center">
+  <img src="docs/assets/lex-logo.png" alt="Lex logo" width="520">
+</p>
+
 > **Zero Configuration. Maximum Productivity.**
 
 Lex is the all-in-one development CLI that eliminates the complexity of modern React development. No more juggling webpack configs, testing setups, or build tools. Just install Lex globally and focus on what matters most - building amazing applications.
@@ -315,6 +319,7 @@ export default {
 
   // SWC configuration (defaults to ESM format)
   // SWC is now the default transpiler for all compilation tasks
+  reactCompiler: true,
 
   // Vitest configuration (merged with Lex defaults)
   vitest: {
@@ -345,6 +350,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `outputPath` | `string` | `'./lib'` | Output directory path | `outputPath: './build'` |
 | `packageManager` | `'npm' \| 'yarn'` | `'npm'` | Package manager to use | `packageManager: 'yarn'` |
 | `preset` | `'web' \| 'node' \| 'lambda' \| 'mobile'` | `'web'` | Project preset type | `preset: 'node'` |
+| `reactCompiler` | `boolean \| object` | `false` | Enable React Compiler through SWC, optionally with compiler options | `reactCompiler: true` |
 | `sourceFullPath` | `string` | `path.resolve('./src')` | Absolute source code path | `sourceFullPath: '/absolute/path'` |
 | `sourcePath` | `string` | `'./src'` | Source code directory path | `sourcePath: './app'` |
 | `targetEnvironment` | `'web' \| 'node'` | `'web'` | Target runtime environment | `targetEnvironment: 'node'` |
@@ -379,8 +385,29 @@ SWC is automatically configured and doesn't require additional configuration in 
 | **Output Format** | JavaScript module format | `esm` |
 | **Target** | JavaScript target version | `es2020` |
 | **JSX Runtime** | React JSX transformation | `automatic` |
+| **React Compiler** | Optional React Compiler SWC plugin | `false` |
 | **Decorators** | TypeScript decorators support | `enabled` |
 | **Source Maps** | Debug information | `inline` |
+
+Enable the React Compiler through Lex's SWC pipeline:
+
+```javascript
+export default {
+  reactCompiler: true
+};
+```
+
+You can also pass SWC React Compiler options:
+
+```javascript
+export default {
+  reactCompiler: {
+    compilationMode: 'infer',
+    panicThreshold: 'none',
+    target: '19'
+  }
+};
+```
 
 ### **Vitest Configuration**
 

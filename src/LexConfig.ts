@@ -71,6 +71,7 @@ export interface LexConfigType {
   outputPath?: string;
   packageManager?: 'npm' | 'yarn';
   preset?: 'web' | 'node' | 'lambda' | 'mobile';
+  reactCompiler?: ReactCompilerConfig;
   sourceFullPath?: string;
   sourcePath?: string;
   swc?: SWCOptions;
@@ -81,6 +82,20 @@ export interface LexConfigType {
 }
 
 export type Config = LexConfigType;
+
+export type ReactCompilerConfig = boolean | Record<string, unknown>;
+
+export const reactCompilerPluginName = '@swc/react-compiler';
+
+export const defaultReactCompilerOptions: Record<string, unknown> = {
+  compilationMode: 'infer',
+  panicThreshold: 'none',
+  target: '19'
+};
+
+const isReactCompilerPlugin = (plugin: unknown): boolean => (
+  Array.isArray(plugin) && plugin[0] === reactCompilerPluginName
+);
 
 export const defaultConfigValues: LexConfigType = {
   ai: {
@@ -95,7 +110,6 @@ export const defaultConfigValues: LexConfigType = {
   entryJs: 'index.js',
   env: null,
   eslint: {},
-  vitest: {},
   outputFullPath: pathResolve(cwd, './lib'),
   outputHash: false,
   outputPath: './lib',
@@ -136,6 +150,7 @@ export const defaultConfigValues: LexConfigType = {
   targetEnvironment: 'web',
   useGraphQl: false,
   useTypescript: false,
+  vitest: {},
   webpack: {
     staticPath: './src/static'
   }
@@ -293,6 +308,52 @@ export class LexConfig {
     return dirname(getLexPackageJsonPath());
   }
 
+  static getSWCConfigWithReactCompiler(
+    swcConfig: SWCOptions | undefined = LexConfig.config.swc,
+    reactCompiler: ReactCompilerConfig | undefined = LexConfig.config.reactCompiler
+  ): SWCOptions | undefined {
+    if(reactCompiler === undefined) {
+      return swcConfig;
+    }
+
+    const currentSwcConfig = swcConfig || defaultConfigValues.swc;
+    const currentJsc: Record<string, any> = currentSwcConfig?.jsc || {};
+    const currentExperimental = currentJsc.experimental || {};
+    const plugins = Array.isArray(currentExperimental.plugins)
+      ? currentExperimental.plugins.filter((plugin: unknown) => !isReactCompilerPlugin(plugin))
+      : [];
+
+    const experimental = reactCompiler === false
+      ? {
+        ...currentExperimental,
+        plugins
+      }
+      : {
+        ...currentExperimental,
+        plugins: [
+          ...plugins,
+          [
+            reactCompilerPluginName,
+            typeof reactCompiler === 'object'
+              ? {
+                ...defaultReactCompilerOptions,
+                ...reactCompiler
+              }
+              : defaultReactCompilerOptions
+          ]
+        ]
+      };
+    const swcConfigWithReactCompiler: SWCOptions = {
+      ...currentSwcConfig,
+      jsc: {
+        ...currentJsc,
+        experimental
+      }
+    };
+
+    return swcConfigWithReactCompiler;
+  }
+
   static updateConfig(updatedConfig: LexConfigType): LexConfigType {
     const {outputFullPath, outputPath, sourcePath, sourceFullPath, useTypescript, ai} = updatedConfig;
     const packageDir = getPackageDir();
@@ -318,6 +379,7 @@ export class LexConfig {
     }
 
     LexConfig.config = {...LexConfig.config, ...updatedConfig};
+    LexConfig.config.swc = LexConfig.getSWCConfigWithReactCompiler();
 
     return LexConfig.config;
   }

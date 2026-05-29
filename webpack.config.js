@@ -61,6 +61,7 @@ const {
 const webpackStaticPath = webpackCustom?.staticPath || './src/static';
 
 const {publicPath: _, staticPath: __, ...webpackConfigFiltered} = webpackCustom || {};
+const swcConfig = LexConfig.getSWCConfigWithReactCompiler(lexConfig.swc, lexConfig.reactCompiler);
 
 const plugins = [
   new ProgressPlugin({
@@ -396,18 +397,18 @@ export default (webpackEnv, webpackOptions) => {
           type: 'javascript/esm',
           loader: swcLoaderPath,
           options: {
-            ...LexConfig.config.swc,
+            ...swcConfig,
             jsc: {
-              ...LexConfig.config.swc?.jsc,
+              ...swcConfig?.jsc,
               parser: {
-                ...LexConfig.config.swc?.jsc?.parser,
+                ...swcConfig?.jsc?.parser,
                 tsx: false,
                 dynamicImport: true
               },
-              target: LexConfig.config.swc?.jsc?.target || 'es2020'
+              target: swcConfig?.jsc?.target || 'es2020'
             },
             module: {
-              ...LexConfig.config.swc?.module,
+              ...swcConfig?.module,
               type: 'es6'
             }
           },
@@ -426,7 +427,7 @@ export default (webpackEnv, webpackOptions) => {
           type: 'javascript/esm',
           loader: swcLoaderPath,
           options: {
-            ...LexConfig.config.swc
+            ...swcConfig
           },
           resolve: {
             symlinks: true

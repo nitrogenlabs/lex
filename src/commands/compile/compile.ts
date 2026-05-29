@@ -52,7 +52,8 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
   await LexConfig.parseConfig(cmd);
 
-  const {outputFullPath, sourceFullPath, swc: swcConfig, useTypescript} = LexConfig.config;
+  const {outputFullPath, reactCompiler, sourceFullPath, swc: parsedSwcConfig, useTypescript} = LexConfig.config;
+  const swcConfig = LexConfig.getSWCConfigWithReactCompiler(parsedSwcConfig, reactCompiler);
   const outputDir: string = outputPath
     ? pathResolve(process.cwd(), outputPath)
     : (outputFullPath || pathResolve(process.cwd(), './lib'));
@@ -277,7 +278,6 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       }
 
       const sourceCode = readFileSync(sourcePath, 'utf8');
-      const isTSX = file.endsWith('.tsx');
       const swcOptions: Partial<SWCOptions> = {
         ...swcConfig,
         filename: file,

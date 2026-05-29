@@ -42,6 +42,7 @@ vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {
       outputFullPath: '/mock/output',
+      reactCompiler: undefined,
       sourceFullPath: '/mock/source',
       swc: {
         inlineSourcesContent: true,
@@ -75,6 +76,31 @@ vi.mock('../../LexConfig.js', async () => ({
       },
       useTypescript: false
     },
+    getSWCConfigWithReactCompiler: vi.fn((swc, reactCompiler) => {
+      if(!reactCompiler) {
+        return swc;
+      }
+
+      return {
+        ...swc,
+        jsc: {
+          ...swc?.jsc,
+          experimental: {
+            plugins: [
+              [
+                '@swc/react-compiler',
+                {
+                  compilationMode: 'infer',
+                  panicThreshold: 'none',
+                  target: '19',
+                  ...(typeof reactCompiler === 'object' ? reactCompiler : {})
+                }
+              ]
+            ]
+          }
+        }
+      };
+    }),
     getTypeScriptDeclarationFlags: vi.fn(() => [
       '--emitDeclarationOnly',
       '--declaration',
@@ -117,6 +143,7 @@ describe('compile', () => {
     copyFiles.mockResolvedValue(undefined);
     copyConfiguredFiles.mockResolvedValue(undefined);
     removeFiles.mockResolvedValue(undefined);
+    LexConfig.config.reactCompiler = undefined;
     LexConfig.config.useTypescript = false;
     LexConfig.config.swc = {};
     resolveBinaryPath.mockImplementation((binary) => {
@@ -622,6 +649,48 @@ describe('compile', () => {
                 runtime: 'automatic'
               })
             })
+          })
+        })
+      );
+    });
+
+    it('should inject React Compiler options into SWC transform calls', async () => {
+      LexConfig.config.reactCompiler = true;
+      LexConfig.config.swc = {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true
+          }
+        }
+      } as any;
+
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.tsx']);
+
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
+
+      (transform as MockedFunction<typeof transform>)
+        .mockResolvedValue({code: 'export const Test = () => {};', map: ''} as any);
+
+      const result = await compile({});
+
+      expect(result).toBe(0);
+      expect(transform).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          jsc: expect.objectContaining({
+            experimental: {
+              plugins: [
+                [
+                  '@swc/react-compiler',
+                  {
+                    compilationMode: 'infer',
+                    panicThreshold: 'none',
+                    target: '19'
+                  }
+                ]
+              ]
+            }
           })
         })
       );
