@@ -15,6 +15,7 @@ import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 import {existsSync} from 'fs';
 import {sync as globSync} from 'glob';
 import HtmlWebPackPlugin from 'html-webpack-plugin';
+import ImageMinimizerPlugin from 'image-minimizer-webpack-plugin';
 import isEmpty from 'lodash/isEmpty.js';
 import {createRequire} from 'module';
 import {resolve as pathResolve} from 'path';
@@ -558,31 +559,7 @@ export default (webpackEnv, webpackOptions) => {
           type: 'asset/resource',
           generator: {
             filename: '[name].[hash][ext]'
-          },
-          use: isProduction ? [
-            {
-              loader: 'image-webpack-loader',
-              options: {
-                mozjpeg: {
-                  progressive: true,
-                  quality: 65
-                },
-                optipng: {
-                  enabled: false
-                },
-                pngquant: {
-                  quality: [0.65, 0.90],
-                  speed: 4
-                },
-                gifsicle: {
-                  interlaced: false
-                },
-                webp: {
-                  quality: 75
-                }
-              }
-            }
-          ] : []
+          }
         },
         {
           test: /\.json$/,
@@ -607,7 +584,41 @@ export default (webpackEnv, webpackOptions) => {
       isProduction && isWeb
         ? {
           minimizer: [
-            new CssMinimizerPlugin()
+            new CssMinimizerPlugin(),
+            new ImageMinimizerPlugin({
+              include: staticPathFull,
+              minimizer: [
+                {
+                  filter: (_source, sourcePath) => /\.(gif|jpe?g|png|webp)$/i.test(sourcePath),
+                  implementation: ImageMinimizerPlugin.sharpMinify,
+                  options: {
+                    encodeOptions: {
+                      jpeg: {
+                        progressive: true,
+                        quality: 65
+                      },
+                      png: {
+                        quality: 90
+                      },
+                      webp: {
+                        quality: 75
+                      }
+                    }
+                  }
+                },
+                {
+                  filter: (_source, sourcePath) => /\.svg$/i.test(sourcePath),
+                  implementation: ImageMinimizerPlugin.svgoMinify,
+                  options: {
+                    encodeOptions: {
+                      multipass: true,
+                      plugins: ['preset-default']
+                    }
+                  }
+                }
+              ],
+              test: /\.(gif|jpe?g|png|svg|webp)$/i
+            })
           ],
           runtimeChunk: 'single',
           splitChunks: {
