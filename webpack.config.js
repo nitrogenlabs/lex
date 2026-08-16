@@ -666,7 +666,7 @@ export default (webpackEnv, webpackOptions) => {
       fallback: {
         assert: relativeNodePath('assert', dirName),
         buffer: relativeNodePath('buffer', dirName),
-        crypto: relativeNodePath('crypto-js', dirName),
+        crypto: false,
         http: relativeNodePath('stream-http', dirName),
         https: relativeNodePath('https-browserify', dirName),
         os: relativeNodePath('os-browserify/browser.js', dirName),

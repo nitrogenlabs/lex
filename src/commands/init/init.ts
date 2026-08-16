@@ -4,11 +4,11 @@
  */
 import {execa} from 'execa';
 import {renameSync, writeFileSync} from 'fs';
+import pacote from 'pacote';
 import {resolve as pathResolve} from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner, getPackageJson, setPackageJson} from '../../utils/app.js';
-import {getDirName} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
 export interface InitOptions {
@@ -38,8 +38,6 @@ export const init = async (
   spinner.start('Downloading app...');
   const tmpPath: string = pathResolve(cwd, './.lexTmp');
   const appPath: string = pathResolve(cwd, `./${appName}`);
-  const dirName = getDirName();
-  const dnpPath: string = pathResolve(dirName, '../../../node_modules/download-npm-package/bin/cli.js');
 
   // Get custom configuration
   await LexConfig.parseConfig(cmd);
@@ -59,7 +57,7 @@ export const init = async (
   }
 
   try {
-    await execa(dnpPath, [appModule, tmpPath], {});
+    await pacote.extract(appModule, tmpPath);
 
     // Stop spinner and update status
     spinner.succeed('Successfully downloaded app!');
@@ -77,7 +75,7 @@ export const init = async (
 
   // Move into configured directory
   try {
-    renameSync(`${tmpPath}/${appModule}`, appPath);
+    renameSync(tmpPath, appPath);
   } catch(_error) {
     log(`\n${cliName} Error: There was an error copying ${appModule} to the current working directory.`, 'error', quiet);
     callback(1);

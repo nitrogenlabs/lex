@@ -8,6 +8,14 @@ declare module 'lodash/*.js' {
   export default value;
 }
 
+declare module 'pacote' {
+  const pacote: {
+    extract: (spec: string, destination: string, options?: Record<string, unknown>) => Promise<void>;
+  };
+
+  export default pacote;
+}
+
 declare module 'ws' {
   export class WebSocketServer {
     constructor(options?: any);

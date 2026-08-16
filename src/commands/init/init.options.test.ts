@@ -1,8 +1,14 @@
 import {execa} from 'execa';
+import pacote from 'pacote';
 
 import {init} from './init.js';
 
 vi.mock('execa');
+vi.mock('pacote', async () => ({
+  default: {
+    extract: vi.fn()
+  }
+}));
 vi.mock('fs', async () => ({
   existsSync: vi.fn(() => true),
   readFileSync: vi.fn(() => '{}'),
@@ -56,6 +62,7 @@ describe('init options', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (pacote.extract as MockedFunction<typeof pacote.extract>).mockResolvedValue(undefined);
   });
 
   afterAll(() => {

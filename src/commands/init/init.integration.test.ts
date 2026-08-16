@@ -1,9 +1,15 @@
 import {execa} from 'execa';
+import pacote from 'pacote';
 
 import {init} from './init.js';
 
 vi.mock('execa');
 vi.mock('fs');
+vi.mock('pacote', async () => ({
+  default: {
+    extract: vi.fn()
+  }
+}));
 vi.mock('path');
 vi.mock('../../LexConfig.js');
 vi.mock('../../utils/app.js', async () => ({
@@ -38,6 +44,7 @@ describe('init integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+    (pacote.extract as MockedFunction<typeof pacote.extract>).mockResolvedValue(undefined);
   });
 
   afterAll(() => {
@@ -71,7 +78,7 @@ describe('init integration', () => {
   });
 
   it('should handle initialization errors', async () => {
-    (execa as MockedFunction<typeof execa>).mockRejectedValueOnce(new Error('Download failed'));
+    (pacote.extract as MockedFunction<typeof pacote.extract>).mockRejectedValueOnce(new Error('Download failed'));
     const result = await init('invalid-app', 'invalid-package', {});
 
     expect(result).toBe(1);
