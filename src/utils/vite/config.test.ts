@@ -1,12 +1,13 @@
-import {mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
+import {mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
 
 import {defaultConfigValues, LexConfig} from '../../LexConfig.js';
-import {createLexViteConfig} from './config.js';
+import {browserGlobalModules, createLexViteConfig, getBrowserGlobalInjectOptions, resolveProjectPackage} from './config.js';
 
 describe('Lex Vite config', () => {
   const directory = join(tmpdir(), 'lex-vite-config-test');
+  const originalCwd = process.cwd();
   const originalConfig = LexConfig.config;
 
   beforeEach(() => {
@@ -19,8 +20,20 @@ describe('Lex Vite config', () => {
   });
 
   afterEach(() => {
+    process.chdir(originalCwd);
     LexConfig.config = originalConfig;
     rmSync(directory, {force: true, recursive: true});
+  });
+
+  it('resolves browser dependencies hoisted above a workspace package', () => {
+    const workspacePath = join(directory, 'apps/ui');
+    const packagePath = join(directory, 'node_modules/example-package');
+    mkdirSync(workspacePath, {recursive: true});
+    mkdirSync(packagePath, {recursive: true});
+    writeFileSync(join(packagePath, 'browser.js'), 'export default {};');
+    process.chdir(workspacePath);
+
+    expect(resolveProjectPackage('example-package/browser.js')).toBe(realpathSync(join(packagePath, 'browser.js')));
   });
 
   it('uses a script entry and includes the Lex plugin stack', () => {
@@ -32,6 +45,8 @@ describe('Lex Vite config', () => {
 
     expect(config.appType).toBe('custom');
     expect(config.build?.rolldownOptions?.input).toBe(join(directory, 'src/index.js'));
+    expect(config.define?.global).toBe('globalThis');
+    expect(config.optimizeDeps?.include).toEqual(['buffer/index.js', 'process/browser.js']);
     expect(pluginNames).toEqual(expect.arrayContaining([
       'lex-empty-crypto',
       'lex-node-polyfills',
@@ -43,8 +58,31 @@ describe('Lex Vite config', () => {
     ]));
 
     const output = config.build?.rolldownOptions?.output as any;
+
     expect(output.manualChunks('/project/node_modules/react/index.js')).toBe('vendors');
     expect(output.manualChunks('/project/src/index.js')).toBeUndefined();
+  });
+
+  it('injects browser globals through package imports that Vite can optimize', () => {
+    expect(browserGlobalModules).toEqual({
+      Buffer: ['buffer/index.js', 'Buffer'],
+      process: ['process/browser.js', 'default']
+    });
+    expect(getBrowserGlobalInjectOptions('serve')).toEqual({
+      ...browserGlobalModules,
+      exclude: [
+        '**/node_modules/buffer/**',
+        '**/node_modules/process/**'
+      ]
+    });
+    expect(getBrowserGlobalInjectOptions('build')).toEqual({
+      Buffer: [resolveProjectPackage('buffer/index.js'), 'Buffer'],
+      exclude: [
+        '**/node_modules/buffer/**',
+        '**/node_modules/process/**'
+      ],
+      process: [resolveProjectPackage('process/browser.js'), 'default']
+    });
   });
 
   it('uses HTML as the web entry and merges project Vite options', () => {
@@ -63,16 +101,24 @@ describe('Lex Vite config', () => {
     LexConfig.config.libraryTarget = 'umd';
 
     const library = createLexViteConfig({command: 'build'}).build?.lib;
+
     expect(library).toEqual(expect.objectContaining({formats: ['umd'], name: 'Example'}));
     expect((library as any).fileName()).toBe('index.js');
 
     LexConfig.config.libraryTarget = 'commonjs2';
+
     expect((createLexViteConfig({command: 'build'}).build?.lib as any).formats).toEqual(['cjs']);
+
     LexConfig.config.libraryTarget = 'window';
+
     expect((createLexViteConfig({command: 'build'}).build?.lib as any).formats).toEqual(['iife']);
+
     LexConfig.config.libraryTarget = undefined;
+
     expect((createLexViteConfig({command: 'build'}).build?.lib as any).formats).toEqual(['es']);
+
     const ssrPlugins = (createLexViteConfig({command: 'serve', ssr: true}).plugins || []).flat();
+
     expect(ssrPlugins).toHaveLength(2);
   });
 
@@ -86,23 +132,28 @@ describe('Lex Vite config', () => {
     const findPlugin = (name: string) => plugins.find((plugin) => plugin?.name === name);
 
     const crypto = findPlugin('lex-empty-crypto');
+
     expect(crypto.resolveId('crypto')).toBe('\0lex-empty-crypto');
     expect(crypto.resolveId('other')).toBeNull();
     expect(crypto.load('\0lex-empty-crypto')).toContain('webcrypto');
 
     const polyfills = findPlugin('lex-node-polyfills');
+
     expect(polyfills.resolveId('node:path')).toContain('path-browserify/index.js');
     expect(polyfills.resolveId('fs')).toBeNull();
 
     const graphql = findPlugin('lex-graphql');
+
     expect(graphql.load(graphqlFile)).toContain('query Viewer');
     expect(graphql.load(sourceFile)).toBeNull();
 
     const swc = findPlugin('lex-swc');
-    expect((await swc.transform(readFileSync(sourceFile, 'utf8'), sourceFile)).code).toContain("from 'react'");
+
+    expect((await swc.transform(readFileSync(sourceFile, 'utf8'), sourceFile)).code).toContain('from \'react\'');
     expect(await swc.transform('test', '/outside/file.ts')).toBeNull();
 
     const importMeta = findPlugin('lex-import-meta-compatibility');
+
     expect(importMeta.transform('export default import.meta.url;', sourceFile)).toContain('document.currentScript');
     expect(importMeta.transform('export default true;', sourceFile)).toBeNull();
 
@@ -111,6 +162,7 @@ describe('Lex Vite config', () => {
       'asset.txt': {source: 'asset', type: 'asset'},
       'entry.js': {code: 'code', type: 'chunk'}
     });
+
     expect(emitFile).toHaveBeenCalledWith(expect.objectContaining({fileName: 'bundle-report.json'}));
   });
 
@@ -124,16 +176,19 @@ describe('Lex Vite config', () => {
     const assets = plugins.find((plugin) => plugin?.name === 'lex-assets-dev');
 
     await assets.buildStart();
+
     expect(assets.transformIndexHtml('<head></head>')).toBe('<head></head>');
 
     let middleware: any;
     assets.configureServer({middlewares: {use: (handler: any) => (middleware = handler)}});
     const next = vi.fn();
     await middleware({}, {}, next);
+
     expect(next).toHaveBeenCalledOnce();
 
     const response = {end: vi.fn(), setHeader: vi.fn(), statusCode: 0};
     await middleware({url: '/file.txt'}, response, next);
+
     expect(response.statusCode).toBe(200);
     expect(response.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain');
     expect(response.end).toHaveBeenCalled();
@@ -143,6 +198,7 @@ describe('Lex Vite config', () => {
       .png()
       .toFile(join(directory, 'src/images/logo.png'));
     await assets.buildStart();
+
     expect(assets.transformIndexHtml('<head></head>')).toContain('apple-touch-icon');
   });
 });

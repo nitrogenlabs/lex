@@ -211,7 +211,7 @@ export default {
 # Standard production build
 lex build --mode production
 
-# With SWC (faster)
+# Force the SWC pipeline instead of the web default
 lex build --bundler swc
 
 # With AI optimization analysis
@@ -278,7 +278,7 @@ Lex works seamlessly with popular React frameworks and libraries:
 - ✅ **Create React App** - Migrate existing CRA projects
 - ✅ **Next.js** - Use Lex for testing and building
 - ✅ **Gatsby** - Integrate Lex workflows
-- ✅ **Vite** - Alternative to Vite for complex projects
+- ✅ **Vite** - Built-in web development and production bundling
 - ✅ **TypeScript** - Full TypeScript support out of the box
 - ✅ **Tailwind CSS** - Automatic Tailwind integration
 - ✅ **Storybook** - Built-in Storybook support
@@ -315,8 +315,13 @@ export default {
   },
 
   // SWC configuration (defaults to ESM format)
-  // SWC is now the default transpiler for all compilation tasks
+  // SWC is the default compiler for non-web targets
   reactCompiler: true,
+
+  // Vite configuration for web development and production builds
+  vite: {
+    staticPath: './src/static'
+  },
 
   // Vitest configuration (merged with Lex defaults)
   vitest: {
@@ -366,7 +371,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 
 ### **SWC Configuration**
 
-SWC (Speedy Web Compiler) is now the default transpiler for all TypeScript and JavaScript compilation in Lex. SWC provides:
+SWC (Speedy Web Compiler) powers non-web compilation and Lex's source transformation inside Vite. SWC provides:
 
 - **10-100x faster** compilation than Babel
 - **Faster than esbuild** for TypeScript compilation
@@ -457,10 +462,56 @@ You can also specify ESLint rules in your `lex.config.js` file, but this is less
 
 ### **Vite Configuration**
 
+Vite is the default for `web` projects. Lex merges the `vite` object with its required plugin stack, so standard Vite options such as `base`, `server`, and `resolve` can be supplied alongside Lex's `staticPath` option. Project plugins are appended to Lex's built-in plugins.
+
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
 | `vite.staticPath` | `string` | `'./src/static'` | Static assets copied to the output root | `vite: { staticPath: './assets' }` |
 | `vite.*` | `Vite UserConfig` | `undefined` | Additional Vite configuration merged with Lex defaults | `vite: { base: '/app/' }` |
+
+Web builds provide dynamic-import code splitting, GraphQL document loading, PostCSS, source maps, and browser shims for `assert`, `buffer`, `http`, `https`, `os`, `path`, `process`, `stream`, `util`, and `vm`. `crypto` remains an empty browser shim, matching the previous Lex behavior.
+
+Lex also processes these conventional asset locations:
+
+| Source | Output | Behavior |
+|--------|--------|----------|
+| `vite.staticPath` | Output root | Recursively copied |
+| `src/images` | `images` | Copied and optimized |
+| `src/fonts` | `fonts` | Copied |
+| `src/docs` | `docs` | Copied |
+| `src/icons/*.svg` | `icons/icons.svg` | Combined into an optimized SVG sprite |
+| `src/images/logo.png` | Output root | Generates favicons, manifests, `open-graph.png`, and `twitter.png` |
+
+Production builds optimize GIF, JPEG, PNG, SVG, and WebP assets. Compressible CSS, HTML, JavaScript, JSON, SVG, text, and XML files of at least 8 KiB receive a `.gz` sidecar.
+
+### **Migrating from Lex 1.x**
+
+Lex 2 is a breaking migration from Webpack to Vite for web projects. Non-web projects use SWC.
+
+Update the configuration property:
+
+```javascript
+// Lex 1.x
+export default {
+  webpack: {
+    staticPath: './src/static'
+  }
+};
+
+// Lex 2.x
+export default {
+  vite: {
+    staticPath: './src/static'
+  }
+};
+```
+
+- Remove project references to Lex's former `webpack.config.js` and Webpack-specific Lex options.
+- Use `lex build --bundler vite` for an explicit web build or rely on the `web` preset default.
+- Use `lex build --bundler swc` for Node, Lambda, mobile, and library compilation when needed.
+- Keep native `import()` expressions; Vite creates dynamic chunks without additional configuration.
+- Put pass-through public files in `vite.staticPath`. The image, font, document, icon, favicon, optimization, and gzip behavior described above is built in.
+- Use `lex config vite` to inspect the resolved Vite configuration.
 
 ### **Library Configuration**
 

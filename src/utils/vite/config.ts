@@ -2,10 +2,10 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {transform} from '@swc/core';
 import inject from '@rollup/plugin-inject';
+import {transform} from '@swc/core';
 import {existsSync, readFileSync} from 'fs';
-import {extname, resolve} from 'path';
+import {dirname, extname, resolve} from 'path';
 import {mergeConfig} from 'vite';
 
 import {LexConfig} from '../../LexConfig.js';
@@ -14,6 +14,16 @@ import {generateLexFavicons, getDevAsset} from './assets.js';
 import type {InlineConfig, Plugin} from 'vite';
 
 const createInjectPlugin = inject as unknown as (options: Record<string, unknown>) => Plugin;
+
+export const browserGlobalModules = {
+  Buffer: ['buffer/index.js', 'Buffer'],
+  process: ['process/browser.js', 'default']
+} as const;
+
+const browserGlobalInjectExcludes = [
+  '**/node_modules/buffer/**',
+  '**/node_modules/process/**'
+];
 
 export interface LexViteOptions {
   readonly analyze?: boolean;
@@ -76,7 +86,9 @@ const nodePolyfillsPlugin = (): Plugin => ({
 
 const graphqlPlugin = (): Plugin => ({
   load(id) {
-    if(!/\.(gql|graphql)$/.test(id)) return null;
+    if(!/\.(gql|graphql)$/.test(id)) {
+      return null;
+    }
     const source = JSON.stringify(readFileSync(id, 'utf8'));
     return `import gql from 'graphql-tag'; export default gql(${source});`;
   },
@@ -85,9 +97,12 @@ const graphqlPlugin = (): Plugin => ({
 
 const swcPlugin = (sourcePath: string): Plugin => ({
   enforce: 'pre',
+  name: 'lex-swc',
   async transform(source, id) {
     const cleanId = id.split('?')[0];
-    if(!cleanId.startsWith(sourcePath) || !/\.[jt]sx?$/.test(cleanId) || /\.(test|spec|integration|e2e)\.[jt]sx?$/.test(cleanId)) return null;
+    if(!cleanId.startsWith(sourcePath) || !/\.[jt]sx?$/.test(cleanId) || /\.(test|spec|integration|e2e)\.[jt]sx?$/.test(cleanId)) {
+      return null;
+    }
 
     const swcConfig = LexConfig.getSWCConfigWithReactCompiler();
     const result = await transform(source, {
@@ -102,8 +117,7 @@ const swcPlugin = (sourcePath: string): Plugin => ({
       code: needsReact ? `import React from 'react';\n${result.code}` : result.code,
       map: result.map || null
     };
-  },
-  name: 'lex-swc'
+  }
 });
 
 const importMetaCompatibilityPlugin = (sourcePath: string): Plugin => ({
@@ -111,7 +125,9 @@ const importMetaCompatibilityPlugin = (sourcePath: string): Plugin => ({
   name: 'lex-import-meta-compatibility',
   transform(source, id) {
     const cleanId = id.split('?')[0];
-    if(!cleanId.startsWith(sourcePath) || !source.includes('import.meta.url')) return null;
+    if(!cleanId.startsWith(sourcePath) || !source.includes('import.meta.url')) {
+      return null;
+    }
 
     const replacement = '(typeof document !== "undefined" && document.currentScript && document.currentScript.src ? new URL(document.currentScript.src, window.location.href).href : (typeof window !== "undefined" ? new URL("", window.location.href).href : ""))';
     return source.replaceAll('import.meta.url', replacement);
@@ -128,18 +144,24 @@ const assetsDevPlugin = (): Plugin => {
     },
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
-        if(!request.url) return next();
+        if(!request.url) {
+          return next();
+        }
         const asset = await getDevAsset(LexConfig.config, request.url);
-        if(!asset) return next();
+        if(!asset) {
+          return next();
+        }
 
         response.statusCode = 200;
         response.setHeader('Content-Type', contentTypes[extname(request.url.split('?')[0])] || 'application/octet-stream');
-        response.end(asset);
+        return response.end(asset);
       });
     },
     name: 'lex-assets-dev',
     transformIndexHtml(html) {
-      if(faviconHtml.length === 0) return html;
+      if(faviconHtml.length === 0) {
+        return html;
+      }
       return html.replace('</head>', `    ${faviconHtml.join('\n    ')}\n  </head>`);
     }
   };
@@ -147,7 +169,9 @@ const assetsDevPlugin = (): Plugin => {
 
 const analyzerPlugin = (enabled: boolean): Plugin => ({
   generateBundle(_options, bundle) {
-    if(!enabled) return;
+    if(!enabled) {
+      return;
+    }
 
     const report = Object.entries(bundle).map(([fileName, output]) => ({
       fileName,
@@ -163,19 +187,49 @@ const analyzerPlugin = (enabled: boolean): Plugin => ({
 });
 
 const getLibraryFormats = (libraryTarget?: string): Array<'cjs' | 'es' | 'iife' | 'umd'> => {
-  if(libraryTarget === 'commonjs' || libraryTarget === 'commonjs2') return ['cjs'];
-  if(libraryTarget === 'var' || libraryTarget === 'window') return ['iife'];
-  if(libraryTarget === 'umd') return ['umd'];
+  if(libraryTarget === 'commonjs' || libraryTarget === 'commonjs2') {
+    return ['cjs'];
+  }
+  if(libraryTarget === 'var' || libraryTarget === 'window') {
+    return ['iife'];
+  }
+  if(libraryTarget === 'umd') {
+    return ['umd'];
+  }
   return ['es'];
 };
 
-const resolveProjectPackage = (packageName: string): string => {
-  const projectPackage = resolve(process.cwd(), 'node_modules', packageName);
-  return existsSync(projectPackage) ? projectPackage : resolve(LexConfig.getLexDir(), 'node_modules', packageName);
+const findNodeModulesPackage = (startPath: string, packageName: string): string | undefined => {
+  let currentPath = resolve(startPath);
+
+  while(true) {
+    const candidatePath = resolve(currentPath, 'node_modules', packageName);
+    if(existsSync(candidatePath)) {
+      return candidatePath;
+    }
+
+    const parentPath = dirname(currentPath);
+    if(parentPath === currentPath) {
+      return undefined;
+    }
+    currentPath = parentPath;
+  }
 };
 
+export const resolveProjectPackage = (packageName: string): string => findNodeModulesPackage(process.cwd(), packageName)
+    || findNodeModulesPackage(LexConfig.getLexDir(), packageName)
+    || resolve(LexConfig.getLexDir(), 'node_modules', packageName);
+
+export const getBrowserGlobalInjectOptions = (command: LexViteOptions['command']): Record<string, unknown> => ({
+  ...(command === 'serve' ? browserGlobalModules : {
+    Buffer: [resolveProjectPackage('buffer/index.js'), 'Buffer'],
+    process: [resolveProjectPackage('process/browser.js'), 'default']
+  }),
+  exclude: browserGlobalInjectExcludes
+});
+
 export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
-  const config = LexConfig.config;
+  const {config} = LexConfig;
   const sourcePath = config.sourceFullPath || resolve(process.cwd(), config.sourcePath || './src');
   const outputPath = config.outputFullPath || resolve(process.cwd(), config.outputPath || './lib');
   const entryPath = resolve(sourcePath, options.entry || config.entryJs || 'index.js');
@@ -203,7 +257,7 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
           }
         }
       },
-      sourcemap: config.swc?.sourceMaps ? true : false,
+      sourcemap: !!config.swc?.sourceMaps,
       ssr: options.ssr ? entryPath : false,
       target: config.swc?.jsc?.target?.toString() || 'es2020'
     },
@@ -213,24 +267,28 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
       postcss: resolve(LexConfig.getLexDir(), 'postcss.config.js')
     },
     define: {
+      global: 'globalThis',
       'process.env.NODE_ENV': JSON.stringify(options.mode || (options.command === 'build' ? 'production' : 'development'))
     },
     envDir: process.cwd(),
     logLevel: options.quiet ? 'silent' : 'info',
     mode: options.mode || (options.command === 'build' ? 'production' : 'development'),
+    optimizeDeps: options.ssr ? undefined : {
+      include: ['buffer/index.js', 'process/browser.js']
+    },
     plugins: [
       ...(options.ssr ? [] : [
         emptyCryptoPlugin(),
         nodePolyfillsPlugin(),
-        createInjectPlugin({
-          Buffer: [resolveProjectPackage('buffer/index.js'), 'Buffer'],
-          global: [resolveProjectPackage('global/window.js'), 'default'],
-          process: [resolveProjectPackage('process/browser.js'), 'default']
-        })
+        createInjectPlugin(getBrowserGlobalInjectOptions(options.command))
       ]),
       swcPlugin(sourcePath),
       graphqlPlugin(),
-      ...(options.ssr ? [] : [importMetaCompatibilityPlugin(sourcePath), assetsDevPlugin(), analyzerPlugin(Boolean(options.analyze))])
+      ...(options.ssr ? [] : [
+        importMetaCompatibilityPlugin(sourcePath),
+        assetsDevPlugin(),
+        analyzerPlugin(Boolean(options.analyze))
+      ])
     ],
     publicDir: false,
     resolve: {
@@ -239,7 +297,7 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
         'core-js': resolveProjectPackage('core-js'),
         global: resolveProjectPackage('global'),
         'graphql-tag': resolveProjectPackage('graphql-tag'),
-        randombytes: resolve(LexConfig.getLexDir(), 'node_modules/randombytes'),
+        randombytes: resolveProjectPackage('randombytes'),
         react: resolveProjectPackage('react'),
         'react-dom': resolveProjectPackage('react-dom'),
         'regenerator-runtime': resolveProjectPackage('regenerator-runtime')

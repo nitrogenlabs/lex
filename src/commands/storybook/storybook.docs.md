@@ -19,7 +19,7 @@ The main function that starts Storybook development server or builds a static si
   - `static?: boolean` - Whether to build a static Storybook site instead of starting dev server (defaults to false)
   - `useLexConfig?: boolean` - Whether to prefer Lex's Storybook configuration over the project's config (defaults to false)
   - `variables?: string` - JSON string of environment variables to set
-  - `verbose?: boolean` - Whether to show verbose output including webpack progress details (defaults to false)
+  - `verbose?: boolean` - Whether to show unfiltered Storybook builder output (defaults to false)
 - `callback`: An optional callback function that receives the exit status code, defaults to an empty function
 
 #### Returns
@@ -64,7 +64,7 @@ export type StorybookCallback = (status: number) => void;
 - **Error Handling**: Provides detailed error messages for Storybook issues
 - **Custom CLI Name**: Supports custom CLI name for output messages
 - **Quiet Mode**: Supports suppressing output for automated usage
-- **Verbose Mode**: Shows detailed webpack progress and build information
+- **Verbose Mode**: Shows detailed Storybook builder output
 - **Tailwind CSS Integration**: Automatically detects and integrates Tailwind CSS files
 - **Progress Tracking**: Shows real-time build progress with percentage updates
 - **Output Filtering**: Intelligently filters and beautifies Storybook output
@@ -165,20 +165,14 @@ The command automatically detects Tailwind CSS files in your project:
 
 The command provides intelligent output filtering:
 
-- **Normal Mode**: Shows essential Storybook messages, hides webpack progress details
-- **Verbose Mode**: Shows all output including webpack progress details
+- **Normal Mode**: Shows essential Storybook messages and hides low-level builder details
+- **Verbose Mode**: Shows all Storybook builder output
 - **Progress Tracking**: Displays real-time build progress with percentage updates
 - **Color Coding**: Uses chalk for better visual distinction of different message types
 
 ## Supported Storybook Frameworks
 
-The command supports all major Storybook frameworks:
-
-- React (`@storybook/react`)
-- Vue (`@storybook/vue`)
-- Angular (`@storybook/angular`)
-- Web Components (`@storybook/web-components`)
-- Generic Storybook (`storybook`)
+Lex's included configuration uses React with `@storybook/react-vite`. Other frameworks remain available through a project-owned Storybook configuration and project-installed framework package.
 
 ## Error Handling
 

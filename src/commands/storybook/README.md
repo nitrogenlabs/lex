@@ -5,7 +5,7 @@ The Storybook command in Lex provides a convenient way to start Storybook develo
 ## Features
 
 - **Automatic Story Detection**: Finds story files using common patterns
-- **Framework Support**: Works with React, Vue, Angular, Web Components, and generic Storybook
+- **Framework Support**: Includes the React Vite framework and supports project-owned Storybook configurations
 - **Development & Static Modes**: Start dev server or build static site
 - **Custom Configuration**: Support for custom Storybook config directories
 - **Lex Configuration**: Use Lex's built-in Storybook configuration to avoid conflicts
@@ -18,28 +18,18 @@ The Storybook command in Lex provides a convenient way to start Storybook develo
 
 ## Installation
 
-The Storybook command is included with Lex and includes Storybook v9 core packages. Make sure you have Storybook installed in your project:
+The Storybook command is included with Lex and includes Storybook v10 with the React Vite framework:
 
 ```bash
-# For React (recommended)
+# React with Vite
 npm install --save-dev @storybook/react @storybook/react-vite vite
-
-# For Vue
-npm install --save-dev @storybook/vue @storybook/vue-webpack5
-
-# For Angular
-npm install --save-dev @storybook/angular @storybook/angular-webpack5
-
-# For Web Components
-npm install --save-dev @storybook/web-components @storybook/web-components-webpack5
-
-# Generic Storybook
-npm install --save-dev storybook
 ```
+
+Other Storybook frameworks can be used through a project-owned `.storybook` configuration and project-installed framework package. Lex's built-in configuration targets React with Vite.
 
 ## Included Dependencies
 
-Lex includes the following Storybook v9 packages:
+Lex includes the following Storybook v10 packages:
 
 ### Core Packages
 
@@ -82,7 +72,7 @@ lex storybook [options]
 - `--static` - Build a static Storybook site instead of starting dev server
 - `--useLexConfig` - Use Lex's built-in Storybook configuration instead of project config
 - `--variables <n>` - Environment variables to set in "process.env" (ie. "{STORYBOOK_THEME: 'dark'}")
-- `--verbose` - Show verbose output including webpack progress details
+- `--verbose` - Show unfiltered Storybook builder output
 
 ### Examples
 
@@ -177,8 +167,8 @@ lex storybook --useLexConfig
 
 This approach:
 
-- Uses Lex's pre-configured webpack and PostCSS setup
-- Avoids conflicts between project and Lex's loaders
+- Uses Lex's preconfigured React Vite and PostCSS setup
+- Avoids conflicts between project and Lex configuration
 - Ensures consistent Tailwind CSS integration
 - Provides a clean, isolated configuration
 
@@ -201,13 +191,7 @@ The command follows this priority order:
 
 ## Supported Frameworks
 
-The command supports all major Storybook frameworks:
-
-- **React**: `@storybook/react` + `@storybook/react-vite`
-- **Vue**: `@storybook/vue` + `@storybook/vue-webpack5`
-- **Angular**: `@storybook/angular` + `@storybook/angular-webpack5`
-- **Web Components**: `@storybook/web-components` + `@storybook/web-components-webpack5`
-- **Generic**: `storybook`
+Lex's built-in Storybook configuration uses `@storybook/react-vite`. Projects using another Storybook framework should install that framework and pass their own configuration with `--config`; Lex will run the selected Storybook configuration without replacing it.
 
 ## Error Handling
 
@@ -334,4 +318,4 @@ lex storybook --config ./custom-storybook
 
 ## Version Compatibility
 
-This command is designed to work with Storybook v9. If you need to use older versions of Storybook, you may need to install the appropriate packages manually in your project.
+This command is designed to work with Storybook v10. Projects using another Storybook version should install the matching framework packages and provide a project-owned configuration.

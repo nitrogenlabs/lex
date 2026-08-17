@@ -2,8 +2,7 @@
  * Lex configuration file
  * This file contains configuration options for the Lex CLI tool
  *
- * Note: SWC has replaced esbuild as the default transpiler.
- * The 'swc' configuration section below replaces the old 'esbuild' configuration.
+ * Web projects build with Vite. Node, Lambda, and mobile projects compile with SWC.
  */
 
 export default {
@@ -38,12 +37,14 @@ export default {
 
   // Vite configuration
   vite: {
-    // Path to static assets directory (defaults to './src/static')
+    // Standard Vite options are merged with Lex's required plugins
+    base: '/',
+
+    // Path copied to the output root (defaults to './src/static')
     staticPath: './src/static'
   },
 
-  // SWC configuration (replaces esbuild)
-  // SWC is now the default transpiler for all TypeScript/JavaScript compilation
+  // SWC configuration for non-web compilation and Vite source transforms
   swc: {
     // JavaScript Compiler (JSC) configuration
     jsc: {
