@@ -34,7 +34,7 @@ vi.mock('../../LexConfig.js', async () => ({
       targetEnvironment: 'web',
       useGraphQl: false,
       useTypescript: true,
-      webpack: {}
+      vite: {}
       // SWC configuration is handled automatically with optimal defaults
     },
     parseConfig: vi.fn().mockResolvedValue(undefined)
@@ -49,6 +49,7 @@ vi.mock('../../utils/app.js', async () => ({
   }))
 }));
 vi.mock('../../utils/log.js');
+vi.mock('../../utils/vite/config.js', () => ({createLexViteConfig: vi.fn(() => ({}))}));
 
 describe('config options', () => {
   let consoleLogSpy;

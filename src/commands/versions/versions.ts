@@ -16,8 +16,8 @@ export const packages = {
   lex: packageJson.version,
   swc: parseVersion(packageJson?.dependencies?.['@swc/core']),
   typescript: parseVersion(packageJson?.dependencies?.typescript),
+  vite: parseVersion(packageJson?.dependencies?.vite),
   vitest: parseVersion(packageJson?.dependencies?.vitest),
-  webpack: parseVersion(packageJson?.dependencies?.webpack)
 };
 
 export const jsonVersions = (lexPackages: Record<string, string>) => Object.keys(lexPackages).reduce((list, key) => {
@@ -39,7 +39,7 @@ export const versions = (cmd: VersionsCmd, callback: (status: number) => void): 
     log(`  SWC: ${packages.swc}`, 'info', false);
     log(`  Vitest: ${packages.vitest}`, 'info', false);
     log(`  Typescript: ${packages.typescript}`, 'info', false);
-    log(`  Webpack: ${packages.webpack}`, 'info', false);
+    log(`  Vite: ${packages.vite}`, 'info', false);
   }
 
   if(callback) {

@@ -2,57 +2,13 @@ const config = {
   addons: [
     '@storybook/addon-docs',
     '@storybook/addon-links',
-    {
-      name: '@storybook/addon-styling-webpack',
-      options: {
-        rules: [
-          {
-            test: /\.css$/,
-            use: [
-              'style-loader',
-              'css-loader',
-              {
-                loader: 'postcss-loader',
-                options: {
-                  postcssOptions: {
-                    config: 'node_modules/@nlabs/lex/postcss.config.js',
-                  },
-                },
-              }
-            ]
-          }
-        ]
-      }
-    },
     '@storybook/addon-themes'
   ],
   framework: {
-    name: '@storybook/react-webpack5',
-    options: {
-      builder: {
-        useSWC: true
-      },
-    }
+    name: '@storybook/react-vite',
+    options: {}
   },
-  stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx'],
-  webpackFinal: async (config: any) => {
-    return {
-      ...config,
-      module: {
-        ...config.module,
-        rules: [
-          ...(config.module?.rules || [])
-        ]
-      },
-      resolve: {
-        ...config.resolve,
-        extensions: ['.js', '.ts', '.tsx', '.json', '.mdx'],
-        extensionAlias: {
-          '.js': ['.ts', '.tsx', '.js']
-        }
-      }
-    };
-  }
+  stories: ['../src/**/*.stories.@(js|ts|tsx)', '../src/**/*.mdx']
 };
 
 export default config;

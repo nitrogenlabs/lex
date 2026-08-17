@@ -6,7 +6,7 @@
 
 > **Zero Configuration. Maximum Productivity.**
 
-Lex is the all-in-one development CLI that eliminates the complexity of modern React development. No more juggling webpack configs, testing setups, or build tools. Just install Lex globally and focus on what matters most - building amazing applications.
+Lex is the all-in-one development CLI that eliminates the complexity of modern React development. No more juggling bundler configs, testing setups, or build tools. Just install Lex globally and focus on what matters most - building amazing applications.
 
 [![npm version](https://img.shields.io/npm/v/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
 [![npm downloads](https://img.shields.io/npm/dm/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
@@ -20,7 +20,7 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 ### **Zero Configuration**
 
 - Works out of the box with any React project
-- No webpack configs to write
+- Vite-powered web builds with no required bundler config
 - No testing setup to configure
 - No build tools to manage
 
@@ -76,7 +76,7 @@ Lex comes with everything you need for modern React development:
 | **SWC** | Lightning-fast TypeScript/JavaScript compiler | Latest |
 | **Vitest** | Testing framework | Latest |
 | **TypeScript** | Type safety | Latest |
-| **Webpack** | Advanced bundling | Latest |
+| **Vite** | Web development and production bundling | Latest |
 | **Storybook** | Component development | Latest |
 | **PostCSS** | CSS processing | Latest |
 | **ESLint** | Code linting | Latest |
@@ -130,7 +130,7 @@ Lex comes with everything you need for modern React development:
 |---------|-------------|---------------|
 | [`lex clean`](#clean) | Clean project files | `lex clean` |
 | [`lex copy`](#copy) | Copy files/directories | `lex copy src lib` |
-| [`lex config`](#config) | Show configurations | `lex config webpack` |
+| [`lex config`](#config) | Show configurations | `lex config vite` |
 | [`lex versions`](#versions) | Show tool versions | `lex versions` |
 | [`lex link`](#link) | Check linked modules | `lex link` |
 
@@ -144,9 +144,6 @@ lex dev --open
 
 # With bundle analyzer
 lex dev --bundleAnalyzer
-
-# Custom webpack config
-lex dev --config ./custom.webpack.js
 
 # Force refresh cached public IP
 lex dev --usePublicIp
@@ -166,9 +163,9 @@ export default {
 
 **Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
-**Static Assets**: If your HTML template references static assets (like favicon.ico, manifest.json, or images) with absolute paths, ensure these files exist in your source directory or use relative paths to avoid webpack compilation errors.
+**Static Assets**: If your HTML template references static assets with absolute paths, ensure they exist in the configured static directory.
 
-**Static Assets**: Use the `webpack.staticPath` configuration to specify a directory for static assets (images, videos, audio, PDFs, etc.). Files in this directory will be automatically copied to the output and optimized for web delivery.
+Use `vite.staticPath` to specify the directory. Lex copies these files and optimizes supported images during production builds.
 
 ### **Serverless Development Server** {#serverless-dev}
 
@@ -345,7 +342,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `entryJs` | `string` | `'index.js'` | Main JavaScript entry file | `entryJs: 'main.tsx'` |
 | `dev.port` | `number` | `3000` | Default port used by `lex dev` when `--port` is not passed | `dev: { port: 4200 }` |
 | `outputFile` | `string` | `undefined` | Specific output filename | `outputFile: 'bundle.js'` |
-| `outputFullPath` | `string` | `path.resolve('./lib')` | Absolute output path for build artifacts. Used by webpack dev server for static file serving. | `outputFullPath: '/absolute/build'` |
+| `outputFullPath` | `string` | `path.resolve('./lib')` | Absolute output path for build artifacts and static files. | `outputFullPath: '/absolute/build'` |
 | `outputHash` | `boolean` | `false` | Add hash to output filenames | `outputHash: true` |
 | `outputPath` | `string` | `'./lib'` | Output directory path | `outputPath: './build'` |
 | `packageManager` | `'npm' \| 'yarn'` | `'npm'` | Package manager to use | `packageManager: 'yarn'` |
@@ -458,15 +455,12 @@ You can also specify ESLint rules in your `lex.config.js` file, but this is less
 
 **Note:** Creating an `eslint.config.mjs` file gives you full control and is the recommended approach. The `lex.config.*` approach is provided for simple rule overrides only.
 
-### **Webpack Configuration**
+### **Vite Configuration**
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
-| `webpack.entry` | `string \| string[]` | `undefined` | Webpack entry points | `webpack: { entry: './src/index.js' }` |
-| `webpack.module` | `object` | `undefined` | Webpack module configuration | `webpack: { module: { rules: [...] } }` |
-| `webpack.output` | `object` | `undefined` | Webpack output configuration | `webpack: { output: { filename: 'bundle.js' } }` |
-| `webpack.plugins` | `unknown[]` | `undefined` | Webpack plugins | `webpack: { plugins: [new MyPlugin()] }` |
-| `webpack.staticPath` | `string` | `'./src/static'` | Path to static assets directory. Files in this directory will be copied to the output and optimized (images/videos compressed, audio optimized) | `webpack: { staticPath: './assets' }` |
+| `vite.staticPath` | `string` | `'./src/static'` | Static assets copied to the output root | `vite: { staticPath: './assets' }` |
+| `vite.*` | `Vite UserConfig` | `undefined` | Additional Vite configuration merged with Lex defaults | `vite: { base: '/app/' }` |
 
 ### **Library Configuration**
 
@@ -587,7 +581,7 @@ export default {
 
 #### 404 Error with "Static Paths" Message
 
-If you see a 404 error with a message like "Static Paths /path/to/lib", this is likely because the webpack dev server is trying to serve static files from a directory that doesn't exist yet.
+If static assets return 404, verify that `vite.staticPath` exists and points to the intended directory.
 
 **Solution**: The `outputFullPath` directory should exist before starting the dev server. You can:
 
@@ -627,7 +621,7 @@ If TypeScript compilation fails, ensure your `tsconfig.json` is properly configu
 
 #### Missing Static Assets Error
 
-If you see webpack compilation errors about missing static assets (like favicon.ico, manifest.json, or images), this is because your HTML template references files that don't exist.
+If you see build errors about missing static assets, check that every path referenced by the HTML template exists.
 
 **Solution**: Either create the missing files or update your HTML template to use relative paths:
 
@@ -692,7 +686,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **SWC** - For lightning-fast TypeScript/JavaScript compilation
 - **Vitest** - For comprehensive testing
 - **TypeScript** - For type safety
-- **Webpack** - For advanced bundling features
+- **Vite** - For fast web development and production bundling
 - **Storybook** - For component development
 - **OpenAI/Anthropic** - For AI-powered features
 

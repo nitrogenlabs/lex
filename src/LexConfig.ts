@@ -25,12 +25,8 @@ export interface VitestConfig {
   [key: string]: unknown;
 }
 
-export interface WebpackConfig {
+export interface ViteConfig {
   [key: string]: unknown;
-  entry?: string | string[];
-  output?: Record<string, unknown>;
-  module?: Record<string, unknown>;
-  plugins?: unknown[];
   staticPath?: string;
 }
 
@@ -78,7 +74,7 @@ export interface LexConfigType {
   targetEnvironment?: 'node' | 'web';
   useGraphQl?: boolean;
   useTypescript?: boolean;
-  webpack?: WebpackConfig;
+  vite?: ViteConfig;
 }
 
 export type Config = LexConfigType;
@@ -151,7 +147,7 @@ export const defaultConfigValues: LexConfigType = {
   useGraphQl: false,
   useTypescript: false,
   vitest: {},
-  webpack: {
+  vite: {
     staticPath: './src/static'
   }
 };

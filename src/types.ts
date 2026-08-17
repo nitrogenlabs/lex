@@ -10,5 +10,5 @@ export type {
   VitestConfig,
   LexConfigType,
   SWCOptions,
-  WebpackConfig
+  ViteConfig
 } from './LexConfig.js';

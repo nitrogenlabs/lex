@@ -10,48 +10,34 @@ describe('LexConfig', () => {
   });
 
   describe('staticPath configuration', () => {
-    it('should have default staticPath in webpack config', () => {
+    it('should have default staticPath in Vite config', () => {
       const {config} = LexConfig;
 
-      expect(config.webpack?.staticPath).toBe('./src/static');
+      expect(config.vite?.staticPath).toBe('./src/static');
     });
 
     it('should allow custom staticPath configuration', () => {
       const customConfig = {
-        webpack: {
+        vite: {
           staticPath: './assets'
         }
       };
 
       const updatedConfig = LexConfig.updateConfig(customConfig);
 
-      expect(updatedConfig.webpack?.staticPath).toBe('./assets');
+      expect(updatedConfig.vite?.staticPath).toBe('./assets');
     });
 
-    it('should merge webpack config with existing options', () => {
-      const existingConfig = {
-        webpack: {
-          entry: './src/index.js',
-          plugins: []
-        }
-      };
-
+    it('should replace Vite configuration on update', () => {
       const newConfig = {
-        webpack: {
+        vite: {
           staticPath: './public'
         }
       };
 
-      // First update with existing config
-      let updatedConfig = LexConfig.updateConfig(existingConfig);
+      const updatedConfig = LexConfig.updateConfig(newConfig);
 
-      expect(updatedConfig.webpack?.entry).toBe('./src/index.js');
-      expect(updatedConfig.webpack?.plugins).toEqual([]);
-
-      // Then update with new config
-      updatedConfig = LexConfig.updateConfig(newConfig);
-
-      expect(updatedConfig.webpack?.staticPath).toBe('./public');
+      expect(updatedConfig.vite?.staticPath).toBe('./public');
     });
   });
 

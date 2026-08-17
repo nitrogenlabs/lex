@@ -18,7 +18,7 @@ export const packages = {
   vitest: string,
   lex: string,
   typescript: string,
-  webpack: string
+  vite: string
 }
 
 export const jsonVersions = (lexPackages) => object

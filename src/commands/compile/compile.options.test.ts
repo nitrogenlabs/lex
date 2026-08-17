@@ -29,6 +29,7 @@ vi.mock('../../LexConfig.js', async () => ({
       sourceFullPath: '/mock/source',
       useTypescript: true
     },
+    getSWCConfigWithReactCompiler: vi.fn(() => ({})),
     getTypeScriptDeclarationFlags: vi.fn(() => [
       '--emitDeclarationOnly',
       '--declaration',

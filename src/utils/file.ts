@@ -6,16 +6,11 @@ import findFileUp from 'find-file-up';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {resolve as pathResolve, dirname} from 'path';
+import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../LexConfig.js';
 
-export const getDirName = (): string => {
-  try {
-    return eval('new URL(".", import.meta.url).pathname');
-  } catch{
-    return process.cwd();
-  }
-};
+export const getDirName = (): string => dirname(fileURLToPath(import.meta.url));
 
 export const getLexPackageJsonPath = (): string => {
   const LEX_PACKAGE_NAME = '@nlabs/lex';
@@ -26,32 +21,7 @@ export const getLexPackageJsonPath = (): string => {
     return lexInNodeModules;
   }
 
-  let startDir: string;
-
-  if(process.env.LEX_ROOT) {
-    startDir = process.env.LEX_ROOT;
-  } else {
-    try {
-      startDir = eval('new URL(".", import.meta.url).pathname');
-    } catch{
-      try {
-        startDir = eval('__filename ? require("path").dirname(__filename) : null');
-        if(!startDir) {
-          throw new Error('__filename not available');
-        }
-      } catch{
-        try {
-          if(process.argv[1] && !process.argv[1].includes('node')) {
-            startDir = dirname(process.argv[1]);
-          } else {
-            throw new Error('process.argv[1] not suitable');
-          }
-        } catch{
-          startDir = process.cwd();
-        }
-      }
-    }
-  }
+  const startDir = process.env.LEX_ROOT || getDirName();
 
   let dir = startDir;
   for(let i = 0; i < 8; i++) {
@@ -179,79 +149,4 @@ export const findTailwindCssPath = (): string => {
   }
 
   return '';
-};
-
-export const resolveWebpackPaths = (currentDirname: string): {webpackPath: string; webpackConfig: string} => {
-  const possibleWebpackPaths = [
-    pathResolve(process.cwd(), 'node_modules/webpack-cli/bin/cli.js'),
-    pathResolve(process.cwd(), 'node_modules/.bin/webpack'),
-    pathResolve(process.cwd(), 'node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
-    pathResolve(process.cwd(), 'node_modules/@nlabs/lex', 'node_modules/.bin/webpack'),
-    pathResolve(currentDirname, 'node_modules/@nlabs/lex/node_modules/webpack-cli/bin/cli.js'),
-    pathResolve(currentDirname, 'node_modules/@nlabs/lex/node_modules/.bin/webpack'),
-    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/webpack-cli/bin/cli.js'),
-    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'node_modules/.bin/webpack')
-  ];
-
-  let webpackPath = '';
-
-  for(const path of possibleWebpackPaths) {
-    if(existsSync(path)) {
-      webpackPath = path;
-      break;
-    }
-  }
-
-  if(!webpackPath) {
-    try {
-      const lexPackagePath = getLexPackageJsonPath();
-      const lexPackageDir = dirname(lexPackagePath);
-      const lexWebpackCli = pathResolve(lexPackageDir, 'node_modules/webpack-cli/bin/cli.js');
-      const lexWebpackBin = pathResolve(lexPackageDir, 'node_modules/.bin/webpack');
-
-      if(existsSync(lexWebpackCli)) {
-        webpackPath = lexWebpackCli;
-      } else if(existsSync(lexWebpackBin)) {
-        webpackPath = lexWebpackBin;
-      } else {
-        webpackPath = 'npx';
-      }
-    } catch{
-      webpackPath = 'npx';
-    }
-  }
-
-  const possibleWebpackConfigPaths = [
-    pathResolve(process.cwd(), 'webpack.config.js'),
-    pathResolve(process.cwd(), 'webpack.config.ts'),
-    pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.js'),
-    pathResolve(process.cwd(), 'node_modules/@nlabs/lex/webpack.config.ts'),
-    pathResolve(currentDirname, 'node_modules/@nlabs/lex/webpack.config.js'),
-    pathResolve(currentDirname, 'node_modules/@nlabs/lex/webpack.config.ts'),
-    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.js'),
-    pathResolve(process.env.LEX_HOME || '/node_modules/@nlabs/lex', 'webpack.config.ts')
-  ];
-
-  let webpackConfig = '';
-
-  for(const path of possibleWebpackConfigPaths) {
-    if(existsSync(path)) {
-      webpackConfig = path;
-      break;
-    }
-  }
-
-  if(!webpackConfig) {
-    const lexPackagePath = getLexPackageJsonPath();
-    const lexPackageDir = dirname(lexPackagePath);
-    const lexWebpackConfig = pathResolve(lexPackageDir, 'webpack.config.js');
-
-    if(existsSync(lexWebpackConfig)) {
-      webpackConfig = lexWebpackConfig;
-    } else {
-      webpackConfig = pathResolve(currentDirname, '../../webpack.config.js');
-    }
-  }
-
-  return {webpackConfig, webpackPath};
 };

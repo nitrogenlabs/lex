@@ -22,7 +22,7 @@ The Storybook command is included with Lex and includes Storybook v9 core packag
 
 ```bash
 # For React (recommended)
-npm install --save-dev @storybook/react @storybook/react-webpack5
+npm install --save-dev @storybook/react @storybook/react-vite vite
 
 # For Vue
 npm install --save-dev @storybook/vue @storybook/vue-webpack5
@@ -45,7 +45,7 @@ Lex includes the following Storybook v9 packages:
 
 - `@storybook/cli` - Storybook CLI tools
 - `@storybook/react` - React framework support
-- `@storybook/react-webpack5` - Webpack 5 builder for React
+- `@storybook/react-vite` - Vite builder for React
 - `storybook` - Main Storybook package
 
 ### Peer Dependencies
@@ -53,7 +53,7 @@ Lex includes the following Storybook v9 packages:
 These packages should be installed in your project:
 
 - `@storybook/react` - React framework support
-- `@storybook/react-webpack5` - Webpack 5 builder for React
+- `@storybook/react-vite` - Vite builder for React
 - `storybook` - Main Storybook package
 
 ## Usage
@@ -203,7 +203,7 @@ The command follows this priority order:
 
 The command supports all major Storybook frameworks:
 
-- **React**: `@storybook/react` + `@storybook/react-webpack5`
+- **React**: `@storybook/react` + `@storybook/react-vite`
 - **Vue**: `@storybook/vue` + `@storybook/vue-webpack5`
 - **Angular**: `@storybook/angular` + `@storybook/angular-webpack5`
 - **Web Components**: `@storybook/web-components` + `@storybook/web-components-webpack5`
@@ -286,7 +286,7 @@ If you get an error that Storybook is not installed:
 
 ```bash
 # Install the appropriate Storybook package for your framework
-npm install --save-dev @storybook/react @storybook/react-webpack5
+npm install --save-dev @storybook/react @storybook/react-vite vite
 ```
 
 ### No Story Files Found

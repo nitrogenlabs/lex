@@ -43,8 +43,8 @@ describe('versions.integration', () => {
     const result = jsonVersions(mockPackages);
 
     expect(result).toEqual({
-      swc: packages.swc,
-      vitest: packages.vitest
+      swc: '1.0.0',
+      vitest: '2.0.0'
     });
   });
 
@@ -57,6 +57,6 @@ describe('versions.integration', () => {
     expect(mockLog).toHaveBeenCalledWith(`  SWC: ${packages.swc}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Vitest: ${packages.vitest}`, 'info', false);
     expect(mockLog).toHaveBeenCalledWith(`  Typescript: ${packages.typescript}`, 'info', false);
-    expect(mockLog).toHaveBeenCalledWith(`  Webpack: ${packages.webpack}`, 'info', false);
+    expect(mockLog).toHaveBeenCalledWith(`  Vite: ${packages.vite}`, 'info', false);
   });
 });

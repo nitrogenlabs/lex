@@ -45,7 +45,9 @@
     "inlineSourcesContent": true,
     "isModule": true
   },
-  "webpack": {},
+  "vite": {
+    "staticPath": "./src/static"
+  },
   "vitest": {},
   "outputHash": false,
   "useGraphQl": false,

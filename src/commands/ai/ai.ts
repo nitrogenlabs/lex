@@ -73,8 +73,8 @@ const getProjectContext = async (options: AIOptions): Promise<string> => {
       break;
 
     case 'optimize':
-      const webpackConfig = getFileContext('webpack.config.js');
-      projectContext += `\n\nWebpack configuration:\n${webpackConfig}`;
+      const lexConfig = getFileContext('lex.config.js');
+      projectContext += `\n\nLex/Vite configuration:\n${lexConfig}`;
       break;
 
     default:

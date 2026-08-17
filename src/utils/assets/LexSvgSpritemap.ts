@@ -4,13 +4,12 @@
  */
 import {readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import {basename as pathBasename, dirname as pathDirname, extname as pathExtname, resolve as pathResolve} from 'path';
+import {basename as pathBasename, extname as pathExtname, resolve as pathResolve} from 'path';
 import {optimize} from 'svgo';
-import webpack from 'webpack';
 
 type IdentifierPrefix = false | string | ((filePath: string) => string);
 
-export interface LexSvgSpritemapPluginOptions {
+export interface LexSvgSpritemapOptions {
   readonly allowDuplicates?: boolean;
   readonly filename?: string;
   readonly optimize?: boolean;
@@ -29,7 +28,6 @@ interface SpriteSymbol {
 }
 
 const DEFAULT_FILENAME = 'icons/icons.svg';
-const PLUGIN_NAME = 'LexSvgSpritemapPlugin';
 const ROOT_EXCLUDED_ATTRIBUTES = new Set([
   'height',
   'id',
@@ -122,7 +120,8 @@ const optimizeSvg = (content: string, enabled: boolean): string => {
       name: 'preset-default',
       params: {
         overrides: {
-          cleanupIds: false
+          cleanupIds: false,
+          removeHiddenElems: false
         }
       }
     }]
@@ -133,18 +132,18 @@ const createSpriteSymbol = (
   filePath: string,
   usedIdentifiers: Set<string>,
   prefix: IdentifierPrefix,
-  warnings: webpack.WebpackError[]
+  warnings: Error[]
 ): SpriteSymbol | null => {
   const source = readFileSync(filePath, 'utf8');
   const parsedSvg = parseSvg(source);
 
   if(!parsedSvg) {
-    warnings.push(new webpack.WebpackError(`Invalid SVG icon: ${filePath}`));
+    warnings.push(new Error(`Invalid SVG icon: ${filePath}`));
     return null;
   }
 
   if(!parsedSvg.content) {
-    warnings.push(new webpack.WebpackError(`SVG icon is empty: ${filePath}`));
+    warnings.push(new Error(`SVG icon is empty: ${filePath}`));
     return null;
   }
 
@@ -160,7 +159,7 @@ const createSpriteSymbol = (
   }
 
   if(identifier !== baseIdentifier) {
-    warnings.push(new webpack.WebpackError(`Duplicate SVG icon id "${baseIdentifier}" detected, using "${identifier}" for ${filePath}`));
+    warnings.push(new Error(`Duplicate SVG icon id "${baseIdentifier}" detected, using "${identifier}" for ${filePath}`));
   }
 
   usedIdentifiers.add(identifier);
@@ -198,7 +197,7 @@ const createSpriteSymbol = (
     if(Number.isFinite(width) && Number.isFinite(height)) {
       symbolAttributes.viewBox = `0 0 ${width} ${height}`;
     } else {
-      warnings.push(new webpack.WebpackError(`SVG icon is missing a viewBox and readable width/height: ${filePath}`));
+      warnings.push(new Error(`SVG icon is missing a viewBox and readable width/height: ${filePath}`));
       return null;
     }
   }
@@ -226,11 +225,11 @@ const collectFiles = (patterns: readonly string[], allowDuplicates: boolean): st
   return [...new Set(files)];
 };
 
-export class LexSvgSpritemapPlugin {
+export class LexSvgSpritemap {
   readonly patterns: string[];
-  readonly options: Required<LexSvgSpritemapPluginOptions>;
+  readonly options: Required<LexSvgSpritemapOptions>;
 
-  constructor(patterns: string | string[], options: LexSvgSpritemapPluginOptions = {}) {
+  constructor(patterns: string | string[], options: LexSvgSpritemapOptions = {}) {
     this.patterns = Array.isArray(patterns) ? patterns : [patterns];
     this.options = {
       allowDuplicates: options.allowDuplicates ?? false,
@@ -240,8 +239,8 @@ export class LexSvgSpritemapPlugin {
     };
   }
 
-  buildSpritemap(): {content: string | null; filePaths: string[]; warnings: webpack.WebpackError[]} {
-    const warnings: webpack.WebpackError[] = [];
+  buildSpritemap(): {content: string | null; filePaths: string[]; warnings: Error[]} {
+    const warnings: Error[] = [];
     const filePaths = collectFiles(this.patterns, this.options.allowDuplicates);
 
     if(filePaths.length === 0) {
@@ -285,49 +284,6 @@ export class LexSvgSpritemapPlugin {
     };
   }
 
-  apply(compiler: webpack.Compiler): void {
-    compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation) => {
-      const directories = new Set<string>();
-      const spritemap = this.buildSpritemap();
-
-      for(const filePath of spritemap.filePaths) {
-        compilation.fileDependencies.add(filePath);
-        directories.add(pathDirname(filePath));
-      }
-
-      for(const pattern of this.patterns) {
-        const baseDirectory = pathResolve(pattern.replace(/\*.*$/, ''));
-        directories.add(baseDirectory);
-      }
-
-      for(const directory of directories) {
-        compilation.contextDependencies.add(directory);
-      }
-
-      if(spritemap.warnings.length > 0) {
-        compilation.warnings.push(...spritemap.warnings);
-      }
-
-      compilation.hooks.processAssets.tap({
-        name: PLUGIN_NAME,
-        stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-      }, () => {
-        if(!spritemap.content) {
-          return;
-        }
-
-        const assetName = this.options.filename;
-        const source = new webpack.sources.RawSource(spritemap.content);
-
-        if(compilation.getAsset(assetName)) {
-          compilation.updateAsset(assetName, source);
-          return;
-        }
-
-        compilation.emitAsset(assetName, source);
-      });
-    });
-  }
 }
 
-export default LexSvgSpritemapPlugin;
+export default LexSvgSpritemap;

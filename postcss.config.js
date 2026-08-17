@@ -16,14 +16,13 @@ import postcssPresetEnv from 'postcss-preset-env';
 import postcssSimpleVars from 'postcss-simple-vars';
 import postcssSvgo from 'postcss-svgo';
 import postcssUrl from 'postcss-url';
-import {default as webpack} from 'webpack';
 
 import postcssFor from './lib/utils/postcss/postcss-for.js';
 import postcssPercentage from './lib/utils/postcss/postcss-percentage.js';
 
 const config = {
   plugins: [
-    postcssImport({addDependencyTo: webpack}),
+    postcssImport(),
     postcssUrl(),
     postcssFor(),
     postcssPercentage({

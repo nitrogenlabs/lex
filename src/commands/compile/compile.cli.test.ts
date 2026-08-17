@@ -8,6 +8,12 @@ import {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} from '../../
 import {resolveBinaryPath} from '../../utils/file.js';
 import {compile, hasFileType} from './compile.js';
 
+const mockCopyConfiguredFiles = copyConfiguredFiles as MockedFunction<typeof copyConfiguredFiles>;
+const mockCopyFiles = copyFiles as MockedFunction<typeof copyFiles>;
+const mockGetFilesByExt = getFilesByExt as MockedFunction<typeof getFilesByExt>;
+const mockRemoveFiles = removeFiles as MockedFunction<typeof removeFiles>;
+const mockResolveBinaryPath = resolveBinaryPath as MockedFunction<typeof resolveBinaryPath>;
+
 vi.mock('execa');
 vi.mock('@swc/core');
 vi.mock('fs');
@@ -138,15 +144,15 @@ describe('compile', () => {
     } as any);
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValue('export const test = () => {};');
     (writeFileSync as MockedFunction<typeof writeFileSync>).mockImplementation(() => {});
-    (mkdirSync as MockedFunction<typeof mkdirSync>).mockImplementation(() => {});
-    getFilesByExt.mockReturnValue([]);
-    copyFiles.mockResolvedValue(undefined);
-    copyConfiguredFiles.mockResolvedValue(undefined);
-    removeFiles.mockResolvedValue(undefined);
+    (mkdirSync as MockedFunction<typeof mkdirSync>).mockReturnValue(undefined);
+    mockGetFilesByExt.mockReturnValue([]);
+    mockCopyFiles.mockResolvedValue(undefined);
+    mockCopyConfiguredFiles.mockResolvedValue(undefined);
+    mockRemoveFiles.mockResolvedValue(undefined);
     LexConfig.config.reactCompiler = undefined;
     LexConfig.config.useTypescript = false;
     LexConfig.config.swc = {};
-    resolveBinaryPath.mockImplementation((binary) => {
+    mockResolveBinaryPath.mockImplementation((binary) => {
       if(binary === 'tsc') {
         return '/mock/path/to/tsc';
       }
@@ -209,7 +215,7 @@ describe('compile', () => {
   describe('compile - TypeScript', () => {
     it('should handle TypeScript binary not found', async () => {
       LexConfig.config.useTypescript = true;
-      resolveBinaryPath.mockReturnValue(null);
+      mockResolveBinaryPath.mockReturnValue(null);
 
       const result = await compile({});
 
@@ -371,7 +377,7 @@ describe('compile', () => {
 
   describe('compile - CSS processing', () => {
     it('should process CSS files', async () => {
-      getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
+      mockGetFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
       (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
@@ -396,11 +402,11 @@ describe('compile', () => {
     });
 
     it('should handle PostCSS binary not found', async () => {
-      getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
+      mockGetFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
       (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
-      resolveBinaryPath.mockImplementation((binary) => {
+      mockResolveBinaryPath.mockImplementation((binary) => {
         if(binary === 'postcss') {
           return null;
         }
@@ -413,7 +419,7 @@ describe('compile', () => {
     });
 
     it('should handle PostCSS processing errors', async () => {
-      getFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
+      mockGetFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
       (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([]);
@@ -428,7 +434,7 @@ describe('compile', () => {
 
   describe('compile - Asset copying', () => {
     it('should copy image files', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/image.png']);
 
@@ -447,11 +453,11 @@ describe('compile', () => {
     });
 
     it('should handle image copy errors', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/image.png']);
 
-      copyFiles.mockRejectedValue(new Error('Copy failed'));
+      mockCopyFiles.mockRejectedValue(new Error('Copy failed'));
 
       const result = await compile({});
 
@@ -459,7 +465,7 @@ describe('compile', () => {
     });
 
     it('should copy font files', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
@@ -487,12 +493,12 @@ describe('compile', () => {
     });
 
     it('should handle font copy errors', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/font.ttf']);
 
-      copyFiles.mockRejectedValue(new Error('Font copy failed'));
+      mockCopyFiles.mockRejectedValue(new Error('Font copy failed'));
 
       const result = await compile({});
 
@@ -500,7 +506,7 @@ describe('compile', () => {
     });
 
     it('should copy markdown files', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
@@ -530,14 +536,14 @@ describe('compile', () => {
     });
 
     it('should handle markdown copy errors', async () => {
-      getFilesByExt
+      mockGetFilesByExt
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce([])
         .mockReturnValueOnce(['/mock/source/readme.md']);
 
-      copyFiles.mockRejectedValue(new Error('Markdown copy failed'));
+      mockCopyFiles.mockRejectedValue(new Error('Markdown copy failed'));
 
       const result = await compile({});
 
@@ -754,7 +760,7 @@ describe('compile', () => {
 
   describe('compile - copyConfiguredFiles', () => {
     it('should handle copyConfiguredFiles errors', async () => {
-      copyConfiguredFiles.mockRejectedValue(new Error('Copy configured files failed'));
+      mockCopyConfiguredFiles.mockRejectedValue(new Error('Copy configured files failed'));
 
       // Mock source files so compilation proceeds
       (globSync as MockedFunction<typeof globSync>).mockReturnValue([

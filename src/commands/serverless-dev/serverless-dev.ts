@@ -857,7 +857,7 @@ const createWebSocketServer = (
         void loadHandler(config.functions[disconnectFunction].handler, outputDir)
           .then((disconnectHandler) => {
             if(!disconnectHandler) {
-              return;
+              return undefined;
             }
 
             const wrappedDisconnectHandler = captureConsoleLogs(disconnectHandler, quiet);

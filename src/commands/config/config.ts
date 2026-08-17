@@ -9,6 +9,7 @@ import {relative as pathRelative} from 'path';
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
+import {createLexViteConfig} from '../../utils/vite/config.js';
 
 export interface ConfigOptions {
   readonly cliName?: string;
@@ -24,10 +25,10 @@ export const config = async (
   callback: ConfigCallback = () => ({})
 ): Promise<number> => {
   const {cliName = 'Lex', json, quiet} = cmd;
-  const validTypes: string[] = ['app', 'vitest', 'webpack'];
+  const validTypes: string[] = ['app', 'vite', 'vitest'];
 
   if(!validTypes.includes(type)) {
-    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, vitest, and webpack.`, 'error', quiet);
+    log(`\n${cliName} Error: Option for ${type} not found. Configurations only available for app, Vite, and Vitest.`, 'error', quiet);
     callback(1);
     return Promise.resolve(1);
   }
@@ -47,9 +48,8 @@ export const config = async (
       configOptions = vistestConfig.default;
       break;
     }
-    case 'webpack': {
-      const webpackConfig = await import('../../../webpack.config.js');
-      configOptions = webpackConfig.default;
+    case 'vite': {
+      configOptions = createLexViteConfig({command: 'build'});
       break;
     }
   }

@@ -6,6 +6,7 @@ import {transform} from '@swc/core';
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
+import {build as viteBuild, createServer as createViteServer} from 'vite';
 import {
   dirname,
   relative as pathRelative,
@@ -13,14 +14,15 @@ import {
 } from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
-import {checkLinkedModules, copyConfiguredFiles, createSpinner, createProgressBar, handleWebpackProgress, removeFiles} from '../../utils/app.js';
+import {checkLinkedModules, copyConfiguredFiles, createSpinner, removeFiles} from '../../utils/app.js';
 import {
-  resolveWebpackPaths,
-  getLexPackageJsonPath,
   resolveBinaryPath
 } from '../../utils/file.js';
 import {log} from '../../utils/log.js';
+import {renderStaticSite} from '../../utils/staticSite.js';
 import {processTranslations} from '../../utils/translations.js';
+import {compressLexWebAssets, copyLexWebAssets, optimizeLexWebAssets} from '../../utils/vite/assets.js';
+import {createLexViteConfig} from '../../utils/vite/config.js';
 import {aiFunction} from '../ai/ai.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
@@ -28,28 +30,19 @@ import chalk from 'chalk';
 import type {SWCOptions} from '../../LexConfig.js';
 import type {Spinner} from '../../utils/app.js';
 
-let currentFilename: string;
-let currentDirname: string;
-
-try {
-  currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
-  currentDirname = dirname(currentFilename);
-} catch {
-  currentFilename = process.cwd();
-  currentDirname = process.cwd();
-}
-
 export interface BuildOptions {
   readonly assist?: boolean;
   readonly analyze?: boolean;
-  readonly bundler?: 'webpack' | 'swc';
+  readonly bundler?: 'swc' | 'vite';
   readonly cliName?: string;
-  readonly entry?: string;
+  readonly entry?: string | string[];
   readonly format?: string;
+  readonly mode?: 'development' | 'production';
   readonly outputPath?: string;
   readonly quiet?: boolean;
   readonly remove?: boolean;
   readonly sourcePath?: string;
+  readonly static?: boolean;
   readonly test?: boolean;
   readonly translations?: boolean;
   readonly variables?: string;
@@ -179,217 +172,56 @@ export const buildWithSWC = async (spinner: Spinner, commandOptions: BuildOption
   }
 };
 
-export const buildWithWebpack = async (
-  spinner: Spinner,
-  cmd: Record<string, any>,
-  callback: BuildCallback
-) => {
-  const {
-    analyze,
-    cliName = 'Lex',
-    config,
-    configName,
-    defineProcessEnvNodeEnv,
-    devtool,
-    disableInterpret,
-    entry,
-    env,
-    failOnWarnings,
-    json,
-    merge,
-    mode,
-    name,
-    nodeEnv,
-    noDevtool,
-    noStats,
-    noTarget,
-    noWatch,
-    noWatchOptionsStdin,
-    outputPath,
-    quiet = false,
-    stats,
-    target,
-    watch,
-    watchOptionsStdin
-  } = cmd;
-
+export const buildWithVite = async (spinner: Spinner, cmd: BuildOptions, callback: BuildCallback): Promise<number> => {
+  const {analyze, assist, entry, mode = 'production', quiet = false, static: isStatic = false} = cmd;
   const entryValue = Array.isArray(entry) ? entry[0] : entry;
-
-  let webpackConfig: string;
-
-  if(config) {
-    const isRelativeConfig: boolean = config.substr(0, 2) === './';
-    webpackConfig = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
-  } else {
-    const projectConfigPath = pathResolve(process.cwd(), 'webpack.config.js');
-    const projectConfigPathTs = pathResolve(process.cwd(), 'webpack.config.ts');
-    const hasProjectConfig = existsSync(projectConfigPath) || existsSync(projectConfigPathTs);
-
-    if(hasProjectConfig) {
-      webpackConfig = existsSync(projectConfigPathTs) ? projectConfigPathTs : projectConfigPath;
-    } else {
-      const {webpackConfig: resolvedConfig} = resolveWebpackPaths(currentDirname);
-      webpackConfig = resolvedConfig;
-    }
-  }
-
-  if(!existsSync(webpackConfig)) {
-    const lexPackagePath = getLexPackageJsonPath();
-    const lexPackageDir = dirname(lexPackagePath);
-    const lexWebpackConfig = pathResolve(lexPackageDir, 'webpack.config.js');
-
-    if(existsSync(lexWebpackConfig)) {
-      webpackConfig = lexWebpackConfig;
-      console.log('Using Lex webpack config:', webpackConfig);
-    } else {
-      log(`\n${cliName} Error: Could not find webpack.config.js`, 'error', quiet);
-      spinner.fail('Build failed.');
-      callback(1);
-      return 1;
-    }
-  }
-
-  const webpackOptions: string[] = [
-    '--color',
-    '--progress',
-    '--config', webpackConfig
-  ];
-
-  if(analyze) webpackOptions.push('--analyze');
-  if(configName) webpackOptions.push('--configName', configName);
-  if(defineProcessEnvNodeEnv) webpackOptions.push('--defineProcessEnvNodeEnv', defineProcessEnvNodeEnv);
-  if(devtool) webpackOptions.push('--devtool', devtool);
-  if(disableInterpret) webpackOptions.push('--disableInterpret');
-  if(entryValue) webpackOptions.push('--entry', entryValue.toString());
-  if(env) webpackOptions.push('--env', env);
-  if(failOnWarnings) webpackOptions.push('--failOnWarnings');
-  if(json) webpackOptions.push('--json', json);
-  if(mode) webpackOptions.push('--mode', mode);
-  if(merge) webpackOptions.push('--merge');
-  if(name) webpackOptions.push('--name', name);
-  if(noDevtool) webpackOptions.push('--noDevtool');
-  if(noStats) webpackOptions.push('--noStats');
-  if(noTarget) webpackOptions.push('--noTarget');
-  if(noWatch) webpackOptions.push('--noWatch');
-  if(noWatchOptionsStdin) webpackOptions.push('--noWatchOptionsStdin');
-  if(nodeEnv) webpackOptions.push('--nodeEnv', nodeEnv);
-  if(outputPath) webpackOptions.push('--output-path', outputPath.toString()); // Convert to string
-  if(stats) webpackOptions.push('--stats', stats);
-  if(target) webpackOptions.push('--target', target);
-  if(watch) webpackOptions.push('--watch');
-  if(watchOptionsStdin) webpackOptions.push('--watchOptionsStdin');
+  const outputPath = LexConfig.config.outputFullPath || pathResolve(process.cwd(), './lib');
 
   try {
-    const {webpackPath} = resolveWebpackPaths(currentDirname);
+    spinner.start('Building with Vite...');
+    await viteBuild(createLexViteConfig({analyze, command: 'build', entry: entryValue, mode, quiet}));
+    await copyLexWebAssets(LexConfig.config);
+    await optimizeLexWebAssets(LexConfig.config);
 
-    let executablePath = webpackPath;
-    let finalWebpackOptions: string[];
+    if(isStatic) {
+      const server = await createViteServer({
+        ...createLexViteConfig({command: 'serve', entry: entryValue, mode, quiet, ssr: true}),
+        server: {middlewareMode: true}
+      });
+      try {
+        const sourcePath = LexConfig.config.sourceFullPath || pathResolve(process.cwd(), './src');
+        const entryPath = pathResolve(sourcePath, entryValue || LexConfig.config.entryJs || 'index.js');
+        const module = await server.ssrLoadModule(entryPath);
+        const render = module.default || module.render;
+        if(typeof render !== 'function') throw new Error(`Static entry "${entryPath}" must export a render function.`);
 
-    if(webpackPath === 'npx') {
-      finalWebpackOptions = ['webpack', ...webpackOptions];
-    } else if(webpackPath.endsWith('.js')) {
-      executablePath = 'node';
-      finalWebpackOptions = [webpackPath, ...webpackOptions];
-    } else {
-      finalWebpackOptions = [...webpackOptions];
+        const assets = globSync('**/*', {cwd: outputPath, nodir: true}).reduce<Record<string, string>>((result, fileName) => {
+          result[fileName] = `/${fileName}`;
+          return result;
+        }, {});
+        await renderStaticSite({assets, outputPath, render});
+      } finally {
+        await server.close();
+      }
     }
 
-    const childProcess = execa(executablePath, finalWebpackOptions, {encoding: 'utf8', stdio: 'pipe'});
-
-    let buildCompleted = false;
-    let buildStats = {
-      modules: 0,
-      assets: 0,
-      size: '0 B'
-    };
-
-    childProcess.stdout?.on('data', (data: Buffer) => {
-      const output = data.toString();
-
-      handleWebpackProgress(output, spinner, quiet, '🏗️', 'Webpack Building');
-
-      if(!buildCompleted && output.includes('compiled successfully')) {
-        buildCompleted = true;
-        spinner.succeed('Build completed successfully!');
-
-        const moduleMatch = output.match(/(\d+) modules/);
-        const assetMatch = output.match(/(\d+) assets/);
-        const sizeMatch = output.match(/assets by status ([\d.]+ \w+)/) || output.match(/assets by path.*?([\d.]+ \w+)/);
-
-        if(moduleMatch) buildStats.modules = parseInt(moduleMatch[1], 10);
-        if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
-        if(sizeMatch) buildStats.size = sizeMatch[1];
-
-        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
-      }
-    });
-
-    childProcess.stderr?.on('data', (data: Buffer) => {
-      const output = data.toString();
-
-      handleWebpackProgress(output, spinner, quiet, '🏗️', 'Webpack Building');
-
-      if(!buildCompleted && output.includes('compiled successfully')) {
-        buildCompleted = true;
-        spinner.succeed('Build completed successfully!');
-
-        const moduleMatch = output.match(/(\d+) modules/);
-        const assetMatch = output.match(/(\d+) assets/);
-        const sizeMatch = output.match(/assets by status ([\d.]+ \w+)/) || output.match(/assets by path.*?([\d.]+ \w+)/);
-
-        if(moduleMatch) buildStats.modules = parseInt(moduleMatch[1], 10);
-        if(assetMatch) buildStats.assets = parseInt(assetMatch[1], 10);
-        if(sizeMatch) buildStats.size = sizeMatch[1];
-
-        displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
-      }
-    });
-
-    await childProcess;
-
-    if(!buildCompleted) {
-      spinner.succeed('Build completed successfully!');
-      displayBuildStatus('webpack', LexConfig.config.outputFullPath || 'lib', quiet, buildStats);
-    }
-
+    compressLexWebAssets(LexConfig.config);
+    spinner.succeed('Build completed successfully!');
+    displayBuildStatus('Vite', outputPath, quiet);
     callback(0);
     return 0;
   } catch(error) {
-    log(`\n${cliName} Error: Webpack build failed`, 'error', quiet);
-    log(`\nError: ${error.message}`, 'error', quiet);
-
-    if(error instanceof Error) {
-      if(error.stack) {
-        log(`\nStack Trace:\n${error.stack}`, 'error', quiet);
-      }
-    }
-
-    log(`\nWebpack Options: ${webpackOptions.slice(0, 5).join(' ')}...`, 'error', quiet);
-
+    const buildError = error instanceof Error ? error : new Error(String(error));
+    log(`\n${cmd.cliName || 'Lex'} Error: Vite build failed`, 'error', quiet);
+    log(`\nError: ${buildError.message}`, 'error', quiet);
     spinner.fail('Build failed.');
 
-    if(cmd.assist) {
-      spinner.start('AI is analyzing the webpack error...');
-
+    if(assist) {
       try {
-        await aiFunction({
-          prompt: `Fix this webpack build error: ${error.message}\n\nError details:\n${error.toString()}\n\nConfiguration used:\n${JSON.stringify(webpackOptions, null, 2)}`,
-          task: 'help',
-          context: true,
-          quiet
-        });
-
-        spinner.succeed('AI analysis complete');
+        await aiFunction({prompt: `Fix this Vite build error: ${buildError.message}\n\n${buildError.stack || ''}`, task: 'help', context: true, quiet});
       } catch(aiError) {
-        spinner.fail('Could not generate AI assistance');
-        if(!quiet) {
-          console.error('AI assistance error:', aiError);
-        }
+        if(!quiet) console.error('AI assistance error:', aiError);
       }
-    }
-
-    if(!quiet) {
-      console.error('\nFull Error Details:', error);
     }
 
     callback(1);
@@ -399,7 +231,7 @@ export const buildWithWebpack = async (
 
 export const build = async (cmd: BuildOptions, callback: BuildCallback = () => ({})): Promise<number> => {
   const {
-    bundler = 'webpack',
+    bundler: requestedBundler,
     cliName = 'Lex',
     quiet = false,
     remove = false,
@@ -415,6 +247,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
   await LexConfig.parseConfig(cmd);
 
   const {outputFullPath, useTypescript} = LexConfig.config;
+  const bundler = requestedBundler || (LexConfig.config.targetEnvironment === 'web' ? 'vite' : 'swc');
 
   checkLinkedModules();
 
@@ -469,7 +302,7 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
       buildResult = status;
     });
   } else {
-    buildResult = await buildWithWebpack(spinner, cmd, (status: number) => {
+    buildResult = await buildWithVite(spinner, cmd, (status: number) => {
       buildResult = status;
     });
   }
@@ -480,9 +313,9 @@ export const build = async (cmd: BuildOptions, callback: BuildCallback = () => (
     try {
       const stats = {
         outputPath: LexConfig.config.outputFullPath,
-        entryPoints: bundler === 'swc' ?
-          `Source files: ${LexConfig.config.sourceFullPath}/**/*.{ts,js}` :
-          LexConfig.config.webpack?.entry || 'Unknown entry points'
+        entryPoints: bundler === 'swc'
+          ? `Source files: ${LexConfig.config.sourceFullPath}/**/*.{ts,js}`
+          : LexConfig.config.entryJs || 'Unknown entry point'
       };
 
       await aiFunction({

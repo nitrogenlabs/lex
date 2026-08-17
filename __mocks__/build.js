@@ -7,10 +7,10 @@ const mockSpinner = {
 
 const build = vi.fn().mockResolvedValue(0);
 const buildWithEsBuild = vi.fn().mockResolvedValue(0);
-const buildWithWebpack = vi.fn().mockResolvedValue(0);
+const buildWithVite = vi.fn().mockResolvedValue(0);
 
 module.exports = {
   build,
   buildWithEsBuild,
-  buildWithWebpack
+  buildWithVite
 };

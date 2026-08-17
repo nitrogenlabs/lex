@@ -36,14 +36,10 @@ export default {
     temperature: 0.1
   },
 
-  // Webpack configuration
-  webpack: {
+  // Vite configuration
+  vite: {
     // Path to static assets directory (defaults to './src/static')
-    staticPath: './src/static',
-
-    // Other webpack configuration options
-    devtool: 'source-map',
-    plugins: []
+    staticPath: './src/static'
   },
 
   // SWC configuration (replaces esbuild)

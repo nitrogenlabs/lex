@@ -4,35 +4,21 @@
  */
 import boxen from 'boxen';
 import chalk from 'chalk';
-import {execa} from 'execa';
 import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'fs';
 import https from 'https';
 import {networkInterfaces, homedir} from 'os';
-import {dirname, resolve as pathResolve, join} from 'path';
+import {join} from 'path';
+import {createServer as createViteServer} from 'vite';
 
 import {LexConfig} from '../../LexConfig.js';
-import {createSpinner, handleWebpackProgress, removeFiles} from '../../utils/app.js';
-import {resolveWebpackPaths} from '../../utils/file.js';
+import {createSpinner, removeFiles} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
 import {processTranslations} from '../../utils/translations.js';
-
-let currentFilename: string;
-let currentDirname: string;
-
-try {
-  // eslint-disable-next-line no-eval
-  currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
-  currentDirname = dirname(currentFilename);
-} catch{
-  currentFilename = process.cwd();
-  currentDirname = process.cwd();
-}
+import {createLexViteConfig} from '../../utils/vite/config.js';
 
 export interface DevOptions {
   readonly bundleAnalyzer?: boolean;
   readonly cliName?: string;
-  readonly config?: string;
-  readonly format?: string;
   readonly open?: boolean;
   readonly port?: number;
   readonly quiet?: boolean;
@@ -203,7 +189,7 @@ const displayServerStatus = (port: number = DEFAULT_DEV_PORT, quiet: boolean = f
 };
 
 export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): Promise<number> => {
-  const {bundleAnalyzer, cliName = 'Lex', config, format = 'esm', open = false, port: cliPort, quiet, remove, translations = false, usePublicIp, variables} = cmd;
+  const {bundleAnalyzer, cliName = 'Lex', open = false, port: cliPort, quiet, remove, translations = false, usePublicIp, variables} = cmd;
 
   const spinner = createSpinner(quiet);
 
@@ -257,135 +243,32 @@ export const dev = async (cmd: DevOptions, callback: DevCallback = () => ({})): 
     }
   }
 
-  let webpackConfig: string;
-
-  if(config) {
-    const isRelativeConfig: boolean = config.substr(0, 2) === './';
-    webpackConfig = isRelativeConfig ? pathResolve(process.cwd(), config) : config;
-  } else {
-    const {webpackConfig: resolvedConfig} = resolveWebpackPaths(currentDirname);
-    webpackConfig = resolvedConfig;
-  }
-
-  const {webpackPath} = resolveWebpackPaths(currentDirname);
-
-  const webpackOptions: string[] = [
-    '--color',
-    '--watch',
-    '--config', webpackConfig
-  ];
-
-  if(bundleAnalyzer) {
-    webpackOptions.push('--bundleAnalyzer');
-  }
-
   try {
-    let executablePath = webpackPath;
-    let finalWebpackOptions: string[];
-
-    if(webpackPath === 'npx') {
-      finalWebpackOptions = ['webpack', ...webpackOptions];
-    } else if(webpackPath.endsWith('.js')) {
-      executablePath = 'node';
-      finalWebpackOptions = [webpackPath, ...webpackOptions];
-    } else {
-      finalWebpackOptions = webpackOptions;
-    }
-
     spinner.start('Starting development server...');
+    const server = await createViteServer(createLexViteConfig({
+      analyze: bundleAnalyzer,
+      command: 'serve',
+      mode: 'development',
+      open,
+      port: finalPort,
+      quiet
+    }));
+    await server.listen();
+    spinner.succeed('Development server started.');
 
-    const childProcess = execa(executablePath, finalWebpackOptions, {
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        LEX_QUIET: quiet,
-        WEBPACK_DEV_OPEN: open,
-        WEBPACK_DEV_PORT: finalPort.toString()
-      },
-      stdio: 'pipe'
-    } as any);
-
-    let serverStarted = false;
-    let statusShown = false;
-    const showStatusOnce = (portToShow: number) => {
-      if(statusShown) {
-        return;
-      }
-      statusShown = true;
-      if(usePublicIp) {
-        fetchPublicIp(usePublicIp).then((publicIp) => {
-          displayServerStatus(portToShow, quiet, publicIp);
-        });
-      } else {
-        displayServerStatus(portToShow, quiet);
-      }
-    };
-    let detectedPort = finalPort;
-
-    childProcess.stdout?.on('data', (data: Buffer) => {
-      const output = data.toString();
-
-      handleWebpackProgress(output, spinner, quiet ?? false, '🚀', 'Webpack Building');
-
-      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
-        serverStarted = true;
-        spinner.succeed('Development server started.');
-
-        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
-          output.match(/http:\/\/localhost:(\d+)/) ||
-          output.match(/port:\s*(\d+)/) ||
-          output.match(/listening on port (\d+)/) ||
-          output.match(/WebpackPluginServe listening on port (\d+)/);
-        if(portMatch) {
-          detectedPort = parseInt(portMatch[1]);
-        }
-
-        showStatusOnce(detectedPort);
-      }
-    });
-
-    childProcess.stderr?.on('data', (data: Buffer) => {
-      const output = data.toString();
-
-      handleWebpackProgress(output, spinner, quiet ?? false, '🚀', 'Webpack Building');
-
-      if(!serverStarted && (output.includes('Local:') || output.includes('webpack compiled') || output.includes('webpack-plugin-serve') || output.includes('http://localhost') || output.includes('listening on port'))) {
-        serverStarted = true;
-        spinner.succeed('Development server started.');
-
-        const portMatch = output.match(/Local:\s*http:\/\/[^:]+:(\d+)/) ||
-          output.match(/http:\/\/localhost:(\d+)/) ||
-          output.match(/port:\s*(\d+)/) ||
-          output.match(/listening on port (\d+)/) ||
-          output.match(/WebpackPluginServe listening on port (\d+)/);
-        if(portMatch) {
-          detectedPort = parseInt(portMatch[1]);
-        }
-
-        showStatusOnce(detectedPort);
-      }
-    });
-
-    setTimeout(() => {
-      if(!serverStarted) {
-        spinner.succeed('Development server started.');
-        showStatusOnce(detectedPort);
-      }
-    }, 5000);
-
-    await childProcess;
-
-    if(!serverStarted) {
-      spinner.succeed('Development server started.');
-      showStatusOnce(detectedPort);
+    if(usePublicIp) {
+      const publicIp = await fetchPublicIp(usePublicIp);
+      displayServerStatus(finalPort, quiet, publicIp);
+    } else {
+      displayServerStatus(finalPort, quiet);
     }
 
-    callback(0);
     return 0;
   } catch(error) {
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    const serverError = error instanceof Error ? error : new Error(String(error));
+    log(`\n${cliName} Error: ${serverError.message}`, 'error', quiet);
 
-    spinner.fail('There was an error while running Webpack.');
+    spinner.fail('There was an error while running Vite.');
 
     callback(1);
     return 1;
