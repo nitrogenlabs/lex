@@ -34,6 +34,7 @@ describe('Lex Vite config', () => {
     expect(config.build?.rolldownOptions?.input).toBe(join(directory, 'src/index.js'));
     expect(pluginNames).toEqual(expect.arrayContaining([
       'lex-empty-crypto',
+      'lex-node-polyfills',
       'lex-swc',
       'lex-graphql',
       'lex-import-meta-compatibility',
@@ -88,6 +89,10 @@ describe('Lex Vite config', () => {
     expect(crypto.resolveId('crypto')).toBe('\0lex-empty-crypto');
     expect(crypto.resolveId('other')).toBeNull();
     expect(crypto.load('\0lex-empty-crypto')).toContain('webcrypto');
+
+    const polyfills = findPlugin('lex-node-polyfills');
+    expect(polyfills.resolveId('node:path')).toContain('path-browserify/index.js');
+    expect(polyfills.resolveId('fs')).toBeNull();
 
     const graphql = findPlugin('lex-graphql');
     expect(graphql.load(graphqlFile)).toContain('query Viewer');

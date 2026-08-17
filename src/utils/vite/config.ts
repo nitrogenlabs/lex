@@ -7,7 +7,6 @@ import inject from '@rollup/plugin-inject';
 import {existsSync, readFileSync} from 'fs';
 import {extname, resolve} from 'path';
 import {mergeConfig} from 'vite';
-import {nodePolyfills} from 'vite-plugin-node-polyfills';
 
 import {LexConfig} from '../../LexConfig.js';
 import {generateLexFavicons, getDevAsset} from './assets.js';
@@ -50,6 +49,28 @@ const emptyCryptoPlugin = (): Plugin => ({
   name: 'lex-empty-crypto',
   resolveId(id) {
     return id === 'crypto' || id === 'node:crypto' ? '\0lex-empty-crypto' : null;
+  }
+});
+
+const nodePolyfillModules: Record<string, string> = {
+  assert: 'assert/build/assert.js',
+  buffer: 'buffer/index.js',
+  http: 'stream-http/index.js',
+  https: 'https-browserify/index.js',
+  os: 'os-browserify/browser.js',
+  path: 'path-browserify/index.js',
+  process: 'process/browser.js',
+  stream: 'stream-browserify/index.js',
+  util: 'util/util.js',
+  vm: 'vm-browserify/index.js'
+};
+
+const nodePolyfillsPlugin = (): Plugin => ({
+  name: 'lex-node-polyfills',
+  resolveId(id) {
+    const moduleName = id.startsWith('node:') ? id.slice(5) : id;
+    const replacement = nodePolyfillModules[moduleName];
+    return replacement ? resolveProjectPackage(replacement) : null;
   }
 });
 
@@ -200,19 +221,11 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
     plugins: [
       ...(options.ssr ? [] : [
         emptyCryptoPlugin(),
-        nodePolyfills({
-          globals: {Buffer: false, global: false, process: false},
-          include: ['assert', 'buffer', 'http', 'https', 'os', 'path', 'process', 'stream', 'util', 'vm'],
-          overrides: {
-            buffer: resolveProjectPackage('buffer'),
-            process: resolveProjectPackage('process/browser.js')
-          },
-          protocolImports: true
-        }),
+        nodePolyfillsPlugin(),
         createInjectPlugin({
-          Buffer: [resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/buffer/dist/index.js'), 'Buffer'],
-          global: [resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/global/dist/index.js'), 'default'],
-          process: [resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/process/dist/index.js'), 'default']
+          Buffer: [resolveProjectPackage('buffer/index.js'), 'Buffer'],
+          global: [resolveProjectPackage('global/window.js'), 'default'],
+          process: [resolveProjectPackage('process/browser.js'), 'default']
         })
       ]),
       swcPlugin(sourcePath),
@@ -229,10 +242,7 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
         randombytes: resolve(LexConfig.getLexDir(), 'node_modules/randombytes'),
         react: resolveProjectPackage('react'),
         'react-dom': resolveProjectPackage('react-dom'),
-        'regenerator-runtime': resolveProjectPackage('regenerator-runtime'),
-        'vite-plugin-node-polyfills/shims/buffer': resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/buffer/dist/index.js'),
-        'vite-plugin-node-polyfills/shims/global': resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/global/dist/index.js'),
-        'vite-plugin-node-polyfills/shims/process': resolve(LexConfig.getLexDir(), 'node_modules/vite-plugin-node-polyfills/shims/process/dist/index.js')
+        'regenerator-runtime': resolveProjectPackage('regenerator-runtime')
       },
       extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json', '.gql', '.graphql'],
       preserveSymlinks: false,
