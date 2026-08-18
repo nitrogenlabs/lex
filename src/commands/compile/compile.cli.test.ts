@@ -224,6 +224,9 @@ describe('compile', () => {
 
     it('should generate TypeScript declarations successfully', async () => {
       LexConfig.config.useTypescript = true;
+      (existsSync as MockedFunction<typeof existsSync>).mockImplementation((path) =>
+        !String(path).endsWith('tsconfig.build.json')
+      );
       (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
         .mockReturnValueOnce([])
@@ -242,6 +245,56 @@ describe('compile', () => {
       const result = await compile({});
 
       expect(result).toBe(0);
+    });
+
+    it('should use the project build config by default', async () => {
+      LexConfig.config.useTypescript = true;
+      (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
+        all: '',
+        exitCode: 0,
+        stderr: '',
+        stdout: ''
+      } as any);
+
+      await compile({});
+
+      expect(execa).toHaveBeenCalledWith(
+        expect.stringContaining('tsc'),
+        [
+          '-p',
+          expect.stringMatching(/tsconfig\.build\.json$/),
+          '--emitDeclarationOnly',
+          '--skipLibCheck'
+        ],
+        expect.any(Object)
+      );
+    });
+
+    it('should exclude test-support directories from zero-config source discovery', async () => {
+      LexConfig.config.useTypescript = true;
+      (existsSync as MockedFunction<typeof existsSync>).mockImplementation((path) =>
+        !String(path).endsWith('tsconfig.build.json')
+      );
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
+        all: '',
+        exitCode: 0,
+        stderr: '',
+        stdout: ''
+      } as any);
+
+      await compile({});
+
+      expect(globSync).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          ignore: expect.arrayContaining([
+            '**/__mocks__/**',
+            '**/__tests__/**',
+            '**/tests/**'
+          ])
+        })
+      );
     });
 
     it('should handle TypeScript compilation with warnings (has declarations)', async () => {

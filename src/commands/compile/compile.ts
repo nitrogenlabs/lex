@@ -15,6 +15,12 @@ import {log} from '../../utils/log.js';
 
 import type {SWCOptions} from '../../LexConfig.js';
 
+const SOURCE_GLOB_IGNORE = [
+  '**/__mocks__/**',
+  '**/__tests__/**',
+  '**/tests/**'
+];
+
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
   if(!existsSync(startPath)) {
     return false;
@@ -75,13 +81,16 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       return 1;
     }
 
-    const typescriptOptions: string[] = config
-      ? ['-p', config, '--emitDeclarationOnly', '--skipLibCheck'] // User provided custom config, but still only emit declarations
+    const defaultTypeScriptConfig = pathResolve(process.cwd(), 'tsconfig.build.json');
+    const typeScriptConfig = config || (existsSync(defaultTypeScriptConfig) ? defaultTypeScriptConfig : undefined);
+    const typescriptOptions: string[] = typeScriptConfig
+      ? ['-p', typeScriptConfig, '--emitDeclarationOnly', '--skipLibCheck']
       : (() => {
         const globOptions = {
           absolute: true,
           cwd: sourceDir,
           dot: false,
+          ignore: SOURCE_GLOB_IGNORE,
           nodir: true
         };
         const tsFiles = globSync('**/!(*.spec|*.test|*.integration|*.e2e).ts', globOptions);
@@ -162,6 +171,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     absolute: true,
     cwd: sourceDir,
     dot: false,
+    ignore: SOURCE_GLOB_IGNORE,
     nodir: true,
     nosort: true
   };
