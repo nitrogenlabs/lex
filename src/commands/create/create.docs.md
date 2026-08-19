@@ -2,6 +2,16 @@
 
 The create module provides functionality to create various project assets such as changelogs, stores, tsconfig files, views, and VSCode configurations.
 
+## CLI usage
+
+```bash
+lex create changelog --outputFile CHANGELOG.md
+lex create store --outputName Session --typescript
+lex create view --outputName Dashboard --typescript
+lex create tsconfig
+lex create vscode
+```
+
 ## API
 
 ### `create(type: string, options: CreateOptions, callback?: CreateCallback): Promise<number>`

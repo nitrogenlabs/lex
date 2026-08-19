@@ -104,7 +104,7 @@ export interface TestOptions {
 
 ```javascript
 // Import the test function
-import {test} from './test.js';
+import {test} from '@nlabs/lex';
 
 // Run tests with default options
 await test({}, []);
@@ -204,8 +204,6 @@ lex test --debugTests
 lex test --generate --analyze --debugTests
 ```
 
-> **Note:** For backward compatibility, the previous option names (`--generate`, `--analyze`, `--debugTests`) are still supported but considered deprecated.
-
 ## Common Options
 
 ```bash
@@ -213,7 +211,7 @@ lex test --generate --analyze --debugTests
 lex test --unit --collectCoverageFrom "src/**/*.{ts,tsx}"
 
 # Watch for changes and rerun tests
-lex test --unit --watch
+lex test --unit --watch src
 
 # Run only changed files
 lex test --unit --onlyChanged
@@ -249,17 +247,19 @@ lex test --unit --e2e
 | `--detectOpenHandles` | boolean | `false` | Detect handles that weren't closed properly. |
 | `--e2e` | boolean | `false` | Run Playwright tests matching `*.e2e.ts[x]`. |
 | `--e2eConfig` | string | - | Custom Playwright configuration file path. |
+| `--environment` | string | - | Set Lex's target environment while resolving configuration. |
 | `--env` | string | - | Test environment used by Vitest. |
-| `--errorOnDeprecated` | boolean | `false` | Make calling deprecated APIs throw helpful error messages. |
+| `--errorOnDeprecated` | boolean | `false` | Accepted for compatibility; Vitest does not support it and Lex logs a warning. |
 | `--expand` | boolean | `false` | Use the expanded display format for test results. |
-| `--forceExit` | boolean | `false` | Force Vitest to exit after all tests complete. |
+| `--forceExit` | boolean | `false` | Accepted for compatibility; Vitest does not support it and Lex logs a warning. |
 | `--json` | boolean | `false` | Output results as JSON. |
 | `--lastCommit` | boolean | `false` | Run tests related to files changed in the last commit. |
+| `--lexConfig` | string | - | Custom Lex configuration file path. |
 | `--listTests` | boolean | `false` | List all tests without running them. |
 | `--logHeapUsage` | boolean | `false` | Log heap usage after each test. |
 | `--maxWorkers` | string | - | Maximum number of workers used running tests. |
-| `--noStackTrace` | boolean | `false` | Disables stack trace in test results. |
-| `--notify` | boolean | `false` | Activates OS notifications for test results. |
+| `--noStackTrace` | boolean | `false` | Accepted for compatibility; Vitest does not support it and Lex logs a warning. |
+| `--notify` | boolean | `false` | Accepted for compatibility; Vitest does not support it and Lex logs a warning. |
 | `--onlyChanged` | boolean | `false` | Run tests related to changed files. |
 | `--outputFile` | string | - | Write test results to a file. |
 | `--passWithNoTests` | boolean | `false` | Pass when no tests are found. |
@@ -272,9 +272,10 @@ lex test --unit --e2e
 | `--testLocationInResults` | boolean | `false` | Add location info to test results. |
 | `--testNamePattern` | string | - | Run only tests with a name that matches the regex pattern. |
 | `--testPathPattern` | string | - | Run only tests with a file path that matches the regex pattern. |
+| `--typescript` | boolean | `false` | Enable TypeScript-aware Lex configuration for the test run. |
 | `--unit` | boolean | `false` | Run Vitest unit tests matching `*.test.ts[x]`. |
 | `--update` | boolean | `false` | Update snapshots. |
-| `--useStderr` | boolean | `false` | Divert all output to stderr. |
+| `--useStderr` | boolean | `false` | Accepted for compatibility; Vitest does not support it and Lex logs a warning. |
 | `--verbose` | boolean | `false` | Display individual test results with the test suite hierarchy. |
 | `--watch` | string | - | Watch files for changes and rerun tests related to changed files. |
 | `--watchAll` | boolean | `false` | Watch files for changes and rerun all tests. |

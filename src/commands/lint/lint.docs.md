@@ -125,16 +125,15 @@ lex lint [options]
 | --config | Use this configuration, overriding .eslintrc.* config options if present |
 | --debug | Output debugging information |
 | --env | Specify environments |
-| --env-info | Output execution environment information |
-| --ext | Specify JavaScript file extensions |
+| --envInfo | Output execution environment information |
 | --global | Define global variables |
-| --ignore-path | Specify path of ignore file |
-| --ignore-pattern | Pattern of files to ignore (in addition to those in .eslintignore) |
+| --ignorePath | Specify path of ignore file |
+| --ignorePattern | Pattern of files to ignore |
 | --init | Run config initialization wizard |
-| --no-eslintrc | Disable use of configuration from .eslintrc.* |
+| --noEslintrc | Disable use of legacy configuration lookup |
 | --parser | Specify the parser to be used |
-| --parser-options | Specify parser options |
-| --resolve-plugins-relative-to | A folder where plugins should be resolved from, CWD by default |
+| --parserOptions | Specify parser options |
+| --resolvePluginsRelativeTo | A folder where plugins should be resolved from |
 | --rule | Specify rules |
 | --quiet | Report errors only |
 | -h, --help | Display help for command |
@@ -172,4 +171,4 @@ export default {
 };
 ```
 
-For more details on AI-powered linting, see the [Linting with AI documentation](../ai/ai.docs.md). 
+For more details on AI-powered linting, see the [Linting with AI documentation](../ai/ai.docs.md).

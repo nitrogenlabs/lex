@@ -2,13 +2,23 @@
 
 The `publish` command publishes an npm module with version bumping support.
 
+## CLI usage
+
+```bash
+lex publish --bump patch
+lex publish --newVersion 2.1.0 --tag latest
+lex publish --bump beta --tag beta --otp 123456
+```
+
+Use `--private` to publish with restricted npm access and `--package-manager` to select npm or Yarn.
+
 ## API
 
 ```typescript
-publish(
+export declare const publish: (
   options: PublishOptions,
   callback?: PublishCallback
-): Promise<number>
+) => Promise<number>;
 ```
 
 ### Parameters
@@ -44,7 +54,7 @@ Returns a Promise that resolves to a number representing the exit status code:
 ### Basic Usage
 
 ```typescript
-import {publish} from 'lex';
+import {publish} from '@nlabs/lex';
 
 // Publish the current package
 await publish({});
@@ -53,7 +63,7 @@ await publish({});
 ### Bumping Version
 
 ```typescript
-import {publish} from 'lex';
+import {publish} from '@nlabs/lex';
 
 // Publish with a patch version bump
 await publish({
@@ -79,7 +89,7 @@ await publish({
 ### Using Specific Version
 
 ```typescript
-import {publish} from 'lex';
+import {publish} from '@nlabs/lex';
 
 // Publish with a specific version
 await publish({
@@ -90,7 +100,7 @@ await publish({
 ### Using Tags
 
 ```typescript
-import {publish} from 'lex';
+import {publish} from '@nlabs/lex';
 
 // Publish with a beta tag
 await publish({
@@ -101,7 +111,7 @@ await publish({
 ### Private Package
 
 ```typescript
-import {publish} from 'lex';
+import {publish} from '@nlabs/lex';
 
 // Publish as a private package
 await publish({
@@ -122,10 +132,10 @@ await publish({
 
 ## Notes
 
-- When using Yarn as the package manager, the version update is handled by Yarn itself using the `--new-version` flag
+- When using Yarn, Lex passes the selected version through Yarn's publish workflow instead of editing `package.json` first
 - For npm, the package.json file is updated manually before publishing
 - Valid bump types include:
   - Major releases: 'major'
   - Minor releases: 'minor'
   - Patch releases: 'patch'
-  - Pre-releases: 'alpha', 'beta', 'rc' 
+  - Pre-releases: 'alpha', 'beta', 'rc'

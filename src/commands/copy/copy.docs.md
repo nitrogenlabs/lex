@@ -2,6 +2,8 @@
 
 The copy module provides functionality to copy files and directories from one location to another.
 
+This is a programmatic API exported by `@nlabs/lex`; it does not have a corresponding CLI subcommand.
+
 ## API
 
 ### `copy(from: string, to: string, options: CopyOptions, callback?: CopyCallback): Promise<number>`
@@ -75,4 +77,4 @@ await copy('./source.txt', './destination.txt', {}, (status) => {
     console.error('Copy failed');
   }
 });
-``` 
+```

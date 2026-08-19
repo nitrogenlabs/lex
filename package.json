@@ -53,6 +53,7 @@
     "build:all": "npm run build && npm run build:ai",
     "build:ai": "NODE_ENV=production && npx swc 'src/commands/ai/**/*.{ts,tsx}' --out-dir ./lib/commands/ai --source-maps inline",
     "declarations": "tsc -p tsconfig.build.json",
+    "docs:check": "npm run build && node scripts/validate-docs.js",
     "clean": "rm -rf lib node_modules package-lock.json *.log coverage",
     "compile": "tsc -p tsconfig.build.json",
     "env": "LEX_CONFIG='{\"useTypescript\":true}'",

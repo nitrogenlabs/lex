@@ -19,16 +19,13 @@ export default {
   // Use this section to configure AI features for lint --fix and ai commands
   ai: {
     // Available providers: 'cursor', 'copilot', 'openai', 'anthropic', 'none'
-    provider: 'cursor',
+    provider: 'none',
 
     // API key for external providers (recommended to use environment variables)
     // apiKey: process.env.OPENAI_API_KEY,
 
-    // Model configuration (specific to each provider)
-    model: 'cursor-code', // For Cursor IDE
-    // model: 'copilot-codex', // For GitHub Copilot
-    // model: 'gpt-4o', // For OpenAI
-    // model: 'claude-3-sonnet', // For Anthropic
+    // Model identifier passed to the selected provider
+    model: 'gpt-4o',
 
     // Optional parameters
     maxTokens: 4000,
@@ -57,7 +54,7 @@ export default {
       },
 
       // Target JavaScript version
-      target: 'es2020', // 'es3', 'es5', 'es2015', 'es2016', 'es2017', 'es2018', 'es2019', 'es2020', 'es2021', 'es2022', 'es2023'
+      target: 'es2023',
 
       // Transform configuration
       transform: {
@@ -95,7 +92,7 @@ export default {
 
     // Environment configuration (optional)
     // env: {
-    //   targets: 'node >= 18', // Browser targets or Node.js version
+    //   targets: 'node >= 22', // Browser targets or Node.js version
     //   mode: 'usage', // 'usage' or 'entry'
     //   coreJs: '3', // Core-js version
     //   debug: false, // Debug mode
@@ -122,7 +119,7 @@ export default {
 //   useTypescript: true,
 //   swc: {
 //     jsc: {
-//       target: 'es2020',
+//       target: 'es2023',
 //       parser: {
 //         syntax: 'typescript',
 //         tsx: true
@@ -136,7 +133,7 @@ export default {
 //   useTypescript: true,
 //   swc: {
 //     jsc: {
-//       target: 'es2020',
+//       target: 'es2023',
 //       parser: {
 //         syntax: 'typescript',
 //         tsx: true,

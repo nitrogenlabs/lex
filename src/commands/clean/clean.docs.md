@@ -2,6 +2,14 @@
 
 The clean module provides functionality to clean up project files and directories, such as node_modules, coverage reports, and test snapshots.
 
+## CLI usage
+
+```bash
+lex clean
+lex clean --snapshots
+lex clean --quiet
+```
+
 ## API
 
 ### `clean(options: CleanOptions, callback?: CleanCallback): Promise<number>`

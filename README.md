@@ -10,24 +10,23 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 
 [![npm version](https://img.shields.io/npm/v/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
 [![npm downloads](https://img.shields.io/npm/dm/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
-[![Issues](http://img.shields.io/github/issues/nitrogenlabs/lex.svg?style=flat-square)](https://github.com/nitrogenlabs/lex/issues)
-[![TypeScript](https://badges.frapsoft.com/typescript/version/typescript-next.svg?v=101)](https://github.com/ellerbrock/typescript-badges/)
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Issues](https://img.shields.io/github/issues/nitrogenlabs/lex.svg?style=flat-square)](https://github.com/nitrogenlabs/lex/issues)
+[![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Chat](https://img.shields.io/discord/446122412715802649.svg)](https://discord.gg/nitrogenlabs)
 
 ## Why Lex?
 
 ### **Zero Configuration**
 
-- Works out of the box with any React project
+- Provides conventions and defaults for React 19 projects
 - Vite-powered web builds with no required bundler config
 - No testing setup to configure
 - No build tools to manage
 
 ### **Lightning Fast**
 
-- SWC-powered compilation (10-100x faster than Babel)
-- Hot reloading development server
+- SWC-powered TypeScript and JavaScript compilation
+- Fast Vite development server
 - Optimized production builds
 - Parallel test execution
 
@@ -46,6 +45,8 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 - Production-optimized builds
 
 ## Quick Start
+
+Lex 2 requires Node.js 22 or newer.
 
 ```bash
 # Install Lex globally
@@ -71,15 +72,16 @@ lex build --mode production
 
 Lex comes with everything you need for modern React development:
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| **SWC** | Lightning-fast TypeScript/JavaScript compiler | Latest |
-| **Vitest** | Testing framework | Latest |
-| **TypeScript** | Type safety | Latest |
-| **Vite** | Web development and production bundling | Latest |
-| **Storybook** | Component development | Latest |
-| **PostCSS** | CSS processing | Latest |
-| **ESLint** | Code linting | Latest |
+| Tool | Purpose |
+|------|---------|
+| **SWC** | TypeScript/JavaScript compilation and Vite source transforms |
+| **Vitest** | Unit and integration testing |
+| **Playwright** | End-to-end testing |
+| **TypeScript** | Type checking and declarations |
+| **Vite** | Web development and production bundling |
+| **Storybook** | React component development with Vite |
+| **PostCSS and Tailwind CSS 4** | CSS processing |
+| **ESLint** | Code linting |
 
 ## Commands Overview
 
@@ -87,59 +89,59 @@ Lex comes with everything you need for modern React development:
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex init`](#init) | Create new React applications | `lex init my-app --typescript` |
-| [`lex create`](#create) | Generate project assets | `lex create view Dashboard` |
-| [`lex migrate`](#migrate) | Migrate existing projects | `lex migrate` |
+| [`lex init`](src/commands/init/init.docs.md) | Create new React applications | `lex init my-app --typescript` |
+| [`lex create`](src/commands/create/create.docs.md) | Generate project assets | `lex create view --outputName Dashboard` |
+| [`lex migrate`](src/commands/migrate/migrate.docs.md) | Remove conflicting toolchain packages and reinstall | `lex migrate` |
 
 ### **Development**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex dev`](#dev) | Start development server | `lex dev --open` |
-| [`lex serverless-dev`](#serverless-dev) | Start serverless development server | `lex serverless-dev --host 0.0.0.0` |
-| [`lex compile`](#compile) | Compile TypeScript/JavaScript | `lex compile --watch` |
-| [`lex build`](#build) | Build for production | `lex build --mode production` |
+| [`lex dev`](src/commands/dev/dev.docs.md) | Start the Vite development server | `lex dev --open` |
+| [`lex serverless-dev`](src/commands/serverless-dev/serverless-dev.docs.md) | Start the local Lambda server | `lex serverless-dev --host 0.0.0.0` |
+| [`lex serverless-deploy`](src/commands/serverless-deploy/serverless-deploy.docs.md) | Bundle and package a Lambda function | `lex serverless-deploy --entry src/handler.ts` |
+| [`lex compile`](src/commands/compile/compile.docs.md) | Compile TypeScript/JavaScript with SWC | `lex compile --watch` |
+| [`lex build`](src/commands/build/build.docs.md) | Build with Vite or SWC | `lex build --mode production` |
 
 ### **Testing & Quality**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex test`](#test) | Run Vitest tests | `lex test --watch` |
-| [`lex lint`](#lint) | Lint code with ESLint | `lex lint --fix` |
-| [`lex storybook`](#storybook) | Start Storybook | `lex storybook --open` |
+| [`lex test`](src/commands/test/test.docs.md) | Run Vitest and Playwright tests | `lex test --unit` |
+| [`lex lint`](src/commands/lint/lint.docs.md) | Lint code with ESLint | `lex lint --fix` |
+| [`lex storybook`](src/commands/storybook/storybook.docs.md) | Start Storybook with React Vite defaults | `lex storybook --open` |
 
 ### **AI-Powered Features**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex ai`](#ai) | AI code assistance | `lex ai --task generate --prompt "Create a button component"` |
-| [`lex test`](#test) | AI test generation | `lex test --generate` |
-| [`lex build`](#build) | AI error fixing | `lex build --assist` |
+| [`lex ai`](src/commands/ai/ai.docs.md) | AI code assistance | `lex ai --task generate --prompt "Create a button component"` |
+| [`lex test`](src/commands/test/test.docs.md) | AI test generation | `lex test --generate` |
+| [`lex build`](src/commands/build/build.docs.md) | AI build assistance | `lex build --assist` |
 
 ### **Package Management**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex update`](#update) | Update dependencies | `lex update --interactive` |
-| [`lex upgrade`](#upgrade) | Upgrade Lex itself | `lex upgrade` |
-| [`lex publish`](#publish) | Publish to npm | `lex publish --bump minor` |
+| [`lex update`](src/commands/update/update.docs.md) | Update dependencies | `lex update --interactive` |
+| [`lex upgrade`](src/commands/upgrade/upgrade.docs.md) | Upgrade Lex itself | `lex upgrade` |
+| [`lex publish`](src/commands/publish/publish.docs.md) | Publish to npm | `lex publish --bump minor` |
 
 ### **Utilities**
 
 | Command | Description | Quick Example |
 |---------|-------------|---------------|
-| [`lex clean`](#clean) | Clean project files | `lex clean` |
-| [`lex copy`](#copy) | Copy files/directories | `lex copy src lib` |
-| [`lex config`](#config) | Show configurations | `lex config vite` |
-| [`lex versions`](#versions) | Show tool versions | `lex versions` |
-| [`lex link`](#link) | Check linked modules | `lex link` |
+| [`lex clean`](src/commands/clean/clean.docs.md) | Clean project files | `lex clean` |
+| [`lex config`](src/commands/config/config.docs.md) | Show resolved configurations | `lex config vite` |
+| [`lex versions`](src/commands/versions/versions.docs.md) | Show tool versions | `lex versions` |
+| [`lex linked`](src/commands/link/link.docs.md) | Check linked modules | `lex linked` |
 
 ## Core Features
 
 ### **Development Server**
 
 ```bash
-# Start with hot reloading
+# Start the Vite development server
 lex dev --open
 
 # With bundle analyzer
@@ -225,7 +227,7 @@ lex build --analyze
 lex test
 
 # Watch mode
-lex test --watch
+lex test --watch src
 
 # Generate tests with AI
 lex test --generate
@@ -241,7 +243,7 @@ lex test --config ./vitest.config.mjs
 
 - **Smart Configuration Merging**: Automatically merges your project's Vitest config with Lex's optimized defaults
 - **ESM Support**: Automatic detection and configuration for ES modules projects
-- **Automatic Setup**: Creates vitest.setup.js file if one doesn't exist
+- **Setup Discovery**: Uses `vitest.setup.js` or a path supplied with `--setup` when present
 - **React JSX Automatic Runtime**: No need to import React in your test files
 - **TypeScript-First**: Optimized for TypeScript projects with specialized configs
 
@@ -268,31 +270,21 @@ lex ai --task generate --prompt "Create a user profile component"
 lex ai --task explain --file src/components/Button.tsx
 
 # Fix errors
-lex ai --task help --prompt "Fix this TypeScript error"
+lex ai --task explain --prompt "Explain this TypeScript error and suggest a fix"
 ```
 
 ## Framework Support
 
-Lex works seamlessly with popular React frameworks and libraries:
-
-- ✅ **Create React App** - Migrate existing CRA projects
-- ✅ **Next.js** - Use Lex for testing and building
-- ✅ **Gatsby** - Integrate Lex workflows
-- ✅ **Vite** - Built-in web development and production bundling
-- ✅ **TypeScript** - Full TypeScript support out of the box
-- ✅ **Tailwind CSS** - Automatic Tailwind integration
-- ✅ **Storybook** - Built-in Storybook support
-- ✅ **Serverless** - Local AWS Lambda development with HTTP/WebSocket support
+Lex's built-in web pipeline targets React 19 with Vite and Tailwind CSS 4. Lex also provides SWC compilation for Node, Lambda, and mobile targets; Vitest and Playwright test workflows; React Vite Storybook defaults; and local AWS Lambda HTTP, WebSocket, and GraphQL development.
 
 ## 🚀 Performance
 
 Lex is designed for speed and efficiency:
 
-- **SWC Integration** - 10-100x faster than Babel, faster than esbuild
-- **Smart Caching** - Intelligent caching for faster rebuilds
-- **Hot Reloading** - Instant feedback during development
+- **Vite Development** - On-demand module transformation during development
+- **SWC Compilation** - Fast non-web compilation and source transformation
 - **Tree Shaking** - Automatic dead code elimination
-- **Code Splitting** - Automatic code splitting for optimal loading
+- **Code Splitting** - Native dynamic-import chunks for web production builds
 
 ## Configuration
 
@@ -311,7 +303,7 @@ export default {
   // AI configuration
   ai: {
     provider: 'openai',
-    model: 'gpt-4'
+    model: 'gpt-4o'
   },
 
   // SWC configuration (defaults to ESM format)
@@ -348,7 +340,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 | `dev.port` | `number` | `3000` | Default port used by `lex dev` when `--port` is not passed | `dev: { port: 4200 }` |
 | `outputFile` | `string` | `undefined` | Specific output filename | `outputFile: 'bundle.js'` |
 | `outputFullPath` | `string` | `path.resolve('./lib')` | Absolute output path for build artifacts and static files. | `outputFullPath: '/absolute/build'` |
-| `outputHash` | `boolean` | `false` | Add hash to output filenames | `outputHash: true` |
+| `outputHash` | `boolean` | Production mode | Add hashes to output filenames | `outputHash: true` |
 | `outputPath` | `string` | `'./lib'` | Output directory path | `outputPath: './build'` |
 | `packageManager` | `'npm' \| 'yarn'` | `'npm'` | Package manager to use | `packageManager: 'yarn'` |
 | `preset` | `'web' \| 'node' \| 'lambda' \| 'mobile'` | `'web'` | Project preset type | `preset: 'node'` |
@@ -365,7 +357,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 |--------|------|---------|-------------|---------|
 | `ai.apiKey` | `string` | `undefined` | API key for AI provider | `ai: { apiKey: 'sk-...' }` |
 | `ai.maxTokens` | `number` | `4000` | Maximum tokens for AI responses | `ai: { maxTokens: 8000 }` |
-| `ai.model` | `string` | `'gpt-4o'` | AI model to use | `ai: { model: 'gpt-4' }` |
+| `ai.model` | `string` | `'gpt-4o'` | Model identifier passed to the provider | `ai: { model: 'gpt-4o' }` |
 | `ai.provider` | `'cursor' \| 'copilot' \| 'openai' \| 'anthropic' \| 'none'` | `'none'` | AI service provider | `ai: { provider: 'openai' }` |
 | `ai.temperature` | `number` | `0.1` | AI response creativity (0-1) | `ai: { temperature: 0.7 }` |
 
@@ -373,8 +365,7 @@ Lex provides extensive configuration options through the `lex.config.js` file. H
 
 SWC (Speedy Web Compiler) powers non-web compilation and Lex's source transformation inside Vite. SWC provides:
 
-- **10-100x faster** compilation than Babel
-- **Faster than esbuild** for TypeScript compilation
+- **Fast native compilation** for TypeScript and JavaScript
 - **Zero configuration** - works out of the box
 - **ESM by default** - modern module format
 - **Automatic React JSX** transformation
@@ -385,7 +376,7 @@ SWC is automatically configured and doesn't require additional configuration in 
 | Feature | Description | Default |
 |---------|-------------|---------|
 | **Output Format** | JavaScript module format | `esm` |
-| **Target** | JavaScript target version | `es2020` |
+| **Target** | JavaScript target version | `es2023` |
 | **JSX Runtime** | React JSX transformation | `automatic` |
 | **React Compiler** | Optional React Compiler SWC plugin | `false` |
 | **Decorators** | TypeScript decorators support | `enabled` |
@@ -476,11 +467,11 @@ Lex also processes these conventional asset locations:
 | Source | Output | Behavior |
 |--------|--------|----------|
 | `vite.staticPath` | Output root | Recursively copied |
-| `src/images` | `images` | Copied and optimized |
-| `src/fonts` | `fonts` | Copied |
-| `src/docs` | `docs` | Copied |
-| `src/icons/*.svg` | `icons/icons.svg` | Combined into an optimized SVG sprite |
-| `src/images/logo.png` | Output root | Generates favicons, manifests, `open-graph.png`, and `twitter.png` |
+| `<sourcePath>/images` | `images` | Copied and optimized |
+| `<sourcePath>/fonts` | `fonts` | Copied |
+| `<sourcePath>/docs` | `docs` | Copied |
+| `<sourcePath>/icons/*.svg` | `icons/icons.svg` | Combined into an optimized SVG sprite |
+| `<sourcePath>/images/logo.png` | Output root | Generates favicons, manifests, `open-graph.png`, and `twitter.png` |
 
 Production builds optimize GIF, JPEG, PNG, SVG, and WebP assets. Compressible CSS, HTML, JavaScript, JSON, SVG, text, and XML files of at least 8 KiB receive a `.gz` sidecar.
 
@@ -491,15 +482,13 @@ Lex 2 is a breaking migration from Webpack to Vite for web projects. Non-web pro
 Update the configuration property:
 
 ```javascript
-// Lex 1.x
-export default {
+const lex1Config = {
   webpack: {
     staticPath: './src/static'
   }
 };
 
-// Lex 2.x
-export default {
+const lex2Config = {
   vite: {
     staticPath: './src/static'
   }
@@ -524,7 +513,6 @@ export default {
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
-| `configFiles` | `string[]` | `[]` | Additional config files to include | `configFiles: ['./config/custom.js']` |
 | `copyFiles` | `string[]` | `[]` | Files to copy during build | `copyFiles: ['public/assets']` |
 | `env` | `object` | `null` | Environment variables | `env: { NODE_ENV: 'development' }` |
 | `gitUrl` | `string` | `undefined` | Git repository URL | `gitUrl: 'https://github.com/user/repo'` |
@@ -564,7 +552,7 @@ export default {
   ai: {
     provider: 'openai',
     apiKey: process.env.OPENAI_API_KEY,
-    model: 'gpt-4',
+    model: 'gpt-4o',
     maxTokens: 8000,
     temperature: 0.3
   },
@@ -634,10 +622,7 @@ export default {
 
 If static assets return 404, verify that `vite.staticPath` exists and points to the intended directory.
 
-**Solution**: The `outputFullPath` directory should exist before starting the dev server. You can:
-
-- Run `lex build` first to create the output directory
-- Or ensure your `outputPath` configuration points to an existing directory
+**Solution**: Put pass-through files in `vite.staticPath` (default: `src/static`) or use the conventional `images`, `fonts`, `docs`, and `icons` directories under `sourcePath`. Vite serves these source assets directly during development.
 
 #### Port Already in Use
 
@@ -650,7 +635,7 @@ If you get an "address already in use" error, another process is using the defau
 lsof -ti:3000 | xargs kill -9
 
 # Or use a different port
-lex dev --port 3000
+lex dev --port 3001
 ```
 
 #### TypeScript Configuration Issues
@@ -672,35 +657,16 @@ If TypeScript compilation fails, ensure your `tsconfig.json` is properly configu
 
 #### Missing Static Assets Error
 
-If you see build errors about missing static assets, check that every path referenced by the HTML template exists.
-
-**Solution**: Either create the missing files or update your HTML template to use relative paths:
-
-```html
-<!-- Instead of absolute paths -->
-<link rel="icon" href="/favicon.ico" />
-<link rel="manifest" href="/manifest.json" />
-
-<!-- Use relative paths -->
-<link rel="icon" href="favicon.ico" />
-<link rel="manifest" href="manifest.json" />
-```
-
-Or create the missing files in your source directory:
-
-```bash
-touch src/favicon.ico
-touch src/manifest.json
-mkdir -p src/images && touch src/images/logo-icon-64.png
-```
+If an asset referenced by HTML is missing, verify its source location. Files in `vite.staticPath` are served from `/`, while conventional directories retain their output prefix—for example, `<sourcePath>/images/banner.png` becomes `/images/banner.png`. Add `<sourcePath>/images/logo.png` when Lex should generate favicon and social-image assets automatically.
 
 ## Documentation
 
-- 📖 **[Full Documentation](http://lex.nitrogenlabs.com)** - Complete API reference
-- 🎯 **[Getting Started Guide](http://lex.nitrogenlabs.com/getting-started)** - Step-by-step tutorial
-- 🛠️ **[Configuration Guide](http://lex.nitrogenlabs.com/configuration)** - Customization options
-- 🤖 **[AI Features Guide](http://lex.nitrogenlabs.com/ai-features)** - AI-powered development
-- 🧪 **[Testing Guide](http://lex.nitrogenlabs.com/testing)** - Testing best practices
+- **[Vite build](src/commands/build/build.docs.md)** and **[development server](src/commands/dev/dev.docs.md)**
+- **[Configuration](src/commands/config/config.docs.md)**
+- **[Testing](src/commands/test/test.docs.md)** and **[linting](src/commands/lint/lint.docs.md)**
+- **[Storybook](src/commands/storybook/README.md)**
+- **[Serverless development](src/commands/serverless-dev/serverless-dev.docs.md)** and **[deployment](src/commands/serverless-deploy/serverless-deploy.docs.md)**
+- **[AI commands](src/commands/ai/ai.docs.md)**
 
 ## Contributing
 

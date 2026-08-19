@@ -2,6 +2,15 @@
 
 The update command updates all dependencies in a project to their latest versions.
 
+## CLI usage
+
+```bash
+lex update
+lex update --interactive
+lex update --registry https://registry.npmjs.org
+lex update --package-manager yarn
+```
+
 ## API
 
 ```typescript
@@ -15,7 +24,7 @@ export interface UpdateOptions {
 
 export type UpdateCallback = typeof process.exit;
 
-export const update = async (cmd: UpdateOptions, callback: UpdateCallback = process.exit): Promise<number>
+export declare const update: (cmd: UpdateOptions, callback?: UpdateCallback) => Promise<number>;
 ```
 
 ## Options
@@ -61,8 +70,8 @@ Returns a Promise that resolves to:
 3. Determines package manager (npm or yarn)
 4. For npm:
    - Runs npm-check-updates to update dependencies
-   - Runs npm install with --force
-   - Runs npm audit fix
+   - Reinstalls the updated npm dependency tree
+   - Runs npm's audit-fix workflow
 5. For yarn:
-   - Runs yarn upgrade --latest or yarn upgrade-interactive --latest
-6. Returns success or error code 
+   - Runs Yarn's latest-version upgrade workflow, interactively when requested
+6. Returns success or error code

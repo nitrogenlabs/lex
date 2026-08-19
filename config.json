@@ -19,7 +19,7 @@
         "syntax": "typescript",
         "tsx": true
       },
-      "target": "es2020",
+      "target": "es2023",
       "transform": {
         "react": {
           "runtime": "automatic"
@@ -28,10 +28,7 @@
       "externalHelpers": false,
       "keepClassNames": false,
       "loose": false,
-      "minify": {
-        "compress": true,
-        "mangle": true
-      }
+      "minify": false
     },
     "module": {
       "type": "es6",
@@ -40,8 +37,8 @@
       "lazy": false,
       "noInterop": false
     },
-    "minify": true,
-    "sourceMaps": false,
+    "minify": false,
+    "sourceMaps": "inline",
     "inlineSourcesContent": true,
     "isModule": true
   },
@@ -51,7 +48,6 @@
   "vitest": {},
   "outputHash": false,
   "useGraphQl": false,
-  "configFiles": [],
   "copyFiles": [],
   "entryHTML": "index.html",
   "entryJs": "index.js",

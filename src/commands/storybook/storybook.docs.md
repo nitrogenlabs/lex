@@ -53,8 +53,8 @@ export type StorybookCallback = (status: number) => void;
 ## Features
 
 - **Story File Detection**: Automatically finds story files with patterns like `*.stories.{ts,tsx,js,jsx}`, `*.story.{ts,tsx,js,jsx}`, and files in `stories/` directories
-- **Storybook Installation Check**: Verifies that Storybook is installed in the project before running
-- **Development Server**: Starts Storybook development server with hot reloading
+- **Storybook Binary Resolution**: Uses the project or bundled Storybook executable
+- **Development Server**: Starts Storybook's React Vite development server
 - **Static Build**: Optionally builds a static Storybook site for deployment
 - **Custom Configuration**: Supports custom Storybook configuration directories
 - **Lex Configuration**: Optionally use Lex's built-in Storybook configuration instead of project config
@@ -66,7 +66,7 @@ export type StorybookCallback = (status: number) => void;
 - **Quiet Mode**: Supports suppressing output for automated usage
 - **Verbose Mode**: Shows detailed Storybook builder output
 - **Tailwind CSS Integration**: Automatically detects and integrates Tailwind CSS files
-- **Progress Tracking**: Shows real-time build progress with percentage updates
+- **Build Status**: Shows Storybook startup and static-build status
 - **Output Filtering**: Intelligently filters and beautifies Storybook output
 
 ## Example Usage
@@ -167,7 +167,7 @@ The command provides intelligent output filtering:
 
 - **Normal Mode**: Shows essential Storybook messages and hides low-level builder details
 - **Verbose Mode**: Shows all Storybook builder output
-- **Progress Tracking**: Displays real-time build progress with percentage updates
+- **Build Status**: Displays startup and static-build status
 - **Color Coding**: Uses chalk for better visual distinction of different message types
 
 ## Supported Storybook Frameworks
@@ -178,9 +178,9 @@ Lex's included configuration uses React with `@storybook/react-vite`. Other fram
 
 The command provides helpful error messages for common issues:
 
-- **Storybook not installed**: Suggests installing the appropriate Storybook package
+- **Storybook binary unavailable**: Suggests reinstalling Lex or checking the project installation
 - **No story files found**: Provides guidance on creating story files
 - **Binary not found**: Suggests reinstalling Lex or checking Storybook installation
 - **Invalid environment variables**: Validates JSON format for environment variables
 - **Configuration not found**: Provides guidance on Storybook initialization
-- **Tailwind CSS not found**: Suggests creating a tailwind.css file with proper directives
+- **Tailwind CSS not found**: Suggests creating a Tailwind CSS 4 entry file

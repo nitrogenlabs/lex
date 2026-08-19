@@ -2,6 +2,13 @@
 
 The versions command displays the versions of Lex and its main dependencies.
 
+## CLI usage
+
+```bash
+lex versions
+lex versions --json
+```
+
 ## API
 
 ```typescript
@@ -9,9 +16,9 @@ export interface VersionsCmd {
   readonly json?: boolean;
 }
 
-export const versions = (cmd: VersionsCmd, callback: (status: number) => void): Promise<number>
+export declare const versions: (cmd: VersionsCmd, callback: (status: number) => void) => Promise<number>;
 
-export const parseVersion = (packageVersion: string): string
+export declare const parseVersion: (packageVersion: string) => string;
 
 export const packages = {
   swc: string,
@@ -21,7 +28,7 @@ export const packages = {
   vite: string
 }
 
-export const jsonVersions = (lexPackages) => object
+export declare const jsonVersions: (lexPackages: Record<string, string>) => Record<string, string>;
 ```
 
 ## Options

@@ -12,13 +12,15 @@ The Storybook command in Lex provides a convenient way to start Storybook develo
 - **Environment Variables**: Set custom environment variables
 - **Port Configuration**: Specify custom ports for the development server (defaults to 6007)
 - **Tailwind CSS Integration**: Automatic detection and integration of Tailwind CSS files
-- **Progress Tracking**: Real-time build progress with percentage updates
+- **Build Status**: Clear startup and static-build status output
 - **Output Filtering**: Intelligent filtering and beautification of Storybook output
 - **Verbose Mode**: Detailed output for debugging and troubleshooting
 
 ## Installation
 
-The Storybook command is included with Lex and includes Storybook v10 with the React Vite framework:
+Lex includes Storybook v10 and the React Vite framework, so the built-in configuration does not require a separate Storybook installation.
+
+Projects that own their Storybook configuration should install the packages imported by that configuration. For a React Vite project:
 
 ```bash
 # React with Vite
@@ -33,14 +35,13 @@ Lex includes the following Storybook v10 packages:
 
 ### Core Packages
 
-- `@storybook/cli` - Storybook CLI tools
 - `@storybook/react` - React framework support
 - `@storybook/react-vite` - Vite builder for React
 - `storybook` - Main Storybook package
 
-### Peer Dependencies
+### Project-owned configurations
 
-These packages should be installed in your project:
+Install these packages in the project only when its own `.storybook` configuration imports them:
 
 - `@storybook/react` - React framework support
 - `@storybook/react-vite` - Vite builder for React
@@ -145,12 +146,10 @@ The command automatically detects and integrates Tailwind CSS:
 
 ### Tailwind CSS Setup
 
-Create a `tailwind.css` file in your project with the standard Tailwind directives:
+Create a `tailwind.css` file in your project using the Tailwind CSS 4 import:
 
 ```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 ```
 
 The command will automatically detect this file and integrate it with Storybook.
@@ -197,12 +196,12 @@ Lex's built-in Storybook configuration uses `@storybook/react-vite`. Projects us
 
 The command provides helpful error messages for common issues:
 
-- **Storybook not installed**: Suggests installing the appropriate Storybook package
+- **Storybook binary unavailable**: Suggests reinstalling Lex or checking the project installation
 - **No story files found**: Provides guidance on creating story files
 - **Binary not found**: Suggests reinstalling Lex or checking Storybook installation
 - **Invalid environment variables**: Validates JSON format for environment variables
 - **Configuration not found**: Provides guidance on Storybook initialization
-- **Tailwind CSS not found**: Suggests creating a tailwind.css file with proper directives
+- **Tailwind CSS not found**: Suggests creating a `tailwind.css` entry file
 
 ## Programmatic Usage
 
@@ -303,7 +302,7 @@ lex storybook --useLexConfig
 
 If Tailwind CSS is not being applied:
 
-1. Ensure you have a `tailwind.css` file with proper directives
+1. Ensure you have a `tailwind.css` file containing `@import "tailwindcss";`
 2. Check that the file is in a location that matches the `**/tailwind.css` pattern
 3. Use `--verbose` to see detailed output and debug the issue
 

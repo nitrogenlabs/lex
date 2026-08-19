@@ -1,5 +1,20 @@
 # Changes
 
+## 2.0.3
+
+- Fixed TypeScript configuration path resolution for compilation and declaration generation.
+
+## 2.0.2
+
+- Fixed project and Lex package resolution in the Vite configuration.
+- Expanded Vite migration and asset-pipeline documentation.
+
+## 2.0.1
+
+- Removed unused dependency overrides and the vulnerable broad Node polyfill dependency chain.
+- Replaced the broad polyfill package with targeted browser shims used by Lex.
+- Updated dependencies and cleared build warnings.
+
 ## 2.0.0
 
 ### Breaking changes

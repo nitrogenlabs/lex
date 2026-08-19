@@ -113,19 +113,19 @@ export const handler = async (event, context) => {
 ### HTTP Events
 
 ```javascript
-{
+const event = {
   httpMethod: 'GET',
   path: '/hello',
   headers: {},
   queryStringParameters: {},
   body: null
-}
+};
 ```
 
 ### WebSocket Events
 
 ```javascript
-{
+const event = {
   requestContext: {
     routeKey: '$default',
     connectionId: 'test-connection-id',
@@ -134,7 +134,7 @@ export const handler = async (event, context) => {
     }
   },
   body: 'message content'
-}
+};
 ```
 
 ## Context Object
@@ -142,7 +142,7 @@ export const handler = async (event, context) => {
 Both HTTP and WebSocket handlers receive a context object that simulates AWS Lambda context:
 
 ```javascript
-{
+const context = {
   functionName: 'function-name',
   functionVersion: '$LATEST',
   invokedFunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:function-name',
@@ -151,7 +151,7 @@ Both HTTP and WebSocket handlers receive a context object that simulates AWS Lam
   logGroupName: '/aws/lambda/function-name',
   logStreamName: 'test-log-stream',
   getRemainingTimeInMillis: () => 30000
-}
+};
 ```
 
 ## Examples

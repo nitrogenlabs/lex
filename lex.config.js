@@ -2,8 +2,7 @@
  * Lex configuration file
  * This file contains configuration options for the Lex CLI tool
  *
- * Note: SWC has replaced esbuild as the default transpiler.
- * The 'swc' configuration section below replaces the old 'esbuild' configuration.
+ * Web projects build with Vite. Non-web projects compile with SWC.
  */
 
 export default {
@@ -20,24 +19,26 @@ export default {
   // Use this section to configure AI features for lint --fix and ai commands
   ai: {
     // Available providers: 'cursor', 'copilot', 'openai', 'anthropic', 'none'
-    provider: 'cursor',
+    provider: 'none',
 
     // API key for external providers (recommended to use environment variables)
     // apiKey: process.env.OPENAI_API_KEY,
 
-    // Model configuration (specific to each provider)
-    model: 'cursor-code', // For Cursor IDE
-    // model: 'copilot-codex', // For GitHub Copilot
-    // model: 'gpt-4o', // For OpenAI
-    // model: 'claude-3-sonnet', // For Anthropic
+    // Model identifier passed to the selected provider
+    model: 'gpt-4o',
 
     // Optional parameters
     maxTokens: 4000,
     temperature: 0.1
   },
 
-  // SWC configuration (replaces esbuild)
-  // SWC is now the default transpiler for all TypeScript/JavaScript compilation
+  // Vite configuration for web development and production builds
+  vite: {
+    base: '/',
+    staticPath: './src/static'
+  },
+
+  // SWC configuration for non-web compilation and Vite source transforms
   swc: {
     jsc: {
       parser: {
@@ -46,7 +47,7 @@ export default {
         decorators: true,
         dynamicImport: true
       },
-      target: 'es2020',
+      target: 'es2023',
       transform: {
         react: {
           runtime: 'automatic'

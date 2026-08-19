@@ -2,13 +2,20 @@
 
 The `linked` command checks for linked npm modules in the current project.
 
+## CLI usage
+
+```bash
+lex linked
+lex linked --quiet
+```
+
 ## API
 
 ```typescript
-linked(
+export declare const linked: (
   options: LinkOptions,
   callback?: LinkCallback
-): Promise<number>
+) => Promise<number>;
 ```
 
 ### Parameters
@@ -37,7 +44,7 @@ Returns a Promise that resolves to a number representing the exit status code:
 ### Basic Usage
 
 ```typescript
-import {linked} from 'lex';
+import {linked} from '@nlabs/lex';
 
 // Check for linked modules
 await linked({});
@@ -46,7 +53,7 @@ await linked({});
 ### Using Custom CLI Name
 
 ```typescript
-import {linked} from 'lex';
+import {linked} from '@nlabs/lex';
 
 // Check for linked modules with custom CLI name
 await linked({
@@ -57,7 +64,7 @@ await linked({
 ### Quiet Mode
 
 ```typescript
-import {linked} from 'lex';
+import {linked} from '@nlabs/lex';
 
 // Check for linked modules in quiet mode
 await linked({
@@ -74,4 +81,4 @@ await linked({
 
 ## Notes
 
-This command is useful for identifying npm modules that are linked in the current project using `npm link`. Linked modules are typically used during development to test local changes to dependencies without publishing them to npm. 
+This command is useful for identifying npm modules that are linked in the current project using `npm link`. Linked modules are typically used during development to test local changes to dependencies without publishing them to npm.

@@ -11,6 +11,8 @@ import {LexConfig} from '../../LexConfig.js';
 import {callAIService} from '../../utils/aiService.js';
 import {log} from '../../utils/log.js';
 
+import type {AIConfig} from '../../LexConfig.js';
+
 if(process.env.CURSOR_EXTENSION === 'true' ||
   process.env.CURSOR_TERMINAL === 'true' ||
   process.env.CURSOR_APP === 'true' ||
@@ -248,8 +250,14 @@ const detectCursorIDE = (): boolean => {
 
 export const aiFunction = async (options: AIOptions): Promise<any> => {
   try {
+    await LexConfig.parseConfig(options);
     const config = LexConfig.config || {};
-    const aiConfig = config.ai || {};
+    const aiConfig: AIConfig = {
+      ...config.ai,
+      ...(options.model ? {model: options.model} : {}),
+      ...(options.provider ? {provider: options.provider as AIConfig['provider']} : {})
+    };
+    LexConfig.config.ai = aiConfig;
     const provider = options.provider || aiConfig.provider || 'none';
 
     if(provider === 'none' && !process.env.CURSOR_EXTENSION) {
@@ -257,8 +265,8 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
       return {error: 'No AI provider configured'};
     }
 
-    const task = options.task || 'ask';
-    const validTasks = ['explain', 'generate', 'test', 'analyze', 'ask'];
+    const task = options.task || 'help';
+    const validTasks = ['explain', 'generate', 'test', 'optimize', 'help', 'analyze', 'ask'];
 
     if(!validTasks.includes(task)) {
       log(`${chalk.red('Error:')} Invalid task "${task}". Valid tasks are: ${validTasks.join(', ')}`, 'error');
@@ -274,7 +282,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
 
     let context = '';
 
-    if(options.file) {
+    if(options.context !== false && options.file) {
       try {
         const fs = await import('fs/promises');
         const glob = await import('glob');
@@ -293,7 +301,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
       }
     }
 
-    if(options.dir) {
+    if(options.context !== false && options.dir) {
       try {
         const {execaSync} = await import('execa');
         const result = execaSync('find', [options.dir, '-type', 'f', '|', 'sort']);
@@ -318,7 +326,11 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
       case 'analyze':
         formattedPrompt = `Analyze the following code:\n${prompt}`;
         break;
+      case 'optimize':
+        formattedPrompt = `Analyze the following code or configuration and suggest optimization improvements:\n${prompt}`;
+        break;
       case 'ask':
+      case 'help':
         formattedPrompt = `Provide guidance on the following development question:\n${prompt}`;
         break;
     }
@@ -352,7 +364,7 @@ export const aiFunction = async (options: AIOptions): Promise<any> => {
 export const ai = new Command('ai')
   .description('Use AI to help with development tasks')
   .option('--provider <provider>', 'AI provider to use (openai, anthropic, cursor)')
-  .option('--task <task>', 'Task to perform (explain, generate, test, analyze, ask)')
+  .option('--task <task>', 'Task to perform (explain, generate, test, optimize, help, analyze, ask)')
   .option('--prompt <prompt>', 'Prompt to send to AI')
   .option('--file <file>', 'File to analyze')
   .option('--dir <dir>', 'Directory to analyze')

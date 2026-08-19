@@ -2,6 +2,16 @@
 
 The compile module is responsible for compiling TypeScript and JavaScript code using SWC and managing assets in a Lex project.
 
+## CLI usage
+
+```bash
+lex compile
+lex compile --format cjs --outputPath lib
+lex compile --typescript --watch
+```
+
+Run `lex compile --help` for the complete CLI option list.
+
 ## Overview
 
 The compile module provides functionality to:
@@ -52,8 +62,7 @@ Utility function to check if a directory contains files with specific extensions
 ## Example Usage
 
 ```javascript
-// Import the compile function
-import {compile} from './compile.js';
+import {compile} from '@nlabs/lex';
 
 // Compile with default options
 await compile({});
@@ -114,12 +123,12 @@ The compile command uses SWC (Speedy Web Compiler) with optimal defaults for fas
 | Feature | Description | Default |
 |---------|-------------|---------|
 | `format` | Output format | `esm` |
-| `target` | JavaScript target version | `es2020` |
+| `target` | JavaScript target version | `es2023` |
 | `jsx` | React JSX transformation | `automatic` |
 | `decorators` | TypeScript decorators support | `enabled` |
 | `sourcemap` | Source map generation | `inline` |
 
-SWC is 10-100x faster than Babel and provides faster TypeScript compilation than esbuild, with zero configuration required.
+SWC provides fast native TypeScript and JavaScript compilation with Lex defaults and optional project overrides.
 
 ## TypeScript Support
 

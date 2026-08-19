@@ -2,6 +2,15 @@
 
 The upgrade command updates the CLI tool itself to the latest version available on npm.
 
+## CLI usage
+
+```bash
+lex upgrade
+lex upgrade --quiet
+```
+
+The CLI upgrades `@nlabs/lex` with npm. Custom package names are available only through the programmatic API.
+
 ## API
 
 ```typescript
@@ -13,7 +22,7 @@ export interface UpgradeOptions {
 
 export type UpgradeCallback = typeof process.exit;
 
-export const upgrade = async (cmd: UpgradeOptions, callback: UpgradeCallback = process.exit): Promise<number>
+export declare const upgrade: (cmd: UpgradeOptions, callback?: UpgradeCallback) => Promise<number>;
 ```
 
 ## Options
@@ -51,4 +60,4 @@ Returns a Promise that resolves to:
 4. Compares the latest version with the current version
 5. If already on the latest version, displays a message and exits
 6. If a newer version is available, installs the latest version globally
-7. Returns success or error code 
+7. Returns success or error code

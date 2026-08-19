@@ -2,13 +2,22 @@
 
 The `migrate` command helps migrate an application by removing conflicting modules and reinstalling dependencies.
 
+## CLI usage
+
+```bash
+lex migrate
+lex migrate --quiet
+```
+
+The CLI reads the package manager from Lex configuration. The programmatic API can override it directly.
+
 ## API
 
 ```typescript
-migrate(
+export declare const migrate: (
   options: MigrateOptions,
   callback?: MigrateCallback
-): Promise<number>
+) => Promise<number>;
 ```
 
 ### Parameters
@@ -39,7 +48,7 @@ Returns a Promise that resolves to a number representing the exit status code:
 ### Basic Usage
 
 ```typescript
-import {migrate} from 'lex';
+import {migrate} from '@nlabs/lex';
 
 // Migrate the application using default options
 await migrate({});
@@ -48,7 +57,7 @@ await migrate({});
 ### Using Custom Package Manager
 
 ```typescript
-import {migrate} from 'lex';
+import {migrate} from '@nlabs/lex';
 
 // Migrate the application using Yarn
 await migrate({
@@ -59,7 +68,7 @@ await migrate({
 ### Using Custom CLI Name
 
 ```typescript
-import {migrate} from 'lex';
+import {migrate} from '@nlabs/lex';
 
 // Migrate the application with custom CLI name
 await migrate({
@@ -70,7 +79,7 @@ await migrate({
 ### Quiet Mode
 
 ```typescript
-import {migrate} from 'lex';
+import {migrate} from '@nlabs/lex';
 
 // Migrate the application in quiet mode
 await migrate({

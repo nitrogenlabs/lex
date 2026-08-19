@@ -16,9 +16,9 @@ Projects can add Vite options and plugins through the `vite` property in `lex.co
 ## Web asset pipeline
 
 - `vite.staticPath` is copied to the output root.
-- `src/images`, `src/fonts`, and `src/docs` are copied to matching output directories.
-- SVG files in `src/icons` are combined into `icons/icons.svg`; other icon files are copied normally.
-- `src/images/logo.png` generates favicons, manifests, Open Graph and Twitter images, and the required HTML tags.
+- `images`, `fonts`, and `docs` under the configured `sourcePath` are copied to matching output directories.
+- SVG files in `<sourcePath>/icons` are combined into `icons/icons.svg`; other icon files are copied normally.
+- `<sourcePath>/images/logo.png` generates favicons, manifests, Open Graph and Twitter images, and the required HTML tags.
 - GIF, JPEG, PNG, SVG, and WebP assets are optimized for production.
 - Compressible assets of at least 8 KiB receive precompressed `.gz` files.
 

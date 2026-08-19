@@ -2,15 +2,22 @@
 
 The `init` command creates a new application using a template package.
 
+## CLI usage
+
+```bash
+lex init my-app --typescript --install
+lex init my-app @scope/custom-template --package-manager yarn
+```
+
 ## API
 
 ```typescript
-init(
+export declare const init: (
   appName: string,
   packageName: string,
   options: InitOptions,
   callback?: InitCallback
-): Promise<number>
+) => Promise<number>;
 ```
 
 ### Parameters
@@ -45,7 +52,7 @@ Returns a Promise that resolves to a number representing the exit status code:
 ### Basic Usage
 
 ```typescript
-import {init} from 'lex';
+import {init} from '@nlabs/lex';
 
 // Create a new app using the default template
 await init('my-app', '', {});
@@ -54,7 +61,7 @@ await init('my-app', '', {});
 ### Using TypeScript Template
 
 ```typescript
-import {init} from 'lex';
+import {init} from '@nlabs/lex';
 
 // Create a new TypeScript app and install dependencies
 await init('my-ts-app', '', {
@@ -66,7 +73,7 @@ await init('my-ts-app', '', {
 ### Using Custom Template
 
 ```typescript
-import {init} from 'lex';
+import {init} from '@nlabs/lex';
 
 // Create a new app using a custom template
 await init('my-custom-app', '@my-org/my-template', {
@@ -78,7 +85,7 @@ await init('my-custom-app', '@my-org/my-template', {
 ### Using Custom CLI Name
 
 ```typescript
-import {init} from 'lex';
+import {init} from '@nlabs/lex';
 
 // Create a new app with custom CLI name
 await init('my-app', '', {
@@ -101,4 +108,4 @@ The command will exit with a status code of 1 in the following cases:
 - The template package cannot be downloaded
 - The template files cannot be copied to the destination directory
 - The package.json file cannot be updated
-- The dependencies cannot be installed (if installation is requested) 
+- The dependencies cannot be installed (if installation is requested)

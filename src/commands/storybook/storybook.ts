@@ -50,19 +50,6 @@ const checkStorybookInitialization = (): boolean => {
   return existsSync(projectConfigDir) || existsSync(lexConfigDir);
 };
 
-const extractProgressPercentage = (output: string): number | null => {
-  const lines = output.split('\n');
-  for(const line of lines) {
-    if(line.includes('[webpack.Progress]') && line.includes('%')) {
-      const percentageMatch = line.match(/(\d+)%/);
-      if(percentageMatch) {
-        return parseInt(percentageMatch[1]);
-      }
-    }
-  }
-  return null;
-};
-
 const filterAndBeautifyOutput = (output: string, isVerbose: boolean): string => {
   if(isVerbose) {
     return output;
@@ -70,10 +57,6 @@ const filterAndBeautifyOutput = (output: string, isVerbose: boolean): string => 
 
   const lines = output.split('\n');
   const filteredLines = lines.filter((line) => {
-    if(line.includes('[webpack.Progress]')) {
-      return false;
-    }
-
     if(line.includes('Storybook') ||
       line.includes('Local:') ||
       line.includes('http://localhost') ||
@@ -173,7 +156,7 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     log(chalk.gray(`Project config dir: ${projectConfigDir} (exists: ${existsSync(projectConfigDir)})`), 'info', quiet);
     log(chalk.gray(`Lex config dir: ${lexConfigDir} (exists: ${existsSync(lexConfigDir)})`), 'info', quiet);
     if(useLexConfig) {
-      log(chalk.blue('Using Lex Storybook configuration (--use-lex-config flag)'), 'info', quiet);
+      log(chalk.blue('Using Lex Storybook configuration (--useLexConfig flag)'), 'info', quiet);
     }
     log(chalk.gray(`Initial config dir: ${configDir}`), 'info', quiet);
   }
@@ -268,19 +251,8 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
     });
 
     let urlFound = false;
-    let lastProgressPercentage = 0;
-
     storybookProcess.stdout?.on('data', (data) => {
       const output = data.toString();
-      const progressPercentage = extractProgressPercentage(output);
-
-      if(progressPercentage !== null && progressPercentage !== lastProgressPercentage) {
-        lastProgressPercentage = progressPercentage;
-        const action = staticBuild ? 'Building' : 'Starting';
-        (spinner as any).text = `${action} Storybook... ${progressPercentage}%`;
-        process.stdout.write(`\nWebpack Progress: ${chalk.magenta(`${progressPercentage}%`)}\n`);
-      }
-
       const filteredOutput = filterAndBeautifyOutput(output, verbose);
       const beautifiedOutput = beautifyOutput(filteredOutput);
 
