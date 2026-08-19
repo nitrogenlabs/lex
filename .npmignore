@@ -1,6 +1,11 @@
 .travis.yml
 coverage
 docs
+!docs/
+docs/*
+!docs/assets/
+docs/assets/*
+!docs/assets/lex-logo.png
 node_modules
 src
 website

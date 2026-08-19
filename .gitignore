@@ -3,5 +3,10 @@ node_modules
 coverage
 lib
 docs
+!docs/
+docs/*
+!docs/assets/
+docs/assets/*
+!docs/assets/lex-logo.png
 tmp
 /report.*.json
