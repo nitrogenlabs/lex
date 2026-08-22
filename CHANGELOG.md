@@ -4,6 +4,7 @@
 
 - Disabled browser response caching in the Vite development server and forced dependency re-optimization on each development-server start.
 - Allowed projects to override the new cache defaults through standard Vite configuration.
+- Pinned Vitest and its V8 coverage provider to the same version to prevent peer-dependency resolution warnings during installation.
 
 ## 2.0.3
 
