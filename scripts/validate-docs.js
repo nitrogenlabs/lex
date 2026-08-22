@@ -4,7 +4,7 @@ import {existsSync, readFileSync, readdirSync, statSync} from 'fs';
 import {dirname, extname, resolve} from 'path';
 
 const root = process.cwd();
-const docs = ['README.md', 'CHANGELOG.md'];
+const docs = ['README.md', 'CHANGELOG.md', 'MIGRATION_V2.md'];
 
 const collectMarkdown = (directory) => {
   for(const entry of readdirSync(directory)) {

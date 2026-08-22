@@ -163,6 +163,8 @@ export default {
 
 `--port` takes precedence over `dev.port`.
 
+**Development Caching**: Lex sends `no-store` response headers and forces Vite to refresh optimized dependencies each time the development server starts. Projects can override these defaults with `vite.server.headers` and `vite.optimizeDeps.force`.
+
 **Public IP Caching**: Lex automatically caches your public IP address for 1 week to reduce API calls. Use `--usePublicIp` to force refresh the cache when needed.
 
 **Static Assets**: If your HTML template references static assets with absolute paths, ensure they exist in the configured static directory.
@@ -479,6 +481,8 @@ Production builds optimize GIF, JPEG, PNG, SVG, and WebP assets. Compressible CS
 
 Lex 2 is a breaking migration from Webpack to Vite for web projects. Non-web projects use SWC.
 
+Follow the **[Lex 1 to Lex 2 migration guide](MIGRATION_V2.md)** for the complete upgrade process, including dependency cleanup, configuration mapping, dynamic imports, environment variables, polyfills, assets, Storybook, validation, and troubleshooting.
+
 Update the configuration property:
 
 ```javascript
@@ -661,6 +665,7 @@ If an asset referenced by HTML is missing, verify its source location. Files in 
 
 ## Documentation
 
+- **[Lex 1 to Lex 2 migration guide](MIGRATION_V2.md)**
 - **[Vite build](src/commands/build/build.docs.md)** and **[development server](src/commands/dev/dev.docs.md)**
 - **[Configuration](src/commands/config/config.docs.md)**
 - **[Testing](src/commands/test/test.docs.md)** and **[linting](src/commands/lint/lint.docs.md)**

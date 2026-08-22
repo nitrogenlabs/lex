@@ -25,6 +25,12 @@ const browserGlobalInjectExcludes = [
   '**/node_modules/process/**'
 ];
 
+const developmentCacheHeaders = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  Expires: '0',
+  Pragma: 'no-cache'
+};
+
 export interface LexViteOptions {
   readonly analyze?: boolean;
   readonly command: 'build' | 'serve';
@@ -274,6 +280,7 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
     logLevel: options.quiet ? 'silent' : 'info',
     mode: options.mode || (options.command === 'build' ? 'production' : 'development'),
     optimizeDeps: options.ssr ? undefined : {
+      ...(options.command === 'serve' ? {force: true} : {}),
       include: ['buffer/index.js', 'process/browser.js']
     },
     plugins: [
@@ -308,7 +315,10 @@ export const createLexViteConfig = (options: LexViteOptions): InlineConfig => {
     },
     root: sourcePath,
     server: {
+      allowedHosts: true,
+      headers: developmentCacheHeaders,
       hmr: false,
+      host: '0.0.0.0',
       open: options.open,
       port: options.port,
       strictPort: true

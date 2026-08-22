@@ -1,5 +1,10 @@
 # Changes
 
+## Unreleased
+
+- Disabled browser response caching in the Vite development server and forced dependency re-optimization on each development-server start.
+- Allowed projects to override the new cache defaults through standard Vite configuration.
+
 ## 2.0.3
 
 - Fixed TypeScript configuration path resolution for compilation and declaration generation.

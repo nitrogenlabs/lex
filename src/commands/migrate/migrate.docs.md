@@ -1,6 +1,6 @@
 # Migrate Command
 
-The `migrate` command helps migrate an application by removing conflicting modules and reinstalling dependencies.
+The `migrate` command helps migrate an application by removing conflicting modules and reinstalling dependencies. It does not translate Webpack configuration or source code. Follow the complete [Lex 1 to Lex 2 migration guide](../../../MIGRATION_V2.md) when upgrading a project.
 
 ## CLI usage
 
@@ -98,4 +98,4 @@ await migrate({
 
 ## Notes
 
-This command is useful when migrating an application to a new version of Lex or when resolving dependency conflicts. It removes toolchain modules that conflict with Lex's own dependencies and then reinstalls all dependencies.
+This command is useful when migrating an application to a new version of Lex or when resolving dependency conflicts. It removes toolchain modules that conflict with Lex's own dependencies and then reinstalls all dependencies. Commit and review `package.json` and the lockfile before running it: the command removes npm and Yarn lockfiles and removes non-`@types` dependency names containing `vite` or `vitest`.

@@ -92,7 +92,31 @@ describe('Lex Vite config', () => {
 
     expect(config.appType).toBe('spa');
     expect(config.base).toBe('/application/');
+    expect(config.optimizeDeps?.force).toBe(true);
+    expect(config.server?.allowedHosts).toBe(true);
+    expect(config.server?.headers).toEqual({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      Expires: '0',
+      Pragma: 'no-cache'
+    });
+    expect(config.server?.host).toBe('0.0.0.0');
     expect(config.server?.port).toBe(4100);
+  });
+
+  it('allows projects to override development defaults', () => {
+    LexConfig.config.vite = {
+      optimizeDeps: {force: false},
+      server: {
+        headers: {'Cache-Control': 'public, max-age=60'},
+        host: '127.0.0.1'
+      }
+    };
+
+    const config = createLexViteConfig({command: 'serve'});
+
+    expect(config.optimizeDeps?.force).toBe(false);
+    expect(config.server?.headers?.['Cache-Control']).toBe('public, max-age=60');
+    expect(config.server?.host).toBe('127.0.0.1');
   });
 
   it('configures library formats and excludes browser plugins for SSR', () => {
