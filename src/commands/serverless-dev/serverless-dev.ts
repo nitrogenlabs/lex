@@ -52,11 +52,18 @@ interface ServerlessHandler {
   }>;
 }
 
+interface ServerlessCorsConfig {
+  readonly allowCredentials?: boolean;
+  readonly headers?: readonly string[];
+  readonly methods?: readonly string[];
+  readonly origins?: readonly string[];
+}
+
 interface ServerlessConfig {
   readonly custom?: {
     readonly 'serverless-offline'?: {
       readonly bodyLimit?: string;
-      readonly cors?: boolean;
+      readonly cors?: boolean | ServerlessCorsConfig;
       readonly host?: string;
       readonly httpPort?: number;
       readonly httpsPort?: number;
@@ -65,6 +72,37 @@ interface ServerlessConfig {
   };
   readonly functions?: Record<string, ServerlessHandler>;
 }
+
+export const getCorsHeaders = (
+  cors: boolean | ServerlessCorsConfig | undefined,
+  requestOrigin: string | undefined
+): Record<string, string> => {
+  const corsConfig = typeof cors === 'object' ? cors : {};
+  const allowCredentials = corsConfig.allowCredentials === true;
+  const configuredOrigins = corsConfig.origins || ['*'];
+  const allowsAnyOrigin = configuredOrigins.includes('*');
+  const originIsAllowed = Boolean(requestOrigin && (allowsAnyOrigin || configuredOrigins.includes(requestOrigin)));
+  const allowedOrigin = originIsAllowed && requestOrigin
+    ? requestOrigin
+    : allowCredentials
+      ? configuredOrigins.find((origin) => origin !== '*') || ''
+      : '*';
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Headers': (corsConfig.headers || ['*']).join(', '),
+    'Access-Control-Allow-Methods': (corsConfig.methods || ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']).join(', '),
+    'Access-Control-Allow-Origin': allowedOrigin
+  };
+
+  if(allowCredentials) {
+    headers['Access-Control-Allow-Credentials'] = 'true';
+  }
+
+  if(requestOrigin) {
+    headers.Vary = 'Origin';
+  }
+
+  return headers;
+};
 
 interface WebSocketClientLike {
   on(event: string, listener: (...args: any[]) => void): void;
@@ -398,10 +436,15 @@ const createExpressServer = async (
 
   // Enable CORS
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
+    const cors = config.custom?.['serverless-offline']?.cors;
+
+    if(cors === false) {
+      next();
+      return;
+    }
+
+    const headers = getCorsHeaders(cors, req.header('Origin'));
+    Object.entries(headers).forEach(([name, value]) => res.header(name, value));
 
     if(req.method === 'OPTIONS') {
       res.sendStatus(200);
@@ -1074,8 +1117,10 @@ export const serverlessDev = async (
   const finalConfig: ServerlessConfig = {
     ...serverlessConfig,
     custom: {
+      ...serverlessConfig.custom,
       'serverless-offline': {
-        cors: serverlessConfig.custom?.['serverless-offline']?.cors !== false,
+        ...configOffline,
+        cors: configOffline.cors ?? true,
         host: effectiveHost,
         httpPort: effectiveHttpPort,
         httpsPort: effectiveHttpsPort,
