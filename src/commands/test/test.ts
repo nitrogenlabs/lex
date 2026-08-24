@@ -302,43 +302,27 @@ export const test = async (
       if(config) {
         vitestConfigFile = config;
       } else {
-        const projectVitestConfigPaths = [
-          pathResolve(process.cwd(), 'vitest.config.ts'),
-          pathResolve(process.cwd(), 'vitest.config.mts'),
-          pathResolve(process.cwd(), 'vitest.config.js'),
-          pathResolve(process.cwd(), 'vitest.config.mjs'),
-          pathResolve(process.cwd(), 'vitest.config.cjs')
-        ];
-        const existingConfigPath = projectVitestConfigPaths.find((configPath) => existsSync(configPath));
+        projectVitestConfig = LexConfig.config.vitest || null;
 
-        if(existingConfigPath) {
-          vitestConfigFile = existingConfigPath;
-          if(debug) {
-            log(`Using project Vitest config file: ${vitestConfigFile}`, 'info', quiet);
-          }
-        } else {
-          projectVitestConfig = LexConfig.config.vitest || null;
+        const lexDir = LexConfig.getLexDir();
+        const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');
 
-          const lexDir = LexConfig.getLexDir();
-          const lexVitestConfig = pathResolve(lexDir, 'vitest.config.mjs');
+        if(debug) {
+          log(`Looking for Vitest config at: ${lexVitestConfig}`, 'info', quiet);
+          log(`File exists: ${existsSync(lexVitestConfig)}`, 'info', quiet);
+        }
 
-          if(debug) {
-            log(`Looking for Vitest config at: ${lexVitestConfig}`, 'info', quiet);
-            log(`File exists: ${existsSync(lexVitestConfig)}`, 'info', quiet);
-          }
-
-          if(existsSync(lexVitestConfig)) {
-            vitestConfigFile = lexVitestConfig;
-            if(projectVitestConfig && Object.keys(projectVitestConfig).length > 0) {
-              if(debug) {
-                log(`Using Lex Vitest config with project Vitest config from lex.config.cjs: ${vitestConfigFile}`, 'info', quiet);
-              }
-            } else if(debug) {
-              log(`Using Lex Vitest config (no project Vitest config found): ${vitestConfigFile}`, 'info', quiet);
+        if(existsSync(lexVitestConfig)) {
+          vitestConfigFile = lexVitestConfig;
+          if(projectVitestConfig && Object.keys(projectVitestConfig).length > 0) {
+            if(debug) {
+              log(`Using Lex Vitest config with project Vitest config from lex.config.cjs: ${vitestConfigFile}`, 'info', quiet);
             }
           } else if(debug) {
-            log('No Vitest config found in project or Lex', 'warn', quiet);
+            log(`Using Lex Vitest config (no project Vitest config found): ${vitestConfigFile}`, 'info', quiet);
           }
+        } else if(debug) {
+          log('Lex Vitest config not found', 'warn', quiet);
         }
       }
 

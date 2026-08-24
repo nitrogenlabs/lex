@@ -63,8 +63,27 @@ describe('test command', () => {
 
     await test({}, [], callback);
 
-    expect(execa).toHaveBeenCalled();
+    expect(execa).toHaveBeenCalledWith(
+      expect.stringContaining('vitest'),
+      expect.arrayContaining(['--config', '/mock/lex/dir/vitest.config.mjs']),
+      expect.any(Object)
+    );
     expect(callback).toHaveBeenCalledWith(0);
+  });
+
+  it('uses an explicitly requested Vitest config instead of the Lex config', async () => {
+    const callback = vi.fn() as unknown as TestCallback;
+    const customConfig = './custom-vitest.config.mts';
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
+
+    await test({config: customConfig}, [], callback);
+
+    expect(execa).toHaveBeenCalledWith(
+      expect.stringContaining('vitest'),
+      expect.arrayContaining(['--config', customConfig]),
+      expect.any(Object)
+    );
+    expect((execa as Mock).mock.calls[0][1]).not.toContain('/mock/lex/dir/vitest.config.mjs');
   });
 
   it('runs Playwright when e2e is requested', async () => {

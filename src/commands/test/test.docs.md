@@ -186,6 +186,8 @@ lex test [options]
 
 By default, `lex test` continues to run unit tests. Use `--e2e` to run Playwright tests, and combine `--unit --e2e` to run both.
 
+Unit tests use Lex's bundled `vitest.config.mjs` by default. Add project-specific Vitest options to the `vitest` property in `lex.config.mjs`; Lex merges those options into its base configuration. A standalone project Vitest config is used only when it is explicitly selected with `--config <path>`.
+
 ## AI-Assisted Features
 
 The test command includes AI capabilities to help with testing:

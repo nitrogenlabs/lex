@@ -184,6 +184,19 @@ describe('test options tests', () => {
     expect(vitestArgs).toContain(customConfig);
   });
 
+  it('should use the Lex Vitest config by default', async () => {
+    const options: TestOptions = {
+      quiet: false
+    };
+
+    await test(options, [], mockCallback as unknown as typeof process.exit);
+
+    const vitestArgs = getExecaCalls()[0][1];
+
+    expect(vitestArgs).toContain('--config');
+    expect(vitestArgs).toContain('/mock/lex/dir/vitest.config.mjs');
+  });
+
   it('should pass debug option to Vitest when specified', async () => {
     const options: TestOptions = {
       quiet: false,
