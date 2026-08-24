@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "All-in-one CLI to create, develop, test, build, and ship React, TypeScript, library, and serverless projects.",
   "license": "MIT",
   "type": "module",
