@@ -1,7 +1,6 @@
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import path from 'path';
 
 import {LexConfig} from '../../LexConfig.js';
 import * as app from '../../utils/app.js';
@@ -210,7 +209,7 @@ describe('storybook.cli tests', () => {
     expect(mockSpinner.start).toHaveBeenCalledWith('Building static Storybook...');
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['build', '--config-dir', '/Users/nitrog7/Development/lex/.storybook', '--port', '6007', '--output-dir', '/Users/nitrog7/Development/lex/storybook-static'],
+      ['build', '--config-dir', '/Users/nitrog7/Development/lex/.storybook', '--output-dir', '/Users/nitrog7/Development/lex/storybook-static'],
       expect.any(Object)
     );
     expect(mockSpinner.succeed).toHaveBeenCalledWith('Found 6 story file(s)');

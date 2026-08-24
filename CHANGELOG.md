@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed static Storybook builds by omitting development-only port and browser-open arguments.
+- Exposed the Vite development server on local networks by default and allowed local or custom hostnames without per-project configuration.
+- Documented the network-access defaults, security considerations, and localhost-only overrides.
 - Disabled browser response caching in the Vite development server and forced dependency re-optimization on each development-server start.
 - Allowed projects to override the new cache defaults through standard Vite configuration.
 - Pinned Vitest and its V8 coverage provider to the same version to prevent peer-dependency resolution warnings during installation.

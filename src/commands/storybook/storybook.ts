@@ -122,7 +122,6 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
 
   const tailwindCssPath = findTailwindCssPath();
 
-  console.log({tailwindCssPath});
   if(tailwindCssPath) {
     if(!quiet) {
       log(chalk.green(`✓ Tailwind CSS integration detected: ${tailwindCssPath}`), 'info', quiet);
@@ -216,11 +215,11 @@ export const storybook = async (cmd: StorybookOptions, callback: StorybookCallba
   const storybookArgs = [staticBuild ? 'build' : 'dev'];
   storybookArgs.push('--config-dir', configDir);
 
-  if(port) {
+  if(port && !staticBuild) {
     storybookArgs.push('--port', port.toString());
   }
 
-  if(open) {
+  if(open && !staticBuild) {
     storybookArgs.push('--open');
   }
 

@@ -1,7 +1,6 @@
 import {execa} from 'execa';
 import {existsSync, readFileSync} from 'fs';
 import {sync as globSync} from 'glob';
-import path from 'path';
 
 import * as app from '../../utils/app.js';
 import * as file from '../../utils/file.js';
@@ -161,7 +160,7 @@ describe('storybook.integration tests', () => {
 
     expect(execa).toHaveBeenCalledWith(
       '/node_modules/.bin/storybook',
-      ['build', '--config-dir', '/tmp/lex-storybook-test/.storybook', '--port', '6007', '--output-dir', '/tmp/lex-storybook-test/storybook-static'],
+      ['build', '--config-dir', '/tmp/lex-storybook-test/.storybook', '--output-dir', '/tmp/lex-storybook-test/storybook-static'],
       expect.any(Object)
     );
   });
@@ -242,9 +241,9 @@ describe('storybook.integration tests', () => {
     await storybook(options, mockCallback);
 
     expect(process.env).toEqual(expect.objectContaining({
+      DEBUG: true,
       NODE_ENV: 'development',
-      STORYBOOK_THEME: 'dark',
-      DEBUG: true
+      STORYBOOK_THEME: 'dark'
     }));
   });
 

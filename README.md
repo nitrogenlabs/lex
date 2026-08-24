@@ -10,6 +10,7 @@ Lex is the all-in-one development CLI that eliminates the complexity of modern R
 
 [![npm version](https://img.shields.io/npm/v/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
 [![npm downloads](https://img.shields.io/npm/dm/@nlabs/lex.svg?style=flat-square)](https://www.npmjs.com/package/@nlabs/lex)
+[![Documentation](https://img.shields.io/badge/docs-lex.nitrogenx.co-6d28d9?style=flat-square)](https://lex.nitrogenx.co)
 [![Issues](https://img.shields.io/github/issues/nitrogenlabs/lex.svg?style=flat-square)](https://github.com/nitrogenlabs/lex/issues)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Chat](https://img.shields.io/discord/446122412715802649.svg)](https://discord.gg/nitrogenlabs)
@@ -162,6 +163,8 @@ export default {
 ```
 
 `--port` takes precedence over `dev.port`.
+
+**Local Network Access**: Lex binds Vite to all network interfaces with `vite.server.host: '0.0.0.0'` and accepts all development hostnames with `vite.server.allowedHosts: true`. Use the private IP printed by `lex dev` or a local hostname such as `http://my-computer.local:4200` from another device on the same trusted network. To limit a project to the current machine, set `vite.server.host` to `'127.0.0.1'` and `vite.server.allowedHosts` to `['localhost']`.
 
 **Development Caching**: Lex sends `no-store` response headers and forces Vite to refresh optimized dependencies each time the development server starts. Projects can override these defaults with `vite.server.headers` and `vite.optimizeDeps.force`.
 
@@ -459,8 +462,12 @@ Vite is the default for `web` projects. Lex merges the `vite` object with its re
 
 | Option | Type | Default | Description | Example |
 |--------|------|---------|-------------|---------|
+| `vite.server.allowedHosts` | `string[] \| true` | `true` | Hostnames accepted by the development server | `vite: { server: { allowedHosts: ['localhost'] } }` |
+| `vite.server.host` | `string \| boolean` | `'0.0.0.0'` | Network interface used by the development server | `vite: { server: { host: '127.0.0.1' } }` |
 | `vite.staticPath` | `string` | `'./src/static'` | Static assets copied to the output root | `vite: { staticPath: './assets' }` |
 | `vite.*` | `Vite UserConfig` | `undefined` | Additional Vite configuration merged with Lex defaults | `vite: { base: '/app/' }` |
+
+The network defaults are intended for trusted development environments. `allowedHosts: true` disables Vite's host allowlist, while the operating-system firewall controls whether the port is reachable from another device.
 
 Web builds provide dynamic-import code splitting, GraphQL document loading, PostCSS, source maps, and browser shims for `assert`, `buffer`, `http`, `https`, `os`, `path`, `process`, `stream`, `util`, and `vm`. `crypto` remains an empty browser shim, matching the previous Lex behavior.
 

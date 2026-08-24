@@ -1,7 +1,7 @@
 {
   "name": "@nlabs/lex",
   "version": "2.0.4",
-  "description": "Lex",
+  "description": "All-in-one CLI to create, develop, test, build, and ship React, TypeScript, library, and serverless projects.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -28,8 +28,21 @@
   "types": "./lib/index.d.ts",
   "keywords": [
     "arkhamjs",
+    "build-tool",
+    "cli",
+    "code-generator",
+    "developer-tools",
+    "devops",
     "lex",
     "nitrogenlabs",
+    "playwright",
+    "react",
+    "react-19",
+    "serverless",
+    "storybook",
+    "tailwindcss",
+    "typescript",
+    "vitest",
     "vite"
   ],
   "author": {
@@ -41,7 +54,7 @@
     "type": "git",
     "url": "git+https://github.com/nitrogenlabs/lex.git"
   },
-  "homepage": "https://github.com/nitrogenlabs/lex",
+  "homepage": "https://lex.nitrogenx.co",
   "bugs": {
     "url": "https://github.com/nitrogenlabs/lex/issues"
   },
