@@ -252,6 +252,8 @@ lex test --config ./vitest.config.mjs
 - **React JSX Automatic Runtime**: No need to import React in your test files
 - **TypeScript-First**: Optimized for TypeScript projects with specialized configs
 
+Lex includes matched Vitest and V8 coverage-provider versions, so projects using `lex test` do not need to declare either package directly.
+
 ### **Storybook Integration**
 
 ```bash
@@ -470,7 +472,7 @@ Vite is the default for `web` projects. Lex merges the `vite` object with its re
 
 The network defaults are intended for trusted development environments. `allowedHosts: true` disables Vite's host allowlist, while the operating-system firewall controls whether the port is reachable from another device.
 
-Lex's default PostCSS configuration uses `@tailwindcss/postcss`, which provides the Tailwind CSS 4 processing pipeline without the redundant legacy plugin chain. Projects that need additional PostCSS transformations can install those plugins directly and replace the default through `vite.css.postcss`.
+Lex supplies `@tailwindcss/postcss`, `@tailwindcss/forms`, and `@tailwindcss/typography`. Its default PostCSS configuration uses the Tailwind CSS 4 plugin without the redundant legacy plugin chain. Projects that need additional PostCSS transformations can install those plugins directly and replace the default through `vite.css.postcss`.
 
 Web builds provide dynamic-import code splitting, GraphQL document loading, PostCSS, source maps, and browser shims for `assert`, `buffer`, `http`, `https`, `os`, `path`, `process`, `stream`, `util`, and `vm`. `crypto` remains an empty browser shim, matching the previous Lex behavior.
 

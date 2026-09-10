@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Bundled Tailwind CSS Forms, PostCSS, and Typography support with Lex so applications do not need to declare the shared Tailwind toolchain directly.
 - Replaced the legacy PostCSS plugin chain with the Tailwind CSS 4 PostCSS plugin, eliminating missing-source warnings for imported dependency stylesheets.
 - Removed obsolete PostCSS dependencies and the internal `@for` and percentage transforms. Projects that require additional transforms can provide their own Vite PostCSS configuration.
 - Fixed static Storybook builds by omitting development-only port and browser-open arguments.
@@ -9,7 +10,7 @@
 - Documented the network-access defaults, security considerations, and localhost-only overrides.
 - Disabled browser response caching in the Vite development server and forced dependency re-optimization on each development-server start.
 - Allowed projects to override the new cache defaults through standard Vite configuration.
-- Pinned Vitest and its V8 coverage provider to the same version to prevent peer-dependency resolution warnings during installation.
+- Bundled matching Vitest and V8 coverage versions with Lex instead of requiring projects to install them as peer dependencies.
 
 ## 2.0.3
 
