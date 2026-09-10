@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Replaced the legacy PostCSS plugin chain with the Tailwind CSS 4 PostCSS plugin, eliminating missing-source warnings for imported dependency stylesheets.
+- Removed obsolete PostCSS dependencies and the internal `@for` and percentage transforms. Projects that require additional transforms can provide their own Vite PostCSS configuration.
 - Fixed static Storybook builds by omitting development-only port and browser-open arguments.
 - Exposed the Vite development server on local networks by default and allowed local or custom hostnames without per-project configuration.
 - Documented the network-access defaults, security considerations, and localhost-only overrides.

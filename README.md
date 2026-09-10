@@ -464,10 +464,13 @@ Vite is the default for `web` projects. Lex merges the `vite` object with its re
 |--------|------|---------|-------------|---------|
 | `vite.server.allowedHosts` | `string[] \| true` | `true` | Hostnames accepted by the development server | `vite: { server: { allowedHosts: ['localhost'] } }` |
 | `vite.server.host` | `string \| boolean` | `'0.0.0.0'` | Network interface used by the development server | `vite: { server: { host: '127.0.0.1' } }` |
+| `vite.css.postcss` | `string \| object` | Tailwind CSS 4 | Project-owned PostCSS configuration or config-file path | `vite: { css: { postcss: './postcss.config.mjs' } }` |
 | `vite.staticPath` | `string` | `'./src/static'` | Static assets copied to the output root | `vite: { staticPath: './assets' }` |
 | `vite.*` | `Vite UserConfig` | `undefined` | Additional Vite configuration merged with Lex defaults | `vite: { base: '/app/' }` |
 
 The network defaults are intended for trusted development environments. `allowedHosts: true` disables Vite's host allowlist, while the operating-system firewall controls whether the port is reachable from another device.
+
+Lex's default PostCSS configuration uses `@tailwindcss/postcss`, which provides the Tailwind CSS 4 processing pipeline without the redundant legacy plugin chain. Projects that need additional PostCSS transformations can install those plugins directly and replace the default through `vite.css.postcss`.
 
 Web builds provide dynamic-import code splitting, GraphQL document loading, PostCSS, source maps, and browser shims for `assert`, `buffer`, `http`, `https`, `os`, `path`, `process`, `stream`, `util`, and `vm`. `crypto` remains an empty browser shim, matching the previous Lex behavior.
 

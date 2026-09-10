@@ -18,6 +18,8 @@ This guide assumes a project is upgrading from the latest Lex 1 release. If the 
 
 Lex 2 retains GraphQL document imports, PostCSS processing, source maps, environment modes, library output, static rendering, bundle reports, static file copying, image optimization, SVG sprites, favicon and social-image generation, and gzip sidecars.
 
+Current Lex 2 releases use the Tailwind CSS 4 PostCSS plugin as the complete default PostCSS pipeline. Earlier Lex 2 releases also applied legacy transforms for imports, URLs, nesting, custom properties, loops, percentages, prefixing, minification, browser reporting, variables, and SVG optimization. Tailwind CSS 4 and Vite already cover the standard build behavior from that chain. If a project intentionally relies on a nonstandard transform such as `@for` or PostCSS variables, install the required plugin in that project and provide a project-owned configuration through `vite.css.postcss`.
+
 ## 1. Prepare the project
 
 Use a migration branch and make sure the existing v1 application builds and tests successfully. Commit the current lockfile before continuing because the optional migration command replaces it.
@@ -328,4 +330,3 @@ Set `vite.base` to the deployment prefix and verify that application routing use
 - [ ] Storybook uses the React Vite framework.
 - [ ] Development, unit tests, and a clean production build pass.
 - [ ] Production chunks, assets, favicons, sprites, and gzip files are verified.
-
