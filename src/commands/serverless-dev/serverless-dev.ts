@@ -2,6 +2,7 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
+/* eslint-disable no-console -- The Lambda emulator captures and forwards console output. */
 import boxen from 'boxen';
 import chalk from 'chalk';
 import {randomUUID} from 'crypto';
@@ -82,11 +83,12 @@ export const getCorsHeaders = (
   const configuredOrigins = corsConfig.origins || ['*'];
   const allowsAnyOrigin = configuredOrigins.includes('*');
   const originIsAllowed = Boolean(requestOrigin && (allowsAnyOrigin || configuredOrigins.includes(requestOrigin)));
-  const allowedOrigin = originIsAllowed && requestOrigin
-    ? requestOrigin
-    : allowCredentials
-      ? configuredOrigins.find((origin) => origin !== '*') || ''
-      : '*';
+  let allowedOrigin = '*';
+  if(originIsAllowed && requestOrigin) {
+    allowedOrigin = requestOrigin;
+  } else if(allowCredentials) {
+    allowedOrigin = configuredOrigins.find((origin) => origin !== '*') || '';
+  }
   const headers: Record<string, string> = {
     'Access-Control-Allow-Headers': (corsConfig.headers || ['*']).join(', '),
     'Access-Control-Allow-Methods': (corsConfig.methods || ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']).join(', '),
@@ -105,8 +107,8 @@ export const getCorsHeaders = (
 };
 
 interface WebSocketClientLike {
-  on(event: string, listener: (...args: any[]) => void): void;
   readyState?: number;
+  on(event: string, listener: (...args: any[]) => void): void;
   send(data: string): void;
 }
 
@@ -479,7 +481,7 @@ const createExpressServer = async (
     if(Buffer.isBuffer(req.body)) {
       body = req.body.toString('utf8');
     } else if(typeof req.body === 'string') {
-      body = req.body;
+      ({body} = req);
     } else if(req.body !== undefined && req.body !== null && req.body !== '') {
       body = JSON.stringify(req.body);
     }
@@ -498,12 +500,13 @@ const createExpressServer = async (
       let graphqlHandler = null;
 
       if(config.functions) {
-        for(const [functionName, functionConfig] of Object.entries(config.functions)) {
+        for(const functionConfig of Object.values(config.functions)) {
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
               if(event.http && event.http.path) {
                 // Look for GraphQL endpoints
                 if(event.http.path === '/public' || event.http.path === '/graphql') {
+                  // eslint-disable-next-line no-await-in-loop -- Use the first loadable GraphQL handler.
                   graphqlHandler = await loadHandler(functionConfig.handler, outputDir);
                   break;
                 }
@@ -758,8 +761,7 @@ const createWebSocketServer = (
   outputDir: string,
   wsPort: number,
   connectionRegistry: Map<string, WebSocketClientLike>,
-  quiet: boolean,
-  debug: boolean
+  quiet: boolean
 ) => {
   const wss = new WebSocketServer({port: wsPort});
 
@@ -1107,7 +1109,7 @@ export const serverlessDev = async (
       return fallback;
     }
 
-    const n = typeof v === 'number' ? v : parseInt(String(v));
+    const n = typeof v === 'number' ? v : parseInt(String(v), 10);
     return Number.isFinite(n) ? n : fallback;
   };
   const effectiveHttpPort = toNumber(cliHttpPort ?? configOffline.httpPort, 3100);
@@ -1160,8 +1162,7 @@ export const serverlessDev = async (
       outputDir,
       wsPort,
       connectionRegistry,
-      quiet,
-      debug
+      quiet
     );
 
     // Handle server errors

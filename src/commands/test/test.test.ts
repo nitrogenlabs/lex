@@ -102,7 +102,7 @@ describe('test command', () => {
     const callback = vi.fn() as unknown as TestCallback;
     (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
-    await test({unit: true, e2e: true}, [], callback);
+    await test({e2e: true, unit: true}, [], callback);
 
     expect(execa).toHaveBeenCalledTimes(2);
     expect((execa as Mock).mock.calls[0][0]).toContain('vitest');

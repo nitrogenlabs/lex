@@ -23,19 +23,19 @@ vi.mock('../../create/changelog.js', async () => ({
 }));
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
+  copyFolderRecursiveSync: vi.fn(),
   createSpinner: vi.fn(() => ({
     fail: vi.fn(),
     start: vi.fn(),
     succeed: vi.fn()
   })),
-  copyFolderRecursiveSync: vi.fn(),
-  removeFiles: vi.fn().mockResolvedValue(undefined),
   getFilenames: vi.fn(() => ({
     nameCaps: 'Test',
     templateExt: '.ts',
     templatePath: '/mock/template/path',
     templateReact: '.tsx'
   })),
+  removeFiles: vi.fn().mockResolvedValue(undefined),
   updateTemplateName: vi.fn()
 }));
 vi.mock('../../utils/file.js', async () => ({

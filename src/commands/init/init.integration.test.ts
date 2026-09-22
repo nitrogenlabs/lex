@@ -13,13 +13,13 @@ vi.mock('pacote', async () => ({
 vi.mock('path');
 vi.mock('../../LexConfig.js');
 vi.mock('../../utils/app.js', async () => ({
+  copyFileSync: vi.fn(),
+  copyFolderRecursiveSync: vi.fn(),
   createSpinner: vi.fn(() => ({
     fail: vi.fn(),
     start: vi.fn(),
     succeed: vi.fn()
   })),
-  copyFileSync: vi.fn(),
-  copyFolderRecursiveSync: vi.fn(),
   getPackageJson: vi.fn(() => ({
     dependencies: {},
     devDependencies: {},

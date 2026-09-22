@@ -37,17 +37,13 @@ const ROOT_EXCLUDED_ATTRIBUTES = new Set([
   'xmlns'
 ]);
 
-const escapeAttribute = (value: string): string => {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('"', '&quot;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-};
+const escapeAttribute = (value: string): string => value
+  .replaceAll('&', '&amp;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;');
 
-const normalizeAssetFilename = (filename: string): string => {
-  return filename.replace(/^[./]+/, '');
-};
+const normalizeAssetFilename = (filename: string): string => filename.replace(/^[./]+/, '');
 
 const parseAttributes = (input: string): Record<string, string> => {
   const attributes: Record<string, string> = {};
@@ -78,11 +74,9 @@ const parseSvg = (source: string): ParsedSvg | null => {
   };
 };
 
-const buildAttributeString = (attributes: Record<string, string>): string => {
-  return Object.entries(attributes)
-    .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
-    .join(' ');
-};
+const buildAttributeString = (attributes: Record<string, string>): string => Object.entries(attributes)
+  .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
+  .join(' ');
 
 const sanitizeIdentifier = (value: string): string => {
   const sanitizedValue = value
@@ -164,29 +158,31 @@ const createSpriteSymbol = (
 
   usedIdentifiers.add(identifier);
 
-  const namespaceAttributes = Object.entries(parsedSvg.attributes).reduce<Record<string, string>>((result, [name, value]) => {
-    if(name.toLowerCase().startsWith('xmlns:')) {
+  const namespaceAttributes = Object.entries(parsedSvg.attributes).reduce<Record<string, string>>(
+    (result, [name, value]) => {
+      if(name.toLowerCase().startsWith('xmlns:')) {
+        result[name] = value;
+      }
+
+      return result;
+    }, {});
+
+  const symbolAttributes = Object.entries(parsedSvg.attributes).reduce<Record<string, string>>(
+    (result, [name, value]) => {
+      if(ROOT_EXCLUDED_ATTRIBUTES.has(name)) {
+        return result;
+      }
+
+      if(name.toLowerCase().startsWith('xmlns:')) {
+        return result;
+      }
+
       result[name] = value;
-    }
 
-    return result;
-  }, {});
-
-  const symbolAttributes = Object.entries(parsedSvg.attributes).reduce<Record<string, string>>((result, [name, value]) => {
-    if(ROOT_EXCLUDED_ATTRIBUTES.has(name)) {
       return result;
-    }
-
-    if(name.toLowerCase().startsWith('xmlns:')) {
-      return result;
-    }
-
-    result[name] = value;
-
-    return result;
-  }, {
-    id: identifier
-  });
+    }, {
+      id: identifier
+    });
 
   if(parsedSvg.attributes.viewBox) {
     symbolAttributes.viewBox = parsedSvg.attributes.viewBox;
@@ -210,13 +206,11 @@ const createSpriteSymbol = (
 };
 
 const collectFiles = (patterns: readonly string[], allowDuplicates: boolean): string[] => {
-  const files = patterns.flatMap((pattern) => {
-    return globSync(pattern, {
-      absolute: true,
-      dot: false,
-      nodir: true
-    }) as string[];
-  }).map((filePath) => pathResolve(filePath));
+  const files = patterns.flatMap((pattern) => globSync(pattern, {
+    absolute: true,
+    dot: false,
+    nodir: true
+  }) as string[]).map((filePath) => pathResolve(filePath));
 
   if(allowDuplicates) {
     return files;
@@ -253,9 +247,9 @@ export class LexSvgSpritemap {
 
     const namespaceAttributes: Record<string, string> = {};
     const usedIdentifiers = new Set<string>();
-    const symbols = filePaths.map((filePath) => {
-      return createSpriteSymbol(filePath, usedIdentifiers, this.options.prefix, warnings);
-    }).filter((entry): entry is SpriteSymbol => entry !== null);
+    const symbols = filePaths
+      .map((filePath) => createSpriteSymbol(filePath, usedIdentifiers, this.options.prefix, warnings))
+      .filter((entry): entry is SpriteSymbol => entry !== null);
 
     if(symbols.length === 0) {
       return {
@@ -283,7 +277,6 @@ export class LexSvgSpritemap {
       warnings
     };
   }
-
 }
 
 export default LexSvgSpritemap;

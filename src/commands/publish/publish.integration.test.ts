@@ -5,9 +5,9 @@ import {publish} from './publish.js';
 vi.mock('execa');
 vi.mock('../../utils/app.js', async () => ({
   createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
     start: vi.fn(),
-    succeed: vi.fn(),
-    fail: vi.fn()
+    succeed: vi.fn()
   })),
   getPackageJson: vi.fn(() => ({
     dependencies: {},

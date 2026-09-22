@@ -17,13 +17,17 @@ export const packages = {
   swc: parseVersion(packageJson?.dependencies?.['@swc/core']),
   typescript: parseVersion(packageJson?.dependencies?.typescript),
   vite: parseVersion(packageJson?.dependencies?.vite),
-  vitest: parseVersion(packageJson?.dependencies?.vitest),
+  vitest: parseVersion(packageJson?.dependencies?.vitest)
 };
 
-export const jsonVersions = (lexPackages: Record<string, string>) => Object.keys(lexPackages).reduce((list, key) => {
-  list[key] = lexPackages[key] || 'N/A';
-  return list;
-}, {} as Record<string, string>);
+export const jsonVersions = (lexPackages: Record<string, string>): Record<string, string> => {
+  const initial: Record<string, string> = {};
+
+  return Object.keys(lexPackages).reduce((list, key) => {
+    list[key] = lexPackages[key] || 'N/A';
+    return list;
+  }, initial);
+};
 
 export interface VersionsCmd {
   readonly json?: boolean;
@@ -31,6 +35,7 @@ export interface VersionsCmd {
 
 export const versions = (cmd: VersionsCmd, callback: (status: number) => void): Promise<number> => {
   if(cmd.json) {
+    // eslint-disable-next-line no-console -- Emit raw JSON without the logger's color formatting.
     console.log(JSON.stringify(jsonVersions(packages)));
   } else {
     log('Versions:', 'info', false);

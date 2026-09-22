@@ -30,13 +30,19 @@ export interface ServerlessDeployOptions {
 export type ServerlessDeployCallback = (status: number) => void;
 
 const toList = (value?: string | string[]): string[] => {
-  if(!value) return [];
+  if(!value) {
+    return [];
+  }
   return Array.isArray(value) ? value : [value];
 };
 
 const formatSize = (bytes: number): string => {
-  if(bytes < 1024) return `${bytes} B`;
-  if(bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if(bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if(bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 };
 

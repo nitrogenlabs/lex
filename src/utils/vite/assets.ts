@@ -2,16 +2,17 @@
  * Copyright (c) 2018-Present, Nitrogen Labs, Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
-import {gzipSync} from 'zlib';
 import favicons from 'favicons';
 import {existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync} from 'fs';
 import {sync as globSync} from 'glob';
 import {extname, join, relative, resolve} from 'path';
 import sharp from 'sharp';
 import {optimize} from 'svgo';
+import {gzipSync} from 'zlib';
+
+import {LexSvgSpritemap} from '../assets/LexSvgSpritemap.js';
 
 import type {LexConfigType} from '../../LexConfig.js';
-import {LexSvgSpritemap} from '../assets/LexSvgSpritemap.js';
 
 const COMPRESSIBLE_FILE = /\.(css|html|js|json|svg|txt|xml)$/i;
 const IMAGE_FILE = /\.(gif|jpe?g|png|svg|webp)$/i;
@@ -26,13 +27,17 @@ interface GeneratedFavicons {
 const faviconCache = new Map<string, {modifiedAt: number; response: GeneratedFavicons}>();
 
 const copyDirectory = (source: string, destination: string, exclude?: RegExp): void => {
-  if(!existsSync(source)) return;
+  if(!existsSync(source)) {
+    return;
+  }
 
   for(const entry of readdirSync(source, {withFileTypes: true})) {
     const sourcePath = join(source, entry.name);
     const destinationPath = join(destination, entry.name);
 
-    if(exclude?.test(sourcePath)) continue;
+    if(exclude?.test(sourcePath)) {
+      continue;
+    }
 
     if(entry.isDirectory()) {
       copyDirectory(sourcePath, destinationPath, exclude);
@@ -60,11 +65,15 @@ export const generateLexFavicons = async (config: LexConfigType): Promise<Genera
   const sourcePath = config.sourceFullPath || resolve(process.cwd(), config.sourcePath || './src');
   const logoPath = resolve(sourcePath, 'images/logo.png');
 
-  if(!existsSync(logoPath)) return null;
+  if(!existsSync(logoPath)) {
+    return null;
+  }
 
   const modifiedAt = statSync(logoPath).mtimeMs;
   const cached = faviconCache.get(logoPath);
-  if(cached?.modifiedAt === modifiedAt) return cached.response;
+  if(cached?.modifiedAt === modifiedAt) {
+    return cached.response;
+  }
 
   const generated = await favicons(logoPath, {
     icons: {
@@ -111,7 +120,10 @@ export const copyLexWebAssets = async (config: LexConfigType): Promise<void> => 
     prefix: false
   }).buildSpritemap();
 
-  for(const warning of spritemap.warnings) console.warn(warning.message);
+  for(const warning of spritemap.warnings) {
+    // eslint-disable-next-line no-console -- Build warnings belong on stderr, matching Vite diagnostics.
+    console.warn(warning.message);
+  }
 
   if(spritemap.content) {
     const spritePath = resolve(outputPath, 'icons/icons.svg');
@@ -159,18 +171,30 @@ const optimizeImage = async (filePath: string): Promise<void> => {
   }
 
   let image = sharp(source);
-  if(extension === '.jpg' || extension === '.jpeg') image = image.jpeg({progressive: true, quality: 65});
-  if(extension === '.png') image = image.png({quality: 90});
-  if(extension === '.webp') image = image.webp({quality: 75});
-  if(extension === '.gif') image = image.gif();
+  if(extension === '.jpg' || extension === '.jpeg') {
+    image = image.jpeg({progressive: true, quality: 65});
+  }
+  if(extension === '.png') {
+    image = image.png({quality: 90});
+  }
+  if(extension === '.webp') {
+    image = image.webp({quality: 75});
+  }
+  if(extension === '.gif') {
+    image = image.gif();
+  }
 
   const optimized = await image.toBuffer();
-  if(optimized.length < source.length) writeFileSync(filePath, optimized);
+  if(optimized.length < source.length) {
+    writeFileSync(filePath, optimized);
+  }
 };
 
 export const optimizeLexWebAssets = async (config: LexConfigType): Promise<void> => {
   const outputPath = config.outputFullPath || resolve(process.cwd(), config.outputPath || './lib');
-  if(!existsSync(outputPath)) return;
+  if(!existsSync(outputPath)) {
+    return;
+  }
 
   const imageFiles = globSync('**/*.{gif,jpg,jpeg,png,svg,webp}', {
     absolute: true,
@@ -183,18 +207,24 @@ export const optimizeLexWebAssets = async (config: LexConfigType): Promise<void>
 
 export const compressLexWebAssets = (config: LexConfigType): void => {
   const outputPath = config.outputFullPath || resolve(process.cwd(), config.outputPath || './lib');
-  if(!existsSync(outputPath)) return;
+  if(!existsSync(outputPath)) {
+    return;
+  }
 
   const files = globSync('**/*', {absolute: true, cwd: outputPath, nodir: true});
   for(const filePath of files) {
-    if(!COMPRESSIBLE_FILE.test(filePath) || statSync(filePath).size < MINIMUM_GZIP_SIZE) continue;
+    if(!COMPRESSIBLE_FILE.test(filePath) || statSync(filePath).size < MINIMUM_GZIP_SIZE) {
+      continue;
+    }
     writeFileSync(`${filePath}.gz`, gzipSync(readFileSync(filePath)));
   }
 };
 
 export const getDevAsset = async (config: LexConfigType, requestPath: string): Promise<Buffer | null> => {
   const normalizedPath = requestPath.split('?')[0].replace(/^\/+/, '');
-  if(normalizedPath.includes('..')) return null;
+  if(normalizedPath.includes('..')) {
+    return null;
+  }
 
   if(normalizedPath === 'icons/icons.svg') {
     const sourcePath = config.sourceFullPath || resolve(process.cwd(), config.sourcePath || './src');
@@ -204,18 +234,26 @@ export const getDevAsset = async (config: LexConfigType, requestPath: string): P
 
   const generatedFavicons = await generateLexFavicons(config);
   const generatedImage = generatedFavicons?.images.find(({name}) => name === normalizedPath);
-  if(generatedImage) return generatedImage.contents;
+  if(generatedImage) {
+    return generatedImage.contents;
+  }
   const generatedFile = generatedFavicons?.files.find(({name}) => name === normalizedPath);
-  if(generatedFile) return Buffer.from(generatedFile.contents);
+  if(generatedFile) {
+    return Buffer.from(generatedFile.contents);
+  }
 
   for(const assetDirectory of getAssetDirectories(config)) {
     const prefix = assetDirectory.destination ? `${assetDirectory.destination}/` : '';
-    if(!normalizedPath.startsWith(prefix)) continue;
+    if(!normalizedPath.startsWith(prefix)) {
+      continue;
+    }
 
     const relativePath = normalizedPath.slice(prefix.length);
     const filePath = resolve(assetDirectory.source, relativePath);
     if(filePath.startsWith(resolve(assetDirectory.source)) && existsSync(filePath) && statSync(filePath).isFile()) {
-      if(assetDirectory.exclude?.test(filePath)) continue;
+      if(assetDirectory.exclude?.test(filePath)) {
+        continue;
+      }
       return readFileSync(filePath);
     }
   }

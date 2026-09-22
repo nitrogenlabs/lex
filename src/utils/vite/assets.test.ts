@@ -3,7 +3,6 @@ import {tmpdir} from 'os';
 import {join} from 'path';
 import sharp from 'sharp';
 
-import type {LexConfigType} from '../../LexConfig.js';
 import {
   compressLexWebAssets,
   copyLexWebAssets,
@@ -12,6 +11,8 @@ import {
   getDevAsset,
   optimizeLexWebAssets
 } from './assets.js';
+
+import type {LexConfigType} from '../../LexConfig.js';
 
 describe('Vite asset pipeline', () => {
   const directory = join(tmpdir(), 'lex-vite-assets-test');
@@ -31,6 +32,7 @@ describe('Vite asset pipeline', () => {
     mkdirSync(join(sourcePath, 'icons'), {recursive: true});
     mkdirSync(outputPath, {recursive: true});
   });
+
   afterEach(() => rmSync(directory, {force: true, recursive: true}));
 
   it('copies conventional assets and builds the SVG sprite', async () => {
@@ -75,6 +77,7 @@ describe('Vite asset pipeline', () => {
   it('serves source assets and blocks traversal', async () => {
     writeFileSync(join(sourcePath, 'static/file.txt'), 'asset');
     writeFileSync(join(sourcePath, 'icons/check.svg'), '<svg viewBox="0 0 1 1"><path d="M0 0h1v1z"/></svg>');
+
     expect((await getDevAsset(config, '/file.txt'))?.toString()).toBe('asset');
     expect((await getDevAsset(config, '/icons/icons.svg'))?.toString()).toContain('<symbol');
     expect(await getDevAsset(config, '/../package.json')).toBeNull();
@@ -83,6 +86,7 @@ describe('Vite asset pipeline', () => {
 
   it('generates favicon assets when a logo is present', async () => {
     expect(await generateLexFavicons(config)).toBeNull();
+
     await sharp({create: {background: '#0000ff', channels: 4, height: 64, width: 64}})
       .png()
       .toFile(join(sourcePath, 'images/logo.png'));
@@ -97,6 +101,7 @@ describe('Vite asset pipeline', () => {
 
   it('ignores missing output directories', async () => {
     const missingConfig = {outputFullPath: join(directory, 'missing')};
+
     await expect(optimizeLexWebAssets(missingConfig)).resolves.toBeUndefined();
     expect(compressLexWebAssets(missingConfig)).toBeUndefined();
   });

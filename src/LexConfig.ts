@@ -146,10 +146,10 @@ export const defaultConfigValues: LexConfigType = {
   targetEnvironment: 'web',
   useGraphQl: false,
   useTypescript: false,
-  vitest: {},
   vite: {
     staticPath: './src/static'
-  }
+  },
+  vitest: {}
 };
 
 export const getPackageDir = (): string => {

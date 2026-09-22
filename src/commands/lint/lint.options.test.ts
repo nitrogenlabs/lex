@@ -1,4 +1,6 @@
 import {execa} from 'execa';
+import {type PathLike} from 'fs';
+import {basename} from 'path';
 
 import {lint} from './lint.js';
 
@@ -14,7 +16,12 @@ vi.mock('../../utils/app.js', async () => ({
 vi.mock('../../utils/log.js');
 vi.mock('../../LexConfig.js');
 vi.mock('fs', async () => ({
-  existsSync: vi.fn(() => true),
+  existsSync: vi.fn((filePath: PathLike) => [
+    'eslint',
+    'eslint.config.mjs',
+    'package.json',
+    'tsconfig.json'
+  ].includes(basename(String(filePath)))),
   readFileSync: vi.fn(() => '{"type": "module"}'),
   unlinkSync: vi.fn(),
   writeFileSync: vi.fn()
@@ -76,9 +83,16 @@ describe('lint options', () => {
   });
 
   it('should handle debug option', async () => {
-    const result = await lint({debug: true});
+    const consoleErrorSpy = vi.spyOn(console, 'error');
 
-    expect(result).toBe(0);
+    try {
+      const result = await lint({debug: true});
+
+      expect(result).toBe(0);
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
   });
 
   it('should handle noColor option', async () => {

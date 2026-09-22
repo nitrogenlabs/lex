@@ -43,11 +43,13 @@ describe('dev', () => {
   it('prefers the CLI port over the configured port', async () => {
     (LexConfig.config as any).dev = {port: 4200};
     await dev({port: 8080, quiet: true});
+
     expect(createServer).toHaveBeenCalledWith(expect.objectContaining({server: {port: 8080}}));
   });
 
   it('returns a failure when Vite cannot start', async () => {
     (createServer as MockedFunction<typeof createServer>).mockRejectedValue(new Error('failed'));
+
     expect(await dev({quiet: true})).toBe(1);
   });
 });

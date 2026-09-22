@@ -25,7 +25,6 @@ vi.mock('../../LexConfig.js', async () => ({
       entryHTML: 'index.html',
       entryJs: 'index.js',
       env: null,
-      vitest: {},
       outputHash: false,
       outputPath: './lib',
       packageManager: 'npm',
@@ -34,7 +33,8 @@ vi.mock('../../LexConfig.js', async () => ({
       targetEnvironment: 'web',
       useGraphQl: false,
       useTypescript: true,
-      vite: {}
+      vite: {},
+      vitest: {}
       // SWC configuration is handled automatically with optimal defaults
     },
     parseConfig: vi.fn().mockResolvedValue(undefined)

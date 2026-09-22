@@ -7,12 +7,12 @@ vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
   checkLinkedModules: vi.fn(),
   copyConfiguredFiles: vi.fn().mockResolvedValue(undefined),
+  copyFiles: vi.fn().mockResolvedValue(undefined),
   createSpinner: vi.fn(() => ({
     fail: vi.fn(),
     start: vi.fn(),
     succeed: vi.fn()
   })),
-  copyFiles: vi.fn().mockResolvedValue(undefined),
   getFilesByExt: vi.fn().mockReturnValue([]),
   removeFiles: vi.fn().mockResolvedValue(undefined)
 }));

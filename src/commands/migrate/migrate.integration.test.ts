@@ -4,12 +4,12 @@ import {migrate} from './migrate.js';
 
 vi.mock('execa');
 vi.mock('../../utils/app.js', async () => ({
-  createSpinner: vi.fn(() => ({
-    start: vi.fn(),
-    succeed: vi.fn(),
-    fail: vi.fn()
-  })),
   copyFileSync: vi.fn(),
+  createSpinner: vi.fn(() => ({
+    fail: vi.fn(),
+    start: vi.fn(),
+    succeed: vi.fn()
+  })),
   getPackageJson: vi.fn(() => ({
     dependencies: {},
     devDependencies: {},

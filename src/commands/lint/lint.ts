@@ -5,22 +5,14 @@
 import {execa} from 'execa';
 import {existsSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {dirname, resolve as pathResolve, extname} from 'path';
+import {fileURLToPath} from 'url';
 
 import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
-let currentFilename: string;
-let currentDirname: string;
-
-try {
-  currentFilename = eval('require("url").fileURLToPath(import.meta.url)');
-  currentDirname = dirname(currentFilename);
-} catch{
-  currentFilename = process.cwd();
-  currentDirname = process.cwd();
-}
+const currentDirname = dirname(fileURLToPath(import.meta.url));
 
 export interface LintOptions {
   readonly cache?: boolean;
@@ -490,6 +482,7 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
             writeFileSync(promptFile, prompt, 'utf8');
 
             // Use Cursor CLI to fix the file
+            // eslint-disable-next-line no-await-in-loop -- Cursor edits share a temporary prompt file.
             await execa('cursor', ['edit', '--file', filePath, '--prompt-file', promptFile], {
               cwd,
               reject: false,
@@ -503,6 +496,7 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
 
             log(`Applied Cursor AI fixes to ${filePath}`, 'info', quiet);
           } catch{
+            // eslint-disable-next-line no-await-in-loop -- Keep file edits and AI requests ordered.
             const wasModified = await applyDirectFixes(filePath, quiet);
             if(wasModified) {
               log(`Applied direct fixes to ${filePath}`, 'info', quiet);
@@ -510,9 +504,11 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
           }
         } catch(error) {
           log(`Error using Cursor AI: ${error.message}`, 'error', quiet);
+          // eslint-disable-next-line no-await-in-loop -- Keep file edits and AI requests ordered.
           await applyDirectFixes(filePath, quiet);
         }
       } else {
+        // eslint-disable-next-line no-await-in-loop -- Keep file edits and AI requests ordered.
         const wasModified = await applyDirectFixes(filePath, quiet);
         if(wasModified) {
           log(`Applied direct fixes to ${filePath}`, 'info', quiet);
@@ -521,6 +517,7 @@ Fix ONLY the specific ESLint errors. Return the properly formatted code.`;
         const fileErrors = fileErrorMap.get(filePath) || [];
         if(fileErrors.length > 0) {
           try {
+            // eslint-disable-next-line no-await-in-loop -- Keep file edits and AI requests ordered.
             const {callAIService} = await import('../../utils/aiService.js');
 
             const fileContent = readFileSync(filePath, 'utf8');
@@ -621,6 +618,7 @@ const config = {baseUrl: 'https://api.example.com', apiKey: 'value', timeout: 50
 Fix ONLY the specific ESLint errors listed above. Review the entire file for compliance with all ESLint rules.
 Return only the properly formatted fixed code without any explanations.`;
 
+            // eslint-disable-next-line no-await-in-loop -- Keep file edits and AI requests ordered.
             const fixedContent = await callAIService(prompt, quiet);
 
             if(fixedContent && fixedContent !== fileContent) {
@@ -639,7 +637,7 @@ Return only the properly formatted fixed code without any explanations.`;
     spinner.fail('Failed to apply AI fixes');
     log(`Error: ${error.message}`, 'error', quiet);
     if(!quiet) {
-      console.error(error);
+      log(error.stack || String(error), 'error', quiet);
     }
   }
 };
@@ -859,7 +857,7 @@ const loadAIConfig = async (cwd: string, quiet: boolean, debug: boolean = false)
         if(importError.message.includes('not defined in ES module scope')) {
           log(`ES Module syntax error in ${lexConfigPath}. Make sure you're using 'export' instead of 'module.exports'.`, 'error', quiet);
           if(debug) {
-            console.error(importError);
+            log(importError.stack || String(importError), 'error', quiet);
           }
           return;
         }
@@ -888,7 +886,7 @@ const loadAIConfig = async (cwd: string, quiet: boolean, debug: boolean = false)
     } catch(error) {
       log(`Error loading AI configuration from ${lexConfigPath}: ${error.message}`, 'warn', quiet);
       if(debug) {
-        console.error(error);
+        log(error.stack || String(error), 'error', quiet);
       }
     }
   }
@@ -936,12 +934,13 @@ const loadESLintConfig = async (cwd: string, quiet: boolean, debug: boolean): Pr
 
         let lexConfig;
         try {
+          // eslint-disable-next-line no-await-in-loop -- Load configuration formats in priority order.
           lexConfig = await import(importPath);
         } catch(importError) {
           if(importError.message.includes('not defined in ES module scope')) {
             log(`ES Module syntax error in ${potentialPath}. Make sure you're using 'export' instead of 'module.exports'.`, 'error', quiet);
             if(debug) {
-              console.error(importError);
+              log(importError.stack || String(importError), 'error', quiet);
             }
             continue;
           }
@@ -971,7 +970,7 @@ const loadESLintConfig = async (cwd: string, quiet: boolean, debug: boolean): Pr
       } catch(error) {
         log(`Error loading ESLint configuration from ${potentialPath}: ${error.message}`, 'warn', quiet);
         if(debug) {
-          console.error(error);
+          log(error.stack || String(error), 'error', quiet);
         }
       }
     }

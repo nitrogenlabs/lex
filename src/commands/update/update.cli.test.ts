@@ -3,6 +3,7 @@ import {execa} from 'execa';
 import {update, UpdateCallback} from './update.js';
 
 vi.mock('execa');
+vi.mock('../../utils/log.js');
 vi.mock('../../LexConfig.js', async () => ({
   LexConfig: {
     config: {

@@ -88,7 +88,7 @@ const defaultExit = ((code?: number) => {
     return undefined as never;
   }
 
-  process.exit(code);
+  return process.exit(code);
 }) as typeof process.exit;
 
 export const getTestFilePatterns = (testPathPattern?: string): string[] => {

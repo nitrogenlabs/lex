@@ -8,6 +8,7 @@ describe('LexSvgSpritemap', () => {
   const directory = join(tmpdir(), 'lex-spritemap-test');
 
   beforeEach(() => mkdirSync(directory, {recursive: true}));
+
   afterEach(() => rmSync(directory, {force: true, recursive: true}));
 
   it('builds optimized symbols and preserves namespaces', () => {

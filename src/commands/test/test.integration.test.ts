@@ -66,7 +66,7 @@ describe('test integration', () => {
 
   it('should run tests successfully', async () => {
     const callback = vi.fn() as unknown as TestCallback;
-    (execa as MockedFunction<typeof execa>).mockResolvedValue({stdout: '', stderr: '', exitCode: 0} as any);
+    (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 0, stderr: '', stdout: ''} as any);
 
     await test({}, [], callback);
 

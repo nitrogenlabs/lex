@@ -20,8 +20,8 @@ import {init} from './commands/init/init.js';
 import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
-import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {publish} from './commands/publish/publish.js';
+import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {serverlessDev} from './commands/serverless-dev/serverless-dev.js';
 import {storybook} from './commands/storybook/storybook.js';
 import {test} from './commands/test/test.js';
@@ -109,7 +109,9 @@ program.command('dev')
   .option('--variables <n>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'development\'}").')
   .option('--watch', 'Watch for changes.')
   .action((cmd) => dev(cmd).then((status) => {
-    if(status !== 0) process.exitCode = status;
+    if(status !== 0) {
+      process.exitCode = status;
+    }
   }));
 
 program.command('init <appName> [packageName]')

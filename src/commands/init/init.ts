@@ -62,7 +62,7 @@ export const init = async (
     // Stop spinner and update status
     spinner.succeed('Successfully downloaded app!');
   } catch(error) {
-    console.log('error', error);
+    log(String(error), 'error', quiet);
     log(`\n${cliName} Error: There was an error downloading ${appModule}. Make sure the package exists and there is a network connection.`, 'error', quiet);
 
     // Stop spinner and kill process

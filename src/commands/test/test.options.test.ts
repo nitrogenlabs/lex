@@ -59,7 +59,7 @@ describe('test options tests', () => {
     };
     (app.createSpinner as Mock).mockReturnValue(mockSpinner);
 
-    (LexConfig.parseConfig as Mock).mockResolvedValue({} as never);
+    (LexConfig.parseConfig as Mock).mockResolvedValue(undefined);
     (LexConfig.config as any) = {
       useTypescript: true
     };
@@ -88,8 +88,8 @@ describe('test options tests', () => {
 
   it('should pass bail option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      bail: true
+      bail: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -102,8 +102,8 @@ describe('test options tests', () => {
 
   it('should pass changedFilesWithAncestor option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      changedFilesWithAncestor: true
+      changedFilesWithAncestor: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -115,8 +115,8 @@ describe('test options tests', () => {
 
   it('should pass changedSince option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      changedSince: 'main'
+      changedSince: 'main',
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -129,8 +129,8 @@ describe('test options tests', () => {
 
   it('should pass ci option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      ci: true
+      ci: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -143,8 +143,8 @@ describe('test options tests', () => {
   it('should pass collectCoverageFrom option to Vitest when specified', async () => {
     const coveragePattern = 'src/**/*.{ts,tsx}';
     const options: TestOptions = {
-      quiet: false,
-      collectCoverageFrom: coveragePattern
+      collectCoverageFrom: coveragePattern,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -158,8 +158,8 @@ describe('test options tests', () => {
 
   it('should pass colors option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      colors: true
+      colors: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -172,8 +172,8 @@ describe('test options tests', () => {
   it('should pass config option to Vitest when specified', async () => {
     const customConfig = './custom-vitest.config.js';
     const options: TestOptions = {
-      quiet: false,
-      config: customConfig
+      config: customConfig,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -199,8 +199,8 @@ describe('test options tests', () => {
 
   it('should pass debug option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      debug: true
+      debug: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -212,8 +212,8 @@ describe('test options tests', () => {
 
   it('should pass detectOpenHandles option to Vitest when specified', async () => {
     const options: TestOptions = {
-      quiet: false,
-      detectOpenHandles: true
+      detectOpenHandles: true,
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -226,12 +226,12 @@ describe('test options tests', () => {
 
   it('should handle multiple options correctly', async () => {
     const options: TestOptions = {
-      quiet: false,
       bail: true,
       ci: true,
       colors: true,
-      verbose: true,
-      detectOpenHandles: true
+      detectOpenHandles: true,
+      quiet: false,
+      verbose: true
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -249,8 +249,8 @@ describe('test options tests', () => {
 
   it('should handle custom CLI name', async () => {
     const options: TestOptions = {
-      quiet: false,
-      cliName: 'CustomTester'
+      cliName: 'CustomTester',
+      quiet: false
     };
 
     await test(options, [], mockCallback as unknown as typeof process.exit);
@@ -327,9 +327,9 @@ describe('test options tests', () => {
 
   it('should pass e2e-only execution to Playwright', async () => {
     const options: TestOptions = {
-      quiet: false,
       e2e: true,
       maxWorkers: '2',
+      quiet: false,
       runInBand: true,
       testNamePattern: 'smoke'
     };
