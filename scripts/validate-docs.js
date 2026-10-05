@@ -40,6 +40,7 @@ const documentationCommands = {
   publish: 'publish',
   'serverless-deploy': 'serverless-deploy',
   'serverless-dev': 'serverless-dev',
+  'serverless-promote': 'serverless-promote',
   storybook: 'storybook',
   test: 'test',
   update: 'update',

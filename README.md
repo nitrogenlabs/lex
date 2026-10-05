@@ -100,6 +100,7 @@ Lex comes with everything you need for modern React development:
 |---------|-------------|---------------|
 | [`lex dev`](src/commands/dev/dev.docs.md) | Start the Vite development server | `lex dev --open` |
 | [`lex serverless-dev`](src/commands/serverless-dev/serverless-dev.docs.md) | Start the local Lambda server | `lex serverless-dev --host 0.0.0.0` |
+| [`lex serverless-promote`](src/commands/serverless-promote/serverless-promote.docs.md) | Publish a guarded Lambda version and promote one alias | `lex serverless-promote --help` |
 | [`lex serverless-deploy`](src/commands/serverless-deploy/serverless-deploy.docs.md) | Bundle and package a Lambda function | `lex serverless-deploy --entry src/handler.ts` |
 | [`lex compile`](src/commands/compile/compile.docs.md) | Compile TypeScript/JavaScript with SWC | `lex compile --watch` |
 | [`lex build`](src/commands/build/build.docs.md) | Build with Vite or SWC | `lex build --mode production` |

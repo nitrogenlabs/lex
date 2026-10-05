@@ -23,6 +23,7 @@ import {migrate} from './commands/migrate/migrate.js';
 import {publish} from './commands/publish/publish.js';
 import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {serverlessDev} from './commands/serverless-dev/serverless-dev.js';
+import {serverlessPromote} from './commands/serverless-promote/serverless-promote.js';
 import {storybook} from './commands/storybook/storybook.js';
 import {test} from './commands/test/test.js';
 import {update} from './commands/update/update.js';
@@ -180,6 +181,17 @@ program.command('serverless-deploy')
   .option('--sourcemap', 'Generate a sourcemap.', false)
   .option('--target <value>', 'esbuild runtime target. Default: "node24".')
   .action((cmd) => serverlessDeploy(cmd, process.exit).then(() => {}));
+
+program.command('serverless-promote')
+  .requiredOption('--alias <name>', 'Existing Lambda alias to promote.')
+  .option('--dry-run', 'Inspect the target without publishing or updating the alias.', false)
+  .requiredOption('--expected-code-sha256 <hash>', 'Expected uploaded bundle hash.')
+  .requiredOption('--expected-revision <revision>', 'Expected final function configuration revision.')
+  .requiredOption('--expected-version <version>', 'Expected current alias version; stops on a mismatch.')
+  .requiredOption('--function-name <name>', 'Unqualified Lambda function name.')
+  .option('--quiet', 'No Lex notifications printed in the console.')
+  .requiredOption('--region <region>', 'AWS region containing the function.')
+  .action((cmd) => serverlessPromote(cmd, process.exit).then(() => {}));
 
 program.command('publish')
   .addOption(new Option('--bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch".').choices(['major', 'minor', 'patch', 'beta', 'alpha', 'rc']).default('patch'))

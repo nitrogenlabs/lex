@@ -41,6 +41,7 @@ export * from './commands/link/link.js';
 export * from './commands/lint/lint.js';
 export * from './commands/migrate/migrate.js';
 export * from './commands/serverless-deploy/serverless-deploy.js';
+export * from './commands/serverless-promote/serverless-promote.js';
 export * from './commands/publish/publish.js';
 export * from './commands/serverless-dev/serverless-dev.js';
 export * from './commands/storybook/storybook.js';
