@@ -1,6 +1,6 @@
 # Websocket stage migration in Lex
 
-Date: October 5, 2026. Status: proposed specification for user review.
+Date: October 5, 2026. Status: approved by the user to proceed with implementation planning on October 5, 2026.
 
 ## Outcome and constraints
 
