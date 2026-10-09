@@ -737,3 +737,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Made with ❤️ by [Nitrogen Labs](https://nitrogenlabs.com)**
 
 *Lex - Because development should be effortless.*
+
+### Portable Vitest test imports
+
+Tests executed by `lex test` can import `test`, `expect`, `vi`, hooks and public Vitest types from `@nlabs/lex/test-vitest`. This lean, ESM, test-only entry forwards the public Vitest exports resolved from Lex's package; it loads neither the Lex CLI/root entry nor React/DOM helpers. The CLI may prefer a different project-local Vitest runner. Qualify the actual consumer's runner, export binding, compatible versions and runtime behavior together; matching version numbers alone do not prove shared framework identity. Do not import it in application runtime code. Mock and callback types retain Vitest's public aliases and inference. No direct consumer test-runner dependency or private node_modules import is needed for these bindings. Consumers must adopt an artifact that actually exports this entry; older Lex archives do not provide it.
+
+```ts
+import {afterEach, expect, test, vi} from '@nlabs/lex/test-vitest';
+import type {Mock} from '@nlabs/lex/test-vitest';
+```
+
+The complete bundled Vitest declaration graph may require DOM library types in test-only TypeScript configurations. Keep production Node configurations separate, and verify the installed runner/coverage/compiler contracts together.
+
+Vitest’s static hoist transform does not recognize `vi` imported through this facade: `vi.mock` and `vi.hoisted` require Vitest’s directly recognized import or its globals and are unsupported through this entry. Use the public `vi.doMock` binding with dynamic imports when mocking through the facade. Forwarding runtime values and public types does not imply compatibility with every framework source transform.
