@@ -329,3 +329,9 @@ lex test --e2e src/commands/test/test.e2e.ts
 # Run both suites together
 lex test --unit --e2e
 ```
+
+### Runner compatibility
+
+Lex supplies Vitest 4.1.11 and its matching coverage provider as ordinary dependencies. This preserves the existing public `vitest`, `vitest/globals`, and `@testing-library/jest-dom/vitest` consumer contracts. Keep these two versions aligned. Vitest 5 changes the public assertion type parameters and is not compatible with the verified jest-dom 7 declaration contract.
+
+Verify the actual consumer install: bare test imports and Lex's executable must use the same runner instance. A previously nested incremental npm layout may require an audited lockfile layout correction and clean install. Consumer tests must not rely on permanent links or aliases to Lex's private dependency directory, and Yarn consumers retain the ordinary supplied-runner dependency contract.

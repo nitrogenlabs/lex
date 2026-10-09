@@ -49,3 +49,9 @@ export * from './commands/test/test.js';
 export * from './commands/update/update.js';
 export * from './commands/upgrade/upgrade.js';
 export * from './commands/versions/versions.js';
+
+export * from './commands/deployment-env/deployment-env.js';
+export type * from './commands/deployment-env/deployment-env.types.js';
+
+export * from './commands/native-env/native-env.js';
+export * from './commands/native-doctor/native-doctor.js';

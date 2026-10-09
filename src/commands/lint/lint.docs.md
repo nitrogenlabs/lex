@@ -172,3 +172,15 @@ export default {
 ```
 
 For more details on AI-powered linting, see the [Linting with AI documentation](../ai/ai.docs.md).
+
+## Nonmutating lint checks
+
+Use `lex lint --fixDryRun --config ./scoped-eslint.config.mjs --maxWarnings 0` to apply ESLint fixes in memory while preserving project source and configuration files. An existing explicit configuration takes priority over the project default; a missing explicit path warns and uses the existing fallback policy. The warning limit applies to the combined JavaScript and TypeScript files, including the final check after AI fixes.
+
+Dry-run rejects `--fix` and `--remove-comments` because those request additional writes. It also skips TypeScript configuration generation and legacy configuration deletion. Generated temporary configuration files have unique names and are cleaned on completion or failure; existing caller-owned temporary files remain unchanged. Ordinary lint retains its historical built-in autofix, and `--fix` still enables additional AI fixes.
+
+## Original source verification
+
+Use `lex lint --check --config ./scoped-eslint.config.mjs --maxWarnings 0` for diagnostics against original source bytes. Unlike `--fixDryRun`, this reports fixable violations without applying fixes in memory. Check rejects fixing, dry-run fixing and comment removal and skips TypeScript config generation and legacy config deletion. Use an existing explicit config for a workflow without generated temporary configs; executable user config remains caller code. Patterns remain `src/**/*.{js,jsx}` and, with tsconfig.json, `src/**/*.{ts,tsx}`; limit scope through the supplied ESLint config. Stdin flags are still unsupported by the implementation.
+
+Check and dry-run select a fresh, uncreated cache location with caching disabled, preserving caller-owned `.eslintcache`; ESLint otherwise deletes its existing default cache even during nonfixing checks.

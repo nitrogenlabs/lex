@@ -11,3 +11,9 @@ src
 website
 .eslintrc.json
 !eslint.config.mjs
+
+# Generated staging directories and test output
+/.lex/
+/.native-archive-fixture/
+/test-results/
+/playwright-report/

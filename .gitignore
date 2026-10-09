@@ -10,3 +10,9 @@ docs/assets/*
 !docs/assets/lex-logo.png
 tmp
 /report.*.json
+
+# Generated staging directories and test output
+/.lex/
+/.native-archive-fixture/
+/test-results/
+/playwright-report/

@@ -5,12 +5,16 @@ The `publish` command publishes an npm module with version bumping support.
 ## CLI usage
 
 ```bash
+lex publish --packagePath ./frozen-package.tgz --tag architecture-audit --dryRun
+lex publish --packagePath ./frozen-package.tgz --tag architecture-audit
 lex publish --bump patch
 lex publish --newVersion 2.1.0 --tag latest
 lex publish --bump beta --tag beta --otp 123456
 ```
 
 Use `--private` to publish with restricted npm access and `--package-manager` to select npm or Yarn.
+
+Archive publishing resolves `--packagePath` to an existing regular `.tgz` file and invokes npm with that exact archive and `--ignore-scripts`. It uses archive metadata, does not load local configuration or package.json, and rejects `--bump`, `--newVersion`, and package managers other than npm. `--dryRun` invokes the real npm dry run. Use an explicit tag such as `architecture-audit` to preserve the registry `latest` tag. When an OTP is provided, subprocess output is captured and error messages redact that value.
 
 ## API
 
@@ -33,10 +37,12 @@ The `PublishOptions` interface provides the following options:
 ```typescript
 interface PublishOptions {
   readonly bump?: string;         // Version bump type (major, minor, patch, alpha, beta, rc)
+  readonly dryRun?: boolean;     // Invoke npm publish --dry-run
   readonly cliName?: string;      // Custom CLI name to display in messages (default: 'Lex')
   readonly newVersion?: string;   // Specific version to use (overrides bump)
   readonly otp?: string;          // One-time password for npm two-factor auth
   readonly packageManager?: string; // Package manager to use (default: from config or 'npm')
+  readonly packagePath?: string; // Immutable .tgz archive (npm only)
   readonly private?: boolean;     // Publish as a private package
   readonly quiet?: boolean;       // Suppress non-essential output (default: false)
   readonly tag?: string;          // npm tag to use (e.g., 'latest', 'beta')

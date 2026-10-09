@@ -15,11 +15,14 @@ import {clean} from './commands/clean/clean.js';
 import {compile} from './commands/compile/compile.js';
 import {config} from './commands/config/config.js';
 import {create} from './commands/create/create.js';
+import {deploymentEnvFromArgs} from './commands/deployment-env/deployment-env.js';
 import {dev, DEFAULT_DEV_PORT} from './commands/dev/dev.js';
 import {init} from './commands/init/init.js';
 import {linked} from './commands/link/link.js';
 import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
+import {nativeDoctor} from './commands/native-doctor/native-doctor.js';
+import {nativeEnv} from './commands/native-env/native-env.js';
 import {publish} from './commands/publish/publish.js';
 import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {serverlessDev} from './commands/serverless-dev/serverless-dev.js';
@@ -64,6 +67,29 @@ program.command('build')
   .option('--variables <n>', 'Environment variables to set in "process.env". (ie. "{NODE_ENV: \'production\'}").')
   .option('--watch', 'Watch for changes.', false)
   .action((cmd) => build(cmd, process.exit).then(() => {}));
+
+program.command('deployment-env <mode>')
+  .description('Validate or set deployment environment settings from a secret-free descriptor.')
+  .allowUnknownOption()
+  .allowExcessArguments()
+  .option('--descriptor <path>', 'Secret-free JSON descriptor path.')
+  .option('--stage <stage>', 'Stage, or all for setup.')
+  .option('--env-file <path>', 'Explicit simple dotenv file.')
+  .option('--repo <owner/name>', 'Repository override.')
+  .option('--dry-run', 'Validate and plan without subprocesses.')
+  .option('--quiet', 'Suppress reports.')
+  .action(async (mode, _options, command) => {
+    const raw = command.parent.rawArgs.slice(4);
+    const indices = raw.flatMap((arg: string, index: number) => (arg === '--descriptor' ? [index] : []));
+    const index = indices[0];
+    const descriptor = raw[index + 1];
+    if(indices.length !== 1 || !descriptor || descriptor.startsWith('--')) {
+      process.stderr.write('Invalid --descriptor\n');
+      process.exit(1);
+    }
+    const args = [...raw.slice(0, index), ...raw.slice(index + 2)];
+    await deploymentEnvFromArgs(mode, args, descriptor, process.exit);
+  });
 
 program.command('clean')
   .option('--quiet', 'No Lex notifications printed in the console.')
@@ -127,6 +153,7 @@ program.command('linked')
   .action((cmd) => linked(cmd, process.exit).then(() => {}));
 
 program.command('lint')
+  .option('--check', 'Report original source diagnostics without fixing or saving changes.', false)
   .option('--cache', 'Only check changed files. Default: false.', false)
   .option('--cacheLocation <path>', 'Path to the cache file or directory.')
   .option('--color', 'Force enabling of color.', false)
@@ -168,6 +195,13 @@ program.command('migrate')
 
 program.command('serverless-deploy')
   .requiredOption('--entry <path>', 'Lambda entry file to bundle.')
+  .option('--runtimeDependencies <names...>', 'Locked runtime dependencies installed in isolated staging.')
+  .option('--runtimeContext <path>', 'Runtime source resolution context package.json.')
+  .option('--runtimeLockfile <path>', 'Exact source version3 lockfile.')
+  .option('--runtimePlatform <name>', 'Explicit native runtime operating system.')
+  .option('--runtimeArchitecture <name>', 'Explicit native runtime CPU architecture.')
+  .option('--smokeCommand <name>', 'Structured isolated runtime smoke executable.')
+  .option('--smokeArgs <values...>', 'Literal smoke executable arguments.')
   .option('--copyNodeModule <value...>', 'Runtime node_modules packages to copy into the package after bundling.')
   .option('--external <value...>', 'Packages or package patterns to keep external from the bundle.')
   .addOption(new Option('--format <value>', 'JavaScript output format. Default: "cjs".').choices(['cjs', 'esm']).default('cjs'))
@@ -193,15 +227,31 @@ program.command('serverless-promote')
   .requiredOption('--region <region>', 'AWS region containing the function.')
   .action((cmd) => serverlessPromote(cmd, process.exit).then(() => {}));
 
+program.command('native-env [args...]')
+  .option('--composeFile <path>', 'Explicit Compose file, resolved against caller cwd.')
+  .option('--cwd <path>', 'Host working directory; defaults to caller cwd.')
+  .option('--service <name>', 'Compose service.', 'android')
+  .option('--workdir <path>', 'Container working directory.')
+  .action((args, options) => nativeEnv({...options, args}, process.exit).then(() => {}));
+
+program.command('native-doctor')
+  .addOption(new Option('--platform <platform>', 'Native host platform.').choices(['ios']).makeOptionMandatory())
+  .option('--cwd <path>', 'Project working directory; defaults to caller cwd.')
+  .option('--developer-dir <path>', 'Child-only Xcode Developer directory override.')
+  .option('--require-bundler', 'Include the project Bundler version check.')
+  .action((options) => nativeDoctor(options, process.exit).then(() => {}));
+
 program.command('publish')
-  .addOption(new Option('--bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch".').choices(['major', 'minor', 'patch', 'beta', 'alpha', 'rc']).default('patch'))
+  .option('--dryRun', 'Validate with npm publish --dry-run without publishing.')
+  .option('--packagePath <path>', 'Publish an immutable .tgz archive using npm with scripts disabled.')
+  .addOption(new Option('--bump <type>', 'Increments the version. Types include: major, minor, patch, beta, alpha, rc. Default: "patch".').choices(['major', 'minor', 'patch', 'beta', 'alpha', 'rc']))
   .option('--newVersion <versionNumber>', 'Publish as a specific version.')
   .option('--otp <code>', 'Provide a two-factor code.')
   .addOption(new Option('--package-manager <manager>', 'Which package manager to use. Default: npm').choices(['npm', 'yarn']).default('npm'))
   .option('--private', 'Publishes the module as restricted.')
   .option('--quiet', 'No Lex notifications printed in the console.')
   .option('--tag <tag>', 'Registers the published package with the given tag.')
-  .action((cmd) => publish(cmd, process.exit).then(() => {}));
+  .action((cmd) => publish({...cmd, ...(cmd.packagePath === undefined && cmd.bump === undefined ? {bump: 'patch'} : {})}, process.exit).then(() => {}));
 
 program.command('serverless-dev')
   .option('--config <path>', 'Custom configuration file path (default: lex.config.mjs).')

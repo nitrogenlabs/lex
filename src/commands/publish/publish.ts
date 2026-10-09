@@ -3,6 +3,8 @@
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 import {execa} from 'execa';
+import {statSync} from 'node:fs';
+import {extname, resolve} from 'node:path';
 import semver, {ReleaseType} from 'semver';
 
 import {LexConfig} from '../../LexConfig.js';
@@ -12,9 +14,11 @@ import {log} from '../../utils/log.js';
 export interface PublishOptions {
   readonly bump?: string;
   readonly cliName?: string;
+  readonly dryRun?: boolean;
   readonly newVersion?: string;
   readonly otp?: string;
   readonly packageManager?: string;
+  readonly packagePath?: string;
   readonly private?: boolean;
   readonly quiet?: boolean;
   readonly tag?: string;
@@ -23,18 +27,49 @@ export interface PublishOptions {
 export type PublishCallback = typeof process.exit;
 
 export const publish = async (cmd: PublishOptions, callback: PublishCallback = process.exit): Promise<number> => {
-  const {bump, cliName = 'Lex', newVersion, otp, packageManager: cmdPackageManager, private: accessPrivate, tag, quiet} = cmd;
+  const {bump, cliName = 'Lex', dryRun, newVersion, otp, packageManager: cmdPackageManager, packagePath: archivePath, private: accessPrivate, quiet, tag} = cmd;
+  const sanitizeError = (error: Error): string => otp ? error.message.split(otp).join('[redacted]') : error.message;
   log(`${cliName} publishing npm module...`, 'info', quiet);
 
   // Spinner
   const spinner = createSpinner(quiet);
 
   // Get custom configuration
-  await LexConfig.parseConfig(cmd);
+  const isArchive = archivePath !== undefined;
+  let archive: string | undefined;
+
+  if(isArchive) {
+    try {
+      if(bump !== undefined || newVersion !== undefined) {
+        throw new Error('Archive publishing cannot use bump or newVersion. The archive version is immutable.');
+      }
+      if(cmdPackageManager && cmdPackageManager !== 'npm') {
+        throw new Error('Archive publishing supports only the npm package manager.');
+      }
+      if(!archivePath || extname(archivePath) !== '.tgz') {
+        throw new Error('packagePath must identify an existing .tgz archive.');
+      }
+      archive = resolve(archivePath);
+      if(!statSync(archive).isFile()) {
+        throw new Error('packagePath must identify a regular .tgz file.');
+      }
+    } catch(error) {
+      log(`\n${cliName} Error: ${sanitizeError(error)}`, 'error', quiet);
+      spinner.fail('Archive validation failed.');
+      callback(1);
+      return 1;
+    }
+  } else {
+    await LexConfig.parseConfig(cmd);
+  }
 
   const {packageManager: configPackageManager} = LexConfig.config;
-  const packageManager: string = cmdPackageManager || configPackageManager || 'npm';
-  const publishOptions: string[] = ['publish'];
+  const packageManager: string = isArchive ? 'npm' : cmdPackageManager || configPackageManager || 'npm';
+  const publishOptions: string[] = archive ? ['publish', archive, '--ignore-scripts'] : ['publish'];
+
+  if(dryRun) {
+    publishOptions.push('--dry-run');
+  }
 
   if(accessPrivate) {
     publishOptions.push('--access', 'restricted');
@@ -48,99 +83,102 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     publishOptions.push('--tag', tag);
   }
 
-  // Get next version number
-  let nextVersion: string | undefined;
-  const packagePath: string = `${process.cwd()}/package.json`;
-  let packageJson;
-  let packageName: string;
-  let prevVersion: string;
+  let packageName = archive || '';
+  if(!isArchive) {
+    // Get next version number
+    let nextVersion: string | undefined;
+    const packagePath: string = `${process.cwd()}/package.json`;
+    let packageJson;
+    let prevVersion: string;
 
-  // If not using yarn, we'll use npm and manually update the version number
-  try {
-    packageJson = getPackageJson(packagePath);
-    packageName = packageJson.name;
-    prevVersion = packageJson.version;
-  } catch(error) {
-    log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
-    log(error.message, 'error');
-    callback(1);
-    return 1;
-  }
+    // If not using yarn, we'll use npm and manually update the version number
+    try {
+      packageJson = getPackageJson(packagePath);
+      packageName = packageJson.name;
+      prevVersion = packageJson.version;
+    } catch(error) {
+      log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed.\n`, 'error', quiet);
+      log(sanitizeError(error), 'error');
+      callback(1);
+      return 1;
+    }
 
-  // Update package.json with the latest version
-  if(newVersion) {
-    // If using a specific version, we don't need to determine the next bump
-    nextVersion = newVersion;
-  } else if(bump) {
-    // Determine next version
-    const formatBump = bump.toString()
-      .trim()
-      .toLowerCase();
+    // Update package.json with the latest version
+    if(newVersion) {
+      // If using a specific version, we don't need to determine the next bump
+      nextVersion = newVersion;
+    } else if(bump) {
+      // Determine next version
+      const formatBump = bump.toString()
+        .trim()
+        .toLowerCase();
 
-    if(formatBump) {
-      const validReleases: string[] = ['major', 'minor', 'patch'];
-      const validPreReleases: string[] = ['alpha', 'beta', 'rc'];
+      if(formatBump) {
+        const validReleases: string[] = ['major', 'minor', 'patch'];
+        const validPreReleases: string[] = ['alpha', 'beta', 'rc'];
 
-      // Make sure the version in package.json is valid
-      const packageVersion = semver.coerce(prevVersion);
+        // Make sure the version in package.json is valid
+        const packageVersion = semver.coerce(prevVersion);
 
-      if(!packageVersion || !semver.valid(packageVersion)) {
-        log(`\n${cliName} Error: Version is invalid in package.json`, 'error', quiet);
-        callback(1);
-        return 1;
-      }
+        if(!packageVersion || !semver.valid(packageVersion)) {
+          log(`\n${cliName} Error: Version is invalid in package.json`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
 
-      if(validReleases.includes(formatBump)) {
-        nextVersion = semver.inc(packageVersion, formatBump as ReleaseType) || undefined;
-      } else if(validPreReleases.includes(formatBump)) {
-        nextVersion = semver.inc(packageVersion, 'prerelease', formatBump) || undefined;
+        if(validReleases.includes(formatBump)) {
+          nextVersion = semver.inc(packageVersion, formatBump as ReleaseType) || undefined;
+        } else if(validPreReleases.includes(formatBump)) {
+          nextVersion = semver.inc(packageVersion, 'prerelease', formatBump) || undefined;
+        } else {
+          log(`\n${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
+
+        if(!nextVersion) {
+          log(`\n${cliName} Error: Could not determine the next package version.`, 'error', quiet);
+          callback(1);
+          return 1;
+        }
       } else {
-        log(`\n${cliName} Error: Bump type is invalid. please make sure it is one of the following: ${validReleases.join(', ')}, ${validPreReleases.join(', ')}`, 'error', quiet);
+        log(`\n${cliName} Error: Bump type is missing.`, 'error', quiet);
         callback(1);
         return 1;
       }
+    }
 
-      if(!nextVersion) {
-        log(`\n${cliName} Error: Could not determine the next package version.`, 'error', quiet);
+    if(nextVersion && packageManager === 'yarn') {
+      publishOptions.push('--new-version', nextVersion);
+    } else if(nextVersion && packageJson) {
+      try {
+        // Save updated version
+        setPackageJson({...packageJson, version: nextVersion}, packagePath);
+      } catch(error) {
+        log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${sanitizeError(error)}`, 'error', quiet);
         callback(1);
         return 1;
       }
     } else {
-      log(`\n${cliName} Error: Bump type is missing.`, 'error', quiet);
-      callback(1);
-      return 1;
+      nextVersion = prevVersion;
     }
-  }
 
-  if(nextVersion && packageManager === 'yarn') {
-    publishOptions.push('--new-version', nextVersion);
-  } else if(nextVersion && packageJson) {
-    try {
-      // Save updated version
-      setPackageJson({...packageJson, version: nextVersion}, packagePath);
-    } catch(error) {
-      log(`\n${cliName} Error: The file, ${packagePath}, was not found or is malformed. ${error.message}`, 'error', quiet);
-      callback(1);
-      return 1;
-    }
-  } else {
-    nextVersion = prevVersion;
   }
 
   try {
     await execa(packageManager, publishOptions, {
       encoding: 'utf8',
-      stdio: 'inherit'
+      stdio: otp ? 'pipe' : 'inherit'
     });
 
-    spinner.succeed(`Successfully published npm package: ${packageName}!`);
+    spinner.succeed(`${dryRun ? 'Successfully validated npm publish' : 'Successfully published npm package'}: ${packageName}!`);
 
     // Kill process
     callback(0);
     return 0;
   } catch(error) {
     // Display error message
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    log(`\n${cliName} Error: ${sanitizeError(error)}`, 'error', quiet);
 
     // Stop spinner
     spinner.fail('Publishing to npm has failed.');
