@@ -51,6 +51,7 @@ vi.mock('../../LexConfig.js', async () => ({
       sourcePath: './src',
       useTypescript: false
     },
+    getLexDir: vi.fn(() => '/mock/lex'),
     parseConfig: vi.fn().mockResolvedValue(undefined)
   }
 }));

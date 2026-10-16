@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "skipLibCheck": false,
+    "strict": true,
+    "target": "ESNext",
+    "types": ["node", "@nlabs/lex/test-vitest/globals"]
+  },
+  "include": ["core.test.ts", "hoisted.test.ts", "react.test.ts", "subject.ts"]
+}

@@ -16,3 +16,4 @@ tmp
 /.native-archive-fixture/
 /test-results/
 /playwright-report/
+/.artifacts/

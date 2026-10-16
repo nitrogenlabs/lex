@@ -27,6 +27,10 @@
     "./test-vitest": {
       "types": "./lib/test-vitest/index.d.ts",
       "import": "./lib/test-vitest/index.js"
+    },
+    "./test-vitest/globals": {
+      "types": "./lib/test-vitest/globals.d.ts",
+      "import": "./lib/test-vitest/globals.js"
     }
   },
   "types": "./lib/index.d.ts",

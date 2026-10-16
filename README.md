@@ -749,4 +749,35 @@ import type {Mock} from '@nlabs/lex/test-vitest';
 
 The complete bundled Vitest declaration graph may require DOM library types in test-only TypeScript configurations. Keep production Node configurations separate, and verify the installed runner/coverage/compiler contracts together.
 
-Vitest’s static hoist transform does not recognize `vi` imported through this facade: `vi.mock` and `vi.hoisted` require Vitest’s directly recognized import or its globals and are unsupported through this entry. Use the public `vi.doMock` binding with dynamic imports when mocking through the facade. Forwarding runtime values and public types does not imply compatibility with every framework source transform.
+Vitest’s static hoist transform does not recognize `vi` imported through this facade. For `vi.mock` and `vi.hoisted`, use the upstream global `vi`, enable `globals: true` in the runner, and include Lex's public type entry in your test TypeScript configuration:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node", "@nlabs/lex/test-vitest/globals"]
+  }
+}
+```
+
+```js
+// vitest.config.mjs, run with lex test --config ./vitest.config.mjs
+export default {test: {globals: true}};
+```
+
+```ts
+import {readValue} from './source.js';
+import type {Mock, TestContext} from '@nlabs/lex/test-vitest';
+
+const state = vi.hoisted(() => ({value: 'mocked'}));
+vi.mock('./source.js', () => ({readValue: () => state.value}));
+test('hoisted mocking', () => expect(readValue()).toBe('mocked'));
+```
+
+Remove explicit `vi` imports in files using hoisted mocking; importing `vi` through the facade remains unsupported for those transforms. Other runner values and types may still use the facade. For non-hoisted mocks use its `vi.doMock` with dynamic imports. The globals entry has no runtime setup side effect; the runner must enable globals. Bundler resolution with `module: ESNext` is also supported. Bare `vitest` imports and `vitest/globals` types are not a portable consumer contract when the runner is nested.
+
+React tests import `@nlabs/lex/test-react` (directly or from a setup file) for Testing Library helpers and jest-dom matcher registration/augmentation on Lex's runner. Do not add bare `@testing-library/jest-dom` to `types`: that is its Jest integration. Use the `jsdom` test environment for DOM execution. Install the normal React/DOM and TypeScript declaration peers needed by your app; see the installed-contract fixture for an exact example. The node-only facade does not import these helpers.
+
+`lex create tsconfig` now generates Bundler resolution, supported by the bundled TypeScript 7 compiler, and enables declarations for its existing declaration-only emit policy. Existing user configurations are not migrated automatically. The owner fixture in `test-fixtures/test-contract` and `scripts/verify-test-contract.mjs` qualifies npm nested and Yarn runner-nohoist installs of an immutable archive, full declaration checking, actual coverage, hoist/matcher negative controls, and generated declarations. Runner selection is unchanged: a separately installed project-local Vitest can still win; such a mixed runner graph needs separate compatibility qualification.

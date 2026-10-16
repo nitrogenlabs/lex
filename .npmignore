@@ -17,3 +17,6 @@ website
 /.native-archive-fixture/
 /test-results/
 /playwright-report/
+/.artifacts/
+/test-fixtures/
+/scripts/verify-test-contract.mjs

@@ -29,8 +29,7 @@
     "strict": false,
     "target": "ESNext",
     "types": [
-      "vitest/globals",
-      "@testing-library/jest-dom",
+      "@nlabs/lex/test-vitest/globals",
       "node"
     ]
   },
