@@ -43,7 +43,14 @@ export interface DeploymentEnvResult {
   readonly plan?: DeploymentEnvPlan;
   readonly status: 0 | 1;
 }
-export type DeploymentEnvRunner = (request: {readonly args: readonly string[]; readonly input?: string}) => Promise<{readonly signal?: string; readonly status: number | null; readonly stdout: string}>;
+export type DeploymentEnvRunner = (request: {
+  readonly args: readonly string[];
+  readonly input?: string;
+}) => Promise<{
+  readonly signal?: string;
+  readonly status: number | null;
+  readonly stdout: string;
+}>;
 export interface DeploymentEnvDependencies {
   readonly readText: (path: string) => Promise<string>;
   readonly report: (message: string) => void;
