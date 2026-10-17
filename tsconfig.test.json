@@ -29,7 +29,7 @@
     "strict": false,
     "target": "ESNext",
     "types": [
-      "@nlabs/lex/test-vitest/globals",
+      "vitest/globals",
       "node"
     ]
   },
