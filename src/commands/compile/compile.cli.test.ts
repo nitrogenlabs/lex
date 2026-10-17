@@ -469,8 +469,8 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(execa).not.toHaveBeenCalledWith(expect.stringContaining('postcss'), expect.any(Array), expect.any(Object));
       expect(result).toBe(1);
+      expect(execa).not.toHaveBeenCalled();
     });
 
     it('should handle PostCSS processing errors', async () => {
