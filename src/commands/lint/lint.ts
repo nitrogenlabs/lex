@@ -12,7 +12,9 @@ import {LexConfig} from '../../LexConfig.js';
 import {createSpinner} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
-import {assertCheckOptions, assertDryRunOptions, eslintArguments} from './lintArguments.js';
+import {assertCheckOptions, assertDryRunOptions, assertFixTypeOptions, eslintArguments} from './lintArguments.js';
+
+import type {EslintRunOptions} from './lintArguments.js';
 
 const currentDirname = dirname(fileURLToPath(import.meta.url));
 
@@ -121,7 +123,7 @@ const runEslintWithLex = async (
   debug: boolean,
   useTypescript: boolean,
   captureOutput?: (output: string) => void,
-  options: {configPath?: string; fixDryRun?: boolean; maxWarnings?: string; readOnlyCacheLocation?: string} = {}
+  options: EslintRunOptions = {}
 ): Promise<number> => {
   const spinner = createSpinner(quiet);
   let tempConfigPath = '';
@@ -229,6 +231,10 @@ module.exports = lexConfig;`;
       stdio: 'pipe'
     });
 
+    if(eslintResult.failed && eslintResult.exitCode === undefined) {
+      throw eslintResult;
+    }
+
     if(eslintResult.stdout) {
       // eslint-disable-next-line no-console
       console.log(eslintResult.stdout);
@@ -269,7 +275,9 @@ module.exports = lexConfig;`;
     return 1;
   } catch(error) {
     spinner.fail('Linting failed!');
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+    const safeCode = typeof code === 'string' && ['ENOENT', 'EACCES', 'EPERM', 'EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM'].includes(code) ? code : 'UNKNOWN';
+    log(`Unable to start eslint (${safeCode}).`, 'error', quiet);
     return 1;
   } finally {
     if(tempConfigPath && existsSync(tempConfigPath)) {
@@ -1006,11 +1014,13 @@ export const lint = async (cmd: LintOptions & {'remove-comments'?: boolean}, cal
     check = false,
     fix = false,
     fixDryRun = false,
+    fixType,
     maxWarnings,
     debug = false,
     quiet = false,
     config = null,
     removeComments = false,
+    rule,
     'remove-comments': removeCommentsFlag = false
   } = cmd;
 
@@ -1022,13 +1032,13 @@ export const lint = async (cmd: LintOptions & {'remove-comments'?: boolean}, cal
   const spinner = createSpinner(quiet);
 
   let selectedConfig: string | undefined;
-  await loadAIConfig(cwd, quiet, debug);
-
   let tempConfigPath: string | null = null;
 
   try {
     assertDryRunOptions(fixDryRun, fix, shouldRemoveComments);
     assertCheckOptions(check, fixDryRun, fix, shouldRemoveComments);
+    assertFixTypeOptions(check, fix, fixType);
+    await loadAIConfig(cwd, quiet, debug);
     const useTypescript = detectTypeScript(cwd);
     log(`TypeScript ${useTypescript ? 'detected' : 'not detected'} from tsconfig.json`, 'info', quiet);
 
@@ -1116,8 +1126,9 @@ export const lint = async (cmd: LintOptions & {'remove-comments'?: boolean}, cal
     };
 
     const result = await runEslintWithLex(cwd, quiet, cliName, !check, debug, useTypescript, captureOutput, {
-      configPath: selectedConfig ?? tempConfigPath ?? undefined, fixDryRun, maxWarnings,
-      readOnlyCacheLocation: check || fixDryRun ? pathResolve(cwd, `.lex-readonly-eslint-cache-${randomUUID()}`) : undefined
+      configPath: selectedConfig ?? tempConfigPath ?? undefined, fixDryRun, fixType, maxWarnings,
+      readOnlyCacheLocation: check || fixDryRun ? pathResolve(cwd, `.lex-readonly-eslint-cache-${randomUUID()}`) : undefined,
+      rule
     });
 
     if(shouldRemoveComments) {
@@ -1148,7 +1159,7 @@ export const lint = async (cmd: LintOptions & {'remove-comments'?: boolean}, cal
         await applyAIFix(cwd, eslintOutput, quiet);
 
         const afterFixResult = await runEslintWithLex(cwd, quiet, cliName, false, debug, useTypescript, undefined, {
-          configPath: selectedConfig ?? undefined, maxWarnings
+          configPath: selectedConfig ?? undefined, maxWarnings, rule
         });
 
         callback(afterFixResult);

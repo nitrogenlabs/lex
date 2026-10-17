@@ -43,6 +43,61 @@ afterEach(() => {
 });
 
 describe('real ESLint lint option contracts', () => {
+  it('limits built-in fixes by metadata category while unrestricted lint fixes both categories', async () => {
+    writeFileSync(join(fixture, 'eslint.config.mjs'), 'export default [{rules:{semi:["error","always"],"object-shorthand":["error","always"]}}];');
+    writeFileSync(join(fixture, 'src/input.js'), 'const value = 1\nconst sample = {value: value}\n');
+
+    expect(await lint({fixType: 'layout'}, callback)).toBe(1);
+    expect(readFileSync(join(fixture, 'src/input.js'), 'utf8')).toBe('const value = 1;\nconst sample = {value: value};\n');
+    expect(await lint({}, callback)).toBe(0);
+    expect(readFileSync(join(fixture, 'src/input.js'), 'utf8')).toBe('const value = 1;\nconst sample = {value};\n');
+  });
+
+  it('dry-runs only the chosen category and preserves source/config/cache bytes', async () => {
+    writeFileSync(join(fixture, 'eslint.config.mjs'), 'export default [{rules:{semi:["error","always"],"object-shorthand":["error","always"]}}];');
+    writeFileSync(join(fixture, 'src/input.js'), 'const value = 1\nconst sample = {value: value}\n');
+    writeFileSync(join(fixture, 'tsconfig.json'), '{}');
+    writeFileSync(join(fixture, '.eslintrc.json'), '{"preserved":true}');
+    writeFileSync(join(fixture, '.eslintcache'), 'caller-cache');
+    const paths = ['src/input.js', 'eslint.config.mjs', 'package.json', 'tsconfig.json', '.eslintrc.json', '.eslintcache'];
+    const before = paths.map((path) => readFileSync(join(fixture, path)));
+    const output = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      expect(await lint({fixDryRun: true, fixType: 'layout'}, callback)).toBe(1);
+      expect(JSON.stringify(output.mock.calls)).toContain('object-shorthand');
+      expect(JSON.stringify(output.mock.calls)).not.toContain('Missing semicolon');
+      expect(paths.map((path) => readFileSync(join(fixture, path)))).toEqual(before);
+      expect(state.checkTypes).not.toHaveBeenCalled();
+      expect(await lint({fixDryRun: true, fixType: 'layout,suggestion'}, callback)).toBe(0);
+      expect(paths.map((path) => readFileSync(join(fixture, path)))).toEqual(before);
+    } finally {
+      output.mockRestore();
+    }
+  });
+
+  it('overrides one rule in check diagnostics without disabling unrelated rules or writing bytes', async () => {
+    writeFileSync(join(fixture, 'eslint.config.mjs'), 'export default [{rules:{semi:["error","always"],"no-unused-vars":"error"}}];');
+    writeFileSync(join(fixture, '.eslintcache'), 'caller-cache');
+    const paths = ['src/input.js', 'eslint.config.mjs', 'package.json', '.eslintcache'];
+    const before = paths.map((path) => readFileSync(join(fixture, path)));
+    const output = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      expect(await lint({check: true, rule: 'semi: off'}, callback)).toBe(1);
+      expect(JSON.stringify(output.mock.calls)).toContain('no-unused-vars');
+      expect(JSON.stringify(output.mock.calls)).not.toContain('Missing semicolon');
+      expect(paths.map((path) => readFileSync(join(fixture, path)))).toEqual(before);
+      expect(await lint({check: true, rule: 'semi: off, no-unused-vars: off'}, callback)).toBe(0);
+      expect(paths.map((path) => readFileSync(join(fixture, path)))).toEqual(before);
+    } finally {
+      output.mockRestore();
+    }
+  });
+
+  it.each([{fixType: 'not-a-category'}, {rule: 'missing-rule: error'}, {rule: 'semi: [invalid]'}])('fails invalid ESLint options instead of dropping them %j', async (options) => {
+    expect(await lint({...options, fixDryRun: true}, callback)).toBe(1);
+    expect(readFileSync(join(fixture, 'src/input.js'), 'utf8')).toBe('const sample = 1\n');
+  });
+
   it('check reports fixable original violations and leaves every source/config byte unchanged', async () => {
     writeFileSync(join(fixture, 'tsconfig.json'), '{}');
     writeFileSync(join(fixture, '.eslintrc.json'), '{"preserved":true}');
