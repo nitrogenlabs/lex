@@ -80,20 +80,15 @@ const displayBuildStatus = (bundler: string, outputPath: string, quiet: boolean,
 
 export const buildWithSWC = async (spinner: Spinner, commandOptions: BuildOptions, callback: BuildCallback) => {
   const {
-    cliName = 'Lex',
     format = 'esm',
     outputPath,
     quiet,
-    sourcePath,
-    watch
+    sourcePath
   } = commandOptions;
   const {
     outputFullPath,
     sourceFullPath,
-    swc: swcConfig,
-    targetEnvironment,
-    useGraphQl,
-    useTypescript
+    swc: swcConfig
   } = LexConfig.config;
   const sourceDir: string = sourcePath ? pathResolve(process.cwd(), `./${sourcePath}`) : sourceFullPath || '';
 
@@ -355,7 +350,6 @@ What are the key optimization opportunities for this build configuration? Consid
           spinner.start('Generating TypeScript declarations...');
           try {
             const sourceFullPath = LexConfig.config.sourceFullPath || pathResolve(process.cwd(), './src');
-            const outputFullPath = LexConfig.config.outputFullPath || pathResolve(process.cwd(), './lib');
             const globOptions = {
               cwd: sourceFullPath,
               dot: false,

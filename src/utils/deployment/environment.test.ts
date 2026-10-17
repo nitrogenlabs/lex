@@ -8,7 +8,11 @@ describe('deployment environment', () => {
     expect(parseDeploymentEnvText("A='x=y'\r\n# ignored\r\nexport B=z\ninvalid\nA=\" a=b '\nEMPTY=\n_X=z")).toEqual({A: ' a=b ', EMPTY: '', _X: 'z'});
   });
   it('resolves every precedence layer with truthy semantics', () => {
-    const layers = [{DEV_A: 'file-stage', A: 'file'}, {DEV_A: 'process-stage', A: 'process'}, {A: 'default'}];
+    const layers: readonly [
+      Readonly<Record<string, string>>,
+      Readonly<Record<string, string>>,
+      Readonly<Record<string, string>>
+    ] = [{DEV_A: 'file-stage', A: 'file'}, {DEV_A: 'process-stage', A: 'process'}, {A: 'default'}];
     expect(resolveDeploymentEnvValue('dev', 'A', 'setup', layers[0], layers[1], layers[2])).toBe('file-stage');
     expect(resolveDeploymentEnvValue('dev', 'A', 'setup', {A: 'file'}, layers[1], layers[2])).toBe('process-stage');
     expect(resolveDeploymentEnvValue('dev', 'A', 'setup', {A: 'file'}, {A: 'process'}, layers[2])).toBe('file');

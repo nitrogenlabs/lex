@@ -47,13 +47,32 @@ assert.equal(graph.vitest.version, graph['@vitest/coverage-v8'].version);
 
 run('types-nodenext', tsc, ['-p', 'tsconfig.json']);
 run('types-bundler', tsc, ['-p', 'tsconfig.json', '--module', 'ESNext', '--moduleResolution', 'Bundler']);
-const invalid = run('types-negative', tsc, [
-  '--ignoreConfig', '--noEmit', '--strict', '--skipLibCheck', 'false', '--target', 'ESNext',
-  '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--types', 'node', 'types.negative.ts'
-], 1);
-assert.match(invalid, /TS2322/);
-assert.match(invalid, /TS2345/);
-assert.match(invalid, /TS2339/);
+const isolatedTypeFlags = [
+  '--ignoreConfig', '--noEmit', '--strict', '--skipLibCheck', 'false', '--target', 'ESNext', '--pretty', 'false'
+];
+const negativeSites = readFileSync(join(fixture, 'types.negative.ts'), 'utf8').split('\n').flatMap((line, index) => {
+  const code = line.includes('const invalid: string = value;') || line.includes('named.mockImplementation(() => 7)')
+    ? 2322
+    : line.includes('toHaveTextContent(7)') || line.includes('named.mockReturnValue(7)')
+      ? 2345
+      : line.includes('toBeAnInventedMatcher()') ? 2339 : undefined;
+  return code === undefined ? [] : [[index + 1, code]];
+});
+assert.equal(negativeSites.length, 7);
+for(const [name, module, resolution] of [['nodenext', 'NodeNext', 'NodeNext'], ['bundler', 'ESNext', 'Bundler']]) {
+  const invalid = run(`types-negative-${name}`, tsc, [
+    ...isolatedTypeFlags, '--module', module, '--moduleResolution', resolution, '--types', 'node', 'types.negative.ts'
+  ], 1);
+  assert.doesNotMatch(invalid, /TS(?:2307|2688|2694|2792|2882|7016)/);
+  const diagnostics = [...invalid.matchAll(/types\.negative\.ts\((\d+),\d+\): error TS(\d+):/g)]
+    .map((match) => [Number(match[1]), Number(match[2])]);
+  assert.deepEqual(diagnostics, negativeSites);
+  assert.equal((invalid.match(/error TS/g) || []).length, negativeSites.length);
+  run(`types-globals-${name}`, tsc, [
+    ...isolatedTypeFlags, '--module', module, '--moduleResolution', resolution,
+    '--types', 'node,@nlabs/lex/test-vitest/globals', 'globals-runtime.test.ts'
+  ]);
+}
 run('runtime-coverage', lex, ['test', '--config', './vitest.config.mjs']);
 const coverage = JSON.parse(readFileSync(join(fixture, 'coverage/coverage-summary.json'), 'utf8')).total;
 for(const key of ['branches', 'functions', 'lines', 'statements']) assert.equal(coverage[key].pct, 100);

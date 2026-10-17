@@ -40,7 +40,7 @@ vi.mock('../../utils/file.js', async () => ({
     if(binary === 'postcss') {
       return '/mock/path/to/postcss';
     }
-    return null;
+    return '';
   })
 }));
 vi.mock('../../utils/log.js');
@@ -159,7 +159,7 @@ describe('compile', () => {
       if(binary === 'postcss') {
         return '/mock/path/to/postcss';
       }
-      return null;
+      return '';
     });
   });
 
@@ -215,10 +215,11 @@ describe('compile', () => {
   describe('compile - TypeScript', () => {
     it('should handle TypeScript binary not found', async () => {
       LexConfig.config.useTypescript = true;
-      mockResolveBinaryPath.mockReturnValue(null);
+      mockResolveBinaryPath.mockReturnValue('');
 
       const result = await compile({});
 
+      expect(execa).not.toHaveBeenCalled();
       expect(result).toBe(1);
     });
 
@@ -461,13 +462,14 @@ describe('compile', () => {
         .mockReturnValueOnce([]);
       mockResolveBinaryPath.mockImplementation((binary) => {
         if(binary === 'postcss') {
-          return null;
+          return '';
         }
         return '/mock/path/to/tsc';
       });
 
       const result = await compile({});
 
+      expect(execa).not.toHaveBeenCalledWith(expect.stringContaining('postcss'), expect.any(Array), expect.any(Object));
       expect(result).toBe(1);
     });
 

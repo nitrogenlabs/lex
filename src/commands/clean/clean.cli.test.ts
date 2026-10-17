@@ -1,6 +1,8 @@
 import {createSpinner, removeFiles, removeModules} from '../../utils/app.js';
 import {clean} from './clean.js';
 
+import type {MockInstance} from 'vitest';
+
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
   createSpinner: vi.fn(() => ({
@@ -19,7 +21,7 @@ vi.mock('../../LexConfig.js', async () => ({
 }));
 
 describe('clean cli', () => {
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

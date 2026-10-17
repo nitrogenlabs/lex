@@ -68,10 +68,14 @@ describe('immutable archive publishing', () => {
 });
 
 describe('directory publishing compatibility', () => {
-  it('keeps configuration and ordinary publishing defaults', async () => {
-    LexConfig.config = {packageManager: 'pnpm'} as typeof LexConfig.config;
+  it('preserves legacy passthrough for a malformed persisted package manager', async () => {
+    // Deliberately inject invalid external state beyond the public npm/yarn config contract.
+    LexConfig.config = {};
+    Reflect.set(LexConfig.config, 'packageManager', 'pnpm');
     expect(await publish({}, callback)).toBe(0);
     expect(execa).toHaveBeenCalledWith('pnpm', ['publish'], {encoding: 'utf8', stdio: 'inherit'});
+    expect(LexConfig.parseConfig).toHaveBeenCalledWith({});
+    expect(callback).toHaveBeenCalledWith(0);
   });
   it.each(['major', 'minor', 'patch', 'alpha', 'beta', 'rc'])('retains %s version bumps', async (bump) => {
     expect(await publish({bump}, callback)).toBe(0);

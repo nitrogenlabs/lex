@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect as publicExpect, test as publicTest, vi as publicVi} from '@nlabs/lex/test-vitest';
 import {source, sum} from './subject.js';
 
-import type {Assertion, Mock, TestContext} from '@nlabs/lex/test-vitest';
+import type {Assertion, Mock, MockInstance, TestContext} from '@nlabs/lex/test-vitest';
 
 let hooks = 0;
 beforeEach(() => {hooks += 1;});
@@ -26,7 +26,8 @@ publicTest.each([{left: 2, right: 3, want: 5}])('preserves callback inference an
 
 publicTest('preserves public aliases, inferred spy callbacks and runner fake timers', async (context: TestContext) => {
   const object = {format: (value: number): string => String(value)};
-  publicVi.spyOn(object, 'format').mockImplementation((value) => {
+  const spy: MockInstance<(value: number) => string> = publicVi.spyOn(object, 'format');
+  spy.mockImplementation((value) => {
     const number: number = value;
     // @ts-expect-error spy callback must not become any
     const invalid: string = value;
