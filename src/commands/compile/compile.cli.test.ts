@@ -4,9 +4,12 @@ import {existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSy
 import {sync as globSync} from 'glob';
 
 import {LexConfig} from '../../LexConfig.js';
-import {getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} from '../../utils/app.js';
+import {createSpinner, getFilesByExt, copyFiles, copyConfiguredFiles, removeFiles} from '../../utils/app.js';
 import {resolveBinaryPath} from '../../utils/file.js';
+import {log} from '../../utils/log.js';
 import {compile, hasFileType} from './compile.js';
+
+import type {MockedFunction, MockInstance} from 'vitest';
 
 const mockCopyConfiguredFiles = copyConfiguredFiles as MockedFunction<typeof copyConfiguredFiles>;
 const mockCopyFiles = copyFiles as MockedFunction<typeof copyFiles>;
@@ -40,7 +43,7 @@ vi.mock('../../utils/file.js', async () => ({
     if(binary === 'postcss') {
       return '/mock/path/to/postcss';
     }
-    return null;
+    return '';
   })
 }));
 vi.mock('../../utils/log.js');
@@ -120,8 +123,8 @@ vi.mock('../../LexConfig.js', async () => ({
 }));
 
 describe('compile', () => {
-  let consoleLogSpy: SpyInstance;
-  let consoleErrorSpy: SpyInstance;
+  let consoleLogSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -136,7 +139,7 @@ describe('compile', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (globSync as MockedFunction<typeof globSync>).mockReturnValue([]);
+    (globSync as MockedFunction<typeof globSync>).mockReset().mockReturnValue([]);
     (readdirSync as MockedFunction<typeof readdirSync>).mockReturnValue([]);
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValue(true);
     (lstatSync as MockedFunction<typeof lstatSync>).mockReturnValue({
@@ -145,7 +148,7 @@ describe('compile', () => {
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValue('export const test = () => {};');
     (writeFileSync as MockedFunction<typeof writeFileSync>).mockImplementation(() => {});
     (mkdirSync as MockedFunction<typeof mkdirSync>).mockReturnValue(undefined);
-    mockGetFilesByExt.mockReturnValue([]);
+    mockGetFilesByExt.mockReset().mockReturnValue([]);
     mockCopyFiles.mockResolvedValue(undefined);
     mockCopyConfiguredFiles.mockResolvedValue(undefined);
     mockRemoveFiles.mockResolvedValue(undefined);
@@ -159,7 +162,7 @@ describe('compile', () => {
       if(binary === 'postcss') {
         return '/mock/path/to/postcss';
       }
-      return null;
+      return '';
     });
   });
 
@@ -215,11 +218,14 @@ describe('compile', () => {
   describe('compile - TypeScript', () => {
     it('should handle TypeScript binary not found', async () => {
       LexConfig.config.useTypescript = true;
-      mockResolveBinaryPath.mockReturnValue(null);
+      mockResolveBinaryPath.mockReturnValue('');
 
-      const result = await compile({});
+      const callback = vi.fn();
+      const result = await compile({}, callback);
 
       expect(result).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(execa).not.toHaveBeenCalled();
     });
 
     it('should generate TypeScript declarations successfully', async () => {
@@ -297,7 +303,7 @@ describe('compile', () => {
       );
     });
 
-    it('should handle TypeScript compilation with warnings (has declarations)', async () => {
+    it('should fail despite declaration-looking compiler output', async () => {
       LexConfig.config.useTypescript = true;
       (globSync as MockedFunction<typeof globSync>)
         .mockReturnValueOnce(['/mock/source/test.ts'])
@@ -316,7 +322,7 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(result).toBe(0);
+      expect(result).toBe(1);
     });
 
     it('should handle TypeScript compilation failure (no declarations)', async () => {
@@ -338,7 +344,7 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(result).toBe(0);
+      expect(result).toBe(1);
     });
 
     it('should handle TypeScript errors with error lines', async () => {
@@ -360,7 +366,7 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(result).toBe(0);
+      expect(result).toBe(1);
     });
 
     it('should handle TypeScript errors with more than 10 error lines', async () => {
@@ -383,7 +389,7 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(result).toBe(0);
+      expect(result).toBe(1);
     });
 
     it('should handle TypeScript compilation exception', async () => {
@@ -400,7 +406,90 @@ describe('compile', () => {
 
       const result = await compile({});
 
-      expect(result).toBe(0);
+      expect(result).toBe(1);
+    });
+
+    it.each([
+      {all: 'Writing test.d.ts', exitCode: 1, stderr: '', stdout: 'error TS1234: invalid type'},
+      {all: 'Declaration emitted', exitCode: 2, stderr: 'error TS1234: invalid type', stdout: ''},
+      {all: '', exitCode: null, signal: 'SIGTERM', stderr: '', stdout: ''},
+      {all: '', exitCode: undefined, stderr: '', stdout: ''},
+      {all: '', exitCode: 1, stderr: '', stdout: ''}
+    ])('should stop all later stages after declaration failure: $exitCode $all', async (failure) => {
+      LexConfig.config.useTypescript = true;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue(failure as any);
+      (globSync as MockedFunction<typeof globSync>).mockReturnValue(['/mock/source/test.ts']);
+      mockGetFilesByExt.mockReturnValue(['/mock/source/image.png']);
+      const callback = vi.fn();
+
+      expect(await compile({}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(transform).not.toHaveBeenCalled();
+      expect(writeFileSync).not.toHaveBeenCalled();
+      expect(copyFiles).not.toHaveBeenCalled();
+      expect(copyConfiguredFiles).not.toHaveBeenCalled();
+      expect(execa).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(createSpinner).mock.results.at(-1)?.value.succeed).not.toHaveBeenCalled();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining(failure.stderr || failure.stdout || 'Unknown error'), 'error', undefined);
+    });
+
+    it.each([
+      {code: 'ENOENT', message: 'SENTINEL /private/secret --token=credential', stack: 'SENTINEL stack'},
+      {code: 'SENTINEL /private/secret', message: 'SENTINEL /private/secret', stack: 'SENTINEL stack'},
+      'SENTINEL /private/secret'
+    ])('should sanitize rejected compiler launches and fail once', async (error) => {
+      LexConfig.config.useTypescript = true;
+      (execa as MockedFunction<typeof execa>).mockRejectedValue(error);
+      const callback = vi.fn();
+
+      expect(await compile({}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(transform).not.toHaveBeenCalled();
+      expect(copyConfiguredFiles).not.toHaveBeenCalled();
+
+      const output = JSON.stringify(vi.mocked(log).mock.calls);
+
+      expect(output).toContain('tsc');
+      expect(output).not.toContain('SENTINEL');
+      expect(output).not.toContain('/private/secret');
+      expect(output).not.toContain('credential');
+    });
+
+    it('should retain failure status in quiet mode', async () => {
+      LexConfig.config.useTypescript = true;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 1} as any);
+      const callback = vi.fn();
+
+      expect(await compile({quiet: true}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(transform).not.toHaveBeenCalled();
+    });
+
+    it('should sanitize a failed launch returned with reject disabled', async () => {
+      LexConfig.config.useTypescript = true;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({
+        all: 'SENTINEL launch details', code: 'ENOENT', exitCode: undefined,
+        stderr: 'SENTINEL /private/secret', stdout: 'SENTINEL credential'
+      } as any);
+      const callback = vi.fn();
+
+      expect(await compile({}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(transform).not.toHaveBeenCalled();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('tsc: ENOENT'), 'error', undefined);
+      expect(JSON.stringify(vi.mocked(log).mock.calls)).not.toContain('SENTINEL');
+    });
+
+    it('should not invoke a throwing failure callback twice', async () => {
+      LexConfig.config.useTypescript = true;
+      (execa as MockedFunction<typeof execa>).mockResolvedValue({exitCode: 1} as any);
+      const error = new Error('caller callback failure');
+      const callback = vi.fn(() => {
+        throw error;
+      });
+
+      await expect(compile({}, callback)).rejects.toBe(error);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
     });
 
     it('should use custom TypeScript config when provided', async () => {
@@ -461,14 +550,17 @@ describe('compile', () => {
         .mockReturnValueOnce([]);
       mockResolveBinaryPath.mockImplementation((binary) => {
         if(binary === 'postcss') {
-          return null;
+          return '';
         }
         return '/mock/path/to/tsc';
       });
 
-      const result = await compile({});
+      const callback = vi.fn();
+      const result = await compile({}, callback);
 
       expect(result).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(execa).not.toHaveBeenCalled();
     });
 
     it('should handle PostCSS processing errors', async () => {
@@ -482,6 +574,38 @@ describe('compile', () => {
       const result = await compile({});
 
       expect(result).toBe(1);
+    });
+
+    it('should sanitize rejected PostCSS launches and fail once', async () => {
+      mockGetFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
+      (execa as MockedFunction<typeof execa>).mockRejectedValue({
+        code: 'ENOENT', message: 'SENTINEL /private/secret --token=credential', stack: 'SENTINEL stack'
+      });
+      const callback = vi.fn();
+
+      expect(await compile({}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(transform).not.toHaveBeenCalled();
+      expect(copyConfiguredFiles).not.toHaveBeenCalled();
+
+      const output = JSON.stringify(vi.mocked(log).mock.calls);
+
+      expect(output).toContain('postcss');
+      expect(output).toContain('ENOENT');
+      expect(output).not.toContain('SENTINEL');
+      expect(output).not.toContain('credential');
+    });
+
+    it('should preserve diagnostics from an actually launched PostCSS process', async () => {
+      mockGetFilesByExt.mockReturnValueOnce(['/mock/source/style.css']);
+      (execa as MockedFunction<typeof execa>).mockRejectedValue({
+        exitCode: 1, stderr: 'Invalid CSS: unexpected token', stdout: ''
+      });
+      const callback = vi.fn();
+
+      expect(await compile({}, callback)).toBe(1);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(1);
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('Invalid CSS: unexpected token'), 'error', undefined);
     });
   });
 
@@ -546,10 +670,7 @@ describe('compile', () => {
     });
 
     it('should handle font copy errors', async () => {
-      mockGetFilesByExt
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce(['/mock/source/font.ttf']);
+      mockGetFilesByExt.mockImplementation((ext) => (ext === '.ttf' ? ['/mock/source/font.ttf'] : []));
 
       mockCopyFiles.mockRejectedValue(new Error('Font copy failed'));
 
@@ -589,12 +710,7 @@ describe('compile', () => {
     });
 
     it('should handle markdown copy errors', async () => {
-      mockGetFilesByExt
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce([])
-        .mockReturnValueOnce(['/mock/source/readme.md']);
+      mockGetFilesByExt.mockImplementation((ext) => (ext === '.md' ? ['/mock/source/readme.md'] : []));
 
       mockCopyFiles.mockRejectedValue(new Error('Markdown copy failed'));
 
@@ -909,7 +1025,7 @@ describe('compile', () => {
       const result = await compile({}, callback);
 
       expect(result).toBe(0);
-      expect(callback).toHaveBeenCalledWith(0);
+      expect(callback).toHaveBeenCalledExactlyOnceWith(0);
     });
 
     it('should handle quiet mode', async () => {

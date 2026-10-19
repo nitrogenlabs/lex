@@ -105,6 +105,8 @@ Lex comes with everything you need for modern React development:
 | [`lex compile`](src/commands/compile/compile.docs.md) | Compile TypeScript/JavaScript with SWC | `lex compile --watch` |
 | [`lex build`](src/commands/build/build.docs.md) | Build with Vite or SWC | `lex build --mode production` |
 
+`lex compile` exits with status 1 when declaration generation fails, even if TypeScript emits partial declarations. It stops before JavaScript compilation and asset copying. The public `compile` API returns the same failure status and calls its supplied callback once. Missing executables and launch failures also fail compilation; launch diagnostics include only the tool name and a safe error code.
+
 ### **Testing & Quality**
 
 | Command | Description | Quick Example |

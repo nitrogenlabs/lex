@@ -13,6 +13,7 @@ import {checkLinkedModules, copyConfiguredFiles, copyFiles, createSpinner, getFi
 import {getDirName, resolveBinaryPath} from '../../utils/file.js';
 import {log} from '../../utils/log.js';
 
+import type {Result} from 'execa';
 import type {SWCOptions} from '../../LexConfig.js';
 
 const SOURCE_GLOB_IGNORE = [
@@ -20,6 +21,14 @@ const SOURCE_GLOB_IGNORE = [
   '**/__tests__/**',
   '**/tests/**'
 ];
+
+const logLaunchError = (command: 'postcss' | 'tsc', error: unknown, quiet?: boolean): void => {
+  const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+  const safeCode = typeof code === 'string' && [
+    'EACCES', 'EAGAIN', 'EISDIR', 'EMFILE', 'ENFILE', 'ENOENT', 'ENOEXEC', 'ENOMEM', 'ENOTDIR', 'EPERM', 'ETXTBSY'
+  ].includes(code) ? code : 'UNKNOWN';
+  log(`Unable to start ${command}: ${safeCode}`, 'error', quiet);
+};
 
 export const hasFileType = (startPath: string, ext: string[]): boolean => {
   if(!existsSync(startPath)) {
@@ -78,6 +87,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     if(!typescriptPath) {
       log(`\n${cliName} Error: TypeScript binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
       log('Please reinstall Lex or check your installation.', 'info', quiet);
+      callback(1);
       return 1;
     }
 
@@ -105,66 +115,55 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
 
     spinner.start('Generating TypeScript declarations...');
 
+    let result: Result<{all: true; encoding: 'utf8'; reject: false}>;
     try {
-      const result = await execa(typescriptPath, typescriptOptions, {
+      result = await execa(typescriptPath, typescriptOptions, {
         all: true,
         cwd: process.cwd(),
         encoding: 'utf8',
         reject: false
       });
-
-      if(result.exitCode !== 0) {
-        const hasDeclarations = result.all?.includes('Writing') || result.all?.includes('Declaration') || false;
-        const errorOutput = result.stderr || result.stdout || result.all || 'Unknown error';
-
-        if(!hasDeclarations) {
-          log(`\n${cliName} Error: TypeScript declaration generation failed`, 'error', quiet);
-          log(`\nExit Code: ${result.exitCode}`, 'error', quiet);
-          log(`\nTypeScript Command: ${typescriptPath} ${typescriptOptions.join(' ')}`, 'error', quiet);
-          log(`\nError Output:\n${errorOutput}`, 'error', quiet);
-
-          const errorLines = errorOutput.split('\n').filter((line) =>
-            line.includes('error TS') ||
-            line.includes('Error:') ||
-            line.trim().startsWith('src/') ||
-            line.trim().startsWith('TS')
-          );
-
-          if(errorLines.length > 0) {
-            log('\nKey Errors:', 'error', quiet);
-
-            errorLines.slice(0, 10).forEach((line) => {
-              log(`  ${line}`, 'error', quiet);
-            });
-
-            if(errorLines.length > 10) {
-              log(`  ... and ${errorLines.length - 10} more errors`, 'error', quiet);
-            }
-          }
-
-          spinner.fail('TypeScript declaration generation failed.');
-        } else {
-          log(`\n${cliName} Warning: TypeScript declaration generation completed with errors`, 'warn', quiet);
-
-          if(!quiet && errorOutput) {
-            log(`\nWarnings:\n${errorOutput}`, 'warn', quiet);
-          }
-
-          spinner.succeed('TypeScript declarations generated (with warnings).');
-        }
-      } else {
-        spinner.succeed('Successfully generated TypeScript declarations!');
-      }
     } catch(error) {
-      log(`\n${cliName} Error: TypeScript declaration generation exception`, 'error', quiet);
-      log(`\nError: ${error.message}`, 'error', quiet);
-
-      if(error instanceof Error && error.stack) {
-        log(`\nStack:\n${error.stack}`, 'error', quiet);
-      }
-
-      spinner.fail('TypeScript declaration generation had issues, continuing...');
+      logLaunchError('tsc', error, quiet);
+      spinner.fail('TypeScript declaration generation failed.');
+      callback(1);
+      return 1;
     }
+
+    if(result.exitCode !== 0) {
+      const errorOutput = result.stderr || result.stdout || result.all || 'Unknown error';
+
+      if(result.exitCode === undefined && 'code' in result) {
+        logLaunchError('tsc', result, quiet);
+      } else {
+        log(`\n${cliName} Error: TypeScript declaration generation failed`, 'error', quiet);
+        log(`\nExit Code: ${result.exitCode}`, 'error', quiet);
+        log(`\nError Output:\n${errorOutput}`, 'error', quiet);
+
+        const errorLines = errorOutput.split('\n').filter((line) =>
+          line.includes('error TS') ||
+          line.includes('Error:') ||
+          line.trim().startsWith('src/') ||
+          line.trim().startsWith('TS')
+        );
+
+        if(errorLines.length > 0) {
+          log('\nKey Errors:', 'error', quiet);
+
+          errorLines.slice(0, 10).forEach((line) => {
+            log(`  ${line}`, 'error', quiet);
+          });
+
+          if(errorLines.length > 10) {
+            log(`  ... and ${errorLines.length - 10} more errors`, 'error', quiet);
+          }
+        }
+      }
+      spinner.fail('TypeScript declaration generation failed.');
+      callback(1);
+      return 1;
+    }
+    spinner.succeed('Successfully generated TypeScript declarations!');
   }
 
   const globOptions = {
@@ -187,6 +186,7 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
     if(!postcssPath) {
       log(`\n${cliName} Error: PostCSS binary not found in Lex's node_modules or monorepo root`, 'error', quiet);
       log('Please reinstall Lex or check your installation.', 'info', quiet);
+      callback(1);
       return 1;
     }
 
@@ -204,7 +204,11 @@ export const compile = async (cmd: any, callback: any = () => ({})): Promise<num
       await execa(postcssPath, postcssOptions, {encoding: 'utf8'});
       spinner.succeed(`Successfully formatted ${cssFiles.length} css files!`);
     } catch(error) {
-      log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+      if(error && typeof error === 'object' && 'exitCode' in error && typeof error.exitCode === 'number') {
+        log(`\n${cliName} Error: PostCSS failed\n${error.stderr || error.stdout || 'Unknown error'}`, 'error', quiet);
+      } else {
+        logLaunchError('postcss', error, quiet);
+      }
 
       spinner.fail('Failed formatting css.');
 
