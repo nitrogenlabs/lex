@@ -2,6 +2,8 @@ import {execa} from 'execa';
 
 import {compile} from './compile.js';
 
+import type {MockInstance} from 'vitest';
+
 vi.mock('execa');
 vi.mock('../../utils/app.js', async () => ({
   ...await vi.importActual('../../utils/app.js'),
@@ -61,7 +63,7 @@ vi.mock('glob', async () => ({
 }));
 
 describe('compile options', () => {
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

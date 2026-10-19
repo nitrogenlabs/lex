@@ -1,8 +1,10 @@
 import {create} from './create.js';
 
+import type {PathLike} from 'node:fs';
+
 vi.mock('execa');
 vi.mock('fs', async () => ({
-  existsSync: (path) => {
+  existsSync: (path: PathLike): boolean => {
     if(typeof path === 'string' && (path.includes('TestStore') || path.includes('TestView') || path.includes('TestDataLayer'))) {
       return false;
     }

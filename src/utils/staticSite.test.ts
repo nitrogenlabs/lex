@@ -4,6 +4,8 @@ import {join} from 'path';
 
 import {relativePathsFromHtml, renderStaticSite} from './staticSite.js';
 
+import type {StaticRenderLocals} from './staticSite.js';
+
 describe('static site rendering', () => {
   const outputPath = join(tmpdir(), 'lex-static-site-test');
 
@@ -19,7 +21,7 @@ describe('static site rendering', () => {
   it('renders and crawls pages', async () => {
     await renderStaticSite({
       outputPath,
-      render: ({path}) => (path === '/'
+      render: ({path}: StaticRenderLocals) => (path === '/'
         ? '<a href="/about">About</a>'
         : `<main>${path}</main>`)
     });

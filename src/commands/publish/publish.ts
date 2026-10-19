@@ -28,7 +28,7 @@ export type PublishCallback = typeof process.exit;
 
 export const publish = async (cmd: PublishOptions, callback: PublishCallback = process.exit): Promise<number> => {
   const {bump, cliName = 'Lex', dryRun, newVersion, otp, packageManager: cmdPackageManager, packagePath: archivePath, private: accessPrivate, quiet, tag} = cmd;
-  const sanitizeError = (error: Error): string => otp ? error.message.split(otp).join('[redacted]') : error.message;
+  const sanitizeError = (error: Error): string => (otp ? error.message.split(otp).join('[redacted]') : error.message);
   log(`${cliName} publishing npm module...`, 'info', quiet);
 
   // Spinner
@@ -162,7 +162,6 @@ export const publish = async (cmd: PublishOptions, callback: PublishCallback = p
     } else {
       nextVersion = prevVersion;
     }
-
   }
 
   try {

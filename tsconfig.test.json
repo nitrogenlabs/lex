@@ -29,7 +29,7 @@
     "strict": false,
     "target": "ESNext",
     "types": [
-      "@nlabs/lex/test-vitest/globals",
+      "vitest/globals",
       "node"
     ]
   },
@@ -44,6 +44,7 @@
   ],
   "exclude": [
     "lib",
-    "node_modules"
+    "node_modules",
+    "test-fixtures/test-contract/**"
   ]
 }

@@ -4,6 +4,8 @@ import * as app from '../../utils/app.js';
 import * as log from '../../utils/log.js';
 import {copy, CopyOptions} from './copy.js';
 
+import type {MockInstance} from 'vitest';
+
 vi.mock('execa');
 vi.mock('fs');
 vi.mock('../../utils/app.js', async () => ({
@@ -19,7 +21,7 @@ vi.mock('../../utils/app.js', async () => ({
 vi.mock('../../utils/log.js');
 
 describe('copy integration', () => {
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

@@ -2,6 +2,8 @@ import {writeFileSync} from 'fs';
 
 import {config} from './config.js';
 
+import type {MockInstance} from 'vitest';
+
 vi.mock('fs', async () => ({
   writeFileSync: vi.fn()
 }));
@@ -52,7 +54,7 @@ vi.mock('../../utils/log.js');
 vi.mock('../../utils/vite/config.js', () => ({createLexViteConfig: vi.fn(() => ({}))}));
 
 describe('config options', () => {
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

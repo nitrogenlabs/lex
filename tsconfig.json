@@ -25,7 +25,6 @@
     "target": "ESNext",
     "types": [
       "vitest/globals",
-      "@testing-library/jest-dom",
       "node"
     ]
   },

@@ -21,9 +21,9 @@ The main function that handles ESLint execution with various configuration optio
   - `env?: string` - Environment for ESLint rules
   - `envInfo?: boolean` - Whether to output environment information
   - `ext?: string` - File extensions to lint
-  - `fix?: boolean` - Whether to automatically fix problems
+  - `fix?: boolean` - Opt into additional AI fixes after built-in ESLint fixes; incompatible with `fixType`
   - `fixDryRun?: boolean` - Whether to run autofix without saving the changes
-  - `fixType?: string` - Specify the types of fixes to apply
+  - `fixType?: string` - Comma-separated ESLint fix categories: `directive`, `problem`, `suggestion`, `layout`; incompatible with `check` or explicit `fix`
   - `format?: string` - Output format for ESLint results
   - `global?: string` - Global variables to define
   - `ignorePath?: string` - Path to the ignore file
@@ -42,7 +42,7 @@ The main function that handles ESLint execution with various configuration optio
   - `quiet?: boolean` - Whether to suppress output except for errors
   - `reportUnusedDisableDirectives?: boolean` - Whether to report unused eslint-disable directives
   - `resolvePluginsRelativeTo?: string` - Directory to resolve plugins relative to
-  - `rule?: string` - Rules to use
+  - `rule?: string` - ESLint rule configuration override expression, preserved in the post-AI check; does not restrict fixes to these rules
   - `rulesdir?: string` - Directory with custom rules
   - `stdin?: boolean` - Whether to lint code from stdin
   - `stdinFilename?: string` - Filename to assign to stdin input
@@ -122,6 +122,9 @@ lex lint [options]
 | Option | Description |
 | --- | --- |
 | --fix | Automatically fix problems (includes AI-powered fixes if configured) |
+| --check | Report original source diagnostics without fixing; incompatible with --fixType |
+| --fixDryRun | Apply built-in fixes in memory without saving source changes |
+| --fixType <types> | Comma-separated directive, problem, suggestion, layout categories for built-in fixes; incompatible with --check or --fix |
 | --config | Use this configuration, overriding .eslintrc.* config options if present |
 | --debug | Output debugging information |
 | --env | Specify environments |
@@ -134,7 +137,7 @@ lex lint [options]
 | --parser | Specify the parser to be used |
 | --parserOptions | Specify parser options |
 | --resolvePluginsRelativeTo | A folder where plugins should be resolved from |
-| --rule | Specify rules |
+| --rule <expression> | Override ESLint rule configuration; does not select which rules may fix code |
 | --quiet | Report errors only |
 | -h, --help | Display help for command |
 
@@ -149,6 +152,15 @@ lex lint --config my-config.js
 
 # Lint with quiet mode (only report errors)
 lex lint --quiet
+
+# Apply only built-in layout fixes; no AI is enabled
+lex lint --fixType layout
+
+# Preview layout and suggestion fixes without saving changes
+lex lint --fixDryRun --fixType layout,suggestion
+
+# Check original bytes with one rule configuration overridden
+lex lint --check --rule 'semi: [error, always]'
 
 # Lint with cache enabled
 lex lint --cache
@@ -184,3 +196,11 @@ Dry-run rejects `--fix` and `--remove-comments` because those request additional
 Use `lex lint --check --config ./scoped-eslint.config.mjs --maxWarnings 0` for diagnostics against original source bytes. Unlike `--fixDryRun`, this reports fixable violations without applying fixes in memory. Check rejects fixing, dry-run fixing and comment removal and skips TypeScript config generation and legacy config deletion. Use an existing explicit config for a workflow without generated temporary configs; executable user config remains caller code. Patterns remain `src/**/*.{js,jsx}` and, with tsconfig.json, `src/**/*.{ts,tsx}`; limit scope through the supplied ESLint config. Stdin flags are still unsupported by the implementation.
 
 Check and dry-run select a fresh, uncreated cache location with caching disabled, preserving caller-owned `.eslintcache`; ESLint otherwise deletes its existing default cache even during nonfixing checks.
+
+## Fix categories and rule overrides
+
+`fixType` and `rule` remain optional strings, passed as individual ESLint arguments without shell evaluation. ESLint validates their values. Default lint still applies built-in fixes without requiring `--fix`; `--fixType` limits those fixes by ESLint rule metadata, including `directive` fixes for unused disable directives. It also works with `--fixDryRun`. Category metadata is broader than a whitespace-only or token-preserving cleanup policy.
+
+`--check --fixType` is rejected before configuration or subprocess work because ESLint requires fixing for category filtering. Explicit `--fix --fixType` is also rejected: AI edits do not enforce ESLint fix categories. Category filtering alone never opts into AI.
+
+`--rule` is a configuration override, not a rule-selective fixer. Other configured rules and their fixes remain active. The override applies in default, dry-run and check modes and in the final nonfixing check after explicitly requested AI fixes. That final check never receives a fix category.

@@ -1,6 +1,8 @@
 import {copyFileSync} from '../../utils/app.js';
 import {copy} from './copy.js';
 
+import type {MockInstance} from 'vitest';
+
 vi.mock('execa');
 vi.mock('fs', async () => ({
   existsSync: vi.fn(() => true),
@@ -24,7 +26,7 @@ vi.mock('../../utils/app.js', async () => ({
 vi.mock('../../utils/log.js');
 
 describe('copy options', () => {
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance<typeof console.log>;
 
   beforeAll(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
