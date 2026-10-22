@@ -30,6 +30,38 @@ const fixture = () => {
 };
 
 describe('exact locked runtime staging', () => {
+  it.each(['events','child_process','net','tls'])('retains locked registry dependency %s despite its builtin name', (name) => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    mkdirSync(join(root,'node_modules',name),{recursive:true});
+    writeFileSync(join(root,'node_modules',name,'package.json'),JSON.stringify({exports:{'.':'./index.js'},name,version:'3.0.0'}));
+    graph[`node_modules/${name}`] = {dependencies:{leaf:'1'},integrity:'sha512-builtin-name',resolved:`https://registry.npmjs.org/${name}.tgz`,version:'3.0.0'};
+    graph['node_modules/engine'].dependencies = {[name]:'3'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+    const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['engine',name],lockfile:join(root,'package-lock.json')});
+
+    expect(result.manifest.dependencies[name]).toBe('3.0.0');
+    expect(result.lock.packages[`node_modules/engine/node_modules/${name}`].integrity).toBe('sha512-builtin-name');
+    expect(result.lock.packages[`node_modules/${name}/node_modules/leaf`].version).toBe('1.0.0');
+  });
+
+  it('selects nearest nested builtin-named registry package without requiring package.json exports', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    for(const [key,version] of [['node_modules/events','3.0.0'],['node_modules/engine/node_modules/events','2.0.0']]) {
+      mkdirSync(join(root,key),{recursive:true});
+      writeFileSync(join(root,key,'package.json'),JSON.stringify({exports:{'.':'./index.js'},name:'events',version}));
+      graph[key] = {integrity:`sha512-${version}`,resolved:'https://registry.npmjs.org/events.tgz',version};
+    }
+    graph['node_modules/engine'].dependencies = {events:'2'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+    const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['engine','events'],lockfile:join(root,'package-lock.json')});
+
+    expect(result.lock.packages['node_modules/events'].version).toBe('3.0.0');
+    expect(result.lock.packages['node_modules/engine/node_modules/events'].version).toBe('2.0.0');
+    expect(result.lock.packages['node_modules/engine/node_modules/events'].integrity).toBe('sha512-2.0.0');
+  });
+
   it('uses source context for GraphQL and retains exact transitive version/integrity', () => {
     const {root} = fixture();
     const result = createRuntimeLock({context:join(root,'node_modules/provider/package.json'),dependencies:['engine','graphql'],lockfile:join(root,'package-lock.json')});

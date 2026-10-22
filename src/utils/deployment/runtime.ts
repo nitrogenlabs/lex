@@ -39,7 +39,7 @@ export const createRuntimeLock = (options:RuntimeLockOptions):RuntimeLockResult 
   const dependencies:Record<string,string> = {};
   const find = (context:string,name:string):string|undefined => {
     const require = createRequire(resolve(context));
-    return require.resolve.paths(name)
+    return require.resolve.paths(`${name}/package.json`)
       ?.map((path) => relative(root,join(path,name)))
       .find((key) => Boolean(source[key]));
   };
