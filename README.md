@@ -107,6 +107,8 @@ Lex comes with everything you need for modern React development:
 
 `lex compile` exits with status 1 when declaration generation fails, even if TypeScript emits partial declarations. It stops before JavaScript compilation and asset copying. The public `compile` API returns the same failure status and calls its supplied callback once. Missing executables and launch failures also fail compilation; launch diagnostics include only the tool name and a safe error code.
 
+For `serverless-deploy` runtime dependencies, Lex projects the reachable physical graph from an npm version 3 lockfile, preserving exact versions, resolved URLs, integrity, hoisted dependencies, and peer neighborhoods. It does not solve version ranges or manufacture a separately nested copy for each dependency edge. The root `runtimeContext` preserves the source layout. A nested context may relocate selected direct package subtrees to the runtime root only when every dependency and peer still resolves to the same locked placement; collisions, missing ancestor packages, and changed resolutions fail closed. Peers must resolve beside or above their consumer, not only inside it. Required artifacts and installed direct versions must match the lock; linked or unlocked artifacts, including bundled entries without their own resolved URL and integrity, remain unsupported. Packaging uses lifecycle-disabled npm ci for the target platform and requires the startup smoke to pass before creating the ZIP.
+
 ### **Testing & Quality**
 
 | Command | Description | Quick Example |

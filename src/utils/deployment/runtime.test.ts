@@ -30,6 +30,90 @@ const fixture = () => {
 };
 
 describe('exact locked runtime staging', () => {
+  it('preserves hoisted peers and one physical placement for a shared dependency', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    graph['node_modules/provider'].dependencies = {engine:'1',leaf:'1'};
+    graph['node_modules/engine'].peerDependencies = {graphql:'17'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+    const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['provider'],lockfile:join(root,'package-lock.json')});
+
+    expect(Object.keys(result.lock.packages).sort()).toEqual(['','node_modules/engine','node_modules/graphql','node_modules/leaf','node_modules/provider']);
+    expect(result.lock.packages['node_modules/graphql'].version).toBe('17.0.0');
+    expect(result.lock.packages['node_modules/leaf'].integrity).toBe('sha512-fixture');
+  });
+
+  it('rejects a nested context projection that would shadow a different locked dependency', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    graph['node_modules/engine'].dependencies = {graphql:'17'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+
+    expect(() => createRuntimeLock({context:join(root,'node_modules/provider/package.json'),dependencies:['engine','graphql'],lockfile:join(root,'package-lock.json')})).toThrow();
+  });
+
+  it('rejects an orphaned peer neighborhood when relocating a nested direct package', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    graph['node_modules/provider/node_modules/graphql'].peerDependencies = {leaf:'2'};
+    graph['node_modules/provider/node_modules/leaf'] = {...graph['node_modules/leaf'],version:'2.0.0'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+
+    expect(() => createRuntimeLock({context:join(root,'node_modules/provider/package.json'),dependencies:['graphql'],lockfile:join(root,'package-lock.json')})).toThrow();
+  });
+
+  it('rejects a peer installed only below its consumer instead of in the peer neighborhood', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    delete graph['node_modules/graphql'];
+    graph['node_modules/provider'].dependencies = {graphql:'1'};
+    graph['node_modules/provider'].peerDependencies = {graphql:'1'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+
+    expect(() => createRuntimeLock({context:join(root,'package.json'),dependencies:['provider'],lockfile:join(root,'package-lock.json')})).toThrow();
+  });
+
+  it('resolves a scoped consumer peer beside or above it, separately from its ordinary dependency', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    const key = 'node_modules/@scope/plugin';
+    mkdirSync(join(root,key),{recursive:true});
+    writeFileSync(join(root,key,'package.json'),JSON.stringify({name:'@scope/plugin',version:'1.0.0'}));
+    graph[key] = {...graph['node_modules/engine'],dependencies:{graphql:'1'},peerDependencies:{graphql:'17'}};
+    graph[`${key}/node_modules/graphql`] = {...graph['node_modules/graphql'],version:'1.0.0'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+    const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['@scope/plugin'],lockfile:join(root,'package-lock.json')});
+
+    expect(Object.keys(result.lock.packages).sort()).toEqual(['','node_modules/@scope/plugin','node_modules/@scope/plugin/node_modules/graphql','node_modules/graphql']);
+    expect(result.lock.packages['node_modules/graphql'].version).toBe('17.0.0');
+    expect(result.lock.packages[`${key}/node_modules/graphql`].version).toBe('1.0.0');
+  });
+
+  it('rejects a projection that introduces a previously absent optional edge', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    delete graph['node_modules/graphql'];
+    graph['node_modules/engine'].optionalDependencies = {graphql:'1'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+
+    expect(() => createRuntimeLock({context:join(root,'node_modules/provider/package.json'),dependencies:['engine','graphql'],lockfile:join(root,'package-lock.json')})).toThrow();
+  });
+
+  it('preserves a nested direct subtree and its hoisted peer when projection is unambiguous', () => {
+    const {root,packages} = fixture();
+    const graph = packages as Record<string,any>;
+    graph['node_modules/provider/node_modules/graphql'].dependencies = {leaf:'2'};
+    graph['node_modules/provider/node_modules/graphql'].peerDependencies = {engine:'1'};
+    graph['node_modules/provider/node_modules/graphql/node_modules/leaf'] = {...graph['node_modules/leaf'],version:'2.0.0'};
+    writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
+    const result = createRuntimeLock({context:join(root,'node_modules/provider/package.json'),dependencies:['graphql'],lockfile:join(root,'package-lock.json')});
+
+    expect(Object.keys(result.lock.packages).sort()).toEqual(['','node_modules/engine','node_modules/graphql','node_modules/graphql/node_modules/leaf','node_modules/leaf']);
+    expect(result.lock.packages['node_modules/graphql'].version).toBe('1.0.0');
+    expect(result.lock.packages['node_modules/graphql/node_modules/leaf'].version).toBe('2.0.0');
+    expect(result.lock.packages['node_modules/leaf'].version).toBe('1.0.0');
+  });
+
   it.each(['events','child_process','net','tls'])('retains locked registry dependency %s despite its builtin name', (name) => {
     const {root,packages} = fixture();
     const graph = packages as Record<string,any>;
@@ -41,8 +125,8 @@ describe('exact locked runtime staging', () => {
     const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['engine',name],lockfile:join(root,'package-lock.json')});
 
     expect(result.manifest.dependencies[name]).toBe('3.0.0');
-    expect(result.lock.packages[`node_modules/engine/node_modules/${name}`].integrity).toBe('sha512-builtin-name');
-    expect(result.lock.packages[`node_modules/${name}/node_modules/leaf`].version).toBe('1.0.0');
+    expect(result.lock.packages[`node_modules/${name}`].integrity).toBe('sha512-builtin-name');
+    expect(result.lock.packages['node_modules/leaf'].version).toBe('1.0.0');
   });
 
   it('selects nearest nested builtin-named registry package without requiring package.json exports', () => {
@@ -68,8 +152,8 @@ describe('exact locked runtime staging', () => {
 
     expect(result.manifest.dependencies).toEqual({engine:'1.0.0',graphql:'1.0.0'});
     expect(result.lock.packages['node_modules/graphql'].version).toBe('1.0.0');
-    expect(result.lock.packages['node_modules/engine/node_modules/leaf'].version).toBe('1.0.0');
-    expect(result.lock.packages['node_modules/engine/node_modules/leaf'].integrity).toBe('sha512-fixture');
+    expect(result.lock.packages['node_modules/leaf'].version).toBe('1.0.0');
+    expect(result.lock.packages['node_modules/leaf'].integrity).toBe('sha512-fixture');
     expect(Object.keys(result.lock.packages).filter((key) => key.endsWith('/graphql'))).toEqual(['node_modules/graphql']);
   });
 
@@ -95,7 +179,7 @@ describe('exact locked runtime staging', () => {
     writeFileSync(join(root,'package-lock.json'),JSON.stringify({lockfileVersion:3,packages:graph}));
     const result = createRuntimeLock({context:join(root,'package.json'),dependencies:['engine','engine'],lockfile:join(root,'package-lock.json')});
 
-    expect(Object.keys(result.lock.packages).sort()).toEqual(['','node_modules/engine','node_modules/engine/node_modules/leaf']);
+    expect(Object.keys(result.lock.packages).sort()).toEqual(['','node_modules/engine','node_modules/leaf']);
     expect(result.lock.packages['node_modules/engine']).not.toHaveProperty('dev');
   });
 
