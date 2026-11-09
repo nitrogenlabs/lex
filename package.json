@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "All-in-one CLI to create, develop, test, build, and ship React, TypeScript, library, and serverless projects.",
   "license": "MIT",
   "type": "module",
@@ -9,6 +9,10 @@
   },
   "main": "./lib/index.js",
   "exports": {
+    "./test-playwright": {
+      "types": "./lib/test-playwright/index.d.ts",
+      "import": "./lib/test-playwright/index.js"
+    },
     ".": {
       "import": "./lib/index.js",
       "require": "./index.cjs"
@@ -185,7 +189,6 @@
     "@types/react": "^19.3.0",
     "@types/semver": "^7.8.0"
   },
-  "gitHead": "0f5fb22fc0f0ab1abab5adf62afed24c7c87e4a8",
   "overrides": {
     "@tailwindcss/typography": {
       "postcss-selector-parser": "7.1.6"

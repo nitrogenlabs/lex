@@ -746,6 +746,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Tests executed by `lex test` can import `test`, `expect`, `vi`, hooks and public Vitest types from `@nlabs/lex/test-vitest`. This lean, ESM, test-only entry forwards the public Vitest exports resolved from Lex's package; it loads neither the Lex CLI/root entry nor React/DOM helpers. The CLI may prefer a different project-local Vitest runner. Qualify the actual consumer's runner, export binding, compatible versions and runtime behavior together; matching version numbers alone do not prove shared framework identity. Do not import it in application runtime code. Mock and callback types retain Vitest's public aliases and inference. No direct consumer test-runner dependency or private node_modules import is needed for these bindings. Consumers must adopt an artifact that actually exports this entry; older Lex archives do not provide it.
 
+The `@nlabs/lex/test-playwright` test-only entry forwards Playwright's named runner,
+assertion, configuration and public type exports from Lex's dependency. Use it with
+the actual installed `lex test --e2e` runner; application runtime imports are not
+supported. The public aliases preserve fixture callback inference and framework
+types without private paths or a direct consumer runner dependency. Producer
+qualification lives in `test-fixtures/playwright-contract` and
+`scripts/verify-playwright-contract.mjs`, including strict NodeNext/Bundler,
+negative type controls, actual CLI execution and nonhoisted dependency layouts.
+This additive candidate requires verified registry publication before adoption.
+
 ```ts
 import {afterEach, expect, test, vi} from '@nlabs/lex/test-vitest';
 import type {Mock} from '@nlabs/lex/test-vitest';

@@ -1,0 +1,7 @@
+{
+  "name": "lex-public-playwright-contract",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "dependencies": {"@nlabs/lex": "2.1.5", "@types/node": "26.6.4"}
+}

@@ -1,0 +1,5 @@
+{
+  "compilerOptions": {"lib": ["ESNext", "DOM"], "module": "NodeNext", "moduleResolution": "NodeNext", "noEmit": true,
+    "skipLibCheck": false, "strict": true, "target": "ESNext", "types": ["node"]},
+  "include": ["contract.e2e.ts", "playwright.config.ts", "types.negative.ts"]
+}

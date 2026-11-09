@@ -20,3 +20,6 @@ website
 /.artifacts/
 /test-fixtures/
 /scripts/verify-test-contract.mjs
+/scripts/verify-playwright-contract.mjs
+/vitest.playwright-bindings.config.mts
+/eslint.playwright-bindings.config.mjs
