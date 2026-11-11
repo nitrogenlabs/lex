@@ -55,3 +55,4 @@ export type * from './commands/deployment-env/deployment-env.types.js';
 
 export * from './commands/native-env/native-env.js';
 export * from './commands/native-doctor/native-doctor.js';
+export * from './commands/provision/provision.js';

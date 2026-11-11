@@ -801,3 +801,12 @@ That fixture is a separately installed consumer program, excluded only from the 
 ### Explicit local Lambda invocation
 
 The lean `@nlabs/lex/serverless-local` export provides typed local invocation and HTTP API v2 adapters. Opt in per function with explicit account, API, region, stage, positive numeric Lambda version and timeout metadata. `serverless` may be a factory receiving the frozen environment after the existing `.env`, local, development and CLI overlays. A `serverless.local.bootstrap` composes application ports; Lex owns bounded one-shot invocation and shutdown. HTTPS may terminate at the frontend proxy. These local identities are synthetic declarations, not cloud deployment or authorization evidence. See `src/commands/serverless-dev/serverless-dev.docs.md` for the complete configuration contract.
+
+
+### Public provisioning command bridge
+
+`lex provision stack-create ...`, `lex provision stack-update ...` and `lex provision artifact-publish ...` execute the public `reaktor-provisioning` CLI from the caller's installed `@nlabs/reaktor-provisioning` package, including npm workspace hoisting. The provider contracts require a compatible release with those commands (1.1.4 or later). Lex does not install or depend on that package.
+
+The bridge preserves provider arguments, including `--help`, `--version` and literal `--`, forwards signals through the existing native process boundary and returns the provider's exit status. It admits only these three operations and validates the declared executable stays inside the installed package. Native launch errors report `node` and a sanitized error code. It does not load project environment settings or infer credentials, artifact identity, mutation custody or acceptance.
+
+The provider owns explicit private credential files, immutable artifact publication, reviewed stack plans/change sets, absolute deadlines and create-only mutation journals. A successful bridge fixture is not cloud deployment evidence. Use the provider's help and public declarations for exact binding/phase options.

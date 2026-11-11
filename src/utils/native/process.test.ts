@@ -96,6 +96,28 @@ describe('native subprocess boundary', () => {
     }
   });
 
+  it('executes an absolute binary while reporting its sanitized display name on async launch failure', async () => {
+    const child = new EventEmitter() as EventEmitter & {kill: ReturnType<typeof vi.fn>};
+    child.kill = vi.fn();
+    spawn.mockReturnValue(child);
+    const write = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      const result = runNativeInteractive('/private/node-binary', ['PRIVATE_ARG'], '/private/cwd', 'node');
+      child.emit('error', {code: 'ENOENT', message: 'PRIVATE_ERROR'});
+
+      expect(await result).toBe(1);
+      expect(spawn).toHaveBeenLastCalledWith('/private/node-binary', ['PRIVATE_ARG'],
+        {cwd: '/private/cwd', env: process.env, shell: false, stdio: 'inherit'});
+
+      const output = write.mock.calls.map(([value]) => String(value)).join('');
+
+      expect(output).toContain('Unable to start node:');
+      expect(output).not.toMatch(/private|PRIVATE/);
+    } finally {
+      write.mockRestore();
+    }
+  });
+
   it.each([{status:0,stdout:'version'}, {status:37,stdout:''}, {status:null,stdout:null}, {error:new Error('missing'),status:0,stdout:''}])('captures check status and stdout only', (fixture) => {
     spawnSync.mockReturnValue(fixture);
 

@@ -23,6 +23,7 @@ import {lint} from './commands/lint/lint.js';
 import {migrate} from './commands/migrate/migrate.js';
 import {nativeDoctor} from './commands/native-doctor/native-doctor.js';
 import {nativeEnv} from './commands/native-env/native-env.js';
+import {provision} from './commands/provision/provision.js';
 import {publish} from './commands/publish/publish.js';
 import {serverlessDeploy} from './commands/serverless-deploy/serverless-deploy.js';
 import {serverlessDev} from './commands/serverless-dev/serverless-dev.js';
@@ -32,6 +33,8 @@ import {test} from './commands/test/test.js';
 import {update} from './commands/update/update.js';
 import {upgrade} from './commands/upgrade/upgrade.js';
 import {versions} from './commands/versions/versions.js';
+
+import type {ProvisionOperation} from './commands/provision/provision.js';
 
 process.env.LEX_ROOT = dirname(fileURLToPath(import.meta.url));
 
@@ -234,6 +237,12 @@ program.command('native-env [args...]')
   .option('--workdir <path>', 'Container working directory.')
   .action((args, options) => nativeEnv({...options, args}, process.exit).then(() => {}));
 
+program.command('provision <operation> [args...]')
+  .description('Run an installed public provisioning command from the caller project.')
+  .allowUnknownOption()
+  .allowExcessArguments()
+  .action((operation, args) => provision({args, operation}, process.exit).then(() => {}));
+
 program.command('native-doctor')
   .addOption(new Option('--platform <platform>', 'Native host platform.').choices(['ios']).makeOptionMandatory())
   .option('--cwd <path>', 'Project working directory; defaults to caller cwd.')
@@ -353,6 +362,10 @@ program.command('versions')
   .option('--json', 'Print the version as a JSON object.')
   .action((cmd) => versions(cmd, process.exit).then(() => {}));
 
-program
-  .version(packageJson.version)
-  .parse(process.argv);
+program.version(packageJson.version);
+// Preserve the provider's entire argument vector before Commander interprets help/version/delimiter options.
+if(process.argv[2] === 'provision' && process.argv[3] && !process.argv[3].startsWith('-')) {
+  await provision({args: process.argv.slice(4), operation: process.argv[3] as ProvisionOperation}, process.exit);
+} else {
+  program.parse(process.argv);
+}

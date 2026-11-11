@@ -28,7 +28,7 @@ export const reportNativeSpawnError = (command: string, error: unknown): void =>
 };
 
 export const runNativeInteractive = (
-  command: string, args: readonly string[], cwd: string
+  command: string, args: readonly string[], cwd: string, displayCommand = command
 ): Promise<number> => new Promise((resolve) => {
   const child = spawn(command, [...args], {cwd, env: process.env, shell: false, stdio: 'inherit'});
   const interrupt = () => {
@@ -45,7 +45,7 @@ export const runNativeInteractive = (
   process.on('SIGINT', interrupt);
   process.on('SIGTERM', terminate);
   child.once('error', (error) => {
-    reportNativeSpawnError(command, error);
+    reportNativeSpawnError(displayCommand, error);
     finish(1);
   });
   child.once('exit', (status, signal) => finish(status ?? (signal ? 128 + osConstants.signals[signal] : 1)));
