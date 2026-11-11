@@ -16,6 +16,10 @@ import {WebSocketServer} from 'ws';
 import {LexConfig, getPackageDir} from '../../LexConfig.js';
 import {createSpinner, removeFiles} from '../../utils/app.js';
 import {log} from '../../utils/log.js';
+import {createLocalExportLoader, createLocalHttpMiddleware, initializeLocalRuntime} from './localHttp.js';
+
+import type {Request, Response} from 'express';
+import type {LocalInvocationMetadata} from '../../serverless-local/types.js';
 
 export interface ServerlessDevOptions {
   readonly cliName?: string;
@@ -41,6 +45,7 @@ interface PublicIpCache {
 
 interface ServerlessHandler {
   readonly handler: string;
+  readonly localInvocation?: LocalInvocationMetadata;
   readonly events?: Array<{
     readonly http?: {
       readonly cors?: boolean;
@@ -61,6 +66,7 @@ interface ServerlessCorsConfig {
 }
 
 interface ServerlessConfig {
+  readonly local?: {readonly bootstrap?: string; readonly maxConcurrentInvocations: number};
   readonly custom?: {
     readonly 'serverless-offline'?: {
       readonly bodyLimit?: string;
@@ -435,6 +441,13 @@ const createExpressServer = async (
   debug: boolean
 ) => {
   const app = express();
+  const local = await initializeLocalRuntime(config, createLocalExportLoader(outputDir));
+  if(local) {
+    app.locals.closeServerlessLocalRuntime = local.close;
+    app.use(createLocalHttpMiddleware<Request, Response>(local, express.raw({
+      inflate: false, limit: config.custom?.['serverless-offline']?.bodyLimit || '25mb', type: () => true
+    })));
+  }
 
   // Enable CORS
   app.use((req, res, next) => {
@@ -501,6 +514,9 @@ const createExpressServer = async (
 
       if(config.functions) {
         for(const functionConfig of Object.values(config.functions)) {
+          if(functionConfig.localInvocation) {
+            continue;
+          }
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
               if(event.http && event.http.path) {
@@ -636,13 +652,14 @@ const createExpressServer = async (
 
   // Fallback for non-GraphQL routes - handle all remaining routes
   app.use('/', async (req, res) => {
+    const diagnostics = config.local ? {error: () => {}, log: () => {}} : console;
     try {
       const url = req.url || '/';
       const method = req.method || 'GET';
       const pathname = req.path || url.split('?')[0]; // Extract pathname without query string
 
       // Always log requests (not affected by quiet flag for debugging)
-      console.log(`[Serverless] ${method} ${url} (pathname: ${pathname})`);
+      diagnostics.log(`[Serverless] ${method} ${url} (pathname: ${pathname})`);
 
       // Find matching function
       let matchedFunction = null;
@@ -650,10 +667,13 @@ const createExpressServer = async (
 
       if(config.functions) {
         const functionNames = Object.keys(functions);
-        console.log(`[Serverless] Available functions: ${functionNames.join(', ')}`);
-        console.log('[Serverless] Config functions:', JSON.stringify(functions, null, 2));
+        diagnostics.log(`[Serverless] Available functions: ${functionNames.join(', ')}`);
+        diagnostics.log('[Serverless] Config functions:', JSON.stringify(functions, null, 2));
 
         for(const [functionName, functionConfig] of Object.entries(functions)) {
+          if(functionConfig.localInvocation) {
+            continue;
+          }
           if(functionConfig.events) {
             for(const event of functionConfig.events) {
               if(event.http) {
@@ -661,7 +681,7 @@ const createExpressServer = async (
                 const eventMethod = (event.http.method || 'GET').toUpperCase();
                 const requestMethod = method.toUpperCase();
 
-                console.log(`[Serverless] Checking function ${functionName}: path="${eventPath}", method="${eventMethod}" against pathname="${pathname}", method="${requestMethod}"`);
+                diagnostics.log(`[Serverless] Checking function ${functionName}: path="${eventPath}", method="${eventMethod}" against pathname="${pathname}", method="${requestMethod}"`);
 
                 // Improved path matching - compare pathname without query string
                 // Normalize paths (remove trailing slashes for comparison)
@@ -670,7 +690,7 @@ const createExpressServer = async (
 
                 if(normalizedEventPath === normalizedPathname && eventMethod === requestMethod) {
                   matchedFunction = functionName;
-                  console.log(`[Serverless] ✓ Matched function: ${matchedFunction}`);
+                  diagnostics.log(`[Serverless] ✓ Matched function: ${matchedFunction}`);
                   break;
                 }
               }
@@ -681,17 +701,17 @@ const createExpressServer = async (
           }
         }
       } else {
-        console.log('[Serverless] No functions found in config');
+        diagnostics.log('[Serverless] No functions found in config');
       }
 
       if(matchedFunction && functions[matchedFunction]) {
         // Resolve handler path relative to output directory
         const handlerPath = functions[matchedFunction].handler;
-        console.log(`[Serverless] Loading handler: ${handlerPath} from outputDir: ${outputDir}`);
+        diagnostics.log(`[Serverless] Loading handler: ${handlerPath} from outputDir: ${outputDir}`);
         const handler = await loadHandler(handlerPath, outputDir);
 
         if(handler) {
-          console.log(`[Serverless] Handler loaded successfully, type: ${typeof handler}`);
+          diagnostics.log(`[Serverless] Handler loaded successfully, type: ${typeof handler}`);
           const wrappedHandler = captureConsoleLogs(handler, quiet);
 
           const isRawBody = Buffer.isBuffer(req.body);
@@ -716,9 +736,9 @@ const createExpressServer = async (
           };
 
           try {
-            console.log('[Serverless] Calling handler with event:', JSON.stringify(event, null, 2));
+            diagnostics.log('[Serverless] Calling handler with event:', JSON.stringify(event, null, 2));
             const result = await wrappedHandler(event, context);
-            console.log('[Serverless] Handler returned:', JSON.stringify(result, null, 2));
+            diagnostics.log('[Serverless] Handler returned:', JSON.stringify(result, null, 2));
 
             if(result && typeof result === 'object' && result.statusCode) {
               res.status(result.statusCode);
@@ -732,19 +752,19 @@ const createExpressServer = async (
               res.json(result);
             }
           } catch(error: any) {
-            console.error('[Serverless] Handler error:', error.message);
-            console.error('[Serverless] Handler error stack:', error.stack);
+            diagnostics.error('[Serverless] Handler error:', error.message);
+            diagnostics.error('[Serverless] Handler error stack:', error.stack);
             log(`Handler error: ${error.message}`, 'error', false);
             res.status(500).json({error: error.message});
           }
         } else {
-          console.error(`[Serverless] Handler not found for function: ${matchedFunction}`);
-          console.error(`[Serverless] Handler path: ${handlerPath}, Output dir: ${outputDir}`);
+          diagnostics.error(`[Serverless] Handler not found for function: ${matchedFunction}`);
+          diagnostics.error(`[Serverless] Handler path: ${handlerPath}, Output dir: ${outputDir}`);
           res.status(404).json({error: 'Handler not found'});
         }
       } else {
-        console.error(`[Serverless] Function not found for pathname: ${pathname}, method: ${method}`);
-        console.error(`[Serverless] Available functions: ${config.functions ? Object.keys(functions).join(', ') : 'none'}`);
+        diagnostics.error(`[Serverless] Function not found for pathname: ${pathname}, method: ${method}`);
+        diagnostics.error(`[Serverless] Available functions: ${config.functions ? Object.keys(functions).join(', ') : 'none'}`);
         res.status(404).json({error: 'Function not found'});
       }
     } catch(error) {
@@ -1056,6 +1076,7 @@ export const serverlessDev = async (
 
   // Load serverless configuration
   let serverlessConfig: ServerlessConfig = {};
+  let factoryConfiguration = false;
 
   try {
     // Use getPackageDir to handle npm workspaces correctly
@@ -1080,13 +1101,27 @@ export const serverlessDev = async (
     if(configPath) {
       log(`Loading serverless config from: ${configPath}`, 'info', quiet);
       const configModule = await import(configPath);
-      serverlessConfig = configModule.default?.serverless || configModule.serverless || {};
+      const declaration = configModule.default?.serverless || configModule.serverless || {};
+      if(typeof declaration === 'function') {
+        factoryConfiguration = true;
+        try {
+          const resolved: unknown = await declaration(Object.freeze({...process.env}));
+          if(!resolved || typeof resolved !== 'object' || Array.isArray(resolved)) {
+            throw new Error();
+          }
+          serverlessConfig = structuredClone(resolved) as ServerlessConfig;
+        } catch{
+          throw new Error('Invalid serverless configuration factory');
+        }
+      } else {
+        serverlessConfig = declaration;
+      }
       log('Serverless config loaded successfully', 'info', quiet);
       const functionNames = Object.keys(serverlessConfig.functions || {});
       log(`Loaded functions: ${functionNames.length > 0 ? functionNames.join(', ') : 'none'}`, 'info', quiet);
 
       // Debug: Print full config if debug mode
-      if(debug) {
+      if(debug && !serverlessConfig.local) {
         log(`Full serverless config: ${JSON.stringify(serverlessConfig, null, 2)}`, 'info', false);
       }
     } else {
@@ -1094,6 +1129,10 @@ export const serverlessDev = async (
     }
   } catch(error) {
     log(`Error loading serverless config: ${error.message}`, 'error', quiet);
+    if(factoryConfiguration) {
+      callback(1);
+      return 1;
+    }
     if(debug) {
       log(`Config error stack: ${error.stack}`, 'error', false);
     }
@@ -1133,6 +1172,29 @@ export const serverlessDev = async (
 
   const outputDir = outputFullPath || 'lib';
   log(`Using output directory: ${outputDir}`, 'info', quiet);
+  let closeLocal: (() => Promise<void>) | undefined;
+  let closeWebSocket: (() => void) | undefined;
+  let closeHttp: (() => void) | undefined;
+  let stopped: Promise<void> | undefined;
+  const stopLocal = (status: number): Promise<void> => {
+    stopped ??= (async () => {
+      let result = status;
+      for(const close of [closeHttp, closeWebSocket]) {
+        try {
+          close?.();
+        } catch{
+          result = 1;
+        }
+      }
+      try {
+        await closeLocal?.();
+      } catch{
+        result = 1;
+      }
+      callback(result);
+    })();
+    return stopped;
+  };
 
   try {
     spinner.start('Starting serverless development server...');
@@ -1155,6 +1217,7 @@ export const serverlessDev = async (
       quiet,
       debug
     );
+    closeLocal = expressApp.locals.closeServerlessLocalRuntime as (() => Promise<void>) | undefined;
 
     // Create WebSocket server
     const wsServer = createWebSocketServer(
@@ -1164,11 +1227,17 @@ export const serverlessDev = async (
       connectionRegistry,
       quiet
     );
+    closeWebSocket = () => wsServer.close();
 
     // Handle server errors
     wsServer.on('error', (error: Error) => {
-      log(`WebSocket server error: ${error.message}`, 'error', quiet);
+      log(finalConfig.local ? 'Local WebSocket server unavailable' : `WebSocket server error: ${error.message}`,
+        'error', quiet);
       spinner.fail('Failed to start WebSocket server.');
+      if(finalConfig.local) {
+        void stopLocal(1);
+        return;
+      }
       callback(1);
       return;
     });
@@ -1176,7 +1245,9 @@ export const serverlessDev = async (
     // Start Express server
     const server = expressApp.listen(httpPort, host, () => {
       spinner.succeed('Serverless development server started.');
-      void resolvePublicIpForDisplay(usePublicIp).then((publicIp) => {
+      const discovery = finalConfig.local && !usePublicIp ? Promise.resolve(undefined)
+        : resolvePublicIpForDisplay(usePublicIp);
+      void discovery.then((publicIp) => {
         displayServerStatus(
           httpPort,
           finalConfig.custom!['serverless-offline']!.httpsPort!,
@@ -1187,11 +1258,19 @@ export const serverlessDev = async (
         );
       });
     });
+    closeHttp = () => {
+      server.close();
+    };
 
     // Handle Express server errors
     server.on('error', (error) => {
-      log(`Express server error: ${error.message}`, 'error', quiet);
+      log(finalConfig.local ? 'Local HTTP server unavailable' : `Express server error: ${error.message}`,
+        'error', quiet);
       spinner.fail('Failed to start Express server.');
+      if(finalConfig.local) {
+        void stopLocal(1);
+        return;
+      }
       callback(1);
       return;
     });
@@ -1199,9 +1278,17 @@ export const serverlessDev = async (
     // Handle graceful shutdown
     const shutdown = () => {
       log('\nShutting down serverless development server...', 'info', quiet);
+      if(finalConfig.local) {
+        void stopLocal(0);
+        return;
+      }
       server.close();
       wsServer.close();
-      callback(0);
+      if(closeLocal) {
+        void closeLocal().then(() => callback(0), () => callback(1));
+      } else {
+        callback(0);
+      }
     };
 
     process.on('SIGINT', shutdown);
@@ -1215,9 +1302,10 @@ export const serverlessDev = async (
     // Don't call callback here, let the process stay alive
     return 0;
   } catch(error) {
-    log(`\n${cliName} Error: ${error.message}`, 'error', quiet);
+    log(finalConfig.local ? 'Local server startup unavailable' : `\n${cliName} Error: ${error.message}`,
+      'error', quiet);
     spinner.fail('Failed to start serverless development server.');
-    callback(1);
+    await stopLocal(1);
     return 1;
   }
 };

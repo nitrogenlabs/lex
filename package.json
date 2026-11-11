@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/lex",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "All-in-one CLI to create, develop, test, build, and ship React, TypeScript, library, and serverless projects.",
   "license": "MIT",
   "type": "module",
@@ -35,6 +35,10 @@
     "./test-vitest/globals": {
       "types": "./lib/test-vitest/globals.d.ts",
       "import": "./lib/test-vitest/globals.js"
+    },
+    "./serverless-local": {
+      "types": "./lib/serverless-local/index.d.ts",
+      "import": "./lib/serverless-local/index.js"
     }
   },
   "types": "./lib/index.d.ts",

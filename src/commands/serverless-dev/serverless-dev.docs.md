@@ -69,6 +69,76 @@ export default {
 
 ## Handler Functions
 
+### Explicit HTTP API v2 and local service ports
+
+Functions may opt into a raw HTTP API v2 boundary without changing their existing
+`events` declarations. Legacy functions keep the existing v1 event contract.
+Declare every local invocation identity explicitly; no account, stage, API or
+qualified function version is inferred from the host environment.
+
+```javascript
+serverless: {
+  local: {
+    bootstrap: 'modules/local/bootstrap.createLocalBindings',
+    maxConcurrentInvocations: 16
+  },
+  functions: {
+    core: {
+      events: [{http: {method: 'GET', path: '/books/{bookId}'}}],
+      handler: 'index.coreHandler',
+      localInvocation: {
+        accountId: '123456789012',
+        apiId: 'explicit-local-api',
+        functionArn: 'arn:aws:lambda:us-east-1:123456789012:function:core:17',
+        payloadVersion: '2.0',
+        region: 'us-east-1',
+        stage: 'local',
+        timeoutMs: 30000
+      }
+    }
+  }
+}
+```
+
+Routes accept exact paths and one-segment `{parameter}` templates. Exact paths
+take precedence. Raw encoded paths, repeated query text and body bytes reach the
+handler unchanged. Requests carry the configured account/API/stage, the actual
+socket source address and a numeric qualified invocation ARN. Returned cookies
+become separate `Set-Cookie` headers; base64 bodies become binary bytes.
+
+The optional bootstrap export receives `{invoke}` and returns
+`{handlers, close?}`. `handlers` binds declared function names to application
+factories with explicitly injected database, storage, authentication and queue
+ports. A queue adapter can deliver its original event with
+`await invoke('worker', originalEvent)`. Declare `localInvocation` on eventless
+worker functions as well, omitting `payloadVersion`. Lex bounds simultaneous
+invocations and invokes each request once. It never retries or reconstructs an
+application queue message. Invoking during bootstrap is refused; service factories
+should retain the port for use after startup. Shutdown refuses new invocations,
+drains in-flight invocations and then closes bootstrap resources.
+
+The lean `@nlabs/lex/serverless-local` entry exposes these contracts and the
+injected runtime without importing the CLI, Express, filesystem or server startup.
+Bootstrap functions must deliberately select realistic services or an explicitly
+named synthetic fixture. Lex does not disable application authentication or
+change cookie, origin, authorization, paid-operation or recovery policy.
+
+Use an HTTPS frontend proxy when the application requires Secure cookies and an
+HTTPS same-origin profile. The existing `httpsPort` display setting does not
+create a TLS listener. Environment precedence remains `.env`, `.env.local`,
+`.env.development`, then `--variables`, overlaid on the existing process environment.
+Opt-in invocation diagnostics omit bodies, cookies, headers and raw application
+errors.
+
+When declarations depend on dotenv values, export `serverless` as a factory:
+`serverless: (environment) => ({functions, local, custom})`. The command evaluates
+it once after the existing dotenv/CLI overlay and passes a frozen environment
+snapshot. It also accepts an async factory. Its returned configuration must be
+cloneable data; invalid results or factory exceptions stop startup with sanitized
+diagnostics. Object configurations keep their existing evaluation order. Avoid
+reading environment-dependent descriptors at module scope: initial Lex config
+loading occurs before the command's dotenv overlay.
+
 ### HTTP Handlers
 
 HTTP handlers should export a function that receives an event and context object:
