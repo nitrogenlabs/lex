@@ -1,0 +1,11 @@
+{
+  "classification": "actual Vault public route table events with synthetic invocation identities",
+  "counts": {
+    "ai": 6,
+    "core": 153,
+    "total": 159
+  },
+  "sourceContract": "Vault vaultRouteTable.events(target, allCapabilities, {})",
+  "sourceSha256": "bc6f3dc3c452169f84a490020cf7e37a3ed48fbde7c8eb834610fb940687a78e",
+  "sourceUtf8Bytes": 18229
+}

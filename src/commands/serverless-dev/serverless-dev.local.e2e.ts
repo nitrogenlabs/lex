@@ -42,8 +42,12 @@ test('actual CLI preserves wire evidence, private replies and one-shot local wor
   const config = {outputPath: '.', serverless: {custom: {'serverless-offline': {host: '127.0.0.1', httpPort, wsPort}},
     functions: {core: {events: [{http: {method: 'POST', path: '/api/items/{id}'}},
       {http: {method: 'GET', path: '/api/health'}}, {http: {method: 'GET', path: '/api/binary'}},
-      {http: {method: 'POST', path: '/api/queued'}}], handler: 'index.core',
+      {http: {method: 'POST', path: '/api/queued'}},
+      {http: {method: 'GET', path: '/api/universes/{universeId}/books/{bookId}/scenarios/{scenarioId}'}}], handler: 'index.core',
     localInvocation: {...metadata, functionArn: 'arn:aws:lambda:us-east-1:123456789012:function:core:17',
+      payloadVersion: '2.0'}}, specific: {events: [{http: {method: 'GET',
+      path: '/api/universes/{universeId}/books/{bookId}/scenarios/checkpoint-plan'}}], handler: 'index.specific',
+    localInvocation: {...metadata, functionArn: 'arn:aws:lambda:us-east-1:123456789012:function:specific:19',
       payloadVersion: '2.0'}}, worker: {handler: 'index.worker', localInvocation: {...metadata,
       functionArn: 'arn:aws:lambda:us-east-1:123456789012:function:worker:23'}}},
     local: {bootstrap: 'bootstrap.create', maxConcurrentInvocations: 4}}};
@@ -54,6 +58,7 @@ test('actual CLI preserves wire evidence, private replies and one-shot local wor
     core:async(event,context)=>event.rawPath==='/api/binary'
       ?{body:'AP8BgA==',cookies:['__Host-one=opaque; HttpOnly; Secure','__Host-two=other; Secure'],isBase64Encoded:true,statusCode:206}
       :{body:JSON.stringify(event.rawPath==='/api/queued'?await invoke('worker',{Records:[{body:'original-command'}]}):{event,version:context.functionVersion}),statusCode:200},
+    specific:async(event,context)=>({body:JSON.stringify({event,version:context.functionVersion}),statusCode:200}),
     worker:async(event,context)=>({command:event.Records[0].body,version:context.functionVersion})},close:()=>{}});`);
   const child = spawn(process.execPath, ['--import', join(directory, 'block-network.mjs'), resolve('lib/lex.js'),
     'serverless-dev', '--quiet'], {cwd: directory, env: {HOME: process.env.HOME, NODE_ENV: 'test',
@@ -90,6 +95,12 @@ test('actual CLI preserves wire evidence, private replies and one-shot local wor
     expect(binary.body).toEqual(Buffer.from([0, 255, 1, 128]));
     expect(binary.headers['set-cookie']).toEqual(['__Host-one=opaque; HttpOnly; Secure', '__Host-two=other; Secure']);
     expect(JSON.parse((await wire(httpPort, '/api/queued')).body.toString())).toEqual({command: 'original-command', version: '23'});
+    const scenario = '/api/universes/one/books/two/scenarios';
+    const specific = await wire(httpPort, `/local${scenario}/checkpoint-plan?x=1&x=2`, undefined, undefined, 'GET');
+    expect(JSON.parse(specific.body.toString())).toMatchObject({event: {rawPath: `/local${scenario}/checkpoint-plan`,
+      rawQueryString: 'x=1&x=2'}, version: '19'});
+    const generic = await wire(httpPort, `${scenario}/other`, undefined, undefined, 'GET');
+    expect(JSON.parse(generic.body.toString())).toMatchObject({event: {rawPath: `${scenario}/other`}, version: '17'});
     expect(logs).not.toContain('private-one');
     expect(logs).not.toContain('UNEXPECTED_OUTBOUND');
   } finally {

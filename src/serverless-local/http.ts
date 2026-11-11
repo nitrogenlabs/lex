@@ -15,7 +15,7 @@ export const captureLocalFunctions = (
 ): readonly LocalFunction[] => {
   const functions: LocalFunction[] = [];
   const routes = new Set<string>();
-  const templates: {method: string; path: string; stage: string}[] = [];
+  const templates: {method: string; name: string; path: string; stage: string}[] = [];
   for(const [name, entry] of Object.entries(input)) {
     if(entry.localInvocation === undefined) {
       continue;
@@ -51,13 +51,21 @@ export const captureLocalFunctions = (
       }
       if(path.includes('{')) {
         const segments = path.split('/');
-        if(templates.some((route) => route.method === method && route.stage === stage
-          && route.path.split('/').length === segments.length
-          && route.path.split('/').every((part, index) => part === segments[index]
-            || part.startsWith('{') || segments[index].startsWith('{')))) {
+        if(templates.some((route) => {
+          if(route.method !== method || route.stage !== stage || route.name === name) {
+            return false;
+          }
+          const other = route.path.split('/');
+          const overlaps = other.length === segments.length && other.every((part, index) =>
+            part === segments[index] || part.startsWith('{') || segments[index].startsWith('{'));
+          // Overlapping patterns are safe only when one strictly narrows the other at every literal position.
+          return overlaps
+            && !segments.every((part, index) => other[index].startsWith('{') || part === other[index])
+            && !other.every((part, index) => segments[index].startsWith('{') || part === segments[index]);
+        })) {
           throw new Error('Ambiguous local HTTP route');
         }
-        templates.push({method, path, stage});
+        templates.push({method, name, path, stage});
       }
       routes.add(key);
       return [Object.freeze({method, path})];
@@ -68,12 +76,13 @@ export const captureLocalFunctions = (
   return Object.freeze(functions);
 };
 
-/** Exact paths win over templates regardless of declaration ordering. Never decode targets. */
+/** Within admitted dominance chains, more literal segments win independently of declaration order. */
 export const matchLocalHttpRoute = (
   functions: readonly LocalFunction[], method: string, target: string
 ): LocalFunction | undefined => {
   const rawPath = target.split('?')[0];
   let template: LocalFunction | undefined;
+  let literalSegments = -1;
   for(const entry of functions) {
     if(entry.localInvocation.payloadVersion !== '2.0') {
       continue;
@@ -91,7 +100,11 @@ export const matchLocalHttpRoute = (
       const actual = path.split('/');
       if(expected.length === actual.length && expected.every((part, index) => part === actual[index]
         || (part.startsWith('{') && actual[index] !== ''))) {
-        template ??= entry;
+        const count = expected.filter((part) => !part.startsWith('{')).length;
+        if(count > literalSegments) {
+          literalSegments = count;
+          template = entry;
+        }
       }
     }
   }

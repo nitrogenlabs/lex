@@ -50,6 +50,51 @@ describe('explicit local HTTP API v2', () => {
     expect(() => captureLocalFunctions(Object.fromEntries(Object.entries(entries).reverse()))).toThrow('Ambiguous local HTTP route');
   });
 
+  it.each([false, true])('admits strict static domination below parent parameters in reverse order %s', (reverse) => {
+    const base = '/api/universes/{universeId}/books/{bookId}/scenarios';
+    const entries = {generic: {events: [{http: {method: 'GET', path: `${base}/{scenarioId}`}}], handler: 'index.generic', localInvocation},
+      specific: {events: [{http: {method: 'GET', path: `${base}/checkpoint-plan`}}], handler: 'index.specific', localInvocation}};
+    const ordered = reverse ? Object.entries(entries).reverse() : Object.entries(entries);
+    const captured = captureLocalFunctions(Object.fromEntries(ordered));
+
+    expect(matchLocalHttpRoute(captured, 'GET', '/api/universes/one/books/two/scenarios/checkpoint-plan')?.name).toBe('specific');
+    expect(matchLocalHttpRoute(captured, 'GET', '/local/api/universes/one/books/two/scenarios/checkpoint-plan?x=1&x=2')?.name).toBe('specific');
+    expect(matchLocalHttpRoute(captured, 'GET', '/api/universes/one/books/two/scenarios/other')?.name).toBe('generic');
+  });
+
+  it('refuses incomparable overlapping patterns even when one has more literal segments', () => {
+    const entries = {first: {events: [{http: {method: 'GET', path: '/a/{x}/{z}'}}], handler: 'index.first', localInvocation},
+      second: {events: [{http: {method: 'GET', path: '/{y}/b/fixed'}}], handler: 'index.second', localInvocation}};
+
+    expect(() => captureLocalFunctions(entries)).toThrow('Ambiguous local HTTP route');
+    expect(() => captureLocalFunctions(Object.fromEntries(Object.entries(entries).reverse()))).toThrow('Ambiguous local HTTP route');
+  });
+
+  it.each([
+    {method: 'GET', paths: ['/chapters/{chapterId}/revision/flow1/{pipelineId}', '/chapters/{chapterId}/{flow}/{jobDirectory}/meta.json']},
+    {method: 'GET', paths: ['/chapters/{chapterId}/revision/flow2/{pipelineId}', '/chapters/{chapterId}/{flow}/{jobDirectory}/meta.json']},
+    {method: 'PUT', paths: ['/scenarios/checkpoints/{checkpointId}', '/scenarios/{scenarioId}/continuity-review']}
+  ])('leaves same-function domain ordering intact for $method $paths but refuses cross-key ambiguity', ({method, paths}) => {
+    const events = paths.map((path) => ({http: {method, path}}));
+    const entry = {events, handler: 'index.shared', localInvocation};
+    const captured = captureLocalFunctions({core: entry});
+
+    expect(captured[0].events).toEqual(events.map(({http}) => http));
+
+    const differentKeys = {core: {...entry, events: [events[0]]}, other: {...entry, events: [events[1]]}};
+
+    expect(() => captureLocalFunctions(differentKeys)).toThrow('Ambiguous local HTTP route');
+    expect(() => captureLocalFunctions(Object.fromEntries(Object.entries(differentKeys).reverse())))
+      .toThrow('Ambiguous local HTTP route');
+  });
+
+  it('refuses normalized duplicates within one function binding', () => {
+    const entry = functions().core;
+    entry.events.push({http: {method: 'GET', path: '/books/{other}'}});
+
+    expect(() => captureLocalFunctions({core: entry})).toThrow('Ambiguous local HTTP route');
+  });
+
   it('writes cookies and exact decoded private bytes without exposing an encoded envelope', () => {
     const bytes = Buffer.from([0, 255, 1, 128]);
     const response = localHttpResponse({body: bytes.toString('base64'), cookies: ['__Host-session=secret; HttpOnly; Secure', '__Host-other=x; Secure'], headers: {'content-type': 'application/octet-stream'}, isBase64Encoded: true, statusCode: 206});

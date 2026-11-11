@@ -101,7 +101,16 @@ serverless: {
 ```
 
 Routes accept exact paths and one-segment `{parameter}` templates. Exact paths
-take precedence. Raw encoded paths, repeated query text and body bytes reach the
+take precedence. A template may strictly narrow another template with literal
+segments, including below shared parent parameters; the most specific matching
+route wins independently of declaration order. Incomparable overlapping templates
+across different declared function keys are refused, even if their handler strings
+or invocation ARNs match. Overlaps within one declared function key are admitted:
+Lex selects that function and passes the original event to the app, which retains
+its own business route ordering. Normalized duplicate declarations remain refused.
+This local dispatch rule does not reorder the application's declaration, produce
+business path parameters or emulate its handler dispatch. Raw encoded
+paths, repeated query text and body bytes reach the
 handler unchanged. Requests carry the configured account/API/stage, the actual
 socket source address and a numeric qualified invocation ARN. Returned cookies
 become separate `Set-Cookie` headers; base64 bodies become binary bytes.
