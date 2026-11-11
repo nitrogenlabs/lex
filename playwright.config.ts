@@ -5,20 +5,20 @@
 import {defineConfig, devices} from '@playwright/test';
 
 export default defineConfig({
-  testDir: './src',
-  testMatch: '**/*.e2e.{ts,tsx,js,jsx}',
-  testIgnore: ['**/node_modules/**', '**/dist/**', '**/lib/**'],
-  fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? [['list'], ['html', {open: 'never'}]] : 'list',
-  use: {
-    trace: 'retain-on-failure'
-  },
+  fullyParallel: true,
   projects: [
     {
       name: 'chromium',
       use: {...devices['Desktop Chrome']}
     }
-  ]
+  ],
+  reporter: process.env.CI ? [['list'], ['html', {open: 'never'}]] : 'list',
+  retries: process.env.CI ? 2 : 0,
+  testDir: './src',
+  testIgnore: ['**/node_modules/**', '**/dist/**', '**/lib/**'],
+  testMatch: '**/*.e2e.{ts,tsx,js,jsx}',
+  use: {
+    trace: 'retain-on-failure'
+  }
 });
