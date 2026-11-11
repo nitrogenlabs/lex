@@ -87,7 +87,7 @@ test('default native binding executes by absolute Node path but sanitizes asynch
   expect(write.mock.calls.flat().join('')).not.toMatch(/PRIVATE|lex-provision-/);
 });
 
-test.each(['stack-create', 'stack-update', 'artifact-publish'] as const)('preserves %s structured argv, cwd and exit status', async (operation) => {
+test.each(['stack-create', 'stack-update', 'artifact-publish', 'cloudfront-api-routing', 'ui-publish'] as const)('preserves %s structured argv, cwd and exit status', async (operation) => {
   const run = vi.fn(async () => 37);
   const callback = vi.fn();
   const resolveCli = vi.fn(() => '/caller/provider.js');

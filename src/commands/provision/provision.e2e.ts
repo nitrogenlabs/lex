@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 
 const cli = fileURLToPath(new URL('../../../lib/lex.js', import.meta.url));
 
-for(const operation of ['artifact-publish', 'stack-create', 'stack-update']) {
+for(const operation of ['artifact-publish', 'stack-create', 'stack-update', 'cloudfront-api-routing', 'ui-publish']) {
   for(const forwarded of [[], ['--version'], ['-V'], ['--help'], ['--', '-V']]) {
     test(`compiled CLI forwards ${operation} ${forwarded.join(' ')} to the caller's hoisted provider`, () => {
       const root = realpathSync(mkdtempSync(join(tmpdir(), 'lex-provision-cli-')));

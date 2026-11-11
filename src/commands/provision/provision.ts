@@ -4,7 +4,7 @@ import {isAbsolute, join, relative, resolve, sep} from 'node:path';
 import {relativeNodePath} from '../../utils/file.js';
 import {reportNativeSpawnError, runNativeInteractive} from '../../utils/native/process.js';
 
-export type ProvisionOperation = 'artifact-publish' | 'stack-create' | 'stack-update';
+export type ProvisionOperation = 'artifact-publish' | 'cloudfront-api-routing' | 'stack-create' | 'stack-update' | 'ui-publish';
 export interface ProvisionOptions {
   args?: readonly string[];
   cwd?: string;
@@ -48,7 +48,7 @@ export const provision = async (
       throw new Error('Provisioning arguments unavailable');
     }
     const args = [...(options.args ?? [])];
-    if(!['artifact-publish', 'stack-create', 'stack-update'].includes(operation) || args.length > 128
+    if(!['artifact-publish', 'cloudfront-api-routing', 'stack-create', 'stack-update', 'ui-publish'].includes(operation) || args.length > 128
       || args.some((arg) => typeof arg !== 'string' || arg.includes('\0') || arg.length > 65536)) {
       throw new Error('Provisioning arguments unavailable');
     }
